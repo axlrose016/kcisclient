@@ -1,0 +1,50 @@
+"use server";
+
+import { cache } from "react";
+import { db } from "@/db";
+import { modules, permissions, roles } from "@/db/schema/libraries";
+const api_base_url = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const fetchData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
+    try {
+        const response = await fetch(api_base_url + endpoint);
+        if (!response.ok) { 
+            if (offline_table) {
+                const offlineData = await db.select().from(offline_table).all();
+                return offlineData; 
+            } else {
+                throw new Error(errorMessage);
+            }
+        }
+        return await response.json();
+    } catch (error) {
+        if (offline_table) {
+            const offlineData = await db.select().from(offline_table).all();
+            return offlineData;
+        }
+        throw new Error(errorMessage); 
+    }
+});
+
+const createFetchFunction = (endpoint: string, errorMessage: string, offline_table?: any) => {
+    return async () => fetchData(endpoint, errorMessage, offline_table);
+};
+
+export const fetchModules = createFetchFunction("/api/modules/", "Failed to fetch modules", modules);
+export const fetchPermissions = createFetchFunction("/api/permissions/", "Failed to fetch permissions", permissions);
+export const fetchRoles = createFetchFunction("/api/roles/", "Failed to fetch roles", roles);
+export const fetchLibAncestralDomain = createFetchFunction("/api/lib_ancestral_domain/", "Failed to fetch Library: Ancestral Domain");
+export const fetchLibCity = createFetchFunction("/api/lib_city/", "Failed to fetch Library: City");
+export const fetchLibCivilStatus = createFetchFunction("/api/lib_civil_status/", "Failed to fetch Library: Civil Status");
+export const fetchLibEducationalAttainment = createFetchFunction("/api/lib_educational_attainment/", "Failed to fetch Library: Educational Attainment");
+export const fetchLibFundSource = createFetchFunction("/api/lib_fund_source/", "Failed to fetch Library: Fund Source");
+export const fetchLibLguLevel = createFetchFunction("/api/lib_lgu_level/", "Failed to fetch Library: Lgu Level");
+export const fetchLibLguPosition = createFetchFunction("/api/lib_lgu_position/", "Failed to fetch Library: Lgu Position");
+export const fetchLibMode = createFetchFunction("/api/lib_mode/", "Failed to fetch Library: Mode");
+export const fetchLibOccupation = createFetchFunction("/api/lib_occupation/", "Failed to fetch Library: Occupation");
+export const fetchLibProvince = createFetchFunction("/api/lib_province/", "Failed to fetch Library: Province");
+export const fetchLibRegion = createFetchFunction("/api/lib_region/", "Failed to fetch Library: Region");
+export const fetchLibSex = createFetchFunction("/api/lib_sex/", "Failed to fetch Library: Sex");
+export const fetchLibAncestralDomainCoverage = createFetchFunction("/api/lib_ancestral_domain_coverage/", "Failed to fetch Library: Ancestral Domain Coverage");
+export const fetchLibBarangay = createFetchFunction("/api/lib_brgy/", "Failed to fetch Library: Barangay");
+export const fetchLibCycle = createFetchFunction("/api/lib_cycle/", "Failed to fetch Library: Cycle");
