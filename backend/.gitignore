@@ -1,0 +1,50 @@
+# Python-specific
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs and Editors
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Build directories
+build/
+dist/
+*.egg-info/
+
+# Test & coverage
+.coverage
+nosetests.xml
+coverage.xml
+*.cover
+*.hypothesis/
+
+# Django files
+*.log
+*.pot
+*.pyc
+*.pyo
+*.db
+*.sqlite3
+media/
+static/
+
+# PyCharm
+*.iml
