@@ -1,15 +1,15 @@
 import "server-only";
 import { SignJWT, jwtVerify } from "jose";
-import { IUserAccess, IUserData } from "@/components/interfaces/library-interface";
 import { cookies } from "next/headers";
 import { NextApiRequest } from "next";
 import { SessionPayload } from "@/types/globals";
 import { NextRequest } from "next/server";
+import { IUserData } from "@/components/interfaces/iuser";
 
 const secretKey = process.env.SESSION_SECRET_KEY;
 const encodedKey = new TextEncoder().encode(secretKey);
 
-export async function createSession(id: string,role:string, userData: IUserData[]){
+export async function createSession(id: string, userData: IUserData[]){
     const sessionExpiration = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const session = await encrypt({id, userData, sessionExpiration});
 

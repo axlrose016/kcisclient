@@ -3,142 +3,163 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption, } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogPortal } from "@/components/ui/dialog";
 import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import { Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getCFWTypeLibraryOptions, getEducationalAttainmentLibraryOptions, getRelationshipToFamilyMemberTypeLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
+import { ButtonDialog } from "@/components/actions/button-dialog";
+import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilycomposition";
 
 export default function FamilyComposition({ errors }: ErrorProps) {
     const [cfwTypeOptions, setcfwTypeOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
     const [SelectedIsCFWBene, setSelectedIsCFWBene] = useState("");
 
+    const [relationshipToFamilyMemberOptions, setRelationshipToFamilyMemberOptions] = useState<LibraryOption[]>([]);
+    const [selectedRelationshipToFamilyMember, setSelectedRelationshipToFamilyMember] = useState("");
+    const [selectedRelationshipToFamilyMemberId, setSelectedRelationshipToFamilyMemberId] = useState<number | null>(null);
 
+    const [yearLevelOptions, setYearLevelOptions] = useState<LibraryOption[]>([]);
+    const [selectedYearLevel, setSelectedYearLevel] = useState("");
+    const [selectedYearLevelId, setSelectedYearLevelId] = useState<number | null>(null);
+
+    const [CFWTypeOptions, setCFWTypeOptions] = useState<LibraryOption[]>([]);
+    const [selectedCFWType, setSelectedCFWType] = useState("");
+    const [selectedCFWTypeId, setSelectedCFWTypeId] = useState<number | null>(null);
+
+    const [EducationalAttainmentOptions, setEducationalAttainmentOptions] = useState<LibraryOption[]>([]);
+    const [selectedEducationalAttainment, setSelectedEducationalAttainment] = useState("");
+    const [selectedEducationalAttainmentId, setSelectedEducationalAttainmentId] = useState<number | null>(null);
+    const [form_Data, setForm_Data] = useState([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const relationship_to_family_member = await getRelationshipToFamilyMemberTypeLibraryOptions();
+                setRelationshipToFamilyMemberOptions(relationship_to_family_member);
+
+                const year_level = await getYearLevelLibraryOptions();
+                setYearLevelOptions(year_level);
+
+                const cfw_type = await getCFWTypeLibraryOptions();
+                setCFWTypeOptions(cfw_type);
+
+                const educational_attainment = await getEducationalAttainmentLibraryOptions();
+                setEducationalAttainmentOptions(educational_attainment);
+
+
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handlRelationshipToFamilyMemberChange = (id: number) => {
+        console.log("Selected Relationship to Family Member ID:", id);
+        setSelectedRelationshipToFamilyMemberId(id);
+    };
+    const handlYearLevelChange = (id: number) => {
+        console.log("Selected Year Level ID:", id);
+        setSelectedYearLevelId(id);
+    };
+
+    const handlCFWTypeChange = (id: number) => {
+        console.log("Selected CFW Type ID (ADD):", id);
+        setSelectedCFWTypeId(id);
+    };
+
+    const handlEducationalAttainmentChange = (id: number) => {
+        console.log("Selected Educational attainment ID (ADD):", id);
+        setSelectedEducationalAttainmentId(id);
+    };
+
+    const handlbtnOnChange = (id: number) => {
+        console.log("submitted", id);
+        // setSelectedEducationalAttainmentId(id);
+    };
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setForm_Data((prevData) => {
+            const updatedData = { ...prevData, [name]: value };
+            localStorage.setItem('formData', JSON.stringify(updatedData)); // Save to localStorage
+            return updatedData;
+        });
+    };
     return (
         <>
-            <div  >
+            <div className="w-full overflow-x-auto " >
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
-
-
                     <div className="p-2 col-span-4 ">
                         <div className="flex justify-end">
-                            <Dialog>
+                            {/* <Dialog>
+
                                 <DialogTrigger>
-                                    <Button>Add Family Member</Button>
+                                    Add Family Member
                                 </DialogTrigger>
-                                <DialogContent className="max-h-[80vh] overflow-y-auto">
 
 
-                                    <DialogHeader>
-                                        <DialogTitle>
-                                            <h2>Add Family Member</h2>
-                                        </DialogTitle>
-                                        <DialogDescription>
-
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="name" className="block text-sm font-medium mb-2">Name</Label>
-                                                <Input
-                                                    id="name"
-                                                    name="name"
-                                                    type="text"
-                                                    placeholder="Enter the name"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                />
-                                                {errors?.name && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.name[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="relationship" className="block text-sm font-medium mb-2">Relationship</Label>
-                                                <FormDropDown
-                                                    options={cfwTypeOptions}
-                                                    selectedOption={selectedRelation}
-                                                />
-                                                {errors?.relationship && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.relationship[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-2 flex space-x-4">
-                                                <div className="w-1/2">
-                                                    <Label htmlFor="birthday" className="block text-sm font-medium mb-2">Birthday</Label>
-                                                    <Input id="birthday" name="birthday" type="date" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                    {errors?.birthday && (
-                                                        <p className="mt-2 text-sm text-red-500">{errors.birthday[0]}</p>
-                                                    )}
+                                 <ButtonDialog dialogForm={FamilyCompositionForm} label="Add Family Member"/> 
+                            </Dialog> */}
+                            <Dialog modal={false}>
+                                <DialogTrigger>
+                                    Edit Profile
+                                </DialogTrigger>
+                                <DialogPortal>
+                                    <DialogContent className="sm:max-w-[425px]">
+                                        <DialogHeader>
+                                            <DialogTitle>Edit profile</DialogTitle>
+                                            <DialogDescription>
+                                                Make changes to your profile here. Click save when you're done.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <form action="">
+                                            <div className="grid gap-4 py-4">
+                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                    <Label htmlFor="name" className="text-right">
+                                                        Name
+                                                    </Label>
+                                                    <Input id="name" className="col-span-3" />
                                                 </div>
-                                                <div className="w-1/2">
-                                                    <Label htmlFor="age" className="block text-sm font-medium mb-2">Age</Label>
-                                                    <Input id="age" name="age" type="number" disabled className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
-                                                    {errors?.age && (
-                                                        <p className="mt-2 text-sm text-red-500">{errors.age[0]}</p>
-                                                    )}
+                                                <div className="grid grid-cols-4 items-center gap-4">
+                                                    <Label htmlFor="username" className="text-right">
+                                                        Username
+                                                    </Label>
+                                                    <Input id="username" className="col-span-3" />
+                                                </div>
+                                                <div className="grid grid-cols-1 items-center gap-4">
+                                                    <Label htmlFor="username" className="text-right">
+                                                        Username
+                                                    </Label>
+                                                    <FormDropDown
+                                                        // onBlur={handleBlur}
+                                                        id="relationshiptothemember"
+                                                        options={relationshipToFamilyMemberOptions}
+                                                        selectedOption={selectedRelationshipToFamilyMemberId}
+                                                        onChange={handlRelationshipToFamilyMemberChange}
+                                                    // menuPortalTarget={document.body}
+                                                    // styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
+                                                    />
                                                 </div>
                                             </div>
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="educational_level" className="block text-sm font-medium mb-2">Educational Level</Label>
-                                                <FormDropDown
-                                                    options={cfwTypeOptions}
-                                                    selectedOption={selectedRelation}
-                                                />
-                                                {errors?.educational_level && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.educational_level[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="occupation" className="block text-sm font-medium mb-2">Occupation</Label>
-                                                <Input
-                                                    id="occupation"
-                                                    name="occupation"
-                                                    type="text"
-                                                    placeholder="Enter the occupation"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                />
-                                                {errors?.occupation && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.occupation[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="monthly_income" className="block text-sm font-medium mb-2">Monthly Income</Label>
-                                                <Input
-                                                    id="monthly_income"
-                                                    name="monthly_income"
-                                                    type="number"
-                                                    placeholder="Enter the monthly income"
-                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                                />
-                                                {errors?.monthly_income && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.monthly_income[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="type_of_vulnerability" className="block text-sm font-medium mb-2">Type of Vulnerability</Label>
-                                                <FormDropDown
-                                                    options={cfwTypeOptions}
-                                                    selectedOption={selectedRelation}
-                                                />
-                                                {errors?.type_of_vulnerability && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.type_of_vulnerability[0]}</p>
-                                                )}
-                                            </div>
-                                            <div className="p-2 col-span-1 flex justify-end">
-                                                <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white">
-                                                    <span className="mr-1">+</span> Add Family Member
-                                                </Button>
-                                            </div>
-
-                                        </DialogDescription>
-                                    </DialogHeader>
-
-                                </DialogContent>
+                                            <DialogFooter>
+                                                <Button  >Save changes</Button>
+                                            </DialogFooter>
+                                        </form>
+                                    </DialogContent>
+                                </DialogPortal>
                             </Dialog>
                         </div>
                         <div className="p-2 col-span-4">
-                            <Table>
+
+                            <Table className="min-w-[1000px] border">
                                 <TableHeader>
                                     <TableRow>
                                         <TableHead>Name</TableHead>
@@ -150,15 +171,8 @@ export default function FamilyComposition({ errors }: ErrorProps) {
                                         <TableHead>Monthly Income</TableHead>
                                         <TableHead>Type of Vulnerability</TableHead>
                                         <TableHead>Action</TableHead>
-
                                     </TableRow>
                                 </TableHeader>
-                                <TableBody>
-                                    <TableRow>
-
-
-                                    </TableRow>
-                                </TableBody>
                                 <TableBody>
                                     <TableRow>
                                         <TableCell>John Doe</TableCell>
@@ -171,13 +185,10 @@ export default function FamilyComposition({ errors }: ErrorProps) {
                                         <TableCell>None</TableCell>
                                         <TableCell>
                                             <div className="flex space-x-2">
-
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <Button variant="outline" className="text-blue-500 border-blue-500">
-                                                                <Edit className="w-4 h-4" />
-                                                            </Button>
+                                                            <Edit className="w-4 h-4" />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Edit Record</p>
@@ -187,36 +198,28 @@ export default function FamilyComposition({ errors }: ErrorProps) {
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger>
-                                                            <Button variant="outline" className="text-red-500 border-red-500">
-                                                                <Trash className="w-4 h-4" />
-                                                            </Button>
+                                                            <Trash className="w-4 h-4" />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>Delete Record</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
-
-
-
-
                                             </div>
                                         </TableCell>
-
                                     </TableRow>
                                 </TableBody>
                             </Table>
+
                         </div>
+
 
                     </div>
 
 
 
                 </div>
-
             </div >
-
-
         </>
     )
 }

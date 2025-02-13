@@ -63,7 +63,7 @@ export const lib_ancestral_domain = sqliteTable('lib_ancestral_domain', {
     remarks: text('remarks'),
 })
 
-export const lib_region = sqliteTable('lib_region',{
+export const lib_region = sqliteTable('lib_region', {
     region_code: text('region_code').notNull().primaryKey(),
     region_name: text('region_name').notNull(),
     region_nick: text('region_nick'),
@@ -81,11 +81,13 @@ export const lib_region = sqliteTable('lib_region',{
 })
 
 export const lib_province = sqliteTable('lib_province', {
-    province_code: text('province_code').notNull().primaryKey(), 
+    province_code: text('province_code').notNull().primaryKey(),
     province_name: text('province_name').notNull(),
-    province_nick: text('province_nick').notNull(),
     region_code: text('region_code').references(() => lib_region.region_code),
-    sort_order: integer('sort_order'),
+    archive: integer('archive', { mode: 'boolean' }).default(false),
+    latitude: text('latitude'),
+    longitude: text('longitude'),
+    psgc: text('psgc'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
@@ -116,7 +118,7 @@ export const lib_city = sqliteTable('lib_city', {
     remarks: text('remarks'),
 })
 
-export const lib_brgy = sqliteTable('lib_brgy',{
+export const lib_brgy = sqliteTable('lib_brgy', {
     brgy_code: text('brgy_code').notNull().primaryKey(),
     brgy_name: text('brgy_name').notNull(),
     brgy_nick: text('brgy_nick'),
@@ -136,7 +138,7 @@ export const lib_brgy = sqliteTable('lib_brgy',{
 
 export const lib_civil_status = sqliteTable('lib_civil_status', {
     id: integer('id').notNull().primaryKey(),
-    civil_status_description: text('civil_status_description').notNull(),
+    civil_status_description: text('civil_status_description'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
@@ -149,7 +151,7 @@ export const lib_civil_status = sqliteTable('lib_civil_status', {
     remarks: text('remarks'),
 })
 
-export const lib_educational_attainment = sqliteTable('lib_educational_attainment',{
+export const lib_educational_attainment = sqliteTable('lib_educational_attainment', {
     id: integer('id').notNull().primaryKey(),
     educational_attainment_description: text('educational_attainment_description').notNull(),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -164,7 +166,7 @@ export const lib_educational_attainment = sqliteTable('lib_educational_attainmen
     remarks: text('remarks'),
 })
 
-export const lib_fund_source = sqliteTable('lib_fund_source',{
+export const lib_fund_source = sqliteTable('lib_fund_source', {
     id: integer('id').primaryKey().notNull(),
     fund_source_description: text('fund_source_description').notNull(),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -177,11 +179,12 @@ export const lib_fund_source = sqliteTable('lib_fund_source',{
     deleted_by: text('deleted_by'),
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
+    is_active: integer('is_active', { mode: 'boolean' }).default(false),
 })
 
-export const lib_cycle = sqliteTable('LibCycle', {
+export const lib_cycle = sqliteTable('lib_cycle', {
     id: integer('id').primaryKey().notNull(),
-    cycle_description: integer('id').notNull(),
+    cycle_description: integer('cycle_description').notNull(),
     fund_source_id: text('fund_source_id').notNull().references(() => lib_fund_source.id),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
@@ -193,6 +196,7 @@ export const lib_cycle = sqliteTable('LibCycle', {
     deleted_by: text('deleted_by'),
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
+    is_active: integer('is_active', { mode: 'boolean' }).default(false),
 })
 
 export const lib_lgu_level = sqliteTable('lib_lgu_level', {
@@ -210,7 +214,7 @@ export const lib_lgu_level = sqliteTable('lib_lgu_level', {
     remarks: text('remarks'),
 })
 
-export const lib_lgu_position = sqliteTable('lib_lgu_position',{
+export const lib_lgu_position = sqliteTable('lib_lgu_position', {
     id: integer('id').primaryKey().notNull(),
     lgu_position_description: text('lgu_position_description').notNull(),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -225,7 +229,7 @@ export const lib_lgu_position = sqliteTable('lib_lgu_position',{
     remarks: text('remarks'),
 })
 
-export const lib_mode = sqliteTable('lib_mode',{
+export const lib_mode = sqliteTable('lib_mode', {
     id: integer('id').primaryKey().notNull(),
     mode_description: text('mode_description').notNull(),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -240,7 +244,7 @@ export const lib_mode = sqliteTable('lib_mode',{
     remarks: text('remarks'),
 })
 
-export const lib_occupation = sqliteTable('lib_occupation',{
+export const lib_occupation = sqliteTable('lib_occupation', {
     id: integer('id').notNull().primaryKey(),
     occupation_description: text('occupation_description').notNull(),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -269,8 +273,38 @@ export const lib_sex = sqliteTable('lib_sex', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 })
+export const lib_volunteer_committee = sqliteTable('lib_volunteer_committee', {
+    id: integer('id').primaryKey().notNull(),
+    name: text('name').notNull(),
+    description: text('description').notNull(),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+})
+export const lib_volunteer_committee_position = sqliteTable('lib_volunteer_committee_position', {
+    id: integer('id').primaryKey().notNull(),
+    name: text('name').notNull(),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+    is_active: integer('is_active', { mode: 'boolean' }).default(false),
+})
 
-export const lib_ancestral_domain_coverage = sqliteTable('lib_ancestral_domain_coverage',{
+export const lib_ancestral_domain_coverage = sqliteTable('lib_ancestral_domain_coverage', {
     id: integer('id').primaryKey().notNull(),
     ancestral_domain_coverage_description: text('ancestral_domain_coverage_description').notNull(),
     ancestral_domain_id: text('ancestral_domain_id').notNull().references(() => lib_ancestral_domain.id),
@@ -291,9 +325,83 @@ export const lib_ancestral_domain_coverage = sqliteTable('lib_ancestral_domain_c
 })
 
 
+// beneficiary category
 export const lib_cfw_category = sqliteTable('lib_cfw_category', {
     id: integer('id').notNull().primaryKey(),
     category_name: text('category_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+// for family with family background as bene of cfw program 
+export const lib_cfw_type = sqliteTable('lib_cfw_type', {
+    id: integer('id').notNull().primaryKey(),
+    cfw_type_name: text('cfw_type_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+
+export const lib_modality_sub_category = sqliteTable('lib_modality_sub_category', {
+    id: integer('id').notNull().primaryKey(),
+    modality_id: integer('modality_id'),
+    modality_sub_category_name: text('modality_sub_category_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+export const lib_type_of_work = sqliteTable('lib_type_of_work', {
+    id: integer('id').notNull().primaryKey(),
+    work_name: text('work_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+export const lib_id_card = sqliteTable('lib_id_card', {
+    id: integer('id').notNull().primaryKey(),
+    id_card_name: text('id_card_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+export const lib_relationship_to_beneficiary = sqliteTable('lib_relationship_to_beneficiary', {
+    id: integer('id').notNull().primaryKey(),
+    relationship_name: text('relationship_name'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
@@ -309,6 +417,20 @@ export const lib_cfw_category = sqliteTable('lib_cfw_category', {
 export const lib_ip_group = sqliteTable('lib_ip_group', {
     id: integer('id').notNull().primaryKey(),
     ip_group_name: text('ip_group_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+export const lib_type_of_disability = sqliteTable('lib_type_of_disability', {
+    id: integer('id').notNull().primaryKey(),
+    disability_name: text('disability_name'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
@@ -385,6 +507,23 @@ export const lib_modality = sqliteTable("lib_modality", {
     deleted_by: text('deleted_by'),
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
+    is_active: integer('is_active', { mode: 'boolean' }).default(false),
+});
+
+export const lib_extension_name = sqliteTable("lib_extension_name", {
+    id: integer("id").notNull().primaryKey(),
+    extension_name: text("extension_name"),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+    is_active: integer('is_active', { mode: 'boolean' }).default(false),
 });
 
 export const lib_position = sqliteTable("lib_position", {
@@ -394,10 +533,14 @@ export const lib_position = sqliteTable("lib_position", {
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
     last_modified_by: text('last_modified_by'),
-    push_status_id : integer('push_status_id').default(0),
+    push_status_id: integer('push_status_id').default(0),
     push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
     deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
     deleted_by: text('deleted_by'),
-    is_deleted: integer('is_deleted', {mode:'boolean'}).default(false),
-    remarks: text('remarks'), 
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
 });
+
+
+
+

@@ -2,22 +2,37 @@ import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
+  DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { useState } from "react";
 
 interface ButtonDialogProps {
   dialogForm: React.ElementType;
   label: string; // Accepts a React component as a prop
+  css?: string;
+  record_id?: any;
+  dialog_title?: string;
 }
 
-export function ButtonDialog({ dialogForm: DialogForm, label }: ButtonDialogProps) {
+export function ButtonDialog({ dialogForm: DialogForm, label, css,record_id, dialog_title }: ButtonDialogProps) {
   return (
-    <Dialog>
+    <Dialog modal={false}>
       <DialogTrigger asChild>
-        <a className="underline underline-offset-4 cursor-pointer">{label}</a>
+        <a className={css}>{label}</a>
       </DialogTrigger>
-      <DialogContent className="w-full p-4 sm:max-w-screen-lg sm:p-6 bg-white rounded-lg shadow-lg overflow-y-auto">
-        <DialogForm /> 
+      <DialogContent 
+        onInteractOutside={(event) => event.preventDefault()} 
+        className="w-full sm:max-w-screen-lg sm:p-6 bg-white rounded-lg shadow-lg overflow-y-auto">
+        <DialogHeader>
+            <DialogTitle>
+                <div className="flex flex-col">
+                    <h1 className="text-2xl font-bold">{dialog_title}</h1>
+                </div>
+            </DialogTitle>
+        </DialogHeader>
+        <DialogForm record_id={record_id}/> 
       </DialogContent>
     </Dialog>
   );

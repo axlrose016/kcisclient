@@ -24,13 +24,6 @@ export default function RegistrationForm({
     return (
         <>
             <form action={submitAction} className="p-6 md:p-8">
-                <DialogHeader>
-                    <DialogTitle>
-                        <div className="flex flex-col items-center text-center">
-                            <h1 className="text-2xl font-bold">Welcome to KALAHI-CIDSS Information System</h1>
-                        </div>
-                    </DialogTitle>
-                </DialogHeader>
                 <div className={cn("flex flex-col gap-6 overflow-auto max-h-[80vh] scrollbar-hide p-4", className)} {...props}>
                     <div className="pb-5">
                         <div className="mt-10 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-8">

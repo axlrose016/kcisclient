@@ -7,7 +7,8 @@ import bcrypt from "bcrypt";
 import { createSession } from "@/lib/sessions";
 import { redirect } from "next/navigation";
 import { fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
-import { IModules, IPermissions, IRoles, IUserAccess, IUserData } from "@/components/interfaces/library-interface";
+import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { IUserData } from "@/components/interfaces/iuser";
 
 
 const formSchema = z.object({
@@ -23,7 +24,7 @@ const formSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters" })
     .trim(),
 });
-
+ 
 export async function submit(prevState: any, formData: FormData) {
   const formObject = Object.fromEntries(formData.entries());
 
@@ -54,6 +55,7 @@ export async function submit(prevState: any, formData: FormData) {
       .insert(users)
       .values({
         id,
+        role_id: defaultRole[0].id,
         username,email,password: hashedPassword, 
         created_by:id
       })
@@ -67,7 +69,6 @@ export async function submit(prevState: any, formData: FormData) {
       .values({
         id: access_id,
         user_id: user.id,
-        role_id: defaultRole[0].id,
         module_id: defaultModule[0].id,
         permission_id:defaultPermission[0].id,
         created_by:user.id,
@@ -75,18 +76,18 @@ export async function submit(prevState: any, formData: FormData) {
   
       const role = defaultRole[0].role_description ?? "Guest";
       const permission: IUserData[] = [{
-        name: "Axl",
-        email:"argvillanueva@dswd.gov.ph",
+        name: username,
+        email:email,
         photo:"",
+        role: role,
         userAccess:[{
-          role: role,
           module: defaultModule[0].module_description,
           module_path: defaultModule[0].module_path,
           permission: defaultPermission[0].permission_description
         }]
       }]
       
-      await createSession(user.id, role,permission);
+      await createSession(user.id,permission);
     });
     
     redirect('/');

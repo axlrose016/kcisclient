@@ -26,42 +26,42 @@ export default function Ers_work_record({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2 sm:col-span-4">
-                        <Label htmlFor="work" className="block text-sm font-medium">Work</Label>
+                        <Label htmlFor="work_name" className="block text-sm font-medium">Work</Label>
                         <Input
-                            id="work"
-                            name="work"
+                            id="work_name"
+                            name="work_name"
                             type="text"
                             placeholder="Enter Work"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.work && (
-                            <p className="mt-2 text-sm text-red-500">{errors.work[0]}</p>
+                        {errors?.work_name && (
+                            <p className="mt-2 text-sm text-red-500">{errors.work_name[0]}</p>
                         )}
                     </div>
                     <div className="p-2 sm:col-span-1">
-                        <Label htmlFor="start" className="block text-sm font-medium">Start</Label>
+                        <Label htmlFor="work_start" className="block text-sm font-medium">Start</Label>
                         <Input
-                            id="start"
-                            name="start"
+                            id="work_start"
+                            name="work_start"
                             type="date"
                             placeholder="Enter Start Date"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.start && (
-                            <p className="mt-2 text-sm text-red-500">{errors.start[0]}</p>
+                        {errors?.work_start && (
+                            <p className="mt-2 text-sm text-red-500">{errors.work_start[0]}</p>
                         )}
                     </div>
                     <div className="p-2 sm:col-span-1">
-                        <Label htmlFor="end" className="block text-sm font-medium">End</Label>
+                        <Label htmlFor="work_end" className="block text-sm font-medium">End</Label>
                         <Input
-                            id="end"
-                            name="end"
+                            id="work_end"
+                            name="work_end"
                             type="date"
                             placeholder="Enter End Date"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.end && (
-                            <p className="mt-2 text-sm text-red-500">{errors.end[0]}</p>
+                        {errors?.work_end && (
+                            <p className="mt-2 text-sm text-red-500">{errors.work_end[0]}</p>
                         )}
                     </div>
                     <div className="p-2 sm:col-span-1">

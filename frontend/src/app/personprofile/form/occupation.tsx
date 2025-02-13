@@ -3,56 +3,87 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { getIDCardLibraryOptions } from "@/components/_dal/options";
 
-export default function Occupation({ errors }: ErrorProps) {
+export default function Occupation({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [cfwOptions, setCfwOptions] = useState<LibraryOption[]>([]);
     const [selectedCfwCategory, setSelectedCfwCategory] = useState("");
+
+    const [iDCardOptions, setIDCardOptions] = useState<LibraryOption[]>([]);
+    const [selectedIDCard, setSelectedIDCard] = useState("");
+    const [selectedIDCardId, setSelectedIDCardId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+
+                const id_card = await getIDCardLibraryOptions();
+                setIDCardOptions(id_card);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+    const handleIDCardChange = (id: number) => {
+        console.log("Selected ID Card ID:", id);
+        updateCapturedData("cfw", "occupation_id_card_id", id, 4);
+        setSelectedIDCardId(id);
+    };
     return (
         <>
             <div className="">
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
-                    <div className="p-2 col-span-2">
-                        <Label htmlFor="occupation" className="block text-sm font-medium">Occupation</Label>
+                    <div className="p-2 col-span-4">
+                        <Label htmlFor="current_occupation" className="block text-sm font-medium">Occupation</Label>
                         <Input
-                            id="occupation"
-                            name="occupation"
+                            id="current_occupation"
+                            name="current_occupation"
                             type="text"
                             placeholder="Enter your Occupation"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            onChange={(e) => updateCapturedData("cfw", 'current_occupation', e.target.value, 4)}
                         />
-                        {errors?.occupation && (
-                            <p className="mt-2 text-sm text-red-500">{errors.occupation[0]}</p>
+                        {errors?.current_occupation && (
+                            <p className="mt-2 text-sm text-red-500">{errors.current_occupation[0]}</p>
                         )}
                     </div>
-                    <div className="p-2">
-                        <Label htmlFor="valid_id" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
+                    <div className="p-2 col-span-4 sm:col-span-4">
+
+                        <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
-                            options={cfwOptions}
-                            selectedOption={selectedCfwCategory}
+                            id="occupation_id_card"
+                            options={iDCardOptions}
+                            selectedOption={selectedIDCardId}
+                            onChange={handleIDCardChange}
                         />
-                        {errors?.valid_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.valid_id[0]}</p>
+                        {errors?.occupation_id_card && (
+                            <p className="mt-2 text-sm text-red-500">{errors.occupation_id_card[0]}</p>
                         )}
                     </div>
-                    <div className="p-2">
-                        <Label htmlFor="id_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
+                    <div className="p-2 col-span-4 sm:col-span-4">
+
+                        <Label htmlFor="occupation_id_card_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
                         <Input
-                            id="id_number"
-                            name="id_number"
+                            id="occupation_id_card_number"
+                            name="occupation_id_card_number"
                             type="text"
                             placeholder="Enter your ID Number"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            onChange={(e) => updateCapturedData("cfw", 'occupation_id_card_number', e.target.value, 4)}
                         />
-                        {errors?.id_number && (
-                            <p className="mt-2 text-sm text-red-500">{errors.id_number[0]}</p>
+                        {errors?.occupation_id_card_number && (
+                            <p className="mt-2 text-sm text-red-500">{errors.occupation_id_card_number[0]}</p>
                         )}
                     </div>
 
 
 
-                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
+                    <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${selectedModalityId === 25 ? "" : "hidden"}  `}>
                         <div className="p-2">
                             <Label htmlFor="is_lgu_official" className="block text-sm font-medium">Is LGU Official</Label>
                             <div className="mt-1">
@@ -118,35 +149,35 @@ export default function Occupation({ errors }: ErrorProps) {
                             )}
                         </div>
                         <div className="p-2">
-                            <Label htmlFor="is_bdrrmc" className="block text-sm font-medium">Is BDRRMC/BDC-TWG</Label>
+                            <Label htmlFor="is_bdrrmc_bdc_twg" className="block text-sm font-medium">Is BDRRMC/BDC-TWG</Label>
                             <div className="mt-1">
                                 <label className="inline-flex items-center">
-                                    <input type="radio" name="is_bdrrmc" value="yes" className="form-radio" />
+                                    <input type="radio" name="is_bdrrmc_bdc_twg" value="yes" className="form-radio" />
                                     <span className="ml-2">Yes</span>
                                 </label>
                                 <label className="inline-flex items-center ml-6">
-                                    <input type="radio" name="is_bdrrmc" value="no" className="form-radio" />
+                                    <input type="radio" name="is_bdrrmc_bdc_twg" value="no" className="form-radio" />
                                     <span className="ml-2">No</span>
                                 </label>
                             </div>
-                            {errors?.is_bdrrmc && (
-                                <p className="mt-2 text-sm text-red-500">{errors.is_bdrrmc[0]}</p>
+                            {errors?.is_bdrrmc_bdc_twg && (
+                                <p className="mt-2 text-sm text-red-500">{errors.is_bdrrmc_bdc_twg[0]}</p>
                             )}
                         </div>
                         <div className="p-2">
-                            <Label htmlFor="is_expanded_bdrrmc" className="block text-sm font-medium">Is BDRRMC/EXPANDED BDRRMC?</Label>
+                            <Label htmlFor="is_bdrrmc_expanded_bdrrmc" className="block text-sm font-medium">Is BDRRMC/EXPANDED BDRRMC?</Label>
                             <div className="mt-1">
                                 <label className="inline-flex items-center">
-                                    <input type="radio" name="is_expanded_bdrrmc" value="yes" className="form-radio" />
+                                    <input type="radio" name="is_bdrrmc_expanded_bdrrmc" value="yes" className="form-radio" />
                                     <span className="ml-2">Yes</span>
                                 </label>
                                 <label className="inline-flex items-center ml-6">
-                                    <input type="radio" name="is_expanded_bdrrmc" value="no" className="form-radio" />
+                                    <input type="radio" name="is_bdrrmc_expanded_bdrrmc" value="no" className="form-radio" />
                                     <span className="ml-2">No</span>
                                 </label>
                             </div>
-                            {errors?.is_expanded_bdrrmc && (
-                                <p className="mt-2 text-sm text-red-500">{errors.is_expanded_bdrrmc[0]}</p>
+                            {errors?.is_bdrrmc_expanded_bdrrmc && (
+                                <p className="mt-2 text-sm text-red-500">{errors.is_bdrrmc_expanded_bdrrmc[0]}</p>
                             )}
                         </div>
                         <div className="p-2">

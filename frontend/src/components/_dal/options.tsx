@@ -2,13 +2,18 @@
 
 import { db } from "@/db";
 import { LibraryOption } from "../interfaces/library-interface";
-import { lib_civil_status, lib_sex } from "@/db/schema/libraries";
-import { eq } from "drizzle-orm";
+import { modules, permissions, roles } from "@/db/schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level } from "@/db/schema/libraries";
+import { and, eq } from "drizzle-orm";
 import { cache } from "react";
 
-const getLibraryOptions = (library: any, descriptionField: string): () => Promise<LibraryOption[]> => {
+const getLibraryOptions = (library: any, descriptionField: string, additionalCondition?: any): () => Promise<LibraryOption[]> => {
     return cache(async () => {
-        const results = await db.select().from(library).where(eq(library.is_deleted, false)).execute();
+        const whereCondition = additionalCondition 
+            ? and(eq(library.is_deleted, false), additionalCondition) 
+            : eq(library.is_deleted, false);
+
+        const results = await db.select().from(library).where(whereCondition).execute();
         return results.map((row: any) => ({
             id: row.id,
             name: row[descriptionField],
@@ -18,3 +23,27 @@ const getLibraryOptions = (library: any, descriptionField: string): () => Promis
 
 export const getSexLibraryOptions = getLibraryOptions(lib_sex, 'sex_description');
 export const getCivilStatusLibraryOptions = getLibraryOptions(lib_civil_status, 'civil_status_description');
+export const getRoleLibraryOptions = getLibraryOptions(roles, "role_description");
+export const getModuleLibraryOptions = getLibraryOptions(modules, 'module_description');
+export const getPermissionLibraryOptions = getLibraryOptions(permissions, 'permission_description');
+export const getModalityLibraryOptions = getLibraryOptions(lib_modality, 'modality_name', eq(lib_modality.is_active, true));
+export const getExtensionNameLibraryOptions = getLibraryOptions(lib_extension_name, 'extension_name');
+export const getCFWCatLibraryOptions = getLibraryOptions(lib_cfw_category, 'category_name');
+export const getEducationalAttainmentLibraryOptions = getLibraryOptions(lib_educational_attainment, 'educational_attainment_description');
+export const getIDCardLibraryOptions = getLibraryOptions(lib_id_card, 'id_card_name');
+export const getRelationshipToBeneficiaryLibraryOptions = getLibraryOptions(lib_relationship_to_beneficiary, 'relationship_name');
+export const getRelationshipWithGuardianLibraryOptions = getLibraryOptions(lib_relationship_to_beneficiary, 'relationship_name');
+export const getTypeOfDisabilityLibraryOptions = getLibraryOptions(lib_type_of_disability, 'disability_name');
+export const getFundSourceLibraryOptions = getLibraryOptions(lib_fund_source, 'fund_source_description');
+export const getCycleLibraryOptions = getLibraryOptions(lib_cycle, 'cycle_description');
+export const getModeLibraryOptions = getLibraryOptions(lib_mode, 'mode_description');
+export const getVolunteerCommitteLibraryOptions = getLibraryOptions(lib_volunteer_committee, 'name');
+export const getVolunteerCommittePositionLibraryOptions = getLibraryOptions(lib_volunteer_committee_position, 'name');
+export const getCFWTypeLibraryOptions = getLibraryOptions(lib_cfw_type, 'cfw_type_name');
+export const getRelationshipToFamilyMemberTypeLibraryOptions = getLibraryOptions(lib_relationship_to_beneficiary, 'relationship_name');
+export const getYearLevelLibraryOptions = getLibraryOptions(lib_year_level, 'year_level_name');
+export const getCourseLibraryOptions = getLibraryOptions(lib_course, 'course_name');
+export const getDeploymentAreaLibraryOptions = getLibraryOptions(lib_deployment_area, 'deployment_name');
+export const getTypeOfWorkLibraryOptions = getLibraryOptions(lib_type_of_work, 'work_name');
+export const getProvinceLibraryOptions = getLibraryOptions(lib_province, 'prov_name');
+export const getModalitySubCategoryLibraryOptions = getLibraryOptions(lib_modality_sub_category, 'modality_sub_category_name');
