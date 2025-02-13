@@ -129,11 +129,11 @@ export default async function RootLayout({
                 {children}
               </main>
               <Toaster />
-              <ServiceWorker/>
             </SidebarProvider>
           ): (
             <LoginPage/>
         )}
+        <ServiceWorker/>
       </body>
     </html>
   );
