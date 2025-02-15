@@ -1,6 +1,7 @@
 import { createClient } from '@libsql/client';
 import { drizzle } from 'drizzle-orm/libsql';
-import fs from "fs";
+import  fs from "fs";
+
 import { seedLibrary } from './utils/migrate';
 
 const DB_FILE = process.env.LOCAL_DB_URL!;

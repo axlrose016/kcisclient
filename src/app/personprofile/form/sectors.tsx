@@ -1,14 +1,37 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormMultiDropDown } from "@/components/forms/form-multi-dropdown";
+import { LibraryOption } from "@/components/interfaces/library-interface";
+import { getTypeOfDisabilityLibraryOptions } from "@/components/_dal/options";
+import { FormDropDown } from "@/components/forms/form-dropdown";
 
 export default function SectorDetails({ errors }: ErrorProps) {
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
     const [selectedIP, setSelectedIP] = useState(""); //this is for showing and hiding group of IPs
-  
+    const [typeOfDisabilityOptions, setTypeOfDisabilityOptions] = useState<LibraryOption[]>([]);
+    const [selectedTypeOfDisability, setSelectedTypeOfDisability] = useState("");
+    const [selectedTypeOfDisabilityId, setSelectedTypeOfDisabilityId] = useState<number | null>(null);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const type_of_disability = await getTypeOfDisabilityLibraryOptions();
+                setTypeOfDisabilityOptions(type_of_disability);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleTypeOfDisabilityChange = (id: number) => {
+        console.log("Selected Type of Disability ID:", id);
+        setSelectedTypeOfDisabilityId(id);
+    };
     return (
         <>
             <div className="space-y-12">
@@ -68,7 +91,7 @@ export default function SectorDetails({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2 ">
-                        <Label htmlFor="children_youth_protection" className="block text-sm font-medium">Children and Youth in Need of Special Protection</Label>
+                        <Label htmlFor="children_and_youth_in_need_of_special_protection" className="block text-sm font-medium">Children and Youth in Need of Special Protection</Label>
                         <div className="mt-1">
                             <RadioGroup defaultValue="childrenYouthProtectionYes" className="flex gap-4">
                                 <div className="flex items-center">
@@ -81,8 +104,8 @@ export default function SectorDetails({ errors }: ErrorProps) {
                                 </div>
                             </RadioGroup>
                         </div>
-                        {errors?.children_youth_protection && (
-                            <p className="mt-2 text-sm text-red-500">{errors.children_youth_protection[0]}</p>
+                        {errors?.children_and_youth_in_need_of_special_protection && (
+                            <p className="mt-2 text-sm text-red-500">{errors.children_and_youth_in_need_of_special_protection[0]}</p>
                         )}
                     </div>
                     <div className="p-2 ">
@@ -122,7 +145,7 @@ export default function SectorDetails({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2">
-                        <Label htmlFor="family_heads" className="block text-sm font-medium">Family Heads in Need of Assistance</Label>
+                        <Label htmlFor="family_heads_in_need_of_assistance" className="block text-sm font-medium">Family Heads in Need of Assistance</Label>
                         <div className="mt-1">
                             <RadioGroup defaultValue="familyHeadsYes" className="flex gap-4">
                                 <div className="flex items-center">
@@ -135,8 +158,8 @@ export default function SectorDetails({ errors }: ErrorProps) {
                                 </div>
                             </RadioGroup>
                         </div>
-                        {errors?.family_heads && (
-                            <p className="mt-2 text-sm text-red-500">{errors.family_heads[0]}</p>
+                        {errors?.family_heads_in_need_of_assistance && (
+                            <p className="mt-2 text-sm text-red-500">{errors.family_heads_in_need_of_assistance[0]}</p>
                         )}
                     </div>
                     <div className="p-2">
@@ -176,10 +199,10 @@ export default function SectorDetails({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2">
-                        <Label htmlFor="indigenous_people" className="block text-sm font-medium">Indigenous People (IP)</Label>
+                        <Label htmlFor="ip" className="block text-sm font-medium">Indigenous People (IP)</Label>
                         <div className="mt-1">
-                            <RadioGroup defaultValue="ipYes" className="flex gap-4"                                                          
-                             onValueChange={(value) => setSelectedIP(value)}>
+                            <RadioGroup defaultValue="ipYes" className="flex gap-4"
+                                onValueChange={(value) => setSelectedIP(value)}>
                                 <div className="flex items-center">
                                     <RadioGroupItem value="Yes" id="ipYes" />
                                     <Label htmlFor="ipYes" className="ml-2">Yes</Label>
@@ -190,30 +213,30 @@ export default function SectorDetails({ errors }: ErrorProps) {
                                 </div>
                             </RadioGroup>
                         </div>
-                        {errors?.four_ps_beneficiary && (
-                            <p className="mt-2 text-sm text-red-500">{errors.four_ps_beneficiary[0]}</p>
+                        {errors?.ip && (
+                            <p className="mt-2 text-sm text-red-500">{errors.ip[0]}</p>
                         )}
                     </div>
                     {selectedIP === "Yes" && (
                         <div className="p-2  ">
-                            <Label htmlFor="groupofip" className="block text-sm font-medium">Group of IP</Label>
+                            <Label htmlFor="ip_group_id" className="block text-sm font-medium">Group of IP</Label>
                             <div className="mt-1">
                                 <FormMultiDropDown />
                             </div>
-                            {errors?.groupofip && (
-                                <p className="mt-2 text-sm text-red-500">{errors.groupofip[0]}</p>
+                            {errors?.ip_group_id && (
+                                <p className="mt-2 text-sm text-red-500">{errors.ip_group_id[0]}</p>
                             )}
                         </div>
                     )}
                     <div className="p-2">
                         <Label htmlFor="ngo" className="block text-sm font-medium">NGO</Label>
                         <div className="mt-1">
-                            <RadioGroup defaultValue="ngoNo" className="flex gap-4"> 
-                                <div className="flex items-center"> 
+                            <RadioGroup defaultValue="ngoNo" className="flex gap-4">
+                                <div className="flex items-center">
                                     <RadioGroupItem value="Yes" id="ngoYes" />
                                     <Label htmlFor="ngoYes" className="ml-2">Yes</Label>
                                 </div>
-                                <div className="flex items-center"> 
+                                <div className="flex items-center">
                                     <RadioGroupItem value="No" id="ngoNo" />
                                     <Label htmlFor="ngoNo" className="ml-2">No</Label>
                                 </div>
@@ -249,11 +272,11 @@ export default function SectorDetails({ errors }: ErrorProps) {
                                 className="flex gap-4"
                                 onValueChange={(value) => setSelectedPersonsWithDisability(value)}
                             >
-                                <div className="flex items-center"> 
+                                <div className="flex items-center">
                                     <RadioGroupItem value="Yes" id="personsWithDisabilityYes" />
                                     <Label htmlFor="personsWithDisabilityYes" className="ml-2">Yes</Label>
                                 </div>
-                                <div className="flex items-center"> 
+                                <div className="flex items-center">
                                     <RadioGroupItem value="No" id="personsWithDisabilityNo" />
                                     <Label htmlFor="personsWithDisabilityNo" className="ml-2">No</Label>
                                 </div>
@@ -265,19 +288,26 @@ export default function SectorDetails({ errors }: ErrorProps) {
                     </div>
                     {selectedPersonsWithDisability === "Yes" && (
                         <div className="p-2  ">
-                            <Label htmlFor="typeofdisability" className="block text-sm font-medium">Type of Disability</Label>
+                            <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
                             <div className="mt-1">
-                                <FormMultiDropDown />
+                                {/* <FormMultiDropDown /> */}
+
+                                <FormDropDown
+                                    id="type_of_disabilities"
+                                    options={typeOfDisabilityOptions}
+                                    selectedOption={selectedTypeOfDisabilityId}
+                                    onChange={handleTypeOfDisabilityChange}
+                                />
                             </div>
-                            {errors?.typeofdisability && (
-                                <p className="mt-2 text-sm text-red-500">{errors.typeofdisability[0]}</p>
+                            {errors?.type_of_disabilities && (
+                                <p className="mt-2 text-sm text-red-500">{errors.type_of_disabilities[0]}</p>
                             )}
                         </div>
                     )}
                     <div className="p-2">
                         <Label htmlFor="po" className="block text-sm font-medium">PO</Label>
                         <div className="mt-1">
-                            <RadioGroup defaultValue="poNo" className="flex gap-4"> 
+                            <RadioGroup defaultValue="poNo" className="flex gap-4">
                                 <div className="flex items-center">
                                     <RadioGroupItem value="Yes" id="poYes" />
                                     <Label htmlFor="poYes" className="ml-2">Yes</Label>
@@ -365,17 +395,71 @@ export default function SectorDetails({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2 col-span-2">
-                        <Label htmlFor="others" className="block text-sm font-medium">Others</Label>
+                        <Label htmlFor="others_sector" className="block text-sm font-medium">Others</Label>
                         <div className="mt-1">
-                            <Input id="others" placeholder="Please specify" />
+                            <Input id="others_sector" placeholder="Please specify" />
                         </div>
-                        {errors?.others && (
-                            <p className="mt-2 text-sm text-red-500">{errors.others[0]}</p>
+                        {errors?.others_sector && (
+                            <p className="mt-2 text-sm text-red-500">{errors.others_sector[0]}</p>
                         )}
                     </div>
+                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
+                        <div className="p-2">
+                            <Label htmlFor="is_pantawid" className="block text-sm font-medium">Is Pantawid</Label>
+                            <div className="mt-1">
+                                <label className="inline-flex items-center">
+                                    <input type="radio" name="is_pantawid" value="yes" className="form-radio" />
+                                    <span className="ml-2">Yes</span>
+                                </label>
+                                <label className="inline-flex items-center ml-6">
+                                    <input type="radio" name="is_pantawid" value="no" className="form-radio" />
+                                    <span className="ml-2">No</span>
+                                </label>
+                            </div>
+                            {errors?.is_pantawid && (
+                                <p className="mt-2 text-sm text-red-500">{errors.is_pantawid[0]}</p>
+                            )}
+                        </div>
+                    </div>
 
+                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
+                        <div className="p-2">
+                            <Label htmlFor="is_pantawid_leader" className="block text-sm font-medium">Is Pantawid Leader</Label>
+                            <div className="mt-1">
+                                <label className="inline-flex items-center">
+                                    <input type="radio" name="is_pantawid_leader" value="yes" className="form-radio" />
+                                    <span className="ml-2">Yes</span>
+                                </label>
+                                <label className="inline-flex items-center ml-6">
+                                    <input type="radio" name="is_pantawid_leader" value="no" className="form-radio" />
+                                    <span className="ml-2">No</span>
+                                </label>
+                            </div>
+                            {errors?.is_pantawid_leader && (
+                                <p className="mt-2 text-sm text-red-500">{errors.is_pantawid_leader[0]}</p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
+                        <div className="p-2">
+                            <Label htmlFor="is_slp" className="block text-sm font-medium">Is SLP</Label>
+                            <div className="mt-1">
+                                <label className="inline-flex items-center">
+                                    <input type="radio" name="is_slp" value="yes" className="form-radio" />
+                                    <span className="ml-2">Yes</span>
+                                </label>
+                                <label className="inline-flex items-center ml-6">
+                                    <input type="radio" name="is_slp" value="no" className="form-radio" />
+                                    <span className="ml-2">No</span>
+                                </label>
+                            </div>
+                            {errors?.is_slp && (
+                                <p className="mt-2 text-sm text-red-500">{errors.is_slp[0]}</p>
+                            )}
+                        </div>
+                    </div>
                 </div>
-
             </div >
 
 

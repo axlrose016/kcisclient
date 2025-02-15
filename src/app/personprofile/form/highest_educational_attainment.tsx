@@ -3,11 +3,47 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { getCourseLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
 export default function HighestEducationalAttainment({ errors }: ErrorProps) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
+
+    const [courseOptions, setCourseOptions] = useState<LibraryOption[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState("");
+    const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+
+    const [YearLevelOptions, setYearLevelOptions] = useState<LibraryOption[]>([]);
+    const [selectedYearLevel, setSelectedYearLevel] = useState("");
+    const [selectedYearLevelId, setSelectedYearLevelId] = useState<number | null>(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const course = await getCourseLibraryOptions();
+                setCourseOptions(course);
+
+                const year_level = await getYearLevelLibraryOptions();
+                setYearLevelOptions(year_level);
+
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleCourseChange = (id: number) => {
+        console.log("Selected Course ID:", id);
+        setSelectedCourseId(id);
+    };
+    const handleYearLevelChange = (id: number) => {
+        console.log("Selected Year Level ID:", id);
+        setSelectedYearLevelId(id);
+    };
     return (
         <>
             <div  >
@@ -38,7 +74,7 @@ export default function HighestEducationalAttainment({ errors }: ErrorProps) {
                             <p className="mt-2 text-sm text-red-500">{errors.campus[0]}</p>
                         )}
                     </div>
-                    <div className="p-2 col-span-3">
+                    <div className="p-2 col-span-4">
                         <Label htmlFor="school_address" className="block text-sm font-medium">School Address</Label>
                         <Textarea
                             id="school_address"
@@ -52,13 +88,15 @@ export default function HighestEducationalAttainment({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2 col-span-4">
-                        <Label htmlFor="course" className="block text-sm font-medium">Course</Label>
+                        <Label htmlFor="course_id" className="block text-sm font-medium">Course</Label>
                         <FormDropDown
-                            options={relationOptions}
-                            selectedOption={selectedRelation}
+                            id="course_id"
+                            options={courseOptions}
+                            selectedOption={selectedCourseId}
+                            onChange={handleCourseChange}
                         />
-                        {errors?.course && (
-                            <p className="mt-2 text-sm text-red-500">{errors.course[0]}</p>
+                        {errors?.course_id && (
+                            <p className="mt-2 text-sm text-red-500">{errors.course_id[0]}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -66,7 +104,7 @@ export default function HighestEducationalAttainment({ errors }: ErrorProps) {
                         <Input
                             id="year_graduated"
                             name="year_graduated"
-                            type="text"
+                            type="number"
                             placeholder="Enter Year Graduated"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
@@ -75,16 +113,15 @@ export default function HighestEducationalAttainment({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2">
-                        <Label htmlFor="year_level" className="block text-sm font-medium">Year Level (if student)</Label>
-                        <Input
-                            id="year_level"
-                            name="year_level"
-                            type="text"
-                            placeholder="Enter Year Level"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        <Label htmlFor="year_level_id" className="block text-sm font-medium">Year Level (if student)</Label>
+                        <FormDropDown
+                            id="year_level_id"
+                            options={YearLevelOptions}
+                            selectedOption={selectedYearLevelId}
+                            onChange={handleYearLevelChange}
                         />
-                        {errors?.year_level && (
-                            <p className="mt-2 text-sm text-red-500">{errors.year_level[0]}</p>
+                        {errors?.year_level_id && (
+                            <p className="mt-2 text-sm text-red-500">{errors.year_level_id[0]}</p>
                         )}
                     </div>
                 </div>

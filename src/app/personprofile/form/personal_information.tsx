@@ -3,151 +3,164 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { PhilSysInput } from "@/components/ui/philsys_mask";
+import { getCFWCatLibraryOptions } from "@/components/_dal/options";
+export default function Details({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+    // debugger;
+    const [selectedHealthConcern, setSelectedHealthConcern] = useState("");
 
-export default function Details({ errors }: ErrorProps) {
-    const [cfwOptions, setCfwOptions] = useState<LibraryOption[]>([]);
-    const [selectedCfwCategory, setSelectedCfwCategory] = useState("");
+
+    const [cfwCatOptions, setCfwCatOptions] = useState<LibraryOption[]>([]);
+    const [selectedCFWCat, setSelectedCFWCat] = useState("");
+    const [selectedCFWCatId, setSelectedCFWCatId] = useState<number | null>(null);
+
+    const [form_Data, setForm_Data] = useState([]);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const CFWCat = await getCFWCatLibraryOptions();
+                setCfwCatOptions(CFWCat);
+
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleCFWCatChange = (id: number) => {
+        console.log("Selected Province ID:", id);
+        setSelectedCFWCatId(id);
+    };
+
+    const handleHealthConcernChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value;
+        setSelectedHealthConcern(value);
+
+        if (value === "no") {
+            updateCapturedData("cfw", "has_immediate_health_concern", 0);
+            // updateCapturedData("cfw", "immediate_health_concern_details", ""); // Clear health concern details
+            updateCapturedData("cfw", "has_immediate_health_concern", 0, 4);
+        } else {
+            // updateCapturedData("cfw", "has_immediate_health_concern", 1);
+            // Updating cfw at index 4
+            updateCapturedData("cfw", "has_immediate_health_concern", 1, 4);
+        }
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setForm_Data((prevData) => {
+            const updatedData = { ...prevData, [name]: value };
+            localStorage.setItem('formData', JSON.stringify(updatedData)); // Save to localStorage
+            return updatedData;
+        });
+    };
+
+
+
     return (
         <>
             <div className="">
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="philsysno" className="block text-sm font-medium">PhilSys ID Number</Label>
-                        <Input
-                            id="philsysno"
-                            name="philsysno"
-                            type="text"
-                            placeholder="Enter your PhilSys ID Number"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                        {errors?.philsysno && (
-                            <p className="mt-2 text-sm text-red-500">{errors.philsysno[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2 col-span-3">
-                        <Label htmlFor="cfw_category" className="block text-sm font-medium mb-[5px]">CFW Category</Label>
-                        <FormDropDown
-                            options={cfwOptions}
-                            selectedOption={selectedCfwCategory}
 
+
+                    {/* admin-side to */}
+                    {/* <div className="p-2 col-span-3">
+                        <Label htmlFor="cwf_category_id" className="block text-sm font-medium mb-[5px]">CFW Category</Label>
+                        <FormDropDown
+                        // onBlur={handleBlur}
+                            id="cwf_category_id"
+                            options={cfwCatOptions}
+                            selectedOption={selectedCFWCatId}
+                            onChange={handleCFWCatChange}
                         />
-                        {errors?.cfw_category && (
-                            <p className="mt-2 text-sm text-red-500">{errors.cfw_category[0]}</p>
+                        {errors?.cwf_category_id && (
+                            <p className="mt-2 text-sm text-red-500">{errors.cwf_category_id}</p>
                         )}
-                    </div >
+                    </div > */}
 
                 </div>
+                <div className="p-2 col-span-1">
+                    <Label htmlFor="has_immediate_health_concern" className="block text-sm font-medium">Do you have any immediate health concerns that you think may affect your work?</Label>
+                    <div className="mt-2">
+                        <div className="flex items-center">
+                            <input
+                                id="has_immediate_health_concern_yes"
+                                name="has_immediate_health_concern"
+                                type="radio"
+                                value="yes"
+                                className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                onChange={handleHealthConcernChange}
 
+
+                            />
+                            <Label htmlFor="health_concerns_yes" className="ml-3 block text-sm font-medium text-gray-700">
+                                Yes
+                            </Label>
+                        </div>
+                        <div className="flex items-center mt-2">
+                            <input
+                                id="has_immediate_health_concern_no"
+                                name="has_immediate_health_concern"
+                                type="radio"
+                                value="no"
+                                className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                onChange={handleHealthConcernChange}
+                            // onChange={(e) => updateCapturedData("common_data", "has_immediate_health_concern", e.target.value)}
+                            />
+                            <Label htmlFor="health_concerns_no" className="ml-3 block text-sm font-medium text-gray-700">
+                                No
+                            </Label>
+                        </div>
+                    </div>
+                    {errors?.has_immediate_health_concern && (
+                        <p className="mt-2 text-sm text-red-500">{errors.has_immediate_health_concern}</p>
+                    )}
+                </div>
                 <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
                     <div className="p-2">
-                        <Label htmlFor="health_condition" className="block text-sm font-medium mb-[5px]">Health Condition</Label>
+                        <Label htmlFor="immediate_health_concern" className="block text-sm font-medium mb-[5px]">Health Condition</Label>
                         <Textarea
-                            id="health_condition"
-                            name="health_condition"
+                            id="immediate_health_concern"
+                            name="immediate_health_concern"
                             placeholder="Enter your Health Condition"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            onChange={(e) => updateCapturedData("cfw", 'immediate_health_concern', e.target.value, 4)}
+                            disabled={selectedHealthConcern !== "yes"}
                         />
 
-                        {errors?.health_condition && (
-                            <p className="mt-2 text-sm text-red-500">{errors.health_condition[0]}</p>
+                        {errors?.immediate_health_concern && (
+                            <p className="mt-2 text-sm text-red-500">{errors.immediate_health_concern}</p>
                         )}
                     </div>
                 </div>
-                <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
+                <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2 ${selectedModalityId === 25 ? "" : "hidden"}`}>
                     <div className="p-2">
-                        <Label htmlFor="number_of_children" className="block text-sm font-medium">Number of Children</Label>
+                        <Label htmlFor="no_of_children" className="block text-sm font-medium">Number of Children</Label>
                         <Input
-                            id="number_of_children"
-                            name="number_of_children"
+                            id="no_of_children"
+                            name="no_of_children"
                             type="number"
                             placeholder="Enter the number of children"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.number_of_children && (
-                            <p className="mt-2 text-sm text-red-500">{errors.number_of_children[0]}</p>
-                        )}
-                    </div>
-                </div>
-                <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="indigenous_group" className="block text-sm font-medium">Member of an Indigenous Group</Label>
-                        <div className="mt-1">
-                            <label className="inline-flex items-center">
-                                <input type="radio" name="indigenous_group" value="yes" className="form-radio" />
-                                <span className="ml-2">Yes</span>
-                            </label>
-                            <label className="inline-flex items-center ml-6">
-                                <input type="radio" name="indigenous_group" value="no" className="form-radio" />
-                                <span className="ml-2">No</span>
-                            </label>
-                        </div>
-                        {errors?.indigenous_group && (
-                            <p className="mt-2 text-sm text-red-500">{errors.indigenous_group[0]}</p>
+                        {errors?.no_of_children && (
+                            <p className="mt-2 text-sm text-red-500">{errors.no_of_children}</p>
                         )}
                     </div>
                 </div>
 
-                <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="is_pantawid" className="block text-sm font-medium">Is Pantawid</Label>
-                        <div className="mt-1">
-                            <label className="inline-flex items-center">
-                                <input type="radio" name="is_pantawid" value="yes" className="form-radio" />
-                                <span className="ml-2">Yes</span>
-                            </label>
-                            <label className="inline-flex items-center ml-6">
-                                <input type="radio" name="is_pantawid" value="no" className="form-radio" />
-                                <span className="ml-2">No</span>
-                            </label>
-                        </div>
-                        {errors?.is_pantawid && (
-                            <p className="mt-2 text-sm text-red-500">{errors.is_pantawid[0]}</p>
-                        )}
-                    </div>
-                </div>
 
-                <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="is_pantawid_leader" className="block text-sm font-medium">Is Pantawid Leader</Label>
-                        <div className="mt-1">
-                            <label className="inline-flex items-center">
-                                <input type="radio" name="is_pantawid_leader" value="yes" className="form-radio" />
-                                <span className="ml-2">Yes</span>
-                            </label>
-                            <label className="inline-flex items-center ml-6">
-                                <input type="radio" name="is_pantawid_leader" value="no" className="form-radio" />
-                                <span className="ml-2">No</span>
-                            </label>
-                        </div>
-                        {errors?.is_pantawid_leader && (
-                            <p className="mt-2 text-sm text-red-500">{errors.is_pantawid_leader[0]}</p>
-                        )}
-                    </div>
-                </div>
 
-                <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="is_slp" className="block text-sm font-medium">Is SLP</Label>
-                        <div className="mt-1">
-                            <label className="inline-flex items-center">
-                                <input type="radio" name="is_slp" value="yes" className="form-radio" />
-                                <span className="ml-2">Yes</span>
-                            </label>
-                            <label className="inline-flex items-center ml-6">
-                                <input type="radio" name="is_slp" value="no" className="form-radio" />
-                                <span className="ml-2">No</span>
-                            </label>
-                        </div>
-                        {errors?.is_slp && (
-                            <p className="mt-2 text-sm text-red-500">{errors.is_slp[0]}</p>
-                        )}
-                    </div>
-                </div>
             </div >
 
 
         </>
     )
 }
+

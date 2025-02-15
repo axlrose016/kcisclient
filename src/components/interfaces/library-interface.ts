@@ -1,12 +1,13 @@
 export interface LibraryOption{
-  id: number,
+  id: any,
   name: string
 }
 
 export interface LibraryOptions{
   options: LibraryOption[],
   selectedOption: string,
-  label?:string
+  label?:string,
+  onChange?: (selectedValue: string) => void;
 }
 
 export interface IRoles{
@@ -21,15 +22,3 @@ export interface IPermissions{
   permission_description: string
 }
 
-export interface IUserData{
-  name?: string,
-  email?: string,
-  photo?: string,
-  userAccess?: IUserAccess[]
-}
-
-export interface IUserAccess{
-  role?: string,
-  module?: string,
-  permission?: string
-}

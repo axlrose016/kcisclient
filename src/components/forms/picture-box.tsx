@@ -46,6 +46,7 @@ export function PictureBox() {
       </CardContent>
       <CardFooter className="flex justify-between">
         <Input
+          id="profile_pic"
           type="file"
           accept="image/*"
           className="hidden"

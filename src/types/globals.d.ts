@@ -1,4 +1,4 @@
-import { IUserData } from "@/components/interfaces/library-interface";
+import { IUserData } from "@/components/interfaces/iuser";
 
 export {}
 

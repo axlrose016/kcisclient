@@ -1,7 +1,6 @@
 "use client"
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { onSubmit } from "./action";
 import { Label } from "@/components/ui/label";
 import Details from "./details";
@@ -10,8 +9,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast, useToast } from "@/hooks/use-toast";
 import { PictureBox } from "@/components/forms/picture-box";
 import { Input } from "@/components/ui/input";
-import { ButtonSubmit } from "@/components/actions/button-submit";
-import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useFormStatus } from "react-dom";
 import { FormDropDown } from "@/components/forms/form-dropdown";
@@ -82,6 +79,10 @@ export default function SubProjectForm(){
         setErrors(result.errors || {})
       }
     }
+
+    const handleRoleChange = (id: any) => {
+          console.log("Updated User: ")
+      }
     return (
       <Card className="w-full">
         <CardHeader>
@@ -101,10 +102,12 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Region ..."
+                      onChange={handleRoleChange}
+
                     />
-                    {errors?.first_name && (
+                    {/* {errors?.first_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.first_name[0]}</p>
-                    )}
+                    )} */}
                   </div>
                   <div className="p-2">
                     <Label htmlFor="first_name" className="block text-sm font-medium">Province</Label>
@@ -112,10 +115,11 @@ export default function SubProjectForm(){
                         options={regionOptions}
                         selectedOption={selectedRegion}
                         label="Select Province ..."
+                        onChange={handleRoleChange}
                       />
-                    {errors?.middle_name && (
+                    {/* {errors?.middle_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.middle_name[0]}</p>
-                    )}
+                    )} */}
                   </div>
                   <div className="p-2">
                     <Label htmlFor="first_name" className="block text-sm font-medium">Municipality</Label>
@@ -123,10 +127,12 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Municipality ..."
+                      onChange={handleRoleChange}
+
                     />
-                    {errors?.last_name && (
+                    {/* {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>
-                    )}
+                    )} */}
                   </div>
                   <div className="p-2">
                     <Label htmlFor="first_name" className="block text-sm font-medium">Barangay</Label>
@@ -134,10 +140,12 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Barangay ..."
+                      onChange={handleRoleChange}
+
                     />
-                    {errors?.last_name && (
+                    {/* {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>
-                    )}
+                    )} */}
                   </div>
                   <div className="p-2">
                     <Label htmlFor="first_name" className="block text-sm font-medium">Sitio</Label>
@@ -149,6 +157,7 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Project Type ..."
+                      onChange={handleRoleChange}
                     />
                     {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>
@@ -176,6 +185,7 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Project Type ..."
+                      onChange={handleRoleChange}
                     />
                     {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>
@@ -187,6 +197,7 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Project Type ..."
+                      onChange={handleRoleChange}
                     />
                     {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>
@@ -198,6 +209,7 @@ export default function SubProjectForm(){
                       options={regionOptions}
                       selectedOption={selectedRegion}
                       label="Select Project Type ..."
+                      onChange={handleRoleChange}
                     />
                     {errors?.last_name && (
                       <p className="mt-2 text-sm text-red-500">{errors.last_name[0]}</p>

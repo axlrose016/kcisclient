@@ -22,13 +22,14 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { Team } from "./types"
-import { IUserAccess } from "./interfaces/library-interface"
+import { SessionPayload } from "@/types/globals"
 
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
+    name: "",
+    email: "",
     avatar: "/avatars/shadcn.jpg",
+    role:""
   },
   teams: [
     {
@@ -59,7 +60,8 @@ const data = {
       items:[
         {
           title:"Masterlist",
-          url:"/subproject/geotagging"
+          url:"/subproject/geotagging",
+          permission:["Can View","Can Delete"]
         }
       ],
       modules: ["Sub-Project"],
@@ -71,7 +73,8 @@ const data = {
       items: [
         {
           title: "Masterlist",
-          url:"/subproject/tasks"
+          url:"/subproject/tasks",
+          permission:["Can Add","Can View","Can Delete"]
         }
       ],
       modules: ["Sub-Project"],
@@ -84,14 +87,17 @@ const data = {
         {
           title: "Roles",
           url:"/settings/libraries/roles",
+          permission:["Can Add","Can View","Can Delete"]
         },
         {
           title: "Permissions",
           url:"/settings/libraries/permissions",
+          permission:["Can Add","Can View","Can Delete"]
         },
         {
           title: "Modules",
-          url:"/settings/libraries/modules"
+          url:"/settings/libraries/modules",
+          permission:["Can Add","Can View","Can Delete"]
         }
       ],
       modules:["Settings"],
@@ -103,7 +109,8 @@ const data = {
       items:[
         {
           title: "Masterlist",
-          url:"/settings/users"
+          url:"/settings/users",
+          permission:["Can Add","Can View","Can Delete"]
         }
       ],
       modules:["Settings"],
@@ -116,15 +123,18 @@ const data = {
       items:[
         {
           title: "My Profile",
-          url:"/personprofile/form"
+          url:"/personprofile/form",
+          permission:["Can Add","Can View","Can Delete"]
         },
         {
           title: "Masterlist",
-          url:"/personprofile/masterlist"
+          url:"/personprofile/masterlist",
+          permission:["Can View","Can Delete"]
         },
         {
           title: "DTR",
-          url:"#"
+          url:"#",
+          permission:["Can Add","Can View","Can Delete"]
         }
       ],
       modules: ["Person Profile"],
@@ -138,67 +148,96 @@ const data = {
     },
   ],
 }
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [activeTeam, setActiveTeam] = React.useState<Team>(data.teams[0]);
   const [filteredTeam, setFilteredTeam] = React.useState<Team[]>([]);
   const [filteredNavMain, setFilteredNavMain] = React.useState(data.navMain);
-  const [session, setSession] = React.useState(null);
+  const [filteredSub, setFilteredSub] = React.useState(data.navMain)
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [user, setUser] = React.useState(data.user);
 
-  // React.useEffect(() => {
-  //   async function loadUserData() {
-  //     const response = await fetch("/api/session", { cache: "no-store" });
-  //     if (!response.ok) {
-  //       console.error("Failed to fetch session data");
-  //       return;
-  //     }
-  //     const sessionData = await response.json();
-  //     setSession(sessionData);
+  React.useEffect(() => {
+    async function loadUserData() {
+      setIsLoading(true);
+      const response = await fetch("/api/session", { cache: "no-store" });
+      if (!response.ok) {
+        console.error("Failed to fetch session data");
+        return;
+      }
+      const session = (await response.json()) as SessionPayload;
+      user.email = session.userData[0].email!;
+      user.name = session.userData[0].name!;
+      user.role = session.userData[0].role!;
+      const userTeams = session.userData[0].userAccess; 
+      
+      const navTeam = data.teams.filter((team) =>
+        userTeams?.some(t => team.name === t.module) // Ensure we return the comparison result
+      );
 
-  //     const userPermissions = sessionData.useraccess; // Assume session contains permissions
+      // Filter para sa module
+      const navMain = data.navMain.filter(
+        (nav) =>
+          nav.modules.includes(activeTeam.name) // Filter based on active team
+      );  
 
-  //     // Filter navigation items based on user access and permissions
-  //     const navMain = data.navMain.filter(
-  //       (nav) =>
-  //         nav.modules.includes(activeTeam.name) // Filter based on active team
-  //     );  
+      const filteredSubModule = data.navMain.filter(item => 
+        item.modules.includes(activeTeam.name)
+      );
 
-  //     const navTeam = data.teams.filter((team) =>
-  //       userPermissions.some((permission: IUserAccess) =>
-  //         permission.module ? team.name.includes(permission.module) : false
-  //       )
-  //     );
+      debugger;
 
-  //     setFilteredTeam(navTeam);
-  //     setActiveTeam(navTeam[0]);
-  //     setFilteredNavMain(navMain);
-  //   }
+      const filteredChildModule = filteredSubModule
+      .map(module => ({
+        ...module,
+        items: module.items?.filter(permissions => 
+          userTeams?.some(access => 
+            access.permission && permissions.permission.includes(access.permission)
+          )
+        )
+      }))
+      .filter(module => module.items && module.items.length > 0);
 
-  //   loadUserData();
-  // }, [activeTeam]);
+      setFilteredTeam(data.teams);
+      setActiveTeam(navTeam[0]);
+      setFilteredNavMain(navMain);
+      //setFilteredSub(filteredChildModule)
+      setIsLoading(false);
+      setUser(user);
+    }
 
-  const filteredSubModule = data.navMain.filter(item => 
-    item.modules.includes(activeTeam.name) // Filter based on active team
-  );
+    loadUserData();
+
+  }, [activeTeam]);
+
+ 
 
   return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-      <TeamSwitcher
-        teams={data.teams}
-        activeTeam={activeTeam}
-        onChange={setActiveTeam}
-      />   
-      </SidebarHeader>
-      <SidebarContent>
-        {/* <p>Active Team: {JSON.stringify(team)}</p> */}
-        <NavMain items={filteredSubModule} />
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
+    <>
+      {!isLoading ? (
+        <Sidebar collapsible="icon" {...props}>
+          <SidebarHeader>
+            <TeamSwitcher
+              teams={filteredTeam}
+              activeTeam={activeTeam}
+              onChange={setActiveTeam}
+            />
+          </SidebarHeader>
+          <SidebarContent>
+            {/* <p>Active Team: {JSON.stringify(team)}</p> */}
+            <NavMain items={filteredSub} />
+            <NavProjects projects={data.projects} />
+          </SidebarContent>
+          <SidebarFooter>
+            <NavUser user={data.user} />
+          </SidebarFooter>
+          <SidebarRail />
+        </Sidebar>
+      ) :
+      (
+        <Sidebar collapsible="icon" {...props}>
+          <h1>Loading Please Wait!!</h1>
+        </Sidebar>
+      )}
+    </>
   )
 }

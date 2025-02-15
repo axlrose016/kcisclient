@@ -1,24 +1,6 @@
 {
     "name": "PWA App",
-    "short_name": "App",
-    "icons": [
-      {
-        "src": "/icons/android-chrome-192x192.png",
-        "sizes": "192x192",
-        "type": "image/png",
-        "purpose": "any maskable"
-      },
-      {
-        "src": "/icons/android-chrome-384x384.png",
-        "sizes": "384x384",
-        "type": "image/png"
-      },
-      {
-        "src": "/icons/icon-512x512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ],
+    "short_name": "KCIS Mobile",
     "theme_color": "#FFFFFF",
     "background_color": "#FFFFFF",
     "start_url": "/",
@@ -473,5 +455,32 @@
         "src": "ios/1024.png",
         "sizes": "1024x1024"
         }
-    ]
-  }
+    ],
+    "screenshots": [
+    {
+      "src": "/screenshots/desktop-screenshot-1.png",
+      "sizes": "1024x768",
+      "type": "image/png",
+      "form_factor":"wide"
+    },
+    {
+      "src": "/screenshots/desktop-screenshot-2.png", 
+      "sizes": "1280x800",
+      "type": "image/png"
+    }
+    ],
+    "form_factors": [
+      {
+        "label": "Laptop",
+        "width": 1366,
+        "height": 768
+      },
+      {
+        "label": "Desktop",
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "scope": "/",
+    "lang": "en-US"
+}

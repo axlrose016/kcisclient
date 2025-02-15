@@ -1,13 +1,15 @@
 "use server";
-import { db } from "@/db";
 import { useraccess, users } from "@/db/schema/users";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { createSession } from "@/lib/sessions";
 import { redirect } from "next/navigation";
-import { fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
-import { IModules, IPermissions, IRoles, IUserAccess, IUserData } from "@/components/interfaces/library-interface";
+import { fetchModules, fetchOfflineModules, fetchOfflinePermissions, fetchOfflineRoles, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
+import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { IUser, IUserData } from "@/components/interfaces/iuser";
+import UsersOfflineService from "@/db/offline/Pouch/users-service";
+import { db } from "@/db";
 
 
 const formSchema = z.object({
@@ -23,8 +25,10 @@ const formSchema = z.object({
     .min(8, { message: "Password must be at least 8 characters" })
     .trim(),
 });
-
+ 
 export async function submit(prevState: any, formData: FormData) {
+ // const { users, fetchUsers, addUser } = UsersOfflineService();
+
   const formObject = Object.fromEntries(formData.entries());
 
   const result = formSchema.safeParse(formObject);
@@ -40,13 +44,13 @@ export async function submit(prevState: any, formData: FormData) {
     
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    
-    const _roles = await fetchRoles();
-    const _modules = await fetchModules();
-    const _permission = await fetchPermissions();
+    const _roles = await fetchOfflineRoles();
+    const _modules = await fetchOfflineModules();
+    const _permission = await fetchOfflinePermissions();
     const defaultRole = _roles.filter((w:IRoles) => w.role_description.includes("Guest"))
     const defaultModule = _modules.filter((w:IModules) => w.module_description.includes("Person Profile"))
     const defaultPermission = _permission.filter((w:IPermissions) => w.permission_description.includes("Can Add"))
+
 
     await db.transaction(async (trx) => {
 
@@ -54,6 +58,7 @@ export async function submit(prevState: any, formData: FormData) {
       .insert(users)
       .values({
         id,
+        role_id: defaultRole[0].id,
         username,email,password: hashedPassword, 
         created_by:id
       })
@@ -67,7 +72,6 @@ export async function submit(prevState: any, formData: FormData) {
       .values({
         id: access_id,
         user_id: user.id,
-        role_id: defaultRole[0].id,
         module_id: defaultModule[0].id,
         permission_id:defaultPermission[0].id,
         created_by:user.id,
@@ -75,17 +79,18 @@ export async function submit(prevState: any, formData: FormData) {
   
       const role = defaultRole[0].role_description ?? "Guest";
       const permission: IUserData[] = [{
-        name: "Axl",
-        email:"argvillanueva@dswd.gov.ph",
+        name: username,
+        email:email,
         photo:"",
+        role: role,
         userAccess:[{
-          role: role,
           module: defaultModule[0].module_description,
+          module_path: defaultModule[0].module_path,
           permission: defaultPermission[0].permission_description
         }]
       }]
       
-      await createSession(user.id, role,permission);
+      await createSession(user.id,permission);
     });
     
     redirect('/');

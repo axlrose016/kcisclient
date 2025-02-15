@@ -26,29 +26,29 @@ export default function KCTrainings({ errors }: ErrorProps) {
                         )}
                     </div>
                     <div className="p-2 sm:col-span-1">
-                        <Label htmlFor="date_start" className="block text-sm font-medium">Date Start</Label>
+                        <Label htmlFor="training_start" className="block text-sm font-medium">Date Start</Label>
                         <Input
-                            id="date_start"
-                            name="date_start"
+                            id="training_start"
+                            name="training_start"
                             type="date"
-                            placeholder="Enter Date Start"
+                            placeholder="Enter Date Start of Training"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.date_start && (
-                            <p className="mt-2 text-sm text-red-500">{errors.date_start[0]}</p>
+                        {errors?.training_start && (
+                            <p className="mt-2 text-sm text-red-500">{errors.training_start[0]}</p>
                         )}
                     </div>
                     <div className="p-2 sm:col-span-1">
-                        <Label htmlFor="date_end" className="block text-sm font-medium">Date End</Label>
+                        <Label htmlFor="training_end" className="block text-sm font-medium">Date End</Label>
                         <Input
-                            id="date_end"
-                            name="date_end"
+                            id="training_end"
+                            name="training_end"
                             type="date"
-                            placeholder="Enter Date End"
+                            placeholder="Enter Date End of Training"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         />
-                        {errors?.date_end && (
-                            <p className="mt-2 text-sm text-red-500">{errors.date_end[0]}</p>
+                        {errors?.training_end && (
+                            <p className="mt-2 text-sm text-red-500">{errors.training_end[0]}</p>
                         )}
                     </div>
                 </div>

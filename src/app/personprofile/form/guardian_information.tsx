@@ -3,11 +3,34 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
+import { getRelationshipWithGuardianLibraryOptions } from "@/components/_dal/options";
 export default function GuardianInformation({ errors }: ErrorProps) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
+
+    const [relationshipWithGuardianOptions, setRelationshipWithGuardianOptions] = useState<LibraryOption[]>([]);
+    const [selectedRelationshipWithGuardian, setSelectedRelationshipWithGuardian] = useState("");
+    const [selectedRelationshipWithGuardianId, setSelectedRelationshipWithGuardianId] = useState<number | null>(null);
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const sex = await getRelationshipWithGuardianLibraryOptions();
+                setRelationshipWithGuardianOptions(sex);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleRelationshipWithGuardianChange = (id: number) => {
+        console.log("Selected Sex ID:", id);
+        setSelectedRelationshipWithGuardianId(id);
+    };
     return (
         <>
             <div  >
@@ -40,13 +63,14 @@ export default function GuardianInformation({ errors }: ErrorProps) {
                     </div>
                     <div className="p-2">
                         <Label htmlFor="guardian_relationship" className="block text-sm font-medium">Relationship with Guardian</Label>
-                        
+
                         <FormDropDown
-                            options={relationOptions}
-                            selectedOption={selectedRelation}
+                            options={relationshipWithGuardianOptions}
+                            selectedOption={selectedRelationshipWithGuardianId}
+                            onChange={handleRelationshipWithGuardianChange}
 
                         />
-                         
+
                         {errors?.guardian_relationship && (
                             <p className="mt-2 text-sm text-red-500">{errors.guardian_relationship[0]}</p>
                         )}

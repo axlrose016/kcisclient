@@ -3,7 +3,7 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -12,13 +12,36 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import { Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import { getCFWTypeLibraryOptions } from "@/components/_dal/options";
+import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
+import { Combobox } from "@/components/ui/combobox";
 export default function CFWProgramDetails({ errors }: ErrorProps) {
-    const [cfwTypeOptions, setcfwTypeOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
     const [SelectedIsCFWBene, setSelectedIsCFWBene] = useState("");
 
+    const [cFWTypeOptions, setCFWTypeOptions] = useState<LibraryOption[]>([]);
+    const [selectedCFWType, setSelectedCFWType] = useState("");
+    const [selectedCFWTypeId, setSelectedCFWTypeId] = useState<number | null>(null);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const cfw_type = await getCFWTypeLibraryOptions();
+                setCFWTypeOptions(cfw_type);
+ 
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    const handleCFWTypeChange = (id: number) => {
+        console.log("Selected CFW Type ID:", id);
+        setSelectedCFWTypeId(id);
+    };
     return (
         <>
             <div  >
@@ -51,7 +74,7 @@ export default function CFWProgramDetails({ errors }: ErrorProps) {
                         <div className="p-2 col-span-4 ">
 
                             <div className="flex justify-end">
-                                <Dialog>
+                                <Dialog modal={false}>
                                     <DialogTrigger>
 
                                         <Button>Add Type of CFW</Button>
@@ -64,14 +87,22 @@ export default function CFWProgramDetails({ errors }: ErrorProps) {
                                             <DialogDescription>
 
                                                 <div className="p-2 col-span-2">
-                                                    <Label htmlFor="type_of_cfw" className="block text-sm font-medium mb-2">Type of CFW</Label>
-                                                    <FormDropDown
-                                                        options={cfwTypeOptions}
-                                                        selectedOption={selectedRelation}
+                                                    <Label htmlFor="type_of_cfw_id" className="block text-sm font-medium mb-2">Type of CFW</Label>
+                                                  
+                                                  <Combobox
+                                                 
+                                                  />
 
-                                                    />
-                                                    {errors?.type_of_cfw && (
-                                                        <p className="mt-2 text-sm text-red-500">{errors.type_of_cfw[0]}</p>
+                                                    {/* <Combobox /> */}
+                                                    {/* <FormDropDown
+                                                    id="type_of_cfw_id"
+                                                        options={cFWTypeOptions}
+                                                        selectedOption={selectedCFWTypeId}
+                                                        onChange={handleCFWTypeChange}
+
+                                                    /> */}
+                                                    {errors?.type_of_cfw_id && (
+                                                        <p className="mt-2 text-sm text-red-500">{errors.type_of_cfw_id[0]}</p>
                                                     )}
                                                 </div>
                                                 <div className="p-2 col-span-2">

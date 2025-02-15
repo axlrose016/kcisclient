@@ -58,7 +58,7 @@ export function LoginForm({
               <ButtonSubmit label="Login"/>
               <div className="text-center text-sm">
                 Don&apos;t have an account?{" "}
-                <ButtonDialog dialogForm={RegistrationForm} label="Register"/>
+                <ButtonDialog dialogForm={RegistrationForm} label="Register" dialog_title="Welcome to KALAHI-CIDSS Information System" css="underline underline-offset-4 cursor-pointer"/>
               </div>
             </div>
           </form>

@@ -1,20 +1,9 @@
 "use server"
-import { fetchLibCivilStatus, fetchLibEducationalAttainment, fetchLibLguLevel, fetchLibLguPosition, fetchLibMode, fetchLibSex, fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
+import { fetchLibCivilStatus, fetchLibEducationalAttainment, fetchLibLguLevel, fetchLibLguPosition, fetchLibMode, fetchLibRegion, fetchLibSex, fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
 import { db } from "@/db";
-import { lib_civil_status, lib_educational_attainment, lib_lgu_level, lib_lgu_position, lib_mode, lib_sex, modules, permissions, roles } from "@/db/schema/libraries";
-import { eq } from "drizzle-orm";
+import { upsertData } from "@/db/utils/offline_crud";
+import { lib_civil_status, lib_educational_attainment, lib_lgu_level, lib_lgu_position, lib_mode, lib_region, lib_sex, modules, permissions, roles } from "@/db/schema/libraries";
 
-async function upsertData(trx:any, table:any, data:any) {
-    for (const item of data) {
-        const isExist = await trx.select().from(table).where(eq(table.id, item.id));
-        
-        if (isExist.length > 0) {
-            await trx.update(table).set(item).where(eq(table.id, item.id));
-        } else {
-            await trx.insert(table).values(item);
-        }
-    }
-}
 
 export async function updateLibrary() {
     try {
@@ -27,6 +16,7 @@ export async function updateLibrary() {
         const _lib_civil_status = await fetchLibCivilStatus();
         const _lib_mode = await fetchLibMode();
         const _lib_sex = await fetchLibSex();
+        const _lib_region = await fetchLibRegion();
 
         const result = await db.transaction(async (trx) => {
             await upsertData(trx, roles, _roles);
@@ -38,10 +28,10 @@ export async function updateLibrary() {
             await upsertData(trx, lib_civil_status, _lib_civil_status);
             await upsertData(trx, lib_mode, _lib_mode);
             await upsertData(trx, lib_sex, _lib_sex);
+            await upsertData(trx, lib_region, _lib_region);
         });
         return { success: true, message: "Library successfully updated!", result };
     } catch (error) {
-        console.error("Failed to update library:", error);
         return { success: false, message: "Failed to update library.", error: error };
     }
 }
