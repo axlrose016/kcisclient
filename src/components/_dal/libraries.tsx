@@ -1,7 +1,6 @@
 "use server";
 
 import { cache } from "react";
-import { db } from "@/db";
 import { modules, permissions, roles } from "@/db/schema/libraries";
 import initSqlJs from "sql.js";
 import { sqliteDb } from "@/db/offline/sqlJsInit";
@@ -35,7 +34,7 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         const response = await fetch(api_base_url + endpoint);
         if (!response.ok) { 
             if (offline_table) {
-                const offlineData = await db.select().from(offline_table).all();
+                const offlineData = await sqliteDb.select().from(offline_table).all();
                 return offlineData; 
             } else {
                 throw new Error(errorMessage);
@@ -44,7 +43,7 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         return await response.json();
     } catch (error) {
         if (offline_table) {
-            const offlineData = await db.select().from(offline_table).all();
+            const offlineData = await sqliteDb.select().from(offline_table).all();
             return offlineData;
         }
         throw new Error(errorMessage); 

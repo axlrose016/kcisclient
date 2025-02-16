@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { sqliteDb } from "@/db/offline/sqlJsInit";
 import { users } from "@/db/schema/users";
 import { upsertData, upsertIndividualData } from "@/db/utils/offline_crud";
 import { z } from "zod";
@@ -29,7 +29,7 @@ export async function submit(prevState: any, formData: FormData){
     }
 
     const user = result.data;
-    await db.transaction(async (trx) => {
+    await sqliteDb.transaction(async (trx) => {
       await upsertIndividualData(trx, users, user);
       console.log("Record Successfully Saved!", user);
       return { success: true, message: "User Profile Successfully updated!", result };

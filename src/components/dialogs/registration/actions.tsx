@@ -9,7 +9,7 @@ import { fetchModules, fetchOfflineModules, fetchOfflinePermissions, fetchOfflin
 import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { IUser, IUserData } from "@/components/interfaces/iuser";
 import UsersOfflineService from "@/db/offline/Pouch/users-service";
-import { db } from "@/db";
+import { sqliteDb } from "@/db/offline/sqlJsInit";
 
 
 const formSchema = z.object({
@@ -52,7 +52,7 @@ export async function submit(prevState: any, formData: FormData) {
     const defaultPermission = _permission.filter((w:IPermissions) => w.permission_description.includes("Can Add"))
 
 
-    await db.transaction(async (trx) => {
+    await sqliteDb.transaction(async (trx) => {
 
       const data = await trx
       .insert(users)

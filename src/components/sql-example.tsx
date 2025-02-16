@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 
 const SqlPage = () => {
-  //useEffect(() => {
+  useEffect(() => {
     //createDatabase();
-  //}, []);
+  }, []);
 
   return (
     <div>
