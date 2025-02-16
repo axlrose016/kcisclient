@@ -29,7 +29,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { logout } from "@/app/auth/actions"
+import { logout } from "@/app/auth/login/actions"
 import ServerStatus from "./ui/network-badge"
 
 export function NavUser({

@@ -7,6 +7,7 @@ import { ButtonSubmit } from "@/components/actions/button-submit"
 import { login } from "./actions"
 import { ButtonDialog } from "@/components/actions/button-dialog"
 import RegistrationForm from "@/components/dialogs/registration/frmregistration"
+import Image from "next/image"
 
 export function LoginForm({
   className,
