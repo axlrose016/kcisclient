@@ -8,6 +8,7 @@ import { login } from "./actions"
 import { ButtonDialog } from "@/components/actions/button-dialog"
 import RegistrationForm from "@/components/dialogs/registration/frmregistration"
 import Image from "next/image"
+import { sqliteDb } from "@/db/offline/sqlJsInit"
 
 export function LoginForm({
   className,
@@ -15,7 +16,7 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
 
   const [state, loginAction] = useActionState(login, undefined)
-  
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden">

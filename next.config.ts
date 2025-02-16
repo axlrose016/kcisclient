@@ -1,3 +1,5 @@
+import { Configuration } from 'webpack'
+
 const withPWA = require("@ducanh2912/next-pwa").default({
   dest: "public",
   fallbacks: {
@@ -47,7 +49,18 @@ const withPWA = require("@ducanh2912/next-pwa").default({
               ],
           },
       ];
-  }
+  },
+  webpack: (config: Configuration) => {
+    // Use resolve.fallback to mock 'fs' for the browser
+    config.resolve = {
+      ...(config.resolve || {}),
+      fallback: {
+        fs: false, // This will mock 'fs' as 'false' in the browser environment
+      },
+    };
+
+    return config;
+  },
 });
 
 const nextConfig = {

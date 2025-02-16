@@ -27,7 +27,6 @@ const formSchema = z.object({
 });
  
 export async function submit(prevState: any, formData: FormData) {
- // const { users, fetchUsers, addUser } = UsersOfflineService();
 
   const formObject = Object.fromEntries(formData.entries());
 
@@ -54,6 +53,13 @@ export async function submit(prevState: any, formData: FormData) {
 
     await sqliteDb.transaction(async (trx) => {
 
+      const _user = {
+        id,
+        role_id: defaultRole[0].id,
+        username,email,password: hashedPassword, 
+        created_by:id,
+        push_status_id: 1
+      }
       const data = await trx
       .insert(users)
       .values({
@@ -63,7 +69,7 @@ export async function submit(prevState: any, formData: FormData) {
         created_by:id
       })
       .returning({id: users.id})
-
+      
       const user = data[0]
       const access_id = randomUUID();  
 

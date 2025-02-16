@@ -1,18 +1,17 @@
+"use client"
+
 import { DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { DialogClose, DialogTitle } from "@radix-ui/react-dialog";
 import { useActionState, useEffect, useState } from "react";
 import { submit } from "./actions";
-import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input";
-import { FormDropDown } from "@/components/forms/form-dropdown";
-import { getLibrary } from "@/lib/libraries";
-import { LibraryOption } from "@/components/interfaces/library-interface";
 import PasswordFields from "@/components/forms/form-password";
 import { ButtonSubmit } from "@/components/actions/button-submit";
 import { Button } from "@/components/ui/button";
 import { useFormStatus } from "react-dom";
+import { getDb } from "@/db/offline/sqlJsInit";
 
 export default function RegistrationForm({
     className,
@@ -20,6 +19,14 @@ export default function RegistrationForm({
   }: React.ComponentProps<"div">) {
     const [state, submitAction] = useActionState(submit, undefined)
     const { pending } = useFormStatus();
+
+    // useEffect(() => {
+    //   async function loadDb() {
+    //     const database = await getDb();
+    //     console.log("DB initialized:", database);
+    //   }
+    //   loadDb();
+    // }, []);
 
     return (
         <>
