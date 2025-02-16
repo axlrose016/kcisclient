@@ -4,7 +4,7 @@
 
 // import { seedLibrary } from './utils/migrate';
 
-// const DB_FILE = process.env.LOCAL_DB_URL!;
+ const DB_FILE = process.env.LOCAL_DB_URL!;
 
 // const shouldMigrate = !fs.existsSync(DB_FILE);
 // const client = createClient({ url: DB_FILE});
