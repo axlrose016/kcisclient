@@ -1,0 +1,6 @@
+"builds": [
+    {
+      "src": "public/sql-wasm.wasm",
+      "use": "@vercel/static"
+    }
+  ]
