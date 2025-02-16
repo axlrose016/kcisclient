@@ -5,7 +5,7 @@ import { seed } from "../utils/seed";
 
 export async function getDb() {
   const SQL = await initSqlJs({
-    locateFile: () => "https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.7.0/sql-wasm.wasm"
+    locateFile: () => "./public/sql-wasm.wasm"
   });
   // Initialize the database
   const db = new SQL.Database();
