@@ -8,7 +8,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhilSysInput } from "@/components/ui/philsys_mask";
 import { getCFWCatLibraryOptions } from "@/components/_dal/options";
 export default function Details({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
-    // debugger;
     const [selectedHealthConcern, setSelectedHealthConcern] = useState("");
 
 

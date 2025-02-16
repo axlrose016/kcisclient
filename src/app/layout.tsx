@@ -5,7 +5,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { cookies } from "next/headers";
 import { decrypt } from "@/lib/sessions";
-import LoginPage from "./auth/login/page";
+import LoginPage from "./auth/page";
 import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
 

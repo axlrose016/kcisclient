@@ -553,7 +553,6 @@ export default function PersonProfileForm() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // Prevent the default form submission
 
-    // debugger;
     const formData = new FormData(e.currentTarget);
     formData.append('modality_id', selectedModalityId?.toString() || "0");  // Append modality_id
     formData.append('sex_id', selectedSexId?.toString() || "0");  // Append modality_id
@@ -567,7 +566,6 @@ export default function PersonProfileForm() {
     }
 
 
-    // debugger;
     const response = await submit({}, formData);
     // const response = await submit({}, formData);
     // console.log("Formdata: " + formData);

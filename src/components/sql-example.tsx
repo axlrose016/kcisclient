@@ -1,10 +1,10 @@
 // pages/index.tsx
-import { createDatabase } from '@/db/offline/sqlJs';
+//import { createDatabase } from '@/db/offline/sqlJs';
 import { useEffect } from 'react';
 
 const SqlPage = () => {
   useEffect(() => {
-    createDatabase();
+    //createDatabase();
   }, []);
 
   return (

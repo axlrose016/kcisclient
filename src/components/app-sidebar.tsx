@@ -184,7 +184,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         item.modules.includes(activeTeam.name)
       );
 
-      debugger;
 
       const filteredChildModule = filteredSubModule
       .map(module => ({

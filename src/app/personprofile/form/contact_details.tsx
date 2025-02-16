@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 
 export default function ContactDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
-    // debugger;
     const [regionOptions, setRegionOptions] = useState<LibraryOption[]>([]);
     const [selectedRegion, setSelectedRegion] = useState("");
     const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
@@ -32,7 +31,6 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
     const [selectedMunicipality, setSelectedMunicipality] = useState("");
     // const [barangayOptions, setBarangayOptions] = useState<LibraryOption[]>([]);
     // const [selectedBarangay, setSelectedBarangay] = useState("");
-    // debugger;
 
  
     useEffect(() => {
@@ -50,7 +48,6 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
                 setRegionOptions(mappedRegions); // Update state with mapped data
 
-                // debugger;
                 const province = await fetchPIMSProvince();
 
                 const mappedProvince: LibraryOption[] = province.map((item: any) => ({

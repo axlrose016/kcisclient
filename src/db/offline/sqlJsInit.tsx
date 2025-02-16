@@ -23,14 +23,13 @@ export async function getDb() {
     console.error("❌ Migration Error:", error);
   }
 
-
-   // Query to check existing tables
-  // try {
-  //   const result = db.exec("SELECT name FROM sqlite_master WHERE type='table';");
-  //   console.log("📌 Tables in Database:", result[0]?.values || []);
-  // } catch (error) {
-  //   console.error("❌ Error Fetching Tables:", error);
-  // }
+  //Query to check existing tables
+  try {
+    const result = db.exec("SELECT name FROM sqlite_master WHERE type='table';");
+    console.log("📌 Tables in Database:", result[0]?.values || []);
+  } catch (error) {
+    console.error("❌ Error Fetching Tables:", error);
+  }
 
   try{
     await seed(drizzleDb);  // Assuming `seed` is an async function that performs the database seeding.

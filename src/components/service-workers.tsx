@@ -1,6 +1,5 @@
 "use client"; // ✅ Now it's a Client Component
 
-import { createDatabase } from "@/db/offline/sqlJs";
 import { useEffect } from "react";
 
 export default function ServiceWorker() {
