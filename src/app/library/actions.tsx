@@ -1,8 +1,8 @@
 "use server"
 import { fetchLibCivilStatus, fetchLibEducationalAttainment, fetchLibLguLevel, fetchLibLguPosition, fetchLibMode, fetchLibRegion, fetchLibSex, fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
+import { db } from "@/db";
 import { upsertData } from "@/db/utils/offline_crud";
 import { lib_civil_status, lib_educational_attainment, lib_lgu_level, lib_lgu_position, lib_mode, lib_region, lib_sex, modules, permissions, roles } from "@/db/schema/libraries";
-import { sqliteDb } from "@/db/offline/sqlJsInit";
 
 
 export async function updateLibrary() {
@@ -18,7 +18,7 @@ export async function updateLibrary() {
         const _lib_sex = await fetchLibSex();
         const _lib_region = await fetchLibRegion();
 
-        const result = await sqliteDb.transaction(async (trx) => {
+        const result = await db.transaction(async (trx) => {
             await upsertData(trx, roles, _roles);
             await upsertData(trx, modules, _modules);
             await upsertData(trx, permissions, _permissions);

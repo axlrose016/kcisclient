@@ -5,14 +5,8 @@ import { seed } from "../utils/seed";
 
 export async function getDb() {
   const SQL = await initSqlJs({
-    locateFile: (file) => {
-      if (file === "sql-wasm.wasm") {
-        return "/sql-wasm.wasm"; // The path will be relative to the root of your public folder
-      }
-      return file;
-    },
+    locateFile: (file) => "./public/sql-wasm.wasm", // Ensure this file is in `public/`
   });
-
 
   // Initialize the database
   const db = new SQL.Database();

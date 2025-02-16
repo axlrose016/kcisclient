@@ -1,11 +1,11 @@
 'use server'
 
 import { z } from 'zod'
+import { db } from "@/db";
 import { redirect } from 'next/navigation';
 import { randomUUID } from 'crypto';
 import { person_profile } from '@/db/schema/personprofile';
 import { resourceUsage } from 'process';
-import { sqliteDb } from '@/db/offline/sqlJsInit';
 
 
 // for validation
@@ -54,7 +54,7 @@ export async function submit(prevState: any, formData: FormData) {
   // console.log("formData ---------------------", formObject);
   try {
 
-    await sqliteDb.transaction(async (trx) => {
+    await db.transaction(async (trx) => {
       const dataToInsert: any = {
         id: randomUUID(),
         modality_id,

@@ -21,7 +21,7 @@ export default function UsersOfflineService() {
     }
 
     // Insert user into PouchDB
-    async function addUser(userData: any) {
+    async function addUser(userData: IUser) {
         try {
             // Check if user already exists
             const existingUser = await localDB.get(userData.id).catch(() => null);
@@ -43,7 +43,7 @@ export default function UsersOfflineService() {
     }, []);
 
     return {
-        service_users: _users,
+        users: _users,
         fetchUsers,
         addUser, 
     };

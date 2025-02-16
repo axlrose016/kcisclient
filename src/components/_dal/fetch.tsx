@@ -1,4 +1,4 @@
-import { sqliteDb } from "@/db/offline/sqlJsInit";
+import { db } from "@/db";
 import { eq } from "drizzle-orm";
 import { cache } from "react";
 const api_base_url = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -8,7 +8,7 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         const response = await fetch(api_base_url + endpoint);
         if (!response.ok) { 
             if (offline_table) {
-                const offlineData = await sqliteDb.select().from(offline_table).all();
+                const offlineData = await db.select().from(offline_table).all();
                 return offlineData; 
             } else {
                 throw new Error(errorMessage);
@@ -17,7 +17,7 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         return await response.json();
     } catch (error) {
         if (offline_table) {
-            const offlineData = await sqliteDb.select().from(offline_table).all();
+            const offlineData = await db.select().from(offline_table).all();
             return offlineData;
         }
         throw new Error(errorMessage); 
@@ -29,7 +29,7 @@ const fetchDataById = cache(async(endpoint: string, errorMessage: string, record
         const response = await fetch(api_base_url + endpoint);
         if(!response.ok){
             if(offline_table){
-                const offlineData = (await sqliteDb.select().from(offline_table).where(eq(offline_table[matching_id], record_id)))
+                const offlineData = (await db.select().from(offline_table).where(eq(offline_table[matching_id], record_id)))
                 return offlineData;
             } else {
                 throw new Error(errorMessage);
@@ -38,7 +38,7 @@ const fetchDataById = cache(async(endpoint: string, errorMessage: string, record
         return await response.json();
     }catch(error){
         if(offline_table){
-            const offlineData = (await sqliteDb.select().from(offline_table).where(eq(offline_table[matching_id], record_id)))
+            const offlineData = (await db.select().from(offline_table).where(eq(offline_table[matching_id], record_id)))
             return offlineData;
         }
         throw new Error(errorMessage);
