@@ -1,6 +1,5 @@
 "use server"
 
-import { db } from "@/db";
 import { useraccess, users } from "@/db/schema/users";
 import { createSession, deleteSession } from "@/lib/sessions";
 import { eq } from "drizzle-orm";
@@ -9,6 +8,7 @@ import { z } from "zod";
 import bcrypt from "bcrypt";
 import { modules, permissions, roles } from "@/db/schema/libraries";
 import { IUserData } from "@/components/interfaces/iuser";
+import { sqliteDb } from "@/db/offline/sqlJsInit";
 
 
 const debugUser = {
@@ -43,7 +43,7 @@ export async function login(prevState: any, formData: FormData){
 
 
     
-    const user = await db.select().from(users).where(eq(users.email, email)).get();
+    const user = await sqliteDb.select().from(users).where(eq(users.email, email)).get();
     
     if(!user){
         return{
@@ -64,7 +64,7 @@ export async function login(prevState: any, formData: FormData){
     }
 
     if((email === user.email && isPasswordCorrect) || (email === debugUser.email && password === debugUser.password)){
-        const access = await db.select().from(useraccess)
+        const access = await sqliteDb.select().from(useraccess)
         .leftJoin(users, eq(useraccess.user_id, users.id))
         .leftJoin(roles, eq(users.role_id, roles.id))
         .leftJoin(permissions, eq(useraccess.permission_id, permissions.id))
