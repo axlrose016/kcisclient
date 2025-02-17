@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getDeploymentAreaLibraryOptions, getTypeOfWorkLibraryOptions } from "@/components/_dal/options";
-export default function PrefferedDeploymentArea({ errors }: ErrorProps) {
+export default function PrefferedDeploymentArea({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
 
@@ -37,23 +37,26 @@ export default function PrefferedDeploymentArea({ errors }: ErrorProps) {
 
     const handleDeploymentAreaChange = (id: number) => {
         console.log("Selected Deployment Area ID:", id);
+        updateCapturedData("cfw", "deployment_area_id", id, 4);
         setSelectedDeploymentAreaId(id);
     };
     const handleTypeOfWorkChange = (id: number) => {
         console.log("Selected Type of Work ID:", id);
+        updateCapturedData("cfw", "preffered_type_of_work_id", id, 4);
         setSelectedTypeOfWorkId(id);
     };
 
     return (
         <>
-            <div  >
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
-                    <div className="p-2 sm:col-span-4">
+            <div>
+                <div className="flex grid sm:col-span-3 sm:grid-cols-3">
+                    <div className="p-2 col-span-4">
                         <Label htmlFor="deployment_area_id" className="block text-sm font-medium">Name of Office</Label>
                         <FormDropDown
+
                             id="deployment_area_id"
                             options={deploymentAreaOptions}
-                            selectedOption={selectedDeploymentAreaId}
+                            selectedOption={capturedData.cfw[4].deployment_area_id}
                             onChange={handleDeploymentAreaChange}
                         />
                         {errors?.deployment_area_id && (
@@ -63,11 +66,13 @@ export default function PrefferedDeploymentArea({ errors }: ErrorProps) {
                     <div className="p-2 col-span-4">
                         <Label htmlFor="deployment_area_address" className="block text-sm font-medium">Office Address</Label>
                         <Textarea
+                            value={capturedData.cfw[4].deployment_area_address}
                             id="deployment_area_address"
                             name="deployment_area_address"
                             placeholder="Enter Office Address"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             rows={4}
+                            onChange={(e) => updateCapturedData("cfw", "deployment_area_address", e.target.value, 4)}
                         />
                         {errors?.deployment_area_address && (
                             <p className="mt-2 text-sm text-red-500">{errors.deployment_area_address[0]}</p>
@@ -78,7 +83,7 @@ export default function PrefferedDeploymentArea({ errors }: ErrorProps) {
                         <FormDropDown
                             id="preffered_type_of_work_id"
                             options={typeOfWorkOptions}
-                            selectedOption={selectedTypeOfWorkId}
+                            selectedOption={capturedData.cfw[4].preffered_type_of_work_id}
                             onChange={handleTypeOfWorkChange}
                         />
                         {errors?.preffered_type_of_work_id && (

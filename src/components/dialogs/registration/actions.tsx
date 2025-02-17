@@ -1,14 +1,15 @@
 "use server";
-import { db } from "@/db";
 import { useraccess, users } from "@/db/schema/users";
 import { randomUUID } from "crypto";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { createSession } from "@/lib/sessions";
 import { redirect } from "next/navigation";
-import { fetchModules, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
+import { fetchModules, fetchOfflineModules, fetchOfflinePermissions, fetchOfflineRoles, fetchPermissions, fetchRoles } from "@/components/_dal/libraries";
 import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
-import { IUserData } from "@/components/interfaces/iuser";
+import { IUser, IUserData } from "@/components/interfaces/iuser";
+import UsersOfflineService from "@/db/offline/Pouch/users-service";
+import { db } from "@/db";
 
 
 const formSchema = z.object({
@@ -26,6 +27,8 @@ const formSchema = z.object({
 });
  
 export async function submit(prevState: any, formData: FormData) {
+ // const { users, fetchUsers, addUser } = UsersOfflineService();
+
   const formObject = Object.fromEntries(formData.entries());
 
   const result = formSchema.safeParse(formObject);
@@ -41,13 +44,13 @@ export async function submit(prevState: any, formData: FormData) {
     
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    
-    const _roles = await fetchRoles();
-    const _modules = await fetchModules();
-    const _permission = await fetchPermissions();
+    const _roles = await fetchOfflineRoles();
+    const _modules = await fetchOfflineModules();
+    const _permission = await fetchOfflinePermissions();
     const defaultRole = _roles.filter((w:IRoles) => w.role_description.includes("Guest"))
     const defaultModule = _modules.filter((w:IModules) => w.module_description.includes("Person Profile"))
     const defaultPermission = _permission.filter((w:IPermissions) => w.permission_description.includes("Can Add"))
+
 
     await db.transaction(async (trx) => {
 

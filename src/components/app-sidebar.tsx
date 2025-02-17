@@ -184,7 +184,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         item.modules.includes(activeTeam.name)
       );
 
-      debugger;
 
       const filteredChildModule = filteredSubModule
       .map(module => ({
@@ -197,10 +196,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }))
       .filter(module => module.items && module.items.length > 0);
 
-      setFilteredTeam(data.teams);
+      setFilteredTeam(navTeam);
       setActiveTeam(navTeam[0]);
       setFilteredNavMain(navMain);
-      //setFilteredSub(filteredChildModule)
+      setFilteredSub(filteredChildModule)
       setIsLoading(false);
       setUser(user);
     }

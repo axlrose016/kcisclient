@@ -31,7 +31,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
     }, []);
     const handleIDCardChange = (id: number) => {
         console.log("Selected ID Card ID:", id);
-        updateCapturedData("cfw", "occupation_id_card_id", id, 4);
+        updateCapturedData("cfw", "id_card", id, 4);
         setSelectedIDCardId(id);
     };
     return (
@@ -41,6 +41,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                     <div className="p-2 col-span-4">
                         <Label htmlFor="current_occupation" className="block text-sm font-medium">Occupation</Label>
                         <Input
+                            value={capturedData.cfw[4].current_occupation}
                             id="current_occupation"
                             name="current_occupation"
                             type="text"
@@ -56,10 +57,10 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
+                            selectedOption={capturedData.cfw[4].id_card}
+                            onChange={handleIDCardChange}
                             id="occupation_id_card"
                             options={iDCardOptions}
-                            selectedOption={selectedIDCardId}
-                            onChange={handleIDCardChange}
                         />
                         {errors?.occupation_id_card && (
                             <p className="mt-2 text-sm text-red-500">{errors.occupation_id_card[0]}</p>
@@ -69,6 +70,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
                         <Input
+                            value={capturedData.cfw[4].occupation_id_card_number}
                             id="occupation_id_card_number"
                             name="occupation_id_card_number"
                             type="text"
@@ -83,7 +85,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
 
 
-                    <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${selectedModalityId === 25 ? "" : "hidden"}  `}>
+                    <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${selectedModalityId === 25 ? "hidden" : ""}  `}>
                         <div className="p-2">
                             <Label htmlFor="is_lgu_official" className="block text-sm font-medium">Is LGU Official</Label>
                             <div className="mt-1">

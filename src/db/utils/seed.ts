@@ -1,4 +1,4 @@
-import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
 import { upsertData } from "./offline_crud";
 
 export async function seed(db: any) {
@@ -355,151 +355,173 @@ export async function seed(db: any) {
         ];
         const _deployment_area = [
             {
-                "id":1,
+                "id": 1,
                 "deployment_name": "Metro Manila",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             },
             {
-                "id":2,
+                "id": 2,
                 "deployment_name": "Central Visayas",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             },
             {
-                "id":3,
+                "id": 3,
                 "deployment_name": "Northern Mindanao",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             },
             {
-                "id":4,
+                "id": 4,
                 "deployment_name": "CALABARZON",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             }
         ];
         const _type_of_work = [
             {
-                "id":1,
-               " work_name": "Office Work",
+                "id": 1,
+                "work_name": "Office Work",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             },
             {
-                "id":2,
-               " work_name": "Field Work",
+                "id": 2,
+                "work_name": "Field Work",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             },
             {
-                "id":3,
-               " work_name": "Clerical Work",
+                "id": 3,
+                "work_name": "Clerical Work",
                 "created_by": "00000000-0000-0000-0000-000000000000"
             }
         ];
 
         const _province = [
-            { "province_code": "012800000","province_name":  "ILOCOS NORTE", "region_code": "010000000","archive":  0, "latitude": 18.1997, "longitude": 120.7307,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "012900000","province_name":  "ILOCOS SUR", "region_code": "010000000","archive":  0, "latitude": 17.2212, "longitude": 120.5516,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "013300000","province_name":  "LA UNION", "region_code": "010000000","archive":  0, "latitude": 16.5810, "longitude": 120.4277,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "015500000","province_name":  "PANGASINAN", "region_code": "010000000","archive":  0, "latitude": 16.0003, "longitude": 120.3116,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "020900000","province_name":  "BATANES", "region_code": "020000000","archive":  0, "latitude": 20.5498, "longitude": 121.8875,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "021500000","province_name":  "CAGAYAN", "region_code": "020000000","archive":  0, "latitude": 18.0995, "longitude": 121.7630,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "023100000","province_name":  "ISABELA", "region_code": "020000000","archive":  0, "latitude": 16.9842, "longitude": 121.9609,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "025000000","province_name":  "NUEVA VIZCAYA", "region_code": "020000000","archive":  0, "latitude": 16.3117, "longitude": 121.1511,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "025700000","province_name":  "QUIRINO", "region_code": "020000000","archive":  0, "latitude": 16.2921, "longitude": 121.5888,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "012800000", "province_name": "ILOCOS NORTE", "region_code": "010000000", "archive": 0, "latitude": 18.1997, "longitude": 120.7307, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "012900000", "province_name": "ILOCOS SUR", "region_code": "010000000", "archive": 0, "latitude": 17.2212, "longitude": 120.5516, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "013300000", "province_name": "LA UNION", "region_code": "010000000", "archive": 0, "latitude": 16.5810, "longitude": 120.4277, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "015500000", "province_name": "PANGASINAN", "region_code": "010000000", "archive": 0, "latitude": 16.0003, "longitude": 120.3116, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-           
-            { "province_code": "030800000","province_name":  "BATAAN", "region_code": "030000000","archive":  0, "latitude": 14.6760, "longitude": 120.5364,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "031400000","province_name":  "BULACAN", "region_code": "030000000","archive":  0, "latitude": 14.7959, "longitude": 120.8789,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "034900000","province_name":  "NUEVA ECIJA", "region_code": "030000000","archive":  0, "latitude": 15.6848, "longitude": 121.1027,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "035400000","province_name":  "PAMPANGA", "region_code": "030000000","archive":  0, "latitude": 15.0794, "longitude": 120.6199,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "036900000","province_name":  "TARLAC", "region_code": "030000000","archive":  0, "latitude": 15.4883, "longitude": 120.5887,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "037100000","province_name":  "ZAMBALES", "region_code": "030000000","archive":  0, "latitude": 15.3334, "longitude": 120.2194,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "037700000","province_name":  "AURORA", "region_code": "030000000","archive":  0, "latitude": 15.7572, "longitude": 121.5588,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "020900000", "province_name": "BATANES", "region_code": "020000000", "archive": 0, "latitude": 20.5498, "longitude": 121.8875, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "021500000", "province_name": "CAGAYAN", "region_code": "020000000", "archive": 0, "latitude": 18.0995, "longitude": 121.7630, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "023100000", "province_name": "ISABELA", "region_code": "020000000", "archive": 0, "latitude": 16.9842, "longitude": 121.9609, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "025000000", "province_name": "NUEVA VIZCAYA", "region_code": "020000000", "archive": 0, "latitude": 16.3117, "longitude": 121.1511, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "025700000", "province_name": "QUIRINO", "region_code": "020000000", "archive": 0, "latitude": 16.2921, "longitude": 121.5888, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-           
-            { "province_code": "041000000","province_name":  "BATANGAS", "region_code": "040000000","archive":  0, "latitude": 13.7594, "longitude": 121.1193,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "042100000","province_name":  "CAVITE", "region_code": "040000000","archive":  0, "latitude": 14.2710, "longitude": 120.8879,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "043400000","province_name":  "LAGUNA", "region_code": "040000000","archive":  0, "latitude": 14.1750, "longitude": 121.3297,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "045600000","province_name":  "QUEZON", "region_code": "040000000","archive":  0, "latitude": 13.9312, "longitude": 121.6176,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "045800000","province_name":  "RIZAL", "region_code": "040000000","archive":  0, "latitude": 14.5994, "longitude": 121.2127,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "175100000","province_name":  "MARINDUQUE", "region_code": "170000000","archive":  0, "latitude": 13.3772, "longitude": 121.9797,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "175200000","province_name":  "OCCIDENTAL MINDORO", "region_code": "170000000","archive":  0, "latitude": 12.9312, "longitude": 120.5930,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "175300000","province_name":  "ORIENTAL MINDORO", "region_code": "170000000","archive":  0, "latitude": 13.2047, "longitude": 121.4368,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "175900000","province_name":  "PALAWAN", "region_code": "170000000","archive":  0, "latitude": 9.8432, "longitude": 118.7384,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "175900000","province_name":  "ROMBLON", "region_code": "170000000","archive":  0, "latitude": 12.5736, "longitude": 122.2877,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "050500000","province_name":  "ALBAY", "region_code": "050000000","archive":  0, "latitude": 13.1722, "longitude": 123.7557,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "051600000","province_name":  "CAMARINES NORTE", "region_code": "050000000","archive":  0, "latitude": 14.0255, "longitude": 122.7931,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "051700000","province_name":  "CAMARINES SUR", "region_code": "050000000","archive":  0, "latitude": 13.6218, "longitude": 123.3972,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "052000000","province_name":  "CATANDUANES", "region_code": "050000000","archive":  0, "latitude": 13.6089, "longitude": 124.2384,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "054100000","province_name":  "MASBATE", "region_code": "050000000","archive":  0, "latitude": 12.3712, "longitude": 123.5799,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "056200000","province_name":  "SORSOGON", "region_code": "050000000","archive":  0, "latitude": 12.9731, "longitude": 124.0170,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-        
-            { "province_code": "060400000","province_name":  "AKLAN", "region_code": "060000000","archive":  0, "latitude": 11.7167, "longitude": 122.3500,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "060600000","province_name":  "ANTIQUE", "region_code": "060000000","archive":  0, "latitude": 11.0646, "longitude": 122.0942,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "061900000","province_name":  "CAPIZ", "region_code": "060000000","archive":  0, "latitude": 11.5008, "longitude": 122.7503,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "063000000","province_name":  "ILOILO", "region_code": "060000000","archive":  0, "latitude": 10.7202, "longitude": 122.5621,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "064500000","province_name":  "NEGROS OCCIDENTAL", "region_code": "060000000","archive":  0, "latitude": 10.2667, "longitude": 123.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "067900000","province_name":  "GUIMARAS", "region_code": "060000000","archive":  0, "latitude": 10.5993, "longitude": 122.5365,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "071200000","province_name":  "BOHOL", "region_code": "070000000","archive":  0, "latitude": 9.8333, "longitude": 124.1667,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "072200000","province_name":  "CEBU", "region_code": "070000000","archive":  0, "latitude": 10.3167, "longitude": 123.9000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "074600000","province_name":  "NEGROS ORIENTAL", "region_code": "070000000","archive":  0, "latitude": 9.4167, "longitude": 123.3000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "076100000","province_name":  "SIQUIJOR", "region_code": "070000000","archive":  0, "latitude": 9.2167, "longitude": 123.5167,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "030800000", "province_name": "BATAAN", "region_code": "030000000", "archive": 0, "latitude": 14.6760, "longitude": 120.5364, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "031400000", "province_name": "BULACAN", "region_code": "030000000", "archive": 0, "latitude": 14.7959, "longitude": 120.8789, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "034900000", "province_name": "NUEVA ECIJA", "region_code": "030000000", "archive": 0, "latitude": 15.6848, "longitude": 121.1027, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "035400000", "province_name": "PAMPANGA", "region_code": "030000000", "archive": 0, "latitude": 15.0794, "longitude": 120.6199, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "036900000", "province_name": "TARLAC", "region_code": "030000000", "archive": 0, "latitude": 15.4883, "longitude": 120.5887, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "037100000", "province_name": "ZAMBALES", "region_code": "030000000", "archive": 0, "latitude": 15.3334, "longitude": 120.2194, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "037700000", "province_name": "AURORA", "region_code": "030000000", "archive": 0, "latitude": 15.7572, "longitude": 121.5588, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-           
-            { "province_code": "082600000","province_name":  "EASTERN SAMAR", "region_code": "080000000","archive":  0, "latitude": 11.5000, "longitude": 125.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "083700000","province_name":  "LEYTE", "region_code": "080000000","archive":  0, "latitude": 11.1667, "longitude": 124.9667,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "084800000","province_name":  "NORTHERN SAMAR", "region_code": "080000000","archive":  0, "latitude": 12.5000, "longitude": 124.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "086000000","province_name":  "SOUTHERN LEYTE", "region_code": "080000000","archive":  0, "latitude": 10.3333, "longitude": 125.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "086400000","province_name":  "SAMAR (WESTERN SAMAR)", "region_code": "080000000","archive":  0, "latitude": 12.0000, "longitude": 125.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "087800000","province_name":  "BILIRAN", "region_code": "080000000","archive":  0, "latitude": 11.5167, "longitude": 124.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-           
-            { "province_code": "097200000","province_name":  "ZAMBOANGA DEL NORTE", "region_code": "090000000","archive":  0, "latitude": 8.5000, "longitude": 123.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "097300000","province_name":  "ZAMBOANGA DEL SUR", "region_code": "090000000","archive":  0, "latitude": 7.8333, "longitude": 123.2500,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "098300000","province_name":  "ZAMBOANGA SIBUGAY", "region_code": "090000000","archive":  0, "latitude": 7.6667, "longitude": 122.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "101300000","province_name":  "BUKIDNON", "region_code": "100000000","archive":  0, "latitude": 8.0000, "longitude": 125.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "101800000","province_name":  "CAMIGUIN", "region_code": "100000000","archive":  0, "latitude": 9.0000, "longitude": 124.7167,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "103500000","province_name":  "LANAO DEL NORTE", "region_code": "100000000","archive":  0, "latitude": 8.1667, "longitude": 124.1667,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "104200000","province_name":  "MISAMIS OCCIDENTAL", "region_code": "100000000","archive":  0, "latitude": 8.2500, "longitude": 123.8333,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "104300000","province_name":  "MISAMIS ORIENTAL", "region_code": "100000000","archive":  0, "latitude": 8.5000, "longitude": 124.6500,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
- 
-            { "province_code": "112300000","province_name":  "DAVAO DE ORO", "region_code": "110000000","archive":  0, "latitude": 7.5833, "longitude": 126.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "112400000","province_name":  "DAVAO DEL NORTE", "region_code": "110000000","archive":  0, "latitude": 7.5000, "longitude": 125.7000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "112500000","province_name":  "DAVAO DEL SUR", "region_code": "110000000","archive":  0, "latitude": 6.7500, "longitude": 125.3500,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "118200000","province_name":  "DAVAO OCCIDENTAL", "region_code": "110000000","archive":  0, "latitude": 6.4667, "longitude": 125.6000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "118600000","province_name":  "DAVAO ORIENTAL", "region_code": "110000000","archive":  0, "latitude": 7.0000, "longitude": 126.5000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "041000000", "province_name": "BATANGAS", "region_code": "040000000", "archive": 0, "latitude": 13.7594, "longitude": 121.1193, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "042100000", "province_name": "CAVITE", "region_code": "040000000", "archive": 0, "latitude": 14.2710, "longitude": 120.8879, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "043400000", "province_name": "LAGUNA", "region_code": "040000000", "archive": 0, "latitude": 14.1750, "longitude": 121.3297, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "045600000", "province_name": "QUEZON", "region_code": "040000000", "archive": 0, "latitude": 13.9312, "longitude": 121.6176, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "045800000", "province_name": "RIZAL", "region_code": "040000000", "archive": 0, "latitude": 14.5994, "longitude": 121.2127, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-       
-            { "province_code": "124700000","province_name":  "COTABATO", "region_code": "120000000","archive":  0, "latitude": 7.1167, "longitude": 124.8333,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "126300000","province_name":  "SARANGANI", "region_code": "120000000","archive":  0, "latitude": 6.1667, "longitude": 125.2833,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "126500000","province_name":  "SOUTH COTABATO", "region_code": "120000000","archive":  0, "latitude": 6.2500, "longitude": 124.8833,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "128000000","province_name":  "SULTAN KUDARAT", "region_code": "120000000","archive":  0, "latitude": 6.6167, "longitude": 124.2167,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "175100000", "province_name": "MARINDUQUE", "region_code": "170000000", "archive": 0, "latitude": 13.3772, "longitude": 121.9797, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "175200000", "province_name": "OCCIDENTAL MINDORO", "region_code": "170000000", "archive": 0, "latitude": 12.9312, "longitude": 120.5930, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "175300000", "province_name": "ORIENTAL MINDORO", "region_code": "170000000", "archive": 0, "latitude": 13.2047, "longitude": 121.4368, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "175900000", "province_name": "PALAWAN", "region_code": "170000000", "archive": 0, "latitude": 9.8432, "longitude": 118.7384, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "175900000", "province_name": "ROMBLON", "region_code": "170000000", "archive": 0, "latitude": 12.5736, "longitude": 122.2877, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-           
-            { "province_code": "133900000","province_name":  "AGUSAN DEL NORTE", "region_code": "130000000","archive":  0, "latitude": 9.0000, "longitude": 125.5333,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "134000000","province_name":  "AGUSAN DEL SUR", "region_code": "130000000","archive":  0, "latitude": 8.5000, "longitude": 125.7500,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "136800000","province_name":  "DINAGAT ISLANDS", "region_code": "130000000","archive":  0, "latitude": 10.1500, "longitude": 125.6167,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "148100000","province_name":  "SURIGAO DEL NORTE", "region_code": "130000000","archive":  0, "latitude": 9.5000, "longitude": 125.6000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "148200000","province_name":  "SURIGAO DEL SUR", "region_code": "130000000","archive":  0, "latitude": 8.8333, "longitude": 126.1333,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "050500000", "province_name": "ALBAY", "region_code": "050000000", "archive": 0, "latitude": 13.1722, "longitude": 123.7557, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "051600000", "province_name": "CAMARINES NORTE", "region_code": "050000000", "archive": 0, "latitude": 14.0255, "longitude": 122.7931, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "051700000", "province_name": "CAMARINES SUR", "region_code": "050000000", "archive": 0, "latitude": 13.6218, "longitude": 123.3972, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "052000000", "province_name": "CATANDUANES", "region_code": "050000000", "archive": 0, "latitude": 13.6089, "longitude": 124.2384, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "054100000", "province_name": "MASBATE", "region_code": "050000000", "archive": 0, "latitude": 12.3712, "longitude": 123.5799, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "056200000", "province_name": "SORSOGON", "region_code": "050000000", "archive": 0, "latitude": 12.9731, "longitude": 124.0170, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
-            { "province_code": "150700000","province_name":  "BASILAN", "region_code": "150000000","archive":  0, "latitude": 6.5500, "longitude": 122.0833,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "153600000","province_name":  "LANAO DEL SUR", "region_code": "150000000","archive":  0, "latitude": 7.9167, "longitude": 124.2833,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "153800000","province_name":  "MAGUINDANAO", "region_code": "150000000","archive":  0, "latitude": 7.2000, "longitude": 124.4167,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "156600000","province_name":  "SULU", "region_code": "150000000","archive":  0, "latitude": 6.0500, "longitude": 121.0000,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "province_code": "157000000","province_name":  "TAWI-TAWI", "region_code": "150000000","archive":  0, "latitude": 5.1333, "longitude": 120.0667,"psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+            { "province_code": "060400000", "province_name": "AKLAN", "region_code": "060000000", "archive": 0, "latitude": 11.7167, "longitude": 122.3500, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "060600000", "province_name": "ANTIQUE", "region_code": "060000000", "archive": 0, "latitude": 11.0646, "longitude": 122.0942, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "061900000", "province_name": "CAPIZ", "region_code": "060000000", "archive": 0, "latitude": 11.5008, "longitude": 122.7503, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "063000000", "province_name": "ILOILO", "region_code": "060000000", "archive": 0, "latitude": 10.7202, "longitude": 122.5621, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "064500000", "province_name": "NEGROS OCCIDENTAL", "region_code": "060000000", "archive": 0, "latitude": 10.2667, "longitude": 123.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "067900000", "province_name": "GUIMARAS", "region_code": "060000000", "archive": 0, "latitude": 10.5993, "longitude": 122.5365, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+            { "province_code": "071200000", "province_name": "BOHOL", "region_code": "070000000", "archive": 0, "latitude": 9.8333, "longitude": 124.1667, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "072200000", "province_name": "CEBU", "region_code": "070000000", "archive": 0, "latitude": 10.3167, "longitude": 123.9000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "074600000", "province_name": "NEGROS ORIENTAL", "region_code": "070000000", "archive": 0, "latitude": 9.4167, "longitude": 123.3000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "076100000", "province_name": "SIQUIJOR", "region_code": "070000000", "archive": 0, "latitude": 9.2167, "longitude": 123.5167, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+
+            { "province_code": "082600000", "province_name": "EASTERN SAMAR", "region_code": "080000000", "archive": 0, "latitude": 11.5000, "longitude": 125.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "083700000", "province_name": "LEYTE", "region_code": "080000000", "archive": 0, "latitude": 11.1667, "longitude": 124.9667, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "084800000", "province_name": "NORTHERN SAMAR", "region_code": "080000000", "archive": 0, "latitude": 12.5000, "longitude": 124.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "086000000", "province_name": "SOUTHERN LEYTE", "region_code": "080000000", "archive": 0, "latitude": 10.3333, "longitude": 125.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "086400000", "province_name": "SAMAR (WESTERN SAMAR)", "region_code": "080000000", "archive": 0, "latitude": 12.0000, "longitude": 125.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "087800000", "province_name": "BILIRAN", "region_code": "080000000", "archive": 0, "latitude": 11.5167, "longitude": 124.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+
+            { "province_code": "097200000", "province_name": "ZAMBOANGA DEL NORTE", "region_code": "090000000", "archive": 0, "latitude": 8.5000, "longitude": 123.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "097300000", "province_name": "ZAMBOANGA DEL SUR", "region_code": "090000000", "archive": 0, "latitude": 7.8333, "longitude": 123.2500, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "098300000", "province_name": "ZAMBOANGA SIBUGAY", "region_code": "090000000", "archive": 0, "latitude": 7.6667, "longitude": 122.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+            { "province_code": "101300000", "province_name": "BUKIDNON", "region_code": "100000000", "archive": 0, "latitude": 8.0000, "longitude": 125.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "101800000", "province_name": "CAMIGUIN", "region_code": "100000000", "archive": 0, "latitude": 9.0000, "longitude": 124.7167, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "103500000", "province_name": "LANAO DEL NORTE", "region_code": "100000000", "archive": 0, "latitude": 8.1667, "longitude": 124.1667, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "104200000", "province_name": "MISAMIS OCCIDENTAL", "region_code": "100000000", "archive": 0, "latitude": 8.2500, "longitude": 123.8333, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "104300000", "province_name": "MISAMIS ORIENTAL", "region_code": "100000000", "archive": 0, "latitude": 8.5000, "longitude": 124.6500, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+            { "province_code": "112300000", "province_name": "DAVAO DE ORO", "region_code": "110000000", "archive": 0, "latitude": 7.5833, "longitude": 126.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "112400000", "province_name": "DAVAO DEL NORTE", "region_code": "110000000", "archive": 0, "latitude": 7.5000, "longitude": 125.7000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "112500000", "province_name": "DAVAO DEL SUR", "region_code": "110000000", "archive": 0, "latitude": 6.7500, "longitude": 125.3500, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "118200000", "province_name": "DAVAO OCCIDENTAL", "region_code": "110000000", "archive": 0, "latitude": 6.4667, "longitude": 125.6000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "118600000", "province_name": "DAVAO ORIENTAL", "region_code": "110000000", "archive": 0, "latitude": 7.0000, "longitude": 126.5000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+
+            { "province_code": "124700000", "province_name": "COTABATO", "region_code": "120000000", "archive": 0, "latitude": 7.1167, "longitude": 124.8333, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "126300000", "province_name": "SARANGANI", "region_code": "120000000", "archive": 0, "latitude": 6.1667, "longitude": 125.2833, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "126500000", "province_name": "SOUTH COTABATO", "region_code": "120000000", "archive": 0, "latitude": 6.2500, "longitude": 124.8833, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "128000000", "province_name": "SULTAN KUDARAT", "region_code": "120000000", "archive": 0, "latitude": 6.6167, "longitude": 124.2167, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+
+            { "province_code": "133900000", "province_name": "AGUSAN DEL NORTE", "region_code": "130000000", "archive": 0, "latitude": 9.0000, "longitude": 125.5333, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "134000000", "province_name": "AGUSAN DEL SUR", "region_code": "130000000", "archive": 0, "latitude": 8.5000, "longitude": 125.7500, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "136800000", "province_name": "DINAGAT ISLANDS", "region_code": "130000000", "archive": 0, "latitude": 10.1500, "longitude": 125.6167, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "148100000", "province_name": "SURIGAO DEL NORTE", "region_code": "130000000", "archive": 0, "latitude": 9.5000, "longitude": 125.6000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "148200000", "province_name": "SURIGAO DEL SUR", "region_code": "130000000", "archive": 0, "latitude": 8.8333, "longitude": 126.1333, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+
+            { "province_code": "150700000", "province_name": "BASILAN", "region_code": "150000000", "archive": 0, "latitude": 6.5500, "longitude": 122.0833, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "153600000", "province_name": "LANAO DEL SUR", "region_code": "150000000", "archive": 0, "latitude": 7.9167, "longitude": 124.2833, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "153800000", "province_name": "MAGUINDANAO", "region_code": "150000000", "archive": 0, "latitude": 7.2000, "longitude": 124.4167, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "156600000", "province_name": "SULU", "region_code": "150000000", "archive": 0, "latitude": 6.0500, "longitude": 121.0000, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "province_code": "157000000", "province_name": "TAWI-TAWI", "region_code": "150000000", "archive": 0, "latitude": 5.1333, "longitude": 120.0667, "psgc": "0", "created_by": "00000000-0000-0000-0000-000000000000" },
 
 
         ];
 
         // modalityid 25 is CFW, 22 is pmnp
         const _modality_sub_category = [
-            { "id": 1, "modality_id":25, "modality_sub_category_name": "CFW - SUC", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 2, "modality_id":25, "modality_sub_category_name": "CFW - PWD", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 1, "modality_id": 25, "modality_sub_category_name": "CFW - SUC", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 2, "modality_id": 25, "modality_sub_category_name": "CFW - PWD", "created_by": "00000000-0000-0000-0000-000000000000" },
+        ];
+        const _sectors = [
+            { id: 1, sector_name: "Women", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 2, sector_name: "Out of School Youth (OSY)", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 3, sector_name: "Persons with Disabilities (PWD)", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 4, sector_name: "Indigenous People", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 5, sector_name: "Family Heads in Need of Assistance", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 6, sector_name: "Senior Citizen", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 7, sector_name: "Solo Parent", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 8, sector_name: "Affected by Disaster", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 9, sector_name: "Children and Youth in Need of Special Protection", created_by: "00000000-0000-0000-0000-000000000000" },
         ];
 
+        const _files_to_upload = [
+            { "id": 1, "file_name": "Primary ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 2, "file_name": "Secondary ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 3, "file_name": "PWD ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 4, "file_name": "School ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 5, "file_name": "Certificate of Registration from School", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 6, "file_name": "TOR/Diploma/Certification from the School Registrar", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 7, "file_name": "Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 8, "file_name": "1x1 Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            
+        ];
         const result = await db.transaction(async (trx: any) => {
             await upsertData(trx, roles, _roles);
             await upsertData(trx, permissions, _permissions);
@@ -524,6 +546,8 @@ export async function seed(db: any) {
             await upsertData(trx, lib_deployment_area, _deployment_area);
             await upsertData(trx, lib_type_of_work, _type_of_work);
             await upsertData(trx, lib_modality_sub_category, _modality_sub_category);
+            await upsertData(trx, lib_sectors, _sectors);
+            await upsertData(trx, lib_files_to_upload, _files_to_upload);
             // await upsertData(trx, lib_province, _province);
 
         })

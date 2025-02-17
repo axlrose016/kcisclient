@@ -16,7 +16,7 @@ import { getCFWTypeLibraryOptions, getEducationalAttainmentLibraryOptions, getRe
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilycomposition";
 
-export default function FamilyComposition({ errors }: ErrorProps) {
+export default function FamilyComposition({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [cfwTypeOptions, setcfwTypeOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
     const [SelectedIsCFWBene, setSelectedIsCFWBene] = useState("");
@@ -36,6 +36,20 @@ export default function FamilyComposition({ errors }: ErrorProps) {
     const [EducationalAttainmentOptions, setEducationalAttainmentOptions] = useState<LibraryOption[]>([]);
     const [selectedEducationalAttainment, setSelectedEducationalAttainment] = useState("");
     const [selectedEducationalAttainmentId, setSelectedEducationalAttainmentId] = useState<number | null>(null);
+
+    const [dob, setDob] = useState<string>("");
+    const [age, setAge] = useState<string>("");
+
+    const [familyMemberName, setFamilyMemberName] = useState("");
+
+
+
+    const [familyMemberWork, setfamilyMemberWork] = useState("");
+    const [familyMemberMonthlyIncome, setfamilyMemberMonthlyIncome] = useState("");
+    const [familyMemberContactNumber, setfamilyMemberContactNumber] = useState("");
+
+    const [capturedData1, setCapturedData] = useState("");
+
     const [form_Data, setForm_Data] = useState([]);
     useEffect(() => {
         const fetchData = async () => {
@@ -51,6 +65,8 @@ export default function FamilyComposition({ errors }: ErrorProps) {
 
                 const educational_attainment = await getEducationalAttainmentLibraryOptions();
                 setEducationalAttainmentOptions(educational_attainment);
+
+
 
 
 
@@ -77,8 +93,12 @@ export default function FamilyComposition({ errors }: ErrorProps) {
     };
 
     const handlEducationalAttainmentChange = (id: number) => {
-        console.log("Selected Educational attainment ID (ADD):", id);
+        console.log("Selected Family Member Educational attainment ID (ADD):", id);
         setSelectedEducationalAttainmentId(id);
+    };
+    const handleRelationshipToFamilyMember = (id: number) => {
+        console.log("Selected Relationship to family member id:", id);
+        setSelectedRelationshipToFamilyMemberId(id);
     };
 
     const handlbtnOnChange = (id: number) => {
@@ -93,66 +113,239 @@ export default function FamilyComposition({ errors }: ErrorProps) {
             return updatedData;
         });
     };
+
+    const handleSaveFamMemberData = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault(); // Prevent default button behavior
+    
+        console.log("Family Member Name: " + familyMemberName);
+        console.log("Relationship to Family Member: " + selectedRelationshipToFamilyMemberId);
+        console.log("Family Member Birthdate: " + dob);
+        console.log("Family Member Age: " + age);
+        console.log("Family Member Highest Educational Attainment: " + selectedEducationalAttainmentId);
+        console.log("Family Member Work: " + familyMemberWork);
+        console.log("Family Member Monthly Income: " + familyMemberMonthlyIncome);
+        console.log("Family Member Contact Number: " + familyMemberContactNumber);
+    
+        const formData = localStorage.getItem("formData");
+        const prevData = formData ? JSON.parse(formData) : { cfw: [{ family_composition: [] }] };
+    
+        const updatedData = {
+            ...prevData,
+            cfw: prevData.cfw.map((cfwItem: any, index: number) => {
+                if (index !== 3) return cfwItem; // Only modify the third element for family composition
+    
+                const familyComposition = cfwItem.family_composition || [];
+    
+                // Check for duplicate names
+                const duplicate = familyComposition.some((member: any) => member.name === familyMemberName);
+                if (duplicate) {
+                    alert("This family member already exists. Please enter a different name.");
+                    return cfwItem; // Return unchanged item if duplicate is found
+                }
+    
+                const updatedFamilyComposition = [
+                    ...familyComposition,
+                    {
+                        name: familyMemberName,
+                        relationship_to_the_beneficiary_id: selectedRelationshipToFamilyMemberId,
+                        birthdate: dob,
+                        age: age,
+                        highest_educational_attainment_id: selectedEducationalAttainmentId,
+                        work: familyMemberWork,
+                        monthly_income: familyMemberMonthlyIncome,
+                        contact_number: familyMemberContactNumber,
+                    },
+                ];
+    
+                return { ...cfwItem, family_composition: updatedFamilyComposition };
+            }),
+        };
+    
+        localStorage.setItem("formData", JSON.stringify(updatedData));
+        setCapturedData(updatedData); // Optional: Update state if needed
+        console.log("Updated Family Composition:", updatedData.cfw[3].family_composition);
+    };
+    
+
+
+    const handleFamilyMemberDOBChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedDate = event.target.value;
+        
+        setDob(selectedDate);
+        computeAge(selectedDate);
+
+    };
+
+    const computeAge = (dob: string) => {
+        if (!dob) {
+            setAge("0");
+            return;
+        }
+
+        const birthDate = new Date(dob);
+        const today = new Date();
+
+        let calculatedAge = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        const dayDiff = today.getDate() - birthDate.getDate();
+
+        // Adjust age if birthday hasn't occurred yet this year
+        if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+            calculatedAge--;
+        }
+        // Ensure age is a number (in case of negative or invalid age)
+        const ageNumber = Math.max(0, Number(calculatedAge)); // Ensure it's never negative
+      
+        setAge(ageNumber.toString());
+    };
     return (
         <>
             <div className="w-full overflow-x-auto " >
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
                     <div className="p-2 col-span-4 ">
                         <div className="flex justify-end">
-                            {/* <Dialog>
 
-                                <DialogTrigger>
-                                    Add Family Member
-                                </DialogTrigger>
-
-
-                                 <ButtonDialog dialogForm={FamilyCompositionForm} label="Add Family Member"/> 
-                            </Dialog> */}
                             <Dialog modal={false}>
                                 <DialogTrigger>
-                                    Edit Profile
+                                    Add Record
                                 </DialogTrigger>
                                 <DialogPortal>
-                                    <DialogContent className="sm:max-w-[425px]">
+                                    <DialogContent className="sm:max-w-[425px] max-h-full overflow-y-auto">
                                         <DialogHeader>
-                                            <DialogTitle>Edit profile</DialogTitle>
-                                            <DialogDescription>
-                                                Make changes to your profile here. Click save when you're done.
+                                            <DialogTitle className="text-left">Add Family Members</DialogTitle>
+                                            <DialogDescription className="text-left">
+                                                Please complete the fields below and click "Save."
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <form action="">
-                                            <div className="grid gap-4 py-4">
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="name" className="text-right">
-                                                        Name
-                                                    </Label>
-                                                    <Input id="name" className="col-span-3" />
-                                                </div>
-                                                <div className="grid grid-cols-4 items-center gap-4">
-                                                    <Label htmlFor="username" className="text-right">
-                                                        Username
-                                                    </Label>
-                                                    <Input id="username" className="col-span-3" />
-                                                </div>
-                                                <div className="grid grid-cols-1 items-center gap-4">
-                                                    <Label htmlFor="username" className="text-right">
-                                                        Username
-                                                    </Label>
-                                                    <FormDropDown
-                                                        // onBlur={handleBlur}
-                                                        id="relationshiptothemember"
-                                                        options={relationshipToFamilyMemberOptions}
-                                                        selectedOption={selectedRelationshipToFamilyMemberId}
-                                                        onChange={handlRelationshipToFamilyMemberChange}
-                                                    // menuPortalTarget={document.body}
-                                                    // styles={{ menuPortal: (base) => ({ ...base, zIndex: 9999 }) }}
-                                                    />
-                                                </div>
+                                        <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
+                                            {/* // { 
+                                        // name: "", 
+                                        // relationship_to_the_beneficiary_id: 0, 
+                                        // birthdate: "", 
+                                        // age: 0, 
+                                        // highest_educational_attainment_id: 0, 
+                                        // work: "", 
+                                        // monthly_income: "", 
+                                        // contact_number: "" } */}
+                                            <div className="p-2 col-span-1">
+                                                <Label htmlFor="family_member_name" className="block text-sm font-medium">Name of Family Member</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="family_member_name"
+                                                    name="family_member_name"
+                                                    className="mt-1 block w-full mb-2"
+                                                    onChange={(e) => setFamilyMemberName(e.target.value)}
+                                                
+                                                />
+                                                {errors?.family_member_name && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_name}</p>
+                                                )}
                                             </div>
-                                            <DialogFooter>
-                                                <Button  >Save changes</Button>
-                                            </DialogFooter>
-                                        </form>
+                                            <div className="p-2">
+                                                <Label htmlFor="relationship_to_family_member" className="block text-sm font-medium">Relationship to Family Member</Label>
+                                                <FormDropDown
+
+                                                    id="relationship_to_family_member"
+                                                    options={relationshipToFamilyMemberOptions}
+                                                    selectedOption={selectedRelationshipToFamilyMemberId}
+                                                    onChange={handlRelationshipToFamilyMemberChange}
+
+                                                />
+                                                {errors?.relationship_to_family_member && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.relationship_to_family_member}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2">
+                                                <Label htmlFor="family_member_birthdate" className="block text-sm font-medium">Birth Date</Label>
+                                                <Input
+                                                    //  onChange={(e) => updateCommonData('first_name', e.target.value)}
+                                                    id="family_member_birthdate"
+                                                    name="family_member_birthdate"
+                                                    type="date"
+                                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                                    onChange={handleFamilyMemberDOBChange}
+                                                />
+                                                {errors?.family_member_birthdate && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_birthdate}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2 col-span-1">
+                                                <Label htmlFor="family_member_age" className="block text-sm font-medium">Age</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="family_member_age"
+                                                    name="family_member_age"
+                                                    className="mt-1 block w-full mb-2"
+                                                    value={age}
+                                                    readOnly
+                                                
+                                                />
+                                                {errors?.family_member_age && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_age}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2">
+                                                <Label htmlFor="family_highest_educational_attainment_id" className="block text-sm font-medium">Highest Educational Attainment</Label>
+                                                <FormDropDown
+
+                                                    id="family_highest_educational_attainment_id"
+                                                    options={EducationalAttainmentOptions}
+                                                    selectedOption={selectedEducationalAttainmentId}
+                                                    onChange={handlEducationalAttainmentChange}
+
+                                                />
+                                                {errors?.family_highest_educational_attainment_id && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_highest_educational_attainment_id}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2 col-span-1">
+                                                <Label htmlFor="family_member_work" className="block text-sm font-medium">Work</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="family_member_work"
+                                                    name="family_member_work"
+                                                    className="mt-1 block w-full mb-2"
+                                                    // readOnly
+                                                    onChange={(e) => setfamilyMemberWork(e.target.value)}
+                                                
+                                                />
+                                                {errors?.family_member_work && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_work}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2 col-span-1">
+                                                <Label htmlFor="family_member_monthly_income" className="block text-sm font-medium">Monthly Income</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="family_member_monthly_income"
+                                                    name="family_member_monthly_income"
+                                                    className="mt-1 block w-full mb-2"
+                                                    onChange={(e) => setfamilyMemberMonthlyIncome(e.target.value)}
+                                              
+                                                />
+                                                {errors?.family_member_monthly_income && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_monthly_income}</p>
+                                                )}
+                                            </div>
+                                            <div className="p-2 col-span-1">
+                                                <Label htmlFor="family_member_contact_number" className="block text-sm font-medium">Contact Number</Label>
+                                                <Input
+                                                    type="text"
+                                                    id="family_member_contact_number"
+                                                    name="family_member_contact_number"
+                                                    className="mt-1 block w-full mb-2"
+                                                    onChange={(e) => setfamilyMemberContactNumber(e.target.value)}
+                                              
+                                                />
+                                                {errors?.family_member_contact_number && (
+                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_contact_number}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button onClick={handleSaveFamMemberData}>Save</Button>
+                                        </DialogFooter>
+
                                     </DialogContent>
                                 </DialogPortal>
                             </Dialog>

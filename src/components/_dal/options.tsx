@@ -3,14 +3,14 @@
 import { db } from "@/db";
 import { LibraryOption } from "../interfaces/library-interface";
 import { modules, permissions, roles } from "@/db/schema/libraries";
-import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level } from "@/db/schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level } from "@/db/schema/libraries";
 import { and, eq } from "drizzle-orm";
 import { cache } from "react";
 
 const getLibraryOptions = (library: any, descriptionField: string, additionalCondition?: any): () => Promise<LibraryOption[]> => {
     return cache(async () => {
-        const whereCondition = additionalCondition 
-            ? and(eq(library.is_deleted, false), additionalCondition) 
+        const whereCondition = additionalCondition
+            ? and(eq(library.is_deleted, false), additionalCondition)
             : eq(library.is_deleted, false);
 
         const results = await db.select().from(library).where(whereCondition).execute();
@@ -47,3 +47,5 @@ export const getDeploymentAreaLibraryOptions = getLibraryOptions(lib_deployment_
 export const getTypeOfWorkLibraryOptions = getLibraryOptions(lib_type_of_work, 'work_name');
 export const getProvinceLibraryOptions = getLibraryOptions(lib_province, 'prov_name');
 export const getModalitySubCategoryLibraryOptions = getLibraryOptions(lib_modality_sub_category, 'modality_sub_category_name');
+export const getSectorsLibraryOptions = getLibraryOptions(lib_sectors, 'sector_name');
+export const getFileToUploadLibraryOptions = getLibraryOptions(lib_files_to_upload, 'file_name', eq(lib_files_to_upload.is_deleted, false));

@@ -27,7 +27,6 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
 const fetchDataById = cache(async(endpoint: string, errorMessage: string, record_id: any, matching_id: any, offline_table: any = null) => {
     try{
         const response = await fetch(api_base_url + endpoint);
-        debugger;
         if(!response.ok){
             if(offline_table){
                 const offlineData = (await db.select().from(offline_table).where(eq(offline_table[matching_id], record_id)))

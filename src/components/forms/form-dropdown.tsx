@@ -25,7 +25,7 @@ interface FormDropDownProps {
   selectedOption: any | null; // Use number since ID is usually numeric
   label?: string;
   id?: string;
-  onChange: (id: number) => void; // Function that receives the selected ID
+  onChange: (id: any) => void; // Function that receives the selected ID
   menuPortalTarget?: string;
   name?: string
 }
@@ -82,8 +82,10 @@ export function FormDropDown({ options, selectedOption, label, onChange, id, nam
               <CommandEmpty>No {label} found.</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => (
-                  <CommandItem key={option.id} value={option.name} id={id}  onSelect={() => handleSelect(option.id)}>
-                    {option.name}
+                  <CommandItem key={option.id} value={option.name} id={id}   onSelect={() => handleSelect(option.id)}
+                  className="w-full max-w-[350px]"
+                 >
+                    <span className="relative z-10 text-ellipsis max-w-[250px]">{option.name}</span>
                     <Check className={cn("ml-auto", selectedId === option.id ? "opacity-100" : "opacity-0")} />
                   </CommandItem>
                 ))}

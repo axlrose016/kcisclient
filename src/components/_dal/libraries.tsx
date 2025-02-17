@@ -3,8 +3,33 @@
 import { cache } from "react";
 import { db } from "@/db";
 import { modules, permissions, roles } from "@/db/schema/libraries";
+import initSqlJs from "sql.js";
+import { sqliteDb } from "@/db/offline/sqlJsInit";
 const api_base_url = process.env.NEXT_PUBLIC_API_BASE_URL;
 const api_pims_base_url = process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+
+const fetchOfflineLibrary = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
+    try{
+        const response = await fetch(api_base_url + endpoint);
+        if(!response.ok){
+            if(offline_table){
+                const offlineData = await sqliteDb.select().from(offline_table).all();
+                return offlineData;
+            }else{
+                throw new Error(errorMessage);
+            }
+        }
+        return await response.json();
+    } catch(error){
+        if(offline_table){
+            const offlineData = await sqliteDb.select().from(offline_table).all();
+            return offlineData;
+        }else{
+            throw new Error(errorMessage);
+        }
+    }
+});
+
 const fetchData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
     try {
         const response = await fetch(api_base_url + endpoint);
@@ -28,6 +53,8 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
 
 const fetchPIMSData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
     try {
+        const burl = api_pims_base_url;
+        console.log("The base api pims base url is " + api_pims_base_url);
         const response = await fetch(api_pims_base_url + endpoint);
         if (!response.ok) { 
             console.log("goods!");
@@ -54,6 +81,11 @@ const createFetchFunctionPIMS = (endpoint: string, errorMessage: string, offline
     return async () => fetchPIMSData(endpoint, errorMessage, offline_table);
 };
 
+const createFetchOfflineLibrary = (endpoint: string, errorMessage: string, offline_table?: any) => {
+    return async () => fetchOfflineLibrary(endpoint, errorMessage, offline_table);
+}
+
+
 export const fetchModules = createFetchFunction("/api/modules/", "Failed to fetch modules", modules);
 export const fetchPermissions = createFetchFunction("/api/permissions/", "Failed to fetch permissions", permissions);
 export const fetchRoles = createFetchFunction("/api/roles/", "Failed to fetch roles", roles);
@@ -72,7 +104,10 @@ export const fetchLibSex = createFetchFunction("/api/lib_sex/", "Failed to fetch
 export const fetchLibAncestralDomainCoverage = createFetchFunction("/api/lib_ancestral_domain_coverage/", "Failed to fetch Library: Ancestral Domain Coverage");
 export const fetchLibBarangay = createFetchFunction("/api/lib_brgy/", "Failed to fetch Library: Barangay");
 export const fetchLibCycle = createFetchFunction("/api/lib_cycle/", "Failed to fetch Library: Cycle");
-export const fetchPIMS = createFetchFunctionPIMS("api/v2/intervention_library/get_lib_region","Failed to fetch PIMS Data");
-export const fetchPIMSProvince = createFetchFunctionPIMS("api/online/lib_province/open_access?id=010000000","Failed to fetch PIMS Region Data");
-export const fetchPIMSCity = createFetchFunctionPIMS("api/online/lib_city/open_access?id=012800000","Failed to fetch PIMS Municipality Data");
-export const fetchPIMSBrgy = createFetchFunctionPIMS("api/online/lib_brgy/open_access?id=012801000","Failed to fetch PIMS Barangay Data");
+export const fetchOfflineRoles = createFetchOfflineLibrary("/api/roles/","Failed to fetch Offline Data: Roles",roles);
+export const fetchOfflineModules = createFetchOfflineLibrary("/api/modules/","Failed to fetch Offline Data: Modules", modules);
+export const fetchOfflinePermissions = createFetchOfflineLibrary("/api/permissions/", "Failed to fetch Offline Data: Permissions", permissions);
+export const fetchPIMS = createFetchFunctionPIMS("/api/v2/intervention_library/get_lib_region","Failed to fetch PIMS Data");
+export const fetchPIMSProvince = createFetchFunctionPIMS("/api/online/lib_province/open_access?id=010000000","Failed to fetch PIMS Region Data");
+export const fetchPIMSCity = createFetchFunctionPIMS("/api/online/lib_city/open_access?id=012800000","Failed to fetch PIMS Municipality Data");
+export const fetchPIMSBrgy = createFetchFunctionPIMS("/api/online/lib_brgy/open_access?id=012801000","Failed to fetch PIMS Barangay Data");

@@ -5,20 +5,195 @@ import { useEffect, useState } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FormMultiDropDown } from "@/components/forms/form-multi-dropdown";
 import { LibraryOption } from "@/components/interfaces/library-interface";
-import { getTypeOfDisabilityLibraryOptions } from "@/components/_dal/options";
+import { getSectorsLibraryOptions, getTypeOfDisabilityLibraryOptions } from "@/components/_dal/options";
 import { FormDropDown } from "@/components/forms/form-dropdown";
+import React from "react";
 
-export default function SectorDetails({ errors }: ErrorProps) {
+export default function SectorDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
     const [selectedIP, setSelectedIP] = useState(""); //this is for showing and hiding group of IPs
-    const [typeOfDisabilityOptions, setTypeOfDisabilityOptions] = useState<LibraryOption[]>([]);
+    // const [typeOfDisabilityOptions, setTypeOfDisabilityOptions] = useState<LibraryOption[]>([]);
     const [selectedTypeOfDisability, setSelectedTypeOfDisability] = useState("");
     const [selectedTypeOfDisabilityId, setSelectedTypeOfDisabilityId] = useState<number | null>(null);
+
+    const [selectedSector, setSelectedSector] = useState("");
+    const [sectorOptions, setSectorOptions] = useState<LibraryOption[]>([]);
+
+    const [selectedSectors, setSelectedSectors] = useState<{ [key: string]: boolean }>({});
+    const [capturedData1, setCapturedData] = useState("");
+
+    // const [selectedDisabilties, setSelectedDisabilties] = useState<string[]>([])
+    const [selectedDisabilities, setSelectedDisabilities] = React.useState<string[]>([])
+    const [disabilityOptions, setDisabilityOptions] = useState<{ id: number; name: string }[]>([])
+
+    const handleDisabilitiesChange = (updatedDisabilities: string[]) => {
+        setSelectedDisabilities(updatedDisabilities); // Update state directly
+
+        const formData = localStorage.getItem("formData");
+        const prevData = formData ? JSON.parse(formData) : { cfw: [{}, {}, {}] };
+
+        const updatedData = {
+            ...prevData,
+            cfw: prevData.cfw.map((cfwItem: any, index: number) => {
+                if (index !== 2) return cfwItem; // Only modify index 2
+
+                // Update the disabilities array directly with the new values
+                return { ...cfwItem, disabilities: updatedDisabilities };
+            }),
+        };
+
+        localStorage.setItem("formData", JSON.stringify(updatedData));
+        setCapturedData(updatedData); // Update your local state if necessary
+    };
+    const handleSectorChange = (sectorId: string, value: string) => {
+        // debugger;
+        const formData = localStorage.getItem("formData");
+        const prevData = formData
+            ? JSON.parse(formData)
+            : {
+                cfw: [
+                    { sectors: [] },
+                    { program_details: [] },
+                    { disabilities: [] },
+                    { family_composition: [] },
+                    {}
+                ],
+            };
+
+        const updatedSectors = prevData.cfw[0].sectors.map((sector: { id: string; }) => {
+            if (sector.id === sectorId) {
+                return { ...sector, answer: value.trim() === "Yes" ? "Yes" : "" };
+            }
+            return sector;
+        });
+
+        const updatedFormData = {
+            ...prevData,
+            cfw: [
+                { ...prevData.cfw[0], sectors: updatedSectors }, // Only update cfw[0].sectors
+                ...prevData.cfw.slice(1), // Keep the rest of cfw unchanged
+            ],
+        };
+
+        localStorage.setItem("formData", JSON.stringify(updatedFormData));
+        console.log("Updated formData:", updatedFormData); // For debugging
+    };
+
+
+
+    const handleSectorChange1 = (sectorId: string, value: string) => {
+        const formData = localStorage.getItem("formData");
+        const prevData = formData ? JSON.parse(formData) : { cfw: [{ sectors: [] }] };
+
+        // const updatedData = {
+        //     ...prevData,
+        //     cfw: prevData.cfw.map((cfwItem: any, index: number) => {
+        //         if (index !== 0) return cfwItem; // Only modify the first element
+
+        //         const sectors = cfwItem.sectors || [];
+        //         const sectorExists = sectors.some((sector: any) => sector.sector_id === sectorId);
+
+        //         const updatedSectors = sectorExists
+        //             ? sectors.map((sector: any) =>
+        //                 sector.sector_id === sectorId ? { ...sector, value } : sector
+        //             )
+        //             : [...sectors, { sector_id: sectorId, value }];
+
+        //         return { ...cfwItem, sectors: updatedSectors };
+        //     }),
+        // };
+
+
+
+
+
+
+        // localStorage.setItem("formData", JSON.stringify(updatedData));
+
+        // setCapturedData(updatedData); // Optional: Update state if needed
+
+        // console.log("Sector ID " + sectorId + " Value " + value);
+        // if (sectorId === "3" && value === "Yes") {
+        //     setSelectedPersonsWithDisability("Yes");
+        //     updateCapturedData("cfw","is_need_pwd_id","Yes",4)
+        // } else {
+        //     setSelectedPersonsWithDisability("");
+        //     updateCapturedData("cfw","is_need_pwd_id","No",4)
+        // }
+    };
+
+
+
+    // const handleSectorChange = (sectorId: string, value: string) => {
+    //     const updateSectorData = (updateFn: (prevData: any) => any) => {
+    //       const formData = localStorage.getItem("formData");
+    //       const prevData = formData ? JSON.parse(formData) : { cfw: [{ sectors: [] }] };
+
+    //       const updatedData = updateFn(prevData);
+
+    //       localStorage.setItem("formData", JSON.stringify(updatedData));
+    //       // Uncomment this if you want to update the state as well
+    //       // setCapturedData(updatedData);
+    //     };
+    // };      
+
+    // const handleSectorChange = (sectorId: string, value: string) => {
+
+    //     const numericValue = value === "Yes" ? 1 : 0;
+
+    //     // Update or add the sector in the sectors array
+    //     updateCapturedData("cfw", "sectors", { sector_id: sectorId, value: numericValue }, 0);
+
+
+    // console.log(`Sector: ${sectorId}, Selected: ${value}`);
+    // value === "Yes" ? "1" : 0;
+    // updateCapturedData("cfw", "sector_id", value, 0);
+    // // You can update your state here to capture the selection
+    // setSelectedSectors((prev) => ({
+    //     ...prev,
+    //     [sectorId]: Boolean(value) // true for "Yes", false for "No"
+    // }));
+
+
+    // };
+
+
+    const [formData, setFormData] = useState(() => {
+        // Initialize formData from localStorage or set default structure
+        const savedData = localStorage.getItem("formData");
+        return savedData ? JSON.parse(savedData) : { cfw: [{ sectors: [] }] };
+    });
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const type_of_disability = await getTypeOfDisabilityLibraryOptions();
-                setTypeOfDisabilityOptions(type_of_disability);
+                console.log("Disability Options: " + JSON.stringify(type_of_disability));
+                const convertedData = type_of_disability.map((item: { id: number; name: string }) => ({
+                    id: item.id,  // Convert id to string
+                    name: item.name,
+                }))
+                setDisabilityOptions(convertedData)  // Now it matches the expected format
+                // console.log("Disability Options: " + convertedData);
+                // setDisabilityOptions(type_of_disability);
+
+
+
+                const sectors = await getSectorsLibraryOptions();
+                setSectorOptions(sectors);
+
+                const updatedFormData = { ...formData };
+                updatedFormData.cfw[0].sectors = sectors.map((sector) => ({
+                    id: sector.id,
+                    name: sector.name,
+                    answer: "",
+                }));
+
+                setFormData(updatedFormData);
+                localStorage.setItem("formData", JSON.stringify(updatedFormData));
+
+
+                console.log(sectors);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -36,430 +211,66 @@ export default function SectorDetails({ errors }: ErrorProps) {
         <>
             <div className="space-y-12">
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 gap-y-5 gap-x-[50px] mb-2">
-                    <div className="p-2">
-                        <Label htmlFor="academe" className="block text-sm font-medium">Academe</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="academeNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="academeYes" />
-                                    <Label htmlFor="academeYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="academeNo" />
-                                    <Label htmlFor="academeNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.academe && (
-                            <p className="mt-2 text-sm text-red-500">{errors.academe[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2 ">
-                        <Label htmlFor="affected_by_disaster" className="block text-sm font-medium">Affected by Disaster</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="affectedByDisasterYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="affectedByDisasterYes" />
-                                    <Label htmlFor="affectedByDisasterYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="affectedByDisasterNo" />
-                                    <Label htmlFor="affectedByDisasterNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.affected_by_disaster && (
-                            <p className="mt-2 text-sm text-red-500">{errors.affected_by_disaster[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="business" className="block text-sm font-medium">Business</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="businessNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="businessYes" />
-                                    <Label htmlFor="businessYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="businessNo" />
-                                    <Label htmlFor="businessNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.business && (
-                            <p className="mt-2 text-sm text-red-500">{errors.business[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2 ">
-                        <Label htmlFor="children_and_youth_in_need_of_special_protection" className="block text-sm font-medium">Children and Youth in Need of Special Protection</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="childrenYouthProtectionYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="childrenYouthProtectionYes" />
-                                    <Label htmlFor="childrenYouthProtectionYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="childrenYouthProtectionNo" />
-                                    <Label htmlFor="childrenYouthProtectionNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.children_and_youth_in_need_of_special_protection && (
-                            <p className="mt-2 text-sm text-red-500">{errors.children_and_youth_in_need_of_special_protection[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2 ">
-                        <Label htmlFor="differently_abled" className="block text-sm font-medium">Differently Abled</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="differentlyAbledNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="differentlyAbledYes" />
-                                    <Label htmlFor="differentlyAbledYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="differentlyAbledNo" />
-                                    <Label htmlFor="differentlyAbledNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.differently_abled && (
-                            <p className="mt-2 text-sm text-red-500">{errors.differently_abled[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="farmer" className="block text-sm font-medium">Farmer</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="farmerNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="farmerYes" />
-                                    <Label htmlFor="farmerYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="farmerNo" />
-                                    <Label htmlFor="farmerNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.farmer && (
-                            <p className="mt-2 text-sm text-red-500">{errors.farmer[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="family_heads_in_need_of_assistance" className="block text-sm font-medium">Family Heads in Need of Assistance</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="familyHeadsYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="familyHeadsYes" />
-                                    <Label htmlFor="familyHeadsYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="familyHeadsNo" />
-                                    <Label htmlFor="familyHeadsNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.family_heads_in_need_of_assistance && (
-                            <p className="mt-2 text-sm text-red-500">{errors.family_heads_in_need_of_assistance[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="fisherfolks" className="block text-sm font-medium">Fisherfolks</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="fisherfolksNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="fisherfolksYes" />
-                                    <Label htmlFor="fisherfolksYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="fisherfolksNo" />
-                                    <Label htmlFor="fisherfolksNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.fisherfolks && (
-                            <p className="mt-2 text-sm text-red-500">{errors.fisherfolks[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="government" className="block text-sm font-medium">Government</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="governmentNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="governmentYes" />
-                                    <Label htmlFor="governmentYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="governmentNo" />
-                                    <Label htmlFor="governmentNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.government && (
-                            <p className="mt-2 text-sm text-red-500">{errors.government[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="ip" className="block text-sm font-medium">Indigenous People (IP)</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="ipYes" className="flex gap-4"
-                                onValueChange={(value) => setSelectedIP(value)}>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="ipYes" />
-                                    <Label htmlFor="ipYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="ipNo" />
-                                    <Label htmlFor="ipNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.ip && (
-                            <p className="mt-2 text-sm text-red-500">{errors.ip[0]}</p>
-                        )}
-                    </div>
-                    {selectedIP === "Yes" && (
-                        <div className="p-2  ">
-                            <Label htmlFor="ip_group_id" className="block text-sm font-medium">Group of IP</Label>
-                            <div className="mt-1">
-                                <FormMultiDropDown />
-                            </div>
-                            {errors?.ip_group_id && (
-                                <p className="mt-2 text-sm text-red-500">{errors.ip_group_id[0]}</p>
-                            )}
-                        </div>
-                    )}
-                    <div className="p-2">
-                        <Label htmlFor="ngo" className="block text-sm font-medium">NGO</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="ngoNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="ngoYes" />
-                                    <Label htmlFor="ngoYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="ngoNo" />
-                                    <Label htmlFor="ngoNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.ngo && (
-                            <p className="mt-2 text-sm text-red-500">{errors.ngo[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="out_of_school_youth" className="block text-sm font-medium">Out of School Youth (OSY)</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="osyYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="osyYes" />
-                                    <Label htmlFor="osyYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="osyNo" />
-                                    <Label htmlFor="osyNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.out_of_school_youth && (
-                            <p className="mt-2 text-sm text-red-500">{errors.out_of_school_youth[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="persons_with_disability" className="block text-sm font-medium">Persons with Disability</Label>
-                        <div className="mt-1">
-                            <RadioGroup
-                                defaultValue="No"
-                                className="flex gap-4"
-                                onValueChange={(value) => setSelectedPersonsWithDisability(value)}
-                            >
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="personsWithDisabilityYes" />
-                                    <Label htmlFor="personsWithDisabilityYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="personsWithDisabilityNo" />
-                                    <Label htmlFor="personsWithDisabilityNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.persons_with_disability && (
-                            <p className="mt-2 text-sm text-red-500">{errors.persons_with_disability[0]}</p>
-                        )}
-                    </div>
+                    {
+                        selectedModalityId === 25 ? (
+                            sectorOptions.map((sector, index) => (
+                                sector.id >= 1 && sector.id <= 9 ? (
+
+                                    <div className="p-2" key={index}>
+                                        <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">{sector.name}</Label>
+                                        <div className="mt-1">
+                                            <RadioGroup
+                                                defaultValue={`sector${sector.id}No`}
+                                                className="flex gap-4"
+                                                onValueChange={(value) => handleSectorChange(`${sector.id}`, value)}
+                                            >
+                                                <div className="flex items-center">
+                                                    <RadioGroupItem value="Yes" id={`sector${sector.id}Yes`} />
+                                                    <Label htmlFor={`sector${sector.id}Yes`} className="ml-2">Yes</Label>
+                                                </div>
+                                                <div className="flex items-center">
+                                                    <RadioGroupItem value="No" id={`sector${sector.id}No`} />
+                                                    <Label htmlFor={`sector${sector.id}No`} className="ml-2">No</Label>
+                                                </div>
+                                            </RadioGroup>
+
+                                        </div>
+                                        {
+                                            errors?.[`sector${sector.id}`] && (
+                                                <p className="mt-2 text-sm text-red-500">{errors[`sector${sector.id}`]}</p>
+                                            )}
+                                        {/* <p key={sector.id}>{sector.name}</p> */}
+                                    </div>
+
+                                ) : null
+                            ))
+                        ) : null
+                    }
+
                     {selectedPersonsWithDisability === "Yes" && (
                         <div className="p-2  ">
                             <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
                             <div className="mt-1">
-                                {/* <FormMultiDropDown /> */}
-
-                                <FormDropDown
-                                    id="type_of_disabilities"
-                                    options={typeOfDisabilityOptions}
-                                    selectedOption={selectedTypeOfDisabilityId}
-                                    onChange={handleTypeOfDisabilityChange}
+                                <FormMultiDropDown
+                                    options={disabilityOptions}
+                                    selectedValues={selectedDisabilities}
+                                    onChange={handleDisabilitiesChange}
                                 />
+
+
                             </div>
                             {errors?.type_of_disabilities && (
                                 <p className="mt-2 text-sm text-red-500">{errors.type_of_disabilities[0]}</p>
                             )}
                         </div>
                     )}
-                    <div className="p-2">
-                        <Label htmlFor="po" className="block text-sm font-medium">PO</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="poNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="poYes" />
-                                    <Label htmlFor="poYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="poNo" />
-                                    <Label htmlFor="poNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.po && (
-                            <p className="mt-2 text-sm text-red-500">{errors.po[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="religious" className="block text-sm font-medium">Religious</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="religiousNo" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="religiousYes" />
-                                    <Label htmlFor="religiousYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="religiousNo" />
-                                    <Label htmlFor="religiousNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.religious && (
-                            <p className="mt-2 text-sm text-red-500">{errors.religious[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="senior_citizen" className="block text-sm font-medium">Senior Citizen</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="seniorCitizenYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="seniorCitizenYes" />
-                                    <Label htmlFor="seniorCitizenYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="seniorCitizenNo" />
-                                    <Label htmlFor="seniorCitizenNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.senior_citizen && (
-                            <p className="mt-2 text-sm text-red-500">{errors.senior_citizen[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="solo_parent" className="block text-sm font-medium">Solo Parent</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="soloParentYes" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="soloParentYes" />
-                                    <Label htmlFor="soloParentYes" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="soloParentNo" />
-                                    <Label htmlFor="soloParentNo" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.solo_parent && (
-                            <p className="mt-2 text-sm text-red-500">{errors.solo_parent[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2">
-                        <Label htmlFor="women" className="block text-sm font-medium">Women</Label>
-                        <div className="mt-1">
-                            <RadioGroup defaultValue="yesWomen" className="flex gap-4">
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="Yes" id="yesWomen" />
-                                    <Label htmlFor="yesWomen" className="ml-2">Yes</Label>
-                                </div>
-                                <div className="flex items-center">
-                                    <RadioGroupItem value="No" id="noWomen" />
-                                    <Label htmlFor="noWomen" className="ml-2">No</Label>
-                                </div>
-                            </RadioGroup>
-                        </div>
-                        {errors?.women && (
-                            <p className="mt-2 text-sm text-red-500">{errors.women[0]}</p>
-                        )}
-                    </div>
-                    <div className="p-2 col-span-2">
-                        <Label htmlFor="others_sector" className="block text-sm font-medium">Others</Label>
-                        <div className="mt-1">
-                            <Input id="others_sector" placeholder="Please specify" />
-                        </div>
-                        {errors?.others_sector && (
-                            <p className="mt-2 text-sm text-red-500">{errors.others_sector[0]}</p>
-                        )}
-                    </div>
-                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                        <div className="p-2">
-                            <Label htmlFor="is_pantawid" className="block text-sm font-medium">Is Pantawid</Label>
-                            <div className="mt-1">
-                                <label className="inline-flex items-center">
-                                    <input type="radio" name="is_pantawid" value="yes" className="form-radio" />
-                                    <span className="ml-2">Yes</span>
-                                </label>
-                                <label className="inline-flex items-center ml-6">
-                                    <input type="radio" name="is_pantawid" value="no" className="form-radio" />
-                                    <span className="ml-2">No</span>
-                                </label>
-                            </div>
-                            {errors?.is_pantawid && (
-                                <p className="mt-2 text-sm text-red-500">{errors.is_pantawid[0]}</p>
-                            )}
-                        </div>
-                    </div>
 
-                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                        <div className="p-2">
-                            <Label htmlFor="is_pantawid_leader" className="block text-sm font-medium">Is Pantawid Leader</Label>
-                            <div className="mt-1">
-                                <label className="inline-flex items-center">
-                                    <input type="radio" name="is_pantawid_leader" value="yes" className="form-radio" />
-                                    <span className="ml-2">Yes</span>
-                                </label>
-                                <label className="inline-flex items-center ml-6">
-                                    <input type="radio" name="is_pantawid_leader" value="no" className="form-radio" />
-                                    <span className="ml-2">No</span>
-                                </label>
-                            </div>
-                            {errors?.is_pantawid_leader && (
-                                <p className="mt-2 text-sm text-red-500">{errors.is_pantawid_leader[0]}</p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2">
-                        <div className="p-2">
-                            <Label htmlFor="is_slp" className="block text-sm font-medium">Is SLP</Label>
-                            <div className="mt-1">
-                                <label className="inline-flex items-center">
-                                    <input type="radio" name="is_slp" value="yes" className="form-radio" />
-                                    <span className="ml-2">Yes</span>
-                                </label>
-                                <label className="inline-flex items-center ml-6">
-                                    <input type="radio" name="is_slp" value="no" className="form-radio" />
-                                    <span className="ml-2">No</span>
-                                </label>
-                            </div>
-                            {errors?.is_slp && (
-                                <p className="mt-2 text-sm text-red-500">{errors.is_slp[0]}</p>
-                            )}
-                        </div>
-                    </div>
                 </div>
+
+
+
+
+
             </div >
 
 
