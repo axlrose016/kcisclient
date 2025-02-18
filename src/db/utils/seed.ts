@@ -77,6 +77,12 @@ export async function seed(db: any) {
             "module_description": "Engineering",
             "module_path": "engineering",
             "created_by": "00000000-0000-0000-0000-000000000000"
+            },
+            {
+            "id": "866e6bcb-041f-4d58-94bf-6c54e4855f85",
+            "module_description": "Settings",
+            "module_path": "settings",
+            "created_by": "00000000-0000-0000-0000-000000000000"
             }
         ];
 

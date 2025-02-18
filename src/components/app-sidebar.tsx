@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sidebar"
 import { Team } from "./types"
 import { SessionPayload } from "@/types/globals"
+import { IUserData } from "./interfaces/iuser"
 
 const data = {
   user: {
@@ -155,6 +156,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [filteredSub, setFilteredSub] = React.useState(data.navMain)
   const [isLoading, setIsLoading] = React.useState(false);
   const [user, setUser] = React.useState(data.user);
+  const [userTeam, setUserTeam] = React.useState<IUserData[]>([]);
 
   React.useEffect(() => {
     async function loadUserData() {
@@ -168,47 +170,53 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       user.email = session.userData[0].email!;
       user.name = session.userData[0].name!;
       user.role = session.userData[0].role!;
-      const userTeams = session.userData[0].userAccess; 
-      
+      const userTeams = session.userData; 
+      setUserTeam(userTeams);      
       const navTeam = data.teams.filter((team) =>
-        userTeams?.some(t => team.name === t.module) // Ensure we return the comparison result
-      );
-
-      // Filter para sa module
-      const navMain = data.navMain.filter(
-        (nav) =>
-          nav.modules.includes(activeTeam.name) // Filter based on active team
-      );  
-
-      const filteredSubModule = data.navMain.filter(item => 
-        item.modules.includes(activeTeam.name)
-      );
-
-
-      const filteredChildModule = filteredSubModule
-      .map(module => ({
-        ...module,
-        items: module.items?.filter(permissions => 
-          userTeams?.some(access => 
-            access.permission && permissions.permission.includes(access.permission)
-          )
+        userTeams?.some((udata) =>
+          udata.userAccess?.some((mod) => mod.module === team.name)
         )
-      }))
-      .filter(module => module.items && module.items.length > 0);
+      );
 
       setFilteredTeam(navTeam);
-      setActiveTeam(navTeam[0]);
-      setFilteredNavMain(navMain);
-      setFilteredSub(filteredChildModule)
+      setActiveTeam(navTeam[0])
       setIsLoading(false);
       setUser(user);
     }
-
     loadUserData();
+  }, []);
 
-  }, [activeTeam]);
+  React.useEffect(() => {
+    async function loadNavMain(){
+        // Filter para sa module
+        const navMain = data.navMain.filter(
+          (nav) =>
+            nav.modules.includes(activeTeam.name) // Filter based on active team
+        );  
+  
+        const filteredSubModule = data.navMain.filter(item => 
+          item.modules.includes(activeTeam.name)
+        );
 
- 
+        const filteredChildModule = filteredSubModule
+        .map(module => ({
+          ...module,
+          items: module.items?.filter(permissions => 
+            userTeam?.some(udata =>
+              udata.userAccess?.some(access =>
+                access.permission && permissions.permission.includes(access.permission)
+              )
+            )
+          )
+        }))
+        .filter(module => module.items && module.items.length > 0);
+
+        setFilteredNavMain(navMain);
+        setFilteredSub(filteredChildModule)
+    }
+
+    loadNavMain();
+  }, [activeTeam])
 
   return (
     <>

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4a2a5f9b-ec3f-455d-81e7-1ac8bd514546",
+  "id": "78b45305-7239-4327-8d8f-30fa8dcff8a8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "lib_ancestral_domain": {
