@@ -76,8 +76,6 @@ export default async function RootLayout({
 
   const isAuthenticated = session ? true : false;
 
-
-
   return (
     <html lang="en">
       <head>
@@ -128,12 +126,12 @@ export default async function RootLayout({
                 <SidebarTrigger />
                 {children}
               </main>
-              <Toaster />
             </SidebarProvider>
           ): (
             <LoginPage/>
         )}
         <ServiceWorker/>
+        <Toaster />
       </body>
     </html>
   );

@@ -1,10 +1,27 @@
-import Dexie from 'dexie';
+import { IUser, IUserAccess } from '@/components/interfaces/iuser';
+import { IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
+import Dexie, { Table } from 'dexie';
 
-// Initialize a new Dexie database with a name (e.g., 'myDatabase')
-export const dexieDb = new Dexie('kcisdb');
+// Extend Dexie to include table definitions
+class MyDatabase extends Dexie {
+    users!: Table<IUser, string>;
+    useraccess!: Table<IUserAccess, string>;
+    roles!: Table<IRoles, string>;
+    modules!: Table<IModules, string>;
+    permissions!: Table<IPermissions, string>;
 
-// Define the schema for your database version(s)
-// This is where you define tables and their indexes
-dexieDb.version(1).stores({
-  users: 'id++, username, email, password, role_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks',
-});
+    constructor() {
+        super('kcisdb');
+
+        this.version(1).stores({
+            users: 'id, username, email, password, role_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks',
+            useraccess: 'id, user_id, module_id, permission_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks',
+            roles: 'id, role_description, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks',
+            modules: 'id, module_description, module_path, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks',
+            permissions: 'id, permission_description, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks'
+        });
+    }
+}
+
+// Export the database instance
+export const dexieDb = new MyDatabase();

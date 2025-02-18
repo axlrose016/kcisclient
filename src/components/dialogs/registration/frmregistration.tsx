@@ -4,12 +4,17 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { DialogFooter } from "@/components/ui/dialog"
 import { DialogClose } from "@radix-ui/react-dialog"
-import { cn } from "@/lib/utils"
+import { cn, hashPassword } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import PasswordFields from "@/components/forms/form-password"
 import { Button } from "@/components/ui/button"
-import { addUser, getUsers } from "@/db/offline/Dexie/schema/user-service"
-import type { IUser } from "@/components/interfaces/iuser"
+import type { IUser, IUserAccess } from "@/components/interfaces/iuser"
+import { getModules, getPermissions, getRoles } from "@/db/offline/Dexie/schema/library-service"
+import { toast } from "@/hooks/use-toast"
+import { dexieDb } from "@/db/offline/Dexie/dexieDb"
+import { useRouter } from "next/navigation"
+import { addUser, addUserAccess, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
+
 
 const formSchema = z
   .object({
@@ -26,6 +31,8 @@ const formSchema = z
 type FormData = z.infer<typeof formSchema>
 
 export default function RegistrationForm({ className, ...props }: React.ComponentProps<"div">) {
+  const router = useRouter() // Initialize the useRouter hook
+
   const {
     register,
     handleSubmit,
@@ -37,32 +44,93 @@ export default function RegistrationForm({ className, ...props }: React.Componen
 
   const onSubmit = async (data: FormData) => {
     try {
-      const formSubmission: IUser = {
-        id: crypto.randomUUID(),
+
+        const _role = (await getRoles()).filter(w => w.role_description === "Guest");
+        const _module = (await getModules()).filter(w => w.module_description === "Person Profile")
+        const _permission = (await getPermissions()).filter(w => w.permission_description === "Can Add") 
+
+        if(_role.length <= 0 || _module.length <= 0 || _permission.length <= 0){
+            toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: "Please refresh the page and try again!.",
+            })
+            return;
+        }
+
+        const _id = crypto.randomUUID();
+        const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a random salt
+        const hashedPassword : string = await hashPassword(data.password, salt);
+        const formUser: IUser = {
+        id: _id,
         username: data.username,
         email: data.email,
-        password: data.password,
-        role_id: "UUID",
+        password: hashedPassword,
+        salt: salt,
+        role_id: _role[0].id,
         created_date: new Date().toISOString(),
-        created_by: "UUID",
+        created_by: _id,
         last_modified_date: "",
         last_modified_by: "",
-        push_status_id: 1,
+        push_status_id: 2, //1 Uploaded, 2 For Uploading
         push_date: "",
         deleted_date: "",
         deleted_by: "",
         is_deleted: false,
         remarks: "",
-      }
+        }
+        
+        const formUserAccess: IUserAccess ={
+          id: crypto.randomUUID(),
+          user_id: _id,
+          module_id: _module[0].id,
+          permission_id: _permission[0].id,
+          created_date: new Date().toISOString(),
+          created_by: _id,
+          last_modified_date: "",
+          last_modified_by: "",
+          push_status_id: 2, //1 Uploaded, 2 For Uploading
+          push_date: "",
+          deleted_date: "",
+          deleted_by: "",
+          is_deleted: false,
+          remarks: "",
+        }
+        debugger;
+        // Transaction Modes in Dexie
+        // "rw" (Read/Write): Allows both reading and writing.
+        // "r" (Read-only): Only allows reading.
+        // "rw!" (Read/Write, Exclusive): Ensures exclusive access to the database.
+        await dexieDb.open();
+        dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
+            try {
+                // Ensure these operations are awaited correctly
+                await dexieDb.users.add(formUser);
+                await dexieDb.useraccess.add(formUserAccess);
+            } catch (error) {
+                console.error('Transaction failed: ', error);
+                throw error;  // Ensures the transaction is rejected if an error occurs
+            }
+        }).catch((error) => {
+            console.error('Transaction failed: ', error);
+        });
+      
 
-      await addUser(formSubmission)
-      const _users = await getUsers();
-      console.log("Users: ",_users);
-      alert("User added successfully!")
-      reset()
+        toast({
+          variant: "green",
+          title: "Success.",
+          description: "User Successfully Registered!",
+          onTransitionEnd: () => {
+            reset()
+            router.push('/login') // Add the redirect here
+          }
+        })
     } catch (error) {
-      console.error("Error adding user:", error)
-      alert("Failed to add user. Please try again.")
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your request. Please try again >> " +error,
+      })
     }
   }
 
