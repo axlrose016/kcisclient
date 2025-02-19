@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { decrypt, getSessionFromMiddleware } from "./src/lib/sessions";
 import { cookies } from "next/headers";
 import { SessionPayload } from "@/types/globals";
+import { getSession } from "@/lib/sessions-client";
 
 const protectedRoutes = ["/subproject", "/personprofile", "/implementation", "/finance", "/procurement", "/settings"];
 const publicRoutes = ["/login", "/registration"];
@@ -14,11 +15,13 @@ export async function middleware(req: NextRequest) {
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route));
     const isPublicRoute = publicRoutes.some(route => path.startsWith(route));
 
-    const cookie = (await cookies()).get('session')?.value;
-    let session = null;
-    if (cookie) {
-    session = await decrypt(cookie) as SessionPayload;
-    }
+    // const cookie = (await cookies()).get('session')?.value;
+    // let session = null;
+    // if (cookie) {
+    // session = await decrypt(cookie) as SessionPayload;
+    // }
+
+    let session = await getSession() as SessionPayload;
 
    
     console.log("Middleware Session: ", session);
