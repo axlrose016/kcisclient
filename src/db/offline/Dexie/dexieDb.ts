@@ -23,5 +23,11 @@ class MyDatabase extends Dexie {
     }
 }
 
+
+// Transaction Modes in Dexie
+// "rw" (Read/Write): Allows both reading and writing.
+// "r" (Read-only): Only allows reading.
+// "rw!" (Read/Write, Exclusive): Ensures exclusive access to the database.
+
 // Export the database instance
 export const dexieDb = new MyDatabase();

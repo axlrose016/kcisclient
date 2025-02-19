@@ -1,6 +1,6 @@
 import  { EntityTable } from 'dexie';
 import { dexieDb } from '../dexieDb'; // Assuming dexieDb is properly initialized elsewhere
-import { IUser, IUserAccess } from '@/components/interfaces/iuser';
+import { IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
 import { hashPassword } from '@/lib/utils';
 
@@ -90,5 +90,46 @@ export async function getUserAccessById(id: string) {
         return [];
     }
 }
+export async function getUserData(id: string): Promise<IUserData | null>{
+    try{
+        const user = await tblUsers.get(id);
+        if(user==null)
+        {
+            return null;
+        }
+        const userrole = await dexieDb.roles.where('id').equals(user.role_id).first();
+        const useraccess = await tblUserAccess.where('user_id').equals(id).toArray();
+        
+        const userDataAccess: IUserDataAccess[] = [];
+        for (const access of useraccess) {
+        const module = await dexieDb.modules.where('id').equals(access.module_id).first();
+        const permission = await dexieDb.permissions.where('id').equals(access.permission_id).first();
 
+        userDataAccess.push({
+            role: userrole?.role_description,  
+            module: module?.module_description,
+            module_path: module?.module_path,
+            permission: permission?.permission_description
+        });
+        }
+        const userData: IUserData = {
+            name: user?.username,
+            email: user?.email,
+            photo: "",
+            role: userrole?.role_description,
+            userAccess: userDataAccess
+        }
+        return userData;
+    }catch(error){
+        console.log('Failed to Get User Data:', error);
+        return null;
+    }
+}
+
+export async function checkUserExists(email: string, username: string) {
+    const isExist = await tblUsers.where('email').equals(email)
+    .or('username').equals(username)
+    .count() > 0;
+    return isExist;
+}
 

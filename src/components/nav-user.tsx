@@ -31,6 +31,8 @@ import {
 } from "@/components/ui/sidebar"
 import { logout } from "@/app/auth/actions"
 import ServerStatus from "./ui/network-badge"
+import { deleteSession } from "@/lib/sessions-client"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -41,11 +43,14 @@ export function NavUser({
     role: string
     avatar: string
   }
-}) {
+}) 
+{
+  const router = useRouter()
   const { isMobile } = useSidebar()
   const handleLogout = async () => {
     try {
-        await logout(); // Call the logout function
+      await deleteSession();
+      router.push("/login");
     } catch (error) {
         console.error("Failed to log out:", error);
     }

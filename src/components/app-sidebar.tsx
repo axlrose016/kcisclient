@@ -24,6 +24,7 @@ import {
 import { Team } from "./types"
 import { SessionPayload } from "@/types/globals"
 import { IUserData } from "./interfaces/iuser"
+import { getSession } from "@/lib/sessions-client"
 
 const data = {
   user: {
@@ -156,26 +157,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [filteredSub, setFilteredSub] = React.useState(data.navMain)
   const [isLoading, setIsLoading] = React.useState(false);
   const [user, setUser] = React.useState(data.user);
-  const [userTeam, setUserTeam] = React.useState<IUserData[]>([]);
+  const [userTeam, setUserTeam] = React.useState<IUserData>();
 
   React.useEffect(() => {
     async function loadUserData() {
       setIsLoading(true);
-      const response = await fetch("/api/session", { cache: "no-store" });
-      if (!response.ok) {
-        console.error("Failed to fetch session data");
-        return;
-      }
-      const session = (await response.json()) as SessionPayload;
-      user.email = session.userData[0].email!;
-      user.name = session.userData[0].name!;
-      user.role = session.userData[0].role!;
-      const userTeams = session.userData; 
+      const _session = await getSession() as SessionPayload;
+      //const session = (await response.json()) as SessionPayload;
+      user.email = _session.userData.email!;
+      user.name = _session.userData.name!;
+      user.role = _session.userData.role!;
+      const userTeams = _session.userData; 
       setUserTeam(userTeams);      
       const navTeam = data.teams.filter((team) =>
-        userTeams?.some((udata) =>
-          udata.userAccess?.some((mod) => mod.module === team.name)
-        )
+        userTeams?.userAccess?.some((mod) => mod.module === team.name)
       );
 
       setFilteredTeam(navTeam);
@@ -202,11 +197,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         .map(module => ({
           ...module,
           items: module.items?.filter(permissions => 
-            userTeam?.some(udata =>
-              udata.userAccess?.some(access =>
+            userTeam?.userAccess?.some(access =>
                 access.permission && permissions.permission.includes(access.permission)
               )
-            )
           )
         }))
         .filter(module => module.items && module.items.length > 0);

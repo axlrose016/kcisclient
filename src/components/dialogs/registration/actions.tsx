@@ -78,7 +78,7 @@ export async function submit(prevState: any, formData: FormData) {
       }).returning({id: useraccess.id})
   
       const role = defaultRole[0].role_description ?? "Guest";
-      const permission: IUserData[] = [{
+      const permission: IUserData = {
         name: username,
         email:email,
         photo:"",
@@ -88,7 +88,7 @@ export async function submit(prevState: any, formData: FormData) {
           module_path: defaultModule[0].module_path,
           permission: defaultPermission[0].permission_description
         }]
-      }]
+      }
       
       await createSession(user.id,permission);
     });

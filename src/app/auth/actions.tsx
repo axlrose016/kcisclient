@@ -89,7 +89,7 @@ export async function login(prevState: any, formData: FormData){
             
             const useraccess = useraccessArray;
 
-            await createSession(user.id, useraccess);
+            await createSession(user.id, useraccess[0]);
             redirect("/"); //change it to /
         }
 

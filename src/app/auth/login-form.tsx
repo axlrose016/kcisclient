@@ -1,18 +1,20 @@
+"use client"
+
 import { cn, hashPassword } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useActionState } from "react"
 import { ButtonSubmit } from "@/components/actions/button-submit"
-import { login } from "./actions"
 import { ButtonDialog } from "@/components/actions/button-dialog"
 import RegistrationForm from "@/components/dialogs/registration/frmregistration"
-import Image from "next/image"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { getUserByEmail, getUserById, getUsers } from "@/db/offline/Dexie/schema/user-service"
+import { getUserByEmail, getUserById, getUserData, getUsers } from "@/db/offline/Dexie/schema/user-service"
 import { toast } from "@/hooks/use-toast"
+import { IUserData } from "@/components/interfaces/iuser"
+import { createSession } from "@/lib/sessions-client"
+import { redirect } from "next/navigation"
 
 const formSchema = z.object({
     email: z.string().email({message:"Invalid Email Address"}).trim(),
@@ -23,10 +25,9 @@ const formSchema = z.object({
 });
 
 type FormData = z.infer<typeof formSchema>
-
 export default function LoginForm({className,...props}: React.ComponentProps<"div">) {
-  //const [state, loginAction] = useActionState(login, undefined)
 
+  //const [state, loginAction] = useActionState(login, undefined)
   const {
     register,
     handleSubmit,
@@ -36,9 +37,9 @@ export default function LoginForm({className,...props}: React.ComponentProps<"di
     resolver: zodResolver(formSchema),
   })
 
+
   const onSubmit = async (data: FormData) => {
     try{
-      debugger;
       const user = await getUserByEmail(data.email);
       if(user == null){
         toast({
@@ -50,11 +51,24 @@ export default function LoginForm({className,...props}: React.ComponentProps<"di
       const decryptedPassword = await hashPassword(data.password, user?.salt);
       if(user?.password === decryptedPassword && user.email === data.email)
       {
+        debugger;
+        let userData: IUserData | null; 
+        userData = await getUserData(user.id);
         toast({
           variant: "green",
           title: "Success.",
           description: "Welcome to KCIS!",
         })
+        if(userData == null){
+          toast({
+            variant: "destructive",
+            title: "Uh oh! Something went wrong.",
+            description: "There was a problem during your login process, Please try again!",
+          })
+          return;
+        }
+        await createSession(user.id, userData);
+        redirect("/")
       }
       else{
         toast({

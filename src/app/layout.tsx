@@ -75,7 +75,7 @@ export default async function RootLayout({
   }
 
   const isAuthenticated = session ? true : false;
-
+  
   return (
     <html lang="en">
       <head>

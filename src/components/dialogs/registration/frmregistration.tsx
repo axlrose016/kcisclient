@@ -12,8 +12,9 @@ import type { IUser, IUserAccess } from "@/components/interfaces/iuser"
 import { getModules, getPermissions, getRoles } from "@/db/offline/Dexie/schema/library-service"
 import { toast } from "@/hooks/use-toast"
 import { dexieDb } from "@/db/offline/Dexie/dexieDb"
-import { useRouter } from "next/navigation"
-import { addUser, addUserAccess, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
+import { addUser, addUserAccess, checkUserExists, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
+import { v4 as uuidv4 } from 'uuid';
+import { redirect } from "next/navigation"
 
 
 const formSchema = z
@@ -31,7 +32,6 @@ const formSchema = z
 type FormData = z.infer<typeof formSchema>
 
 export default function RegistrationForm({ className, ...props }: React.ComponentProps<"div">) {
-  const router = useRouter() // Initialize the useRouter hook
 
   const {
     register,
@@ -58,7 +58,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
             return;
         }
 
-        const _id = crypto.randomUUID();
+        const _id = uuidv4();
         const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a random salt
         const hashedPassword : string = await hashPassword(data.password, salt);
         const formUser: IUser = {
@@ -81,7 +81,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         }
         
         const formUserAccess: IUserAccess ={
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           user_id: _id,
           module_id: _module[0].id,
           permission_id: _permission[0].id,
@@ -96,25 +96,35 @@ export default function RegistrationForm({ className, ...props }: React.Componen
           is_deleted: false,
           remarks: "",
         }
-        debugger;
-        // Transaction Modes in Dexie
-        // "rw" (Read/Write): Allows both reading and writing.
-        // "r" (Read-only): Only allows reading.
-        // "rw!" (Read/Write, Exclusive): Ensures exclusive access to the database.
+
+        //OFFLINE
         await dexieDb.open();
+        
+        const isExist = await checkUserExists(data.email, data.username);
+        debugger;
+        if(isExist){
+          toast({
+            variant: "warning",
+            title: "Warning!",
+            description: "The Email or Username is already exist!",
+          })
+          return;
+        }
+
         dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
             try {
-                // Ensure these operations are awaited correctly
                 await dexieDb.users.add(formUser);
                 await dexieDb.useraccess.add(formUserAccess);
             } catch (error) {
                 console.error('Transaction failed: ', error);
-                throw error;  // Ensures the transaction is rejected if an error occurs
+                throw error; 
             }
         }).catch((error) => {
             console.error('Transaction failed: ', error);
         });
-      
+
+        //ONLINE
+        //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
 
         toast({
           variant: "green",
@@ -122,7 +132,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
           description: "User Successfully Registered!",
           onTransitionEnd: () => {
             reset()
-            router.push('/login') // Add the redirect here
+            redirect('/login') // Add the redirect here
           }
         })
     } catch (error) {
@@ -131,7 +141,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         title: "Uh oh! Something went wrong.",
         description: "There was a problem with your request. Please try again >> " +error,
       })
-    }
+    } 
   }
 
   return (
