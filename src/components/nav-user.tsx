@@ -29,7 +29,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { logout } from "@/app/auth/actions"
 import ServerStatus from "./ui/network-badge"
 import { deleteSession } from "@/lib/sessions-client"
 import { useRouter } from "next/navigation"
