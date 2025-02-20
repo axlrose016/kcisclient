@@ -17,7 +17,7 @@ import { getUserByEmail, getUserById, getUserData, getUsers } from "@/db/offline
 import { toast } from "@/hooks/use-toast"
 import { IUserData } from "@/components/interfaces/iuser"
 import { createSession } from "@/lib/sessions-client"
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 
 
 const formSchema = z.object({
@@ -85,8 +85,9 @@ export default function LoginPage() {
             description: "The Email or Password is Incorrect, Please try again!",
           })
         }
-        router.push("/");
-        router.refresh();
+        //router.push("/");
+        //router.refresh();
+          redirect("/");
       }
       catch(error){
         console.log("Error: ", error);
