@@ -68,6 +68,7 @@ export async function decrypt(session: string | undefined): Promise<SessionPaylo
 export function getSession(): Promise<SessionPayload | null> {
   const sessionCookie = Cookie.get('session');
   if (sessionCookie) {
+    console.log("COOKIE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", sessionCookie);
     return decrypt(sessionCookie);
   }
   return Promise.resolve(null); // No session cookie found
