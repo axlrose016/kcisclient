@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import { seedData } from "@/db/offline/Dexie/schema/library-service";
-import LoginForm from "./login-form";
 import { cn, hashPassword } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,7 +16,7 @@ import { getUserByEmail, getUserById, getUserData, getUsers } from "@/db/offline
 import { toast } from "@/hooks/use-toast"
 import { IUserData } from "@/components/interfaces/iuser"
 import { createSession } from "@/lib/sessions-client"
-import { useRouter } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 
 
 const formSchema = z.object({
@@ -86,7 +85,6 @@ export default function LoginPage() {
           })
         }
         router.push("/");
-        router.refresh();
       }
       catch(error){
         console.log("Error: ", error);

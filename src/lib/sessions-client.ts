@@ -3,7 +3,7 @@
 import Cookie from 'js-cookie';
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { IUserData } from '@/components/interfaces/iuser';
-import { redirect } from 'next/navigation';
+import { sessionDb } from '@/db/offline/Dexie/sessionDb';
 
 // Define types for session and user data
 interface SessionPayload extends JWTPayload {
@@ -29,6 +29,8 @@ export async function createSession(id: string, userData: IUserData): Promise<vo
         secure: process.env.NODE_ENV === 'production', // Set secure flag for production
         sameSite: 'Strict', // CSRF protection
     });
+
+    await sessionDb.createSession(session, "7")
 }
 
 // Function to delete session

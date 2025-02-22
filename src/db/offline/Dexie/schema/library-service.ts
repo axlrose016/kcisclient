@@ -1,10 +1,10 @@
 import { EntityTable } from "dexie";
-import { dexieDb } from "../dexieDb";
+import { kcisDb } from "../dexieDb";
 import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 
-const tblRoles = dexieDb.table('roles') as EntityTable<IRoles, 'id'>;
-const tblModules = dexieDb.table('modules') as EntityTable<IModules, 'id'>;
-const tblPermissions = dexieDb.table('permissions') as EntityTable<IPermissions, 'id'>;
+const tblRoles = kcisDb.table('roles') as EntityTable<IRoles, 'id'>;
+const tblModules = kcisDb.table('modules') as EntityTable<IModules, 'id'>;
+const tblPermissions = kcisDb.table('permissions') as EntityTable<IPermissions, 'id'>;
 
 
 //Roles Service

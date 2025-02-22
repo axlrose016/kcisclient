@@ -32,6 +32,7 @@ import {
 import ServerStatus from "./ui/network-badge"
 import { deleteSession } from "@/lib/sessions-client"
 import { useRouter } from "next/navigation"
+import { sessionDb } from "@/db/offline/Dexie/sessionDb"
 
 export function NavUser({
   user,
@@ -49,6 +50,7 @@ export function NavUser({
   const handleLogout = async () => {
     try {
       await deleteSession();
+      await sessionDb.clearAllSessions();
       router.push("/login");
     } catch (error) {
         console.error("Failed to log out:", error);
