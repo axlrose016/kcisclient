@@ -4,7 +4,15 @@ const ASSETS = [
     "/manifest.json",
     "/next.svg",
     "/globe.svg",
-    "/window.svg"
+    "/window.svg",
+    "/app/dashboard",
+    "/app/login",
+    "/app/personprofile/form",
+    "/app/settings",
+    "/favicon.ico",
+    "/globals.css",
+    "/layout.tsx",
+    "/page.tsx",
     // "/fallback.json" will be checked dynamically before caching
 ];
 
