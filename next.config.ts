@@ -62,5 +62,4 @@ const withPWA = require("@ducanh2912/next-pwa").default({
       NEXT_PUBLIC_API_PIMS_BASE_URL: process.env.API_PIMS_BASE_URL,
       NEXT_SESSION_SECRET_KEY: process.env.SESSION_SECRET_KEY
     },
-    buildExcludes: [/.*dynamic-css-manifest.json$/], // Ignore this file
   });
