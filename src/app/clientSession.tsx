@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { getSession } from '@/lib/sessions-client';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import LoginPage from './auth/page';
+import LoginPage from './login/page';
 import { useRouter } from 'next/navigation';
 
 const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
