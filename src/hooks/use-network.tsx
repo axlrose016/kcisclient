@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 
-const useNetwork = (url:string, testFileSizeInBytes = 500000) => {
-  const [isOnline, setNetwork] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
-  const [apiStatus, setApiStatus] = useState(false);
-  const [networkSpeed, setNetworkSpeed] = useState(0); // Speed in Mbps
+const useNetwork = (url: string, testFileSizeInBytes = 500000) => {
+  const [isOnline, setIsOnline] = useState(typeof window !== 'undefined' ? window.navigator.onLine : true);
+  const [apiStatus, setApiStatus] = useState<null | boolean>(null);  // Initially null to show loading state
+  const [networkSpeed, setNetworkSpeed] = useState<number | null>(null); // Speed in Mbps, initially null for loading
 
   useEffect(() => {
     const updateNetwork = () => {
-      setNetwork(window.navigator.onLine);
+      setIsOnline(window.navigator.onLine);
     };
 
     const checkApi = async () => {
@@ -15,7 +15,12 @@ const useNetwork = (url:string, testFileSizeInBytes = 500000) => {
 
       try {
         const startTime = performance.now();
-        const response = await fetch(url, { method: 'GET', cache: 'no-cache' }); // Fetch the resource
+        const response = await fetch(url, { 
+          method: 'GET', 
+          cache: 'no-cache', 
+          headers: { 'Accept': 'application/octet-stream' } 
+        }); // Fetch the resource
+
         const endTime = performance.now();
 
         if (response.ok) {
@@ -31,19 +36,22 @@ const useNetwork = (url:string, testFileSizeInBytes = 500000) => {
           setApiStatus(false);
         }
       } catch (error) {
+        console.error('API check failed:', error);
         setApiStatus(false);
         setNetworkSpeed(0);
       }
     };
 
+    // Only check API if online
     if (isOnline) checkApi();
 
-    window.addEventListener("offline", updateNetwork);
-    window.addEventListener("online", updateNetwork);
+    window.addEventListener('offline', updateNetwork);
+    window.addEventListener('online', updateNetwork);
 
+    // Clean up event listeners
     return () => {
-      window.removeEventListener("offline", updateNetwork);
-      window.removeEventListener("online", updateNetwork);
+      window.removeEventListener('offline', updateNetwork);
+      window.removeEventListener('online', updateNetwork);
     };
   }, [url, testFileSizeInBytes, isOnline]);
 

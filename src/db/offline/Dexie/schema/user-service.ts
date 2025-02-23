@@ -1,12 +1,12 @@
 import  { EntityTable } from 'dexie';
-import { kcisDb } from '../dexieDb'; // Assuming dexieDb is properly initialized elsewhere
+import { dexieDb } from '../dexieDb'; // Assuming dexieDb is properly initialized elsewhere
 import { IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
 import { hashPassword } from '@/lib/utils';
 
 // Ensure you're using a single instance for interacting with the users table
-const tblUsers = kcisDb.table('users') as EntityTable<IUser, 'id'>;
-const tblUserAccess = kcisDb.table('useraccess') as EntityTable<IUserAccess, 'id'>;
+const tblUsers = dexieDb.table('users') as EntityTable<IUser, 'id'>;
+const tblUserAccess = dexieDb.table('useraccess') as EntityTable<IUserAccess, 'id'>;
 
 // Add user function
 export async function addUser(user: IUser) {
@@ -27,7 +27,7 @@ export async function bulkAddUser(users: IUser[]){
 }
 export async function trxAddUserWithAccess(user:IUser, useraccess: IUserAccess){
     try {
-    kcisDb.transaction('rw', [tblUsers, tblUserAccess], async () => {
+    dexieDb.transaction('rw', [tblUsers, tblUserAccess], async () => {
         await tblUsers.add(user);
         await tblUserAccess.add(useraccess);
     });
@@ -97,13 +97,13 @@ export async function getUserData(id: string): Promise<IUserData | null>{
         {
             return null;
         }
-        const userrole = await kcisDb.roles.where('id').equals(user.role_id).first();
+        const userrole = await dexieDb.roles.where('id').equals(user.role_id).first();
         const useraccess = await tblUserAccess.where('user_id').equals(id).toArray();
         
         const userDataAccess: IUserDataAccess[] = [];
         for (const access of useraccess) {
-        const module = await kcisDb.modules.where('id').equals(access.module_id).first();
-        const permission = await kcisDb.permissions.where('id').equals(access.permission_id).first();
+        const module = await dexieDb.modules.where('id').equals(access.module_id).first();
+        const permission = await dexieDb.permissions.where('id').equals(access.permission_id).first();
 
         userDataAccess.push({
             role: userrole?.role_description,  

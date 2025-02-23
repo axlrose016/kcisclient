@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import type { IUser, IUserAccess } from "@/components/interfaces/iuser"
 import { getModules, getPermissions, getRoles } from "@/db/offline/Dexie/schema/library-service"
 import { toast } from "@/hooks/use-toast"
-import { kcisDb } from "@/db/offline/Dexie/dexieDb"
+import { dexieDb } from "@/db/offline/Dexie/dexieDb"
 import { addUser, addUserAccess, checkUserExists, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
 import { v4 as uuidv4 } from 'uuid';
 import { redirect } from "next/navigation"
@@ -98,10 +98,9 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         }
 
         //OFFLINE
-        await kcisDb.open();
+        await dexieDb.open();
         
         const isExist = await checkUserExists(data.email, data.username);
-        debugger;
         if(isExist){
           toast({
             variant: "warning",
@@ -111,10 +110,10 @@ export default function RegistrationForm({ className, ...props }: React.Componen
           return;
         }
 
-        kcisDb.transaction('rw', [kcisDb.users, kcisDb.useraccess], async () => {
+        dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
             try {
-                await kcisDb.users.add(formUser);
-                await kcisDb.useraccess.add(formUserAccess);
+                await dexieDb.users.add(formUser);
+                await dexieDb.useraccess.add(formUserAccess);
             } catch (error) {
                 console.error('Transaction failed: ', error);
                 throw error; 

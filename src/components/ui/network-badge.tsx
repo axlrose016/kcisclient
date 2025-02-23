@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from './badge';
 
 const ServerStatus = () => {
-  const { isOnline, apiStatus, networkSpeed } = useNetwork('http://127.0.0.1:8000/',500000);
+  const { isOnline, apiStatus, networkSpeed } = useNetwork('https://www.google.com/',500000);
 
 //   return (
 //     <div>

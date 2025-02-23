@@ -51,7 +51,6 @@ export default function LoginForm({className,...props}: React.ComponentProps<"di
       const decryptedPassword = await hashPassword(data.password, user?.salt);
       if(user?.password === decryptedPassword && user.email === data.email)
       {
-        debugger;
         let userData: IUserData | null; 
         userData = await getUserData(user.id);
         toast({

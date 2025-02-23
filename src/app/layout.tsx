@@ -8,7 +8,8 @@ import { decrypt } from "@/lib/sessions";
 import LoginPage from "./auth/page";
 import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
-import { sessionDb } from "@/db/offline/Dexie/sessionDb";
+import { getSession } from "@/lib/sessions-client";
+import ClientSessionCheck from "./clientSession";
 
 // Load custom fonts
 const geistSans = localFont({
@@ -69,26 +70,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  let session = null;
-  
-  // Check if the environment supports IndexedDB
-  const isIndexedDBAvailable = typeof window !== "undefined" && "indexedDB" in window;
-
-  // Check if online or offline
-  if (navigator.onLine) {
-    console.log("onLine: ", navigator.onLine);
-    // If online, get cookie from server
-    const cookie = (await cookies()).get("session")?.value;
-    if (cookie) {
-      session = await decrypt(cookie);
-    }
-  } else if (isIndexedDBAvailable) {
-    // If offline and IndexedDB is available, get session from IndexedDB
-    session = await sessionDb.getFirstSession();
-  }
-
-  const isAuthenticated = session ? true : false;
-
   return (
     <html lang="en">
       <head>
@@ -129,7 +110,7 @@ export default async function RootLayout({
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {isAuthenticated ? (
+        {/* {isAuthenticated == true || await getSession() != null? (
           <SidebarProvider>
             <AppSidebar />
             <main className="w-full">
@@ -139,7 +120,10 @@ export default async function RootLayout({
           </SidebarProvider>
         ) : (
           <LoginPage />
-        )}
+        )} */}
+        <ClientSessionCheck>
+          {children}
+        </ClientSessionCheck>
         <ServiceWorker />
         <Toaster />
       </body>

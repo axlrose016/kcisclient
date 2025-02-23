@@ -2,13 +2,8 @@ import { IUser, IUserAccess } from '@/components/interfaces/iuser';
 import { IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
 import Dexie, { Table } from 'dexie';
 
-// Transaction Modes in Dexie
-// "rw" (Read/Write): Allows both reading and writing.
-// "r" (Read-only): Only allows reading.
-// "rw!" (Read/Write, Exclusive): Ensures exclusive access to the database.
-
 // Extend Dexie to include table definitions
-class KCISDB extends Dexie {
+class MyDatabase extends Dexie {
     users!: Table<IUser, string>;
     useraccess!: Table<IUserAccess, string>;
     roles!: Table<IRoles, string>;
@@ -28,5 +23,11 @@ class KCISDB extends Dexie {
     }
 }
 
+
+// Transaction Modes in Dexie
+// "rw" (Read/Write): Allows both reading and writing.
+// "r" (Read-only): Only allows reading.
+// "rw!" (Read/Write, Exclusive): Ensures exclusive access to the database.
+
 // Export the database instance
-export const kcisDb = new KCISDB();   
+export const dexieDb = new MyDatabase();

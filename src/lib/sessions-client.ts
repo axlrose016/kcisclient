@@ -3,7 +3,7 @@
 import Cookie from 'js-cookie';
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { IUserData } from '@/components/interfaces/iuser';
-import { sessionDb } from '@/db/offline/Dexie/sessionDb';
+import { redirect } from 'next/navigation';
 
 // Define types for session and user data
 interface SessionPayload extends JWTPayload {
@@ -18,8 +18,7 @@ const encodedKey = new TextEncoder().encode(secretKey);
 
 // Function to create session
 export async function createSession(id: string, userData: IUserData): Promise<void> {
-    debugger;
-    console.log("Secret Ket ", secretKey);
+    console.log("Secret Key ", secretKey);
     const sessionExpiration = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 week expiration
     const session = await encrypt({ id, userData, sessionExpiration });
 
@@ -29,8 +28,6 @@ export async function createSession(id: string, userData: IUserData): Promise<vo
         secure: process.env.NODE_ENV === 'production', // Set secure flag for production
         sameSite: 'Strict', // CSRF protection
     });
-
-    await sessionDb.createSession(session, "7")
 }
 
 // Function to delete session

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { seedData } from "@/db/offline/Dexie/schema/library-service";
+import LoginForm from "./login-form";
 import { cn, hashPassword } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,7 +17,7 @@ import { getUserByEmail, getUserById, getUserData, getUsers } from "@/db/offline
 import { toast } from "@/hooks/use-toast"
 import { IUserData } from "@/components/interfaces/iuser"
 import { createSession } from "@/lib/sessions-client"
-import { redirect, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 
 const formSchema = z.object({
@@ -31,7 +32,6 @@ type FormData = z.infer<typeof formSchema>
 
 export default function LoginPage() {
   const router = useRouter()
-
   useEffect(() => {
     seedData();  
   }, []);
@@ -59,7 +59,6 @@ export default function LoginPage() {
         const decryptedPassword = await hashPassword(data.password, user?.salt);
         if(user?.password === decryptedPassword && user.email === data.email)
         {
-          debugger;
           let userData: IUserData | null; 
           userData = await getUserData(user.id);
           toast({
@@ -76,6 +75,8 @@ export default function LoginPage() {
             return;
           }
           await createSession(user.id, userData);
+          router.push("/dashboard");
+          router.refresh();
         }
         else{
           toast({
@@ -84,7 +85,6 @@ export default function LoginPage() {
             description: "The Email or Password is Incorrect, Please try again!",
           })
         }
-        router.push("/");
       }
       catch(error){
         console.log("Error: ", error);
