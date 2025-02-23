@@ -110,17 +110,6 @@ export default async function RootLayout({
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {/* {isAuthenticated == true || await getSession() != null? (
-          <SidebarProvider>
-            <AppSidebar />
-            <main className="w-full">
-              <SidebarTrigger />
-              {children}
-            </main>
-          </SidebarProvider>
-        ) : (
-          <LoginPage />
-        )} */}
         <ClientSessionCheck>
           {children}
         </ClientSessionCheck>
