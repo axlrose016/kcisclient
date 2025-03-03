@@ -38,7 +38,7 @@ export function deleteSession(): void {
 
 // Function to encrypt the payload (create JWT)
 export async function encrypt(payload: SessionPayload): Promise<string> {
-    debugger;
+    //debugger;
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
@@ -67,7 +67,6 @@ export async function decrypt(session: string | undefined): Promise<SessionPaylo
 export function getSession(): Promise<SessionPayload | null> {
   const sessionCookie = Cookie.get('session');
   if (sessionCookie) {
-    console.log("COOKIE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!", sessionCookie);
     return decrypt(sessionCookie);
   }
   return Promise.resolve(null); // No session cookie found
