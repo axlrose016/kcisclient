@@ -92,7 +92,6 @@ export function NavUser({
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
-                {/* <NetworkStatusBadge/> */}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
