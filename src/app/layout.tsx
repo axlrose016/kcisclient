@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
 import { getSession } from "@/lib/sessions-client";
 import ClientSessionCheck from "./clientSession";
+import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
 
 // Load custom fonts
 const geistSans = localFont({
@@ -109,12 +110,13 @@ export default async function RootLayout({
         <meta property="og:url" content="https://yourdomain.com" />
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} cz-shortcut-listen="true">
         <ClientSessionCheck>
           {children}
         </ClientSessionCheck>
         <ServiceWorker />
         <Toaster />
+        <FloatingPWAStatusAvatar/>
       </body>
     </html>
   );

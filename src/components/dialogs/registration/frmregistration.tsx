@@ -14,8 +14,7 @@ import { toast } from "@/hooks/use-toast"
 import { dexieDb } from "@/db/offline/Dexie/dexieDb"
 import { addUser, addUserAccess, checkUserExists, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
 import { v4 as uuidv4 } from 'uuid';
-import { redirect } from "next/navigation"
-
+import { redirect, useRouter } from "next/navigation"
 
 const formSchema = z
   .object({
@@ -32,7 +31,7 @@ const formSchema = z
 type FormData = z.infer<typeof formSchema>
 
 export default function RegistrationForm({ className, ...props }: React.ComponentProps<"div">) {
-
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -44,7 +43,6 @@ export default function RegistrationForm({ className, ...props }: React.Componen
 
   const onSubmit = async (data: FormData) => {
     try {
-
         const _role = (await getRoles()).filter(w => w.role_description === "Guest");
         const _module = (await getModules()).filter(w => w.module_description === "Person Profile")
         const _permission = (await getPermissions()).filter(w => w.permission_description === "Can Add") 
@@ -124,14 +122,13 @@ export default function RegistrationForm({ className, ...props }: React.Componen
 
         //ONLINE
         //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
-
         toast({
           variant: "green",
           title: "Success.",
           description: "User Successfully Registered!",
           onTransitionEnd: () => {
             reset()
-            redirect('/login') // Add the redirect here
+            window.location.reload();
           }
         })
     } catch (error) {

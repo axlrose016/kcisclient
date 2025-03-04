@@ -29,9 +29,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import ServerStatus from "./ui/network-badge"
 import { deleteSession } from "@/lib/sessions-client"
 import { useRouter } from "next/navigation"
+import { NetworkStatusBadge } from "./general/network-badge"
 
 export function NavUser({
   user,
@@ -49,7 +49,9 @@ export function NavUser({
   const handleLogout = async () => {
     try {
       await deleteSession();
-      router.push("/login");
+      window.location.href = '/login';
+      //router.push('/login');
+      console.log('URL updated, but waiting for navigation');
     } catch (error) {
         console.error("Failed to log out:", error);
     }
@@ -91,7 +93,7 @@ export function NavUser({
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
-                <ServerStatus/>
+                {/* <NetworkStatusBadge/> */}
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

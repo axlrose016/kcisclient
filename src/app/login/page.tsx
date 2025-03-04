@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { seedData } from "@/db/offline/Dexie/schema/library-service";
 import LoginForm from "./login-form";
 import { cn, hashPassword } from "@/lib/utils"
@@ -31,7 +31,8 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 export default function LoginPage() {
-  const router = useRouter()
+  const router = useRouter();
+  const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     seedData();  
   }, []);
@@ -75,8 +76,7 @@ export default function LoginPage() {
             return;
           }
           await createSession(user.id, userData);
-          router.push("/dashboard");
-          router.refresh();
+          window.location.href = '/dashboard';
         }
         else{
           toast({

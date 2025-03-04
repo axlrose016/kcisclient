@@ -12,7 +12,6 @@ import Details from './personal_information'
 import { FormTabs } from '@/components/forms/form-tabs'
 import { FormDropDown } from '@/components/forms/form-dropdown'
 import { LibraryOption } from '@/components/interfaces/library-interface'
-import { getLibrary } from '@/lib/libraries'
 import ContactDetails from './contact_details'
 import SectorDetails from './sectors'
 import CFWProgramDetails from './program_details'
@@ -21,7 +20,6 @@ import HighestEducationalAttainment from './highest_educational_attainment'
 
 import PrefferedDeploymentArea from './preferred_deployment_area'
 import RequirementsAttachment from './requirements_attachments'
-import { Textarea } from '@/components/ui/textarea'
 import Occupation from './occupation'
 
 import PWDRepresentative from './pwd_representative'
@@ -31,9 +29,8 @@ import CapacityBuilding from './capacity_building'
 import Ers_work_record from './ers_work_record'
 import { getCivilStatusLibraryOptions, getExtensionNameLibraryOptions, getModalityLibraryOptions, getModalitySubCategoryLibraryOptions, getSectorsLibraryOptions, getSexLibraryOptions } from '@/components/_dal/options'
 
-import { ButtonSubmit } from "@/components/actions/button-submit";
 import { submit } from "./action";
-import { debug } from 'console'
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibModalityOptions, getOfflineLibModalitySubCategoryOptions, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions } from '@/components/_dal/offline-options'
 
 export default function PersonProfileForm() {
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
@@ -304,26 +301,25 @@ export default function PersonProfileForm() {
 
   useEffect(() => {
     const fetchData = async () => {
+      debugger;
       try {
-        const sex = await getSexLibraryOptions();
+        const sex = await getOfflineLibSexOptions();//await getSexLibraryOptions();
         setSexOptions(sex);
 
-        const civil_status = await getCivilStatusLibraryOptions();
+        const civil_status = await getOfflineCivilStatusLibraryOptions(); //await getCivilStatusLibraryOptions();
         setCivilStatusOptions(civil_status);
 
-        // debugger;
-        const modality = await getModalityLibraryOptions();
+        const modality = await getOfflineLibModalityOptions(); //await getModalityLibraryOptions();
         setModalityOptions(modality);
 
-        const extension_name = await getExtensionNameLibraryOptions();
+        const extension_name = await getOfflineExtensionLibraryOptions(); //await getExtensionNameLibraryOptions();
         setExtensionNameOptions(extension_name);
 
-        const modality_sub_category = await getModalitySubCategoryLibraryOptions();
+        const modality_sub_category = await getOfflineLibModalitySubCategoryOptions(); //await getModalitySubCategoryLibraryOptions();
         setModalitySubCategoryOptions(modality_sub_category);
 
-        const sectors = await getSectorsLibraryOptions();
+        const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
         setSectorsOptions(sectors);
-
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -331,7 +327,7 @@ export default function PersonProfileForm() {
     };
 
     fetchData();
-  }, [dummyId]);
+  }, []);
 
   const handleSexChange = (id: number) => {
     updateCapturedData("common_data", "sex_id", id);

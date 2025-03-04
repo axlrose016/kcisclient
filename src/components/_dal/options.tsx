@@ -6,6 +6,7 @@ import { modules, permissions, roles } from "@/db/schema/libraries";
 import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level } from "@/db/schema/libraries";
 import { and, eq } from "drizzle-orm";
 import { cache } from "react";
+import { dexieDb } from "@/db/offline/Dexie/dexieDb";
 
 const getLibraryOptions = (library: any, descriptionField: string, additionalCondition?: any): () => Promise<LibraryOption[]> => {
     return cache(async () => {
