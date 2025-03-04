@@ -31,7 +31,6 @@ import {
 } from "@/components/ui/sidebar"
 import { deleteSession } from "@/lib/sessions-client"
 import { useRouter } from "next/navigation"
-import { NetworkStatusBadge } from "./general/network-badge"
 
 export function NavUser({
   user,

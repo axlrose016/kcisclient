@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/sessions";
-import LoginPage from "./login/page";
 import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
-import { getSession } from "@/lib/sessions-client";
 import ClientSessionCheck from "./clientSession";
 import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
 
