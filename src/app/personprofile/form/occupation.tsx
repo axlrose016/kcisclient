@@ -8,6 +8,34 @@ import { Textarea } from "@/components/ui/textarea";
 import { getIDCardLibraryOptions } from "@/components/_dal/options";
 
 export default function Occupation({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+
+    const [commonData, setCommonData] = useState(() => {
+        if (typeof window !== "undefined") {
+            const storedCommonData = localStorage.getItem("common_data");
+            return storedCommonData ? JSON.parse(storedCommonData) : {};
+        }
+        return {};
+    });
+
+    const [employment, setEmployment] = useState(() => {
+        if (typeof window !== "undefined") {
+        const storedEmployment = localStorage.getItem("employment");
+        return storedEmployment ? JSON.parse(storedEmployment) : {}
+        }
+        return {};
+    });
+
+    useEffect(() => {
+        localStorage.setItem("employment", JSON.stringify(employment));
+    }, [employment]);
+
+    const updatingEmployment = (field: any, value: any) => {
+        setEmployment((prev: any) => ({
+            ...prev, [field]: value
+        }));
+    }
+
+
     const [cfwOptions, setCfwOptions] = useState<LibraryOption[]>([]);
     const [selectedCfwCategory, setSelectedCfwCategory] = useState("");
 
@@ -33,6 +61,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
         console.log("Selected ID Card ID:", id);
         updateCapturedData("cfw", "id_card", id, 4);
         setSelectedIDCardId(id);
+        updatingEmployment("id_card", id);
     };
     return (
         <>
@@ -41,13 +70,15 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                     <div className="p-2 col-span-4">
                         <Label htmlFor="current_occupation" className="block text-sm font-medium">Occupation</Label>
                         <Input
-                            value={capturedData.cfw[4].current_occupation}
+                            value={employment.current_occupation}
+                            // value={capturedData.cfw[4].current_occupation}
                             id="current_occupation"
                             name="current_occupation"
                             type="text"
                             placeholder="Enter your Occupation"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            onChange={(e) => updateCapturedData("cfw", 'current_occupation', e.target.value, 4)}
+                            onChange={(e) => updatingEmployment('current_occupation', e.target.value)}
+                        // onChange={(e) => updateCapturedData("cfw", 'current_occupation', e.target.value, 4)}
                         />
                         {errors?.current_occupation && (
                             <p className="mt-2 text-sm text-red-500">{errors.current_occupation[0]}</p>
@@ -57,7 +88,8 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
-                            selectedOption={capturedData.cfw[4].id_card}
+                            selectedOption={employment.id_card || ""}
+                            // selectedOption={capturedData.cfw[4].id_card}
                             onChange={handleIDCardChange}
                             id="occupation_id_card"
                             options={iDCardOptions}
@@ -70,22 +102,40 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
                         <Input
-                            value={capturedData.cfw[4].occupation_id_card_number}
+                            value={employment.occupation_id_card_number}
+                            // value={capturedData.cfw[4].occupation_id_card_number}
                             id="occupation_id_card_number"
                             name="occupation_id_card_number"
                             type="text"
                             placeholder="Enter your ID Number"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            onChange={(e) => updateCapturedData("cfw", 'occupation_id_card_number', e.target.value, 4)}
+                            onChange={(e) => updatingEmployment('occupation_id_card_number', e.target.value)}
+                        // onChange={(e) => updateCapturedData("cfw", 'occupation_id_card_number', e.target.value, 4)}
                         />
                         {errors?.occupation_id_card_number && (
                             <p className="mt-2 text-sm text-red-500">{errors.occupation_id_card_number[0]}</p>
                         )}
                     </div>
+                    <div className="p-2 col-span-4 sm:col-span-4">
+                        <Label htmlFor="skills" className="block text-sm font-medium">Skills<span className='text-red-500'> *</span></Label>
+                        <Textarea
+                            value={employment.skills}
+                            // value={capturedData.cfw[4].skills}
+                            onChange={(e) => updatingEmployment('skills', e.target.value)}
+                            // onChange={(e) => updateCapturedData("cfw", 'skills', e.target.value, 4)}
+                            id="skills"
+                            name="skills"
+                            placeholder="Enter your skills"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        />
+                        {errors?.no_of_children && (
+                            <p className="mt-2 text-sm text-red-500">{errors.no_of_children}</p>
+                        )}
+                    </div>
 
 
-
-                    <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${selectedModalityId === 25 ? "hidden" : ""}  `}>
+                    <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${commonData.modality_id === 25 ? "hidden" : ""}  `}>
+                        {/* <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${selectedModalityId === 25 ? "hidden" : ""}  `}> */}
                         <div className="p-2">
                             <Label htmlFor="is_lgu_official" className="block text-sm font-medium">Is LGU Official</Label>
                             <div className="mt-1">

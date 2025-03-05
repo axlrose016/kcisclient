@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,12 +19,37 @@ export function PictureBox() {
         setImage(e.target?.result as string)
       }
       reader.readAsDataURL(file)
+
+      const fd = localStorage.getItem("formData");
+      if (fd) {
+
+        // const parsedData = JSON.parse(fd);
+        // parsedData.common_data.profile_picture = "dwight";
+        try {
+          const parsedData = JSON.parse(fd);
+  
+          // Ensure common_data exists
+          if (!parsedData.common_data) {
+            parsedData.common_data = {};
+          }
+  
+          // Save the file name
+          parsedData.common_data.profile_picture = file.name;
+  
+          // Save updated data back to localStorage
+          localStorage.setItem("formData", JSON.stringify(parsedData));
+        } catch (error) {
+          console.error("Error parsing formData from localStorage:", error);
+        }
+      }
+
     }
   }
 
   const handleAttachClick = () => {
     fileInputRef.current?.click()
   }
+ 
 
   return (
     <Card className="w-full max-w-md">
@@ -53,7 +78,7 @@ export function PictureBox() {
           ref={fileInputRef}
           onChange={handleFileChange}
         />
-        <Button onClick={handleAttachClick} className="w-full">
+        <Button onClick={handleAttachClick} className="w-full hidden">
           Attach Picture
         </Button>
       </CardFooter>

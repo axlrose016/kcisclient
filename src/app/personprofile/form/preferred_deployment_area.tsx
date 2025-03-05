@@ -17,6 +17,27 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
     const [selectedTypeOfWork, setSelectedTypeOfWork] = useState("");
     const [selectedTypeOfWorkId, setSelectedTypeOfWorkId] = useState<number | null>(null);
 
+    const initialPreferredDeployment = {
+        deployment_area_id: 0,
+        deployment_area_address: "",
+        preffered_type_of_work_id: 0
+
+    }
+
+    const [preferredDeployment, setPreferredDeployment] = useState(initialPreferredDeployment);
+    const updatingData = (field: any, value: any) => {
+
+        setPreferredDeployment((prev: any) => {
+            const updatedData = { ...prev, [field]: value };
+            ``
+            // Update localStorage
+            localStorage.setItem("preferred_deployment", JSON.stringify(updatedData));
+
+            return updatedData;
+        });
+
+    }
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -25,7 +46,12 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
 
                 const type_of_work = await getTypeOfWorkLibraryOptions();
                 setTypeOfWorkOptions(type_of_work);
-
+                if (typeof window !== "undefined") {
+                    const storedPrefferedDeployment = localStorage.getItem("preferred_deployment");
+                    if (storedPrefferedDeployment) {
+                        setPreferredDeployment(JSON.parse(storedPrefferedDeployment));
+                    }
+                }
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -37,13 +63,14 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
 
     const handleDeploymentAreaChange = (id: number) => {
         console.log("Selected Deployment Area ID:", id);
-        updateCapturedData("cfw", "deployment_area_id", id, 4);
         setSelectedDeploymentAreaId(id);
+        updatingData("deployment_area_id", id);
     };
     const handleTypeOfWorkChange = (id: number) => {
         console.log("Selected Type of Work ID:", id);
-        updateCapturedData("cfw", "preffered_type_of_work_id", id, 4);
+        // updateCapturedData("cfw", "preffered_type_of_work_id", id, 4);
         setSelectedTypeOfWorkId(id);
+        updatingData("preffered_type_of_work_id", id);
     };
 
     return (
@@ -51,12 +78,14 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
             <div>
                 <div className="flex grid sm:col-span-3 sm:grid-cols-3">
                     <div className="p-2 col-span-4">
-                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium">Name of Office</Label>
+                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium">Name of Office<span className='text-red-500'> *</span></Label>
                         <FormDropDown
 
                             id="deployment_area_id"
                             options={deploymentAreaOptions}
-                            selectedOption={capturedData.cfw[4].deployment_area_id}
+                            // selectedOption={preferredDeployment.deployment_area_id}
+                            // onChange={handleDeploymentAreaChange}
+                            selectedOption={preferredDeployment.deployment_area_id}
                             onChange={handleDeploymentAreaChange}
                         />
                         {errors?.deployment_area_id && (
@@ -66,24 +95,24 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
                     <div className="p-2 col-span-4">
                         <Label htmlFor="deployment_area_address" className="block text-sm font-medium">Office Address</Label>
                         <Textarea
-                            value={capturedData.cfw[4].deployment_area_address}
+                            value={preferredDeployment.deployment_area_address}
                             id="deployment_area_address"
                             name="deployment_area_address"
                             placeholder="Enter Office Address"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             rows={4}
-                            onChange={(e) => updateCapturedData("cfw", "deployment_area_address", e.target.value, 4)}
+                            onChange={(e) => updatingData("deployment_area_address", e.target.value)}
                         />
                         {errors?.deployment_area_address && (
                             <p className="mt-2 text-sm text-red-500">{errors.deployment_area_address[0]}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-4">
-                        <Label htmlFor="preffered_type_of_work_id" className="block text-sm font-medium">Preferred Type of Work</Label>
+                        <Label htmlFor="preffered_type_of_work_id" className="block text-sm font-medium">Preferred Type of Work<span className='text-red-500'> *</span></Label>
                         <FormDropDown
                             id="preffered_type_of_work_id"
                             options={typeOfWorkOptions}
-                            selectedOption={capturedData.cfw[4].preffered_type_of_work_id}
+                            selectedOption={preferredDeployment.preffered_type_of_work_id}
                             onChange={handleTypeOfWorkChange}
                         />
                         {errors?.preffered_type_of_work_id && (

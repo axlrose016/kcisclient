@@ -25,6 +25,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
+import { toast } from "@/hooks/use-toast";
+import { year } from "drizzle-orm/mysql-core";
 
 export default function CFWProgramDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [selectedRelation, setSelectedRelation] = useState("");
@@ -35,15 +37,92 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     const [selectedCFWTypeId, setSelectedCFWTypeId] = useState<number | null>(null);
 
     const [yearServed, setYearServed] = useState("");
-    const [capturedData1, setCapturedData] = useState("");
+    // const [capturedData1, setCapturedData] = useState([]);
+    const [capturedData1, setCapturedData] = useState<CapturedData[]>([]);
+    const [parsedData1, setParsedData] = useState([]);
+    const [SelectedCFWTypeName, setSelectedCFWTypeName] = useState<string | null>(null);
 
+    const [formData, setFormData] = useState(() => {
+        // Initialize formData from localStorage or set default structure
+        const savedData = localStorage.getItem("formData");
+        return savedData ? JSON.parse(savedData) : { cfw: [{ sectors: [] }] };
+    });
+    // const [selectedCFWTypeId, setSelectedCFWTypeId] = useState<number | null>(null);
+    const [selectedCFWTypeText, setSelectedCFWTypeText] = useState<string | null>(null);
+
+    const [hasProgramDetails, setHasProgramDetails] = useState("");
+
+    interface ProgramDetail {
+        cfw_type_id: string; // Adjust the type as needed
+        cfw_type: string;
+        year_served: string;
+
+    }
+    const [programDetails, setProgramDetails] = useState<any[]>([]);
+
+    // Function to add new entry
+    const addProgramDetail = (newRecord: any) => {
+        setProgramDetails((prev) => {
+            const updatedList = [...prev, newRecord]; // ✅ Add new data properly
+            localStorage.setItem("programDetails", JSON.stringify(updatedList)); // ✅ Update localStorage
+            return updatedList;
+        });
+    };
+
+    const loadProgramDetails = () => {
+        const storedProgramDetails = localStorage.getItem("programDetails");
+
+        if (storedProgramDetails) {
+            setProgramDetails(JSON.parse(storedProgramDetails)); // ✅ Ensures proper data setting
+        } else {
+            setProgramDetails([]);
+        }
+    };
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const cfw_type = await getCFWTypeLibraryOptions();
+                const cfwTypes = localStorage.getItem("cfw_type");
+                if (!cfwTypes) {
+                    localStorage.setItem("cfw_type", JSON.stringify(cfw_type));
+                }
                 setCFWTypeOptions(cfw_type);
 
+                const storedHasProgramDetails = localStorage.getItem("cfwHasProgramDetails");
+                if (storedHasProgramDetails !== null) {
+                    setHasProgramDetails(storedHasProgramDetails);
+                    console.log("has Program Details? " + storedHasProgramDetails);
+                }
 
+                loadProgramDetails();
+                // debugger;
+                // const storedProgramDetails = localStorage.getItem("programDetails");
+
+                // if (storedProgramDetails) {
+                //     setProgramDetails(JSON.parse(storedProgramDetails));
+                // }
+                // else {
+                //     setProgramDetails([]); // Reset if there's no data
+                // }
+
+
+
+                return;
+
+                const formDataLS = localStorage.getItem("formData");
+
+                // First, check if formDataLS exists
+                if (formDataLS) {
+                    const parsedData = JSON.parse(formDataLS || "");
+                    console.log("Parsed Data: ", parsedData);
+                    setCapturedData(parsedData);
+                    // setCapturedData(parsedData.cfw[1].program_details);
+                    console.log("Final Parsed Data: ", parsedData1);
+                    // Check if sectors array exists and is not empty
+                    // if (Array.isArray(parsedData.cfw[1].program_details) && parsedData.cfw[1].program_details.length > 0) {
+                    //     console.log("Program details array is not empty:", setFormData(parsedData.cfw[1].program_details));
+                    // }
+                }
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -52,20 +131,64 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
         fetchData();
     }, []);
 
+    const handleCFWTypeChange2 = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedId = Number(event.target.value); // Get the value as a number
+        const selectedText = event.target.options[event.target.selectedIndex].text; // Get the text
+
+        console.log("Selected CFW Type ID:", selectedId);
+        console.log("Selected CFW Type Text:", selectedText);
+
+        setSelectedCFWTypeId(selectedId);
+    };
+
+    const [cfwType, setcfwType] = useState("");
     const handleCFWTypeChange = (id: number) => {
         console.log("Selected CFW Type ID:", id);
 
         setSelectedCFWTypeId(id);
     };
 
+    const handleCFWTypeChange1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
+
+        console.log(e);
+        // console.log(e.target);
+        // console.log(e.target?.value);
+        // const target = e.target as HTMLSelectElement;
+        // console.log("Value: " + target.value);
+        // const selectedId = Number(target.value); // Extract the selected ID (assuming it's a number)
+        // const selectedText = target.options[target.selectedIndex].text; // Extract the selected text
+
+        // console.log("Selected CFW Type ID:", selectedId);
+        // console.log("Selected CFW Type:", selectedText);
+
+        // setcfwType(selectedText);
+        // setSelectedCFWTypeId(selectedId);
+    };
+
+
     const handleIsCFWFamBene = (event: React.ChangeEvent<HTMLInputElement>) => {
 
         const value = event.target.value;
+        setHasProgramDetails(value);
+
+
+        const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
+        if (storedHasProgramDetails !== null) {
+            localStorage.removeItem("hasProgramDetails");
+            localStorage.removeItem("programDetails");
+            setProgramDetails([]);
+        }
+
+        localStorage.setItem("hasProgramDetails", value);
+
+        return;
+
+
         // const values = event.target.value; 
         setSelectedIsCFWFamBene(value); //yes and no
         // console.log("is bene ", value);
         if (value === "no") {
-            updateCapturedData("cfw", "is_family_beneficiary_of_cfw", 0, 4);
+            // updateCapturedData("cfw", "is_family_beneficiary_of_cfw", 0, 4);
             // updateCapturedData("cfw", "immediate_health_concern_details", ""); // Clear health concern details
             // updateCapturedData("cfw", "has_immediate_health_concern", 0, 4);
             // updateCapturedData("cfw", "immediate_health_concern", "", 4);
@@ -99,80 +222,226 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
         e.preventDefault(); // Prevent default button behavior
 
         console.log("Selected Type is: " + selectedCFWTypeId);
+
+        if (selectedCFWTypeId === null) {
+
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please select a CFW Type!",
+            })
+            return;
+        }
+        if (yearServed === "") {
+
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Year served required!",
+            })
+            return;
+        }
+
+        if (yearServed.length < 4) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please input a valid year served!",
+            })
+            return;
+        }
+
+
         console.log("Year Served is: " + yearServed);
 
-        const formData = localStorage.getItem("formData");
-        const prevData = formData ? JSON.parse(formData) : { cfw: [{ program_details: [] }] };
+        const selectedText = cFWTypeOptions.find(option => option.id === selectedCFWTypeId)?.name;
+        console.log("CFW TYPE " + selectedText);
+        // const selectedText = e.target.options[e.target.selectedIndex].text; // Get the text
+        const newRecord = {
+            // Define your new data here
+            cfw_type_id: selectedCFWTypeId?.toString(),
+            cfw_type: selectedText,
+            year_served: yearServed,
 
-        const updatedData = {
-            ...prevData,
-            cfw: prevData.cfw.map((cfwItem: any, index: number) => {
-                if (index !== 1) return cfwItem; // Only modify the second element program details
-
-                const programDetails = cfwItem.program_details || [];
-
-                // Check for duplicate cfw_type_id and year_served
-                const programExists = programDetails.some(
-                    (program: any) => program.cfw_type_id === selectedCFWTypeId && program.year_served === yearServed
-                );
-
-                if (programExists) {
-                    alert("This CFW Type and Year Served combination already exists.");
-                    return cfwItem; // Return unchanged item
-                }
-
-                const updatedProgramDetails = [
-                    ...programDetails,
-                    { cfw_type_id: selectedCFWTypeId, year_served: yearServed }
-                ];
-
-                return { ...cfwItem, program_details: updatedProgramDetails };
-            }),
         };
+        // debugger;
+        const programDetails = localStorage.getItem("programDetails");
+        const prevData = programDetails ? JSON.parse(programDetails) : [];
+        // debugger;
+        // Check if prevData is empty
+        const isEmpty = Object.keys(prevData).length === 0;
+        if (isEmpty) {
+            // Insert new record
 
-        localStorage.setItem("formData", JSON.stringify(updatedData));
-        setCapturedData(updatedData); // Optional: Update state if needed
-        // console.log(localStorage.getItem("formData"));
+            addProgramDetail(newRecord);
+            // localStorage.setItem("programDetails", JSON.stringify(newRecord));
+
+            // setCapturedData(JSON.stringify(newRecord));
+            // setProgramDetails([...prevData, newRecord]); // ✅ Correct way
+            toast({
+                variant: "green",
+                title: "Success",
+                description: "New entry has been saved!",
+            })
+        } else {
+            // const selectedText = cFWTypeOptions.find(option => option.id === selectedCFWTypeId)?.name;
+            // console.log("Selected Program CFW Type: " + selectedText);
+
+            if (selectedCFWTypeId !== null && Number(selectedCFWTypeId) > 0) {
+                console.log("selectedCFWTypeId is a valid positive number");
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Please select a Program Type!",
+                })
+                return;
+            }
+
+
+
+
+            // const programArray = Array.isArray(prevData) ? prevData : Object.values(prevData);
+            const programArray = Array.isArray(prevData) ? prevData : [prevData];
+            console.log("Program array is " + typeof programArray);
+            const matchingPrograms = programArray.filter((program: any) =>
+                String(program.cfw_type_id) === String(selectedCFWTypeId) &&
+                String(program.year_served) === String(yearServed)
+            );
+
+            if (matchingPrograms.length > 0) {
+                console.log("Existing programs:", matchingPrograms);
+                // console.log(localStorage.getItem("formData"));
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Record exists!",
+                })
+            } else {
+
+                console.log("No matching programs found.");
+                // Create new program object
+                const newRecord = {
+                    cfw_type_id: String(selectedCFWTypeId),
+                    cfw_type: selectedText, // Change this if dynamic
+                    year_served: String(yearServed),
+                };
+
+                // Append the new data to the array
+                // programArray.push(newRecord);
+                addProgramDetail(newRecord);
+
+                // Save updated array to localStorage
+                // localStorage.setItem("programDetails", JSON.stringify(programArray));
+
+                // const programDetails = JSON.parse(localStorage.getItem("programDetails") || "[]");
+
+                // setProgramDetails([...programDetails, newRecord]);
+                // console.log("New program added:", newRecord);
+                // console.log(localStorage.getItem("formData"));
+                toast({
+                    variant: "green",
+                    title: "Success",
+                    description: "New entry has been saved!",
+                })
+            }
+
+
+        }
+
+
+
+
+
     };
 
+
+    type ProgramDetails = {
+        cfw_type: string;
+        year_served: number;
+    };
+    type CFWItem = {
+        program_details?: ProgramDetails[];
+    };
+    type CapturedData = {
+        cfw: CFWItem[];
+    };
+
+    useEffect(() => {
+        const storedValue = localStorage.getItem("hasProgramDetails");
+        if (storedValue) {
+            setHasProgramDetails(storedValue);
+        }
+    }, [hasProgramDetails]);
+
+    const handleDelete = (cfwTypeId: string, yearServed: string) => {
+        toast({
+            variant: "destructive",
+            title: "Are you sure?",
+            description: "This action cannot be undone.",
+            action: (
+                <button
+                    onClick={() => confirmDelete(cfwTypeId, yearServed)}
+                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                    Confirm
+                </button>
+            ),
+        });
+    };
+
+    const confirmDelete = (cfwTypeId: string, yearServed: string) => {
+        const updatedList = programDetails.filter(
+            (program) => !(program.cfw_type_id === cfwTypeId && program.year_served === yearServed)
+        );
+
+        setProgramDetails(updatedList); // ✅ Updates state
+        localStorage.setItem("programDetails", JSON.stringify(updatedList)); // ✅ Updates localStorage
+
+        toast({
+            variant: "green",
+            title: "Success",
+            description: "Record has been deleted!",
+        });
+    };
     return (
         <>
             <div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
                     <div className="p-2 sm:col-span-4">
-                        <Label htmlFor="cfw_program_details" className="block text-sm font-medium">Has your family ever been a beneficiary of the Cash-for-Work Program of DSWD? (e.g., Tara Basa Program, CFW for Disaster, etc.)</Label>
-                        <div className="mt-2">
+                        <Label htmlFor="cfw_program_details" className="block text-sm font-medium p-2">Has your family ever been a beneficiary of the Cash-for-Work Program of DSWD? (e.g., Tara Basa Program, CFW for Disaster, etc.)</Label>
+                        <div className="mt-2 flex items-center space-x-6 p-2">
                             <div className="flex items-center">
                                 <input
-                                    checked={capturedData.cfw[4].is_family_beneficiary_of_cfw === 1}
+                                    checked={hasProgramDetails === "yes"}
                                     onChange={handleIsCFWFamBene}
-                                    id="cfw_program_details"
+                                    id="cfw_program_details_yes"
                                     name="cfw_program_details"
                                     type="radio"
                                     value="yes"
                                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-
                                 />
-                                <Label htmlFor="cfw_program_details_yes" className="ml-3 block text-sm font-medium text-gray-700">
+                                <Label htmlFor="cfw_program_details_yes" className="ml-2 text-sm font-medium text-gray-700">
                                     Yes
                                 </Label>
                             </div>
-                            <div className="flex items-center mt-2">
+
+                            <div className="flex items-center">
                                 <input
-                                    checked={capturedData.cfw[4].is_family_beneficiary_of_cfw === 0}
+                                    checked={hasProgramDetails === "no"}
                                     onChange={handleIsCFWFamBene}
-                                    id="cfw_program_details"
+                                    id="cfw_program_details_no"
                                     name="cfw_program_details"
                                     type="radio"
                                     value="no"
                                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
-                                // onChange={(e) => updateCapturedData("common_data", "has_immediate_health_concern", e.target.value)}
                                 />
-                                <Label htmlFor="cfw_program_details_no" className="ml-3 block text-sm font-medium text-gray-700">
+                                <Label htmlFor="cfw_program_details_no" className="ml-2 text-sm font-medium text-gray-700">
                                     No
                                 </Label>
                             </div>
                         </div>
+
 
 
                         {errors?.cfw_program_details && (
@@ -181,15 +450,17 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                     </div>
 
 
-                    {capturedData.cfw[4].is_family_beneficiary_of_cfw === 1 && (
-                        <div className="p-2 col-span-4 ">
+                    {hasProgramDetails !== null && hasProgramDetails === "yes" && (
+                        <div className="p-2 sm:col-span-4">
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-start mt-2 p-2">
                                 {/* <Button onClick={handleSaveFamBeneData}>Add New</Button> */}
 
                                 <Dialog modal={false}>
                                     <DialogTrigger asChild>
-                                        <Button variant="outline">Add</Button>
+                                        <p className="border px-2 py-3 mr-2">
+                                            Add New Entry
+                                        </p>
                                     </DialogTrigger>
                                     <DialogContent className="sm:max-w-[425px]">
                                         <DialogHeader>
@@ -198,21 +469,27 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                                                 Please indicate if your family has ever been a beneficiary of the Cash-for-Work Program of DSWD (e.g., Tara Basa Program, CFW for Disaster, etc.). Write the year served.
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium mb-2">Program Type</Label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium mb-2">
+                                                    Program Type
+                                                </Label>
                                                 <FormDropDown
                                                     options={cFWTypeOptions}
                                                     selectedOption={selectedCFWTypeId}
-                                                    onChange={handleCFWTypeChange}
+                                                    label="Select CFW Type"
+                                                    onChange={(value) => handleCFWTypeChange(value)}
+                                                    id="cfw-type-dropdown"
                                                 />
                                                 {errors?.representative_extension_name_id && (
                                                     <p className="mt-2 text-sm text-red-500">{errors.representative_extension_name_id[0]}</p>
                                                 )}
                                             </div>
 
-                                            <div className="p-2 col-span-1">
-                                                <Label htmlFor="year_served" className="block text-sm font-medium">Year Served</Label>
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="year_served" className="block text-sm font-medium">
+                                                    Year Served
+                                                </Label>
                                                 <Input
                                                     type="number"
                                                     max={2025}
@@ -226,7 +503,11 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                                                 )}
                                             </div>
                                         </div>
+
                                         <DialogFooter>
+                                            {/* <div>
+                                                <p>New entry has been added!</p>
+                                            </div> */}
                                             <Button onClick={handleSaveFamBeneData}>Save</Button>
                                         </DialogFooter>
                                     </DialogContent>
@@ -235,29 +516,62 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
 
                             </div>
                             <div className="p-2 col-span-4">
-                                <Table>
-                                    <TableCaption>A list of families that have previously been beneficiaries of the DSWD's CFW Program.</TableCaption>
+                                <Table className="border">
+                                    {/* <TableCaption>A list of families that have previously been beneficiaries of the DSWD's CFW Program.</TableCaption> */}
                                     <TableHeader>
                                         <TableRow>
                                             <TableHead>Program Type</TableHead>
                                             <TableHead>Year Served</TableHead>
+                                            <TableHead>Action</TableHead>
 
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {capturedData !== undefined ? "" : capturedData?.cfw[1].program_details[0].cfw_type_id}
-                                        <TableRow>
-                                            <TableCell>Tara Basa</TableCell>
-                                            <TableCell>2022</TableCell>
-                                        </TableRow>
-                                        {/* {invoices.map((invoice) => (
-                                            <TableRow key={invoice.invoice}>
-                                                <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                                                <TableCell>{invoice.paymentStatus}</TableCell>
-                                                <TableCell>{invoice.paymentMethod}</TableCell>
-                                                <TableCell className="text-right">{invoice.totalAmount}</TableCell>
-                                            </TableRow>
-                                        ))} */}
+                                        {/* {capturedData !== undefined ? "" : capturedData?.cfw[1].program_details[0].cfw_type_id} */}
+
+
+                                        {
+                                            programDetails && programDetails.length > 0 ? (
+                                                programDetails.map((programDetail: any, index: number) => (
+                                                    <TableRow key={index}>
+                                                        <TableCell>{programDetail.cfw_type}</TableCell>
+                                                        <TableCell>{programDetail.year_served}</TableCell>
+                                                        <TableCell>
+                                                            <div className="flex space-x-2">
+                                                                {/* <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger>
+                                                                            <Edit className="w-4 h-4" />
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>Edit Record</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider> */}
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <button onClick={() => handleDelete(programDetail.cfw_type_id, programDetail.year_served)}
+                                                                                className="text-red-500 hover:text-red-700">
+                                                                                <Trash className="w-4 h-4" />
+                                                                            </button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>Delete Record</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+                                                            </div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={2}>No program details available</TableCell>
+                                                </TableRow>
+                                            )}
+
+
                                     </TableBody>
 
                                 </Table>

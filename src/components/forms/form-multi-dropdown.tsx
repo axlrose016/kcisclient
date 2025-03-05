@@ -50,13 +50,16 @@ export function FormMultiDropDown({ options, selectedValues, onChange }: FormMul
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[300px] justify-between">
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[300px] h-300 justify-between overflow-y-auto">
           <div className="flex items-center gap-1 truncate">
             {selectedValues.length > 0 ? (
               <>
-                <div className="flex flex-wrap gap-1 max-w-[230px] overflow-hidden">
+                <div className="flex flex-wrap gap-1 max-w-[230px] overflow-auto">
+                {/* <div className="flex flex-wrap items-center gap-1 max-w-[500px] min-w-0 max-h-[50px] overflow-auto"> */}
+
                   {selectedValues.slice(0, 2).map((value) => (
-                    <Badge key={value} variant="secondary" className="truncate max-w-[100px]">
+                    <Badge key={value} variant="secondary"                     
+                    className="truncate max-w-[500px] inline-flex items-center px-2 py-1 whitespace-nowrap w-auto ">
                       {options.find((option) => option.id === Number(value))?.name}
                     </Badge>
                   ))}

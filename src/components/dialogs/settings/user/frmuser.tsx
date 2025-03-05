@@ -154,7 +154,6 @@ export default function UserForm({
                                 <div className="mt-2">
                                     <FormDropDown
                                         id="role_id"
-                                        name="role_id"
                                         options={roleOptions}
                                         selectedOption={formUser?.role_id || ''}
                                         onChange={handleRoleChange}

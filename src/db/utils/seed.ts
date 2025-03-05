@@ -1,4 +1,4 @@
-import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_ip_group, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
 import { upsertData } from "./offline_crud";
 
 export async function seed(db: any) {
@@ -502,7 +502,7 @@ export async function seed(db: any) {
 
         // modalityid 25 is CFW, 22 is pmnp
         const _modality_sub_category = [
-            { "id": 1, "modality_id": 25, "modality_sub_category_name": "CFW - SUC", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 1, "modality_id": 25, "modality_sub_category_name": "CFW - HEI", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 2, "modality_id": 25, "modality_sub_category_name": "CFW - PWD", "created_by": "00000000-0000-0000-0000-000000000000" },
         ];
         const _sectors = [
@@ -526,8 +526,22 @@ export async function seed(db: any) {
             { "id": 6, "file_name": "TOR/Diploma/Certification from the School Registrar", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 7, "file_name": "Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 8, "file_name": "1x1 Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            { "id": 9, "file_name": "Display Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
             
         ];
+
+        const _ip_groups = [
+            { "id": 1, "ip_group_name": "Aeta", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 2, "ip_group_name": "Igorot", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 3, "ip_group_name": "Mangyan", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 4, "ip_group_name": "Lumad", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 5, "ip_group_name": "Badjao", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 6, "ip_group_name": "T'boli", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 7, "ip_group_name": "Maranao", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 8, "ip_group_name": "Ifugao", "created_by": "00000000-0000-0000-0000-000000000000" }
+        ];
+        
+
         const result = await db.transaction(async (trx: any) => {
             await upsertData(trx, roles, _roles);
             await upsertData(trx, permissions, _permissions);
@@ -554,6 +568,7 @@ export async function seed(db: any) {
             await upsertData(trx, lib_modality_sub_category, _modality_sub_category);
             await upsertData(trx, lib_sectors, _sectors);
             await upsertData(trx, lib_files_to_upload, _files_to_upload);
+            await upsertData(trx, lib_ip_group, _ip_groups);
             // await upsertData(trx, lib_province, _province);
 
         })

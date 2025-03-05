@@ -40,6 +40,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.36.4",
     "fs": "^0.0.1-security",
+    "immer": "^10.1.1",
     "jose": "^5.9.6",
     "js-cookie": "^3.0.5",
     "leaflet": "^1.9.4",

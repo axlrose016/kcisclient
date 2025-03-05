@@ -80,7 +80,9 @@ class PersonProfileService {
 
   constructor() {
     // http://127.0.0.1:8000/
-    this.apiUrl = 'http://127.0.0.1:8000/api/person_profile/';
+    this.apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/';
+    // this.apiUrl = 'http://10.10.10.162:9000/api/person_profile/';
+    // this.apiUrl = 'http://127.0.0.1:8000/api/person_profile/';
   }
 
   // Method to sync data in bulk
