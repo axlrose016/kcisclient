@@ -122,7 +122,7 @@ export default function PersonProfileForm() {
   const [dob, setDob] = useState<string>("");
   const [age, setAge] = useState<string>("");
 
-  const [state, submitAction] = useActionState(submit, undefined)
+  //const [state, submitAction] = useActionState(submit, undefined)
 
   const [philsysIdNo, setPhilsysIdNo] = useState<string>("");
 
@@ -463,13 +463,13 @@ export default function PersonProfileForm() {
       label: "Contact Information",
       content: (
         <div className="bg-card rounded-lg">
-          <ContactDetails
+          {/* <ContactDetails
             // errors={errors} 
             errors={errors}
             capturedData={capturedData}
             updateCapturedData={updateCapturedData}
             selectedModalityId={selectedModalityId}
-          />
+          /> */}
         </div>
       ),
     },
@@ -553,7 +553,7 @@ export default function PersonProfileForm() {
           label: "Volunteer Details",
           content: (
             <div className="bg-card rounded-lg">
-              <VolunteerDetails errors={errors} />
+              {/* <VolunteerDetails errors={errors} /> */}
             </div>
           ),
         }, {
@@ -561,7 +561,7 @@ export default function PersonProfileForm() {
           label: "KC Trainings",
           content: (
             <div className="bg-card rounded-lg">
-              <KCTrainings errors={errors} />
+              {/* <KCTrainings errors={errors} /> */}
             </div>
           ),
         }, {
@@ -569,7 +569,7 @@ export default function PersonProfileForm() {
           label: "Capacity Building",
           content: (
             <div className="bg-card rounded-lg">
-              <CapacityBuilding errors={errors} />
+              {/* <CapacityBuilding errors={errors} /> */}
             </div>
           ),
         },
@@ -578,7 +578,7 @@ export default function PersonProfileForm() {
           label: "ERS Work Record",
           content: (
             <div className="bg-card rounded-lg">
-              <Ers_work_record errors={errors} />
+              {/* <Ers_work_record errors={errors} /> */}
             </div>
           ),
         },
@@ -699,9 +699,9 @@ export default function PersonProfileForm() {
     if (ls) {
       const pls = JSON.parse(ls);
       console.log("from LS ", pls);
-      const response = await submit({}, JSON.stringify(pls));
-      console.log("SERVER RESPONSE", JSON.stringify(response));
-      console.log("SERVER RESPONSE", response);
+      //const response = await submit({}, JSON.stringify(pls));
+      //console.log("SERVER RESPONSE", JSON.stringify(response));
+      //console.log("SERVER RESPONSE", response);
     }
 
     setChkToggle(false);
@@ -911,12 +911,10 @@ export default function PersonProfileForm() {
         // cfwPWDRepresentative
       }
 
-
       else if (commonData.modality_id === 22) {
         // other modality: this is PMNP
         console.log("PMNP things");
       }
-
 
       else {
         console.log("No modality selected!");

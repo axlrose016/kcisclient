@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast";
 import { year } from "drizzle-orm/mysql-core";
+import { getOfflineLibCFWType } from "@/components/_dal/offline-options";
 
 export default function CFWProgramDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [selectedRelation, setSelectedRelation] = useState("");
@@ -81,7 +82,7 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const cfw_type = await getCFWTypeLibraryOptions();
+                const cfw_type = await getOfflineLibCFWType(); //await getCFWTypeLibraryOptions();
                 const cfwTypes = localStorage.getItem("cfw_type");
                 if (!cfwTypes) {
                     localStorage.setItem("cfw_type", JSON.stringify(cfw_type));

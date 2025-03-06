@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCourseLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
+import { getOfflineLibCourses, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
 export default function HighestEducationalAttainment({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
@@ -31,10 +32,10 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const course = await getCourseLibraryOptions();
+                const course = await getOfflineLibCourses(); //await getCourseLibraryOptions();
                 setCourseOptions(course);
 
-                const year_level = await getYearLevelLibraryOptions();
+                const year_level = await getOfflineLibYearLevel(); //await getYearLevelLibraryOptions();
                 setYearLevelOptions(year_level);
 
                 const storedEducationalAttainment = localStorage.getItem("educational_attainment");

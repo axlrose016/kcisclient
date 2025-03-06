@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getIDCardLibraryOptions } from "@/components/_dal/options";
+import { getOfflineLibIdCard } from "@/components/_dal/offline-options";
 
 export default function Occupation({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
 
@@ -47,7 +48,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
         const fetchData = async () => {
             try {
 
-                const id_card = await getIDCardLibraryOptions();
+                const id_card = await getOfflineLibIdCard();//await getIDCardLibraryOptions();
                 setIDCardOptions(id_card);
 
             } catch (error) {

@@ -198,7 +198,6 @@ export async function seed(db: any) {
             { "id": 7, "disability_name": "Autism Spectrum Disorder", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 8, "disability_name": "Multiple Disabilities", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 9, "disability_name": "Chronic Illness-related Disability", "created_by": "00000000-0000-0000-0000-000000000000" }
-
         ];
 
         const _fund_source = [
@@ -527,7 +526,6 @@ export async function seed(db: any) {
             { "id": 7, "file_name": "Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 8, "file_name": "1x1 Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
             { "id": 9, "file_name": "Display Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
-            
         ];
 
         const _ip_groups = [

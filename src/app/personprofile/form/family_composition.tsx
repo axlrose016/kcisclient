@@ -17,6 +17,7 @@ import { ButtonDialog } from "@/components/actions/button-dialog";
 import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilycomposition";
 import HighestEducationalAttainment from "./highest_educational_attainment";
 import { toast } from "@/hooks/use-toast";
+import { getOfflineLibEducationalAttainment, getOfflineLibRelationshipToBeneficiary, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
 
 export default function FamilyComposition({ errors }: { errors: any }) {
 
@@ -60,14 +61,14 @@ export default function FamilyComposition({ errors }: { errors: any }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const relationship_to_family_member = await getRelationshipToFamilyMemberTypeLibraryOptions();
+                const relationship_to_family_member = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToFamilyMemberTypeLibraryOptions();
                 setRelationshipToFamilyMemberOptions(relationship_to_family_member);
 
-                const year_level = await getYearLevelLibraryOptions();
+                const year_level = await getOfflineLibYearLevel();//await getYearLevelLibraryOptions();
                 setYearLevelOptions(year_level);
 
 
-                const educational_attainment = await getEducationalAttainmentLibraryOptions();
+                const educational_attainment = await getOfflineLibEducationalAttainment();//await getEducationalAttainmentLibraryOptions();
                 setEducationalAttainmentOptions(educational_attainment);
 
 

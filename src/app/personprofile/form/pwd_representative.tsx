@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCivilStatusLibraryOptions, getEducationalAttainmentLibraryOptions, getExtensionNameLibraryOptions, getIDCardLibraryOptions, getRelationshipToBeneficiaryLibraryOptions, getSexLibraryOptions } from "@/components/_dal/options";
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSexOptions } from "@/components/_dal/offline-options";
 
 
 export default function PWDRepresentative({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
@@ -82,63 +83,63 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const sex = await getSexLibraryOptions();
+                const sex = await getOfflineLibSexOptions();//await getSexLibraryOptions();
                 setSexOptions(sex);
 
-                const representative_civil_status_id = await getCivilStatusLibraryOptions();
+                const representative_civil_status_id = await getOfflineCivilStatusLibraryOptions();//await getCivilStatusLibraryOptions();
                 setCivilStatusOptions(representative_civil_status_id);
 
                 // const modality = await getModalityLibraryOptions();
                 // setModalityOptions(modality);
 
-                const representative_extension_name_id = await getExtensionNameLibraryOptions();
+                const representative_extension_name_id = await getOfflineExtensionLibraryOptions();//await getExtensionNameLibraryOptions();
                 setExtensionNameOptions(representative_extension_name_id);
 
-                const educational_attainment = await getEducationalAttainmentLibraryOptions();
+                const educational_attainment = await getOfflineLibEducationalAttainment();//await getEducationalAttainmentLibraryOptions();
                 setEducationalAttainmentOptions(educational_attainment);
 
-                const id_card = await getIDCardLibraryOptions();
+                const id_card = await getOfflineLibIdCard();//await getIDCardLibraryOptions();
                 setIDCardOptions(id_card);
 
-                const relationship_to_beneficiary_id = await getRelationshipToBeneficiaryLibraryOptions();
+                const relationship_to_beneficiary_id = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToBeneficiaryLibraryOptions();
                 setRelationshipToBeneficiaryOptions(relationship_to_beneficiary_id);
 
-                const region = await fetchPIMS();
-                // Ensure the response has data and map it to LibraryOption format
-                const mappedRegions: LibraryOption[] = region.map((item: any) => ({
-                    id: item.Id,         // Assuming 'id' exists in fetched data
-                    name: item.Name,     // Assuming 'name' exists in fetched data
-                }));
+                // const region = await fetchPIMS();
+                // // Ensure the response has data and map it to LibraryOption format
+                // const mappedRegions: LibraryOption[] = region.map((item: any) => ({
+                //     id: item.Id,         // Assuming 'id' exists in fetched data
+                //     name: item.Name,     // Assuming 'name' exists in fetched data
+                // }));
 
-                setRegionOptions(mappedRegions); // Update state with mapped data
+                //setRegionOptions(mappedRegions); // Update state with mapped data
 
                 // 
-                const province = await fetchPIMSProvince();
+                // const province = await fetchPIMSProvince();
 
-                const mappedProvince: LibraryOption[] = province.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedProvince: LibraryOption[] = province.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setProvinceOptions(mappedProvince);
+                //setProvinceOptions(mappedProvince);
 
-                const city = await fetchPIMSCity();
+                // const city = await fetchPIMSCity();
 
-                const mappedCity: LibraryOption[] = city.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedCity: LibraryOption[] = city.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setCityOptions(mappedCity);
+                //setCityOptions(mappedCity);
 
-                const barangay = await fetchPIMSBrgy();
+                // const barangay = await fetchPIMSBrgy();
 
-                const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setBarangayOptions(mappedBarangay);
+                // setBarangayOptions(mappedBarangay);
 
             } catch (error) {
                 console.error('Error fetching data:', error);

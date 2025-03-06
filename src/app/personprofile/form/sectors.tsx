@@ -10,6 +10,7 @@ import { FormDropDown } from "@/components/forms/form-dropdown";
 import React from "react";
 import { parse } from "path";
 import { constructNow } from "date-fns";
+import { getOfflineLibSectorsLibraryOptions, getOfflineLibTypeOfDisability } from "@/components/_dal/offline-options";
 
 export default function SectorDetails({ errors }: { errors: any }) {
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
@@ -228,7 +229,7 @@ export default function SectorDetails({ errors }: { errors: any }) {
 
 
                 // debugger;
-                const sectors = await getSectorsLibraryOptions();
+                const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
                 setSectorOptions(sectors);
 
                 // check if there is value from localstorage
@@ -249,7 +250,7 @@ export default function SectorDetails({ errors }: { errors: any }) {
                 console.log("Stored Sectors;  ", storedSectors);
 
 
-                const type_of_disability = await getTypeOfDisabilityLibraryOptions();
+                const type_of_disability = await getOfflineLibTypeOfDisability(); //await getTypeOfDisabilityLibraryOptions();
                 console.log("Disability Options: " + JSON.stringify(type_of_disability));
                 const convertedData = type_of_disability.map((item: { id: number; name: string }) => ({
                     id: item.id,  // Convert id to string
@@ -265,8 +266,8 @@ export default function SectorDetails({ errors }: { errors: any }) {
                     setSelectedDisabilities(JSON.parse(storedDisabs));
                 }
 
-                const ip_groups = await getIPGroupLibraryOptions();
-                setIpGroupsOptions(ip_groups);
+                // const ip_groups = await  getIPGroupLibraryOptions();
+                // setIpGroupsOptions(ip_groups);
 
                 // debugger;
                 const ip_group_id = localStorage.getItem("ipgroup_id");

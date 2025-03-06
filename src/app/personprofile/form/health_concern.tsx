@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { PhilSysInput } from "@/components/ui/philsys_mask";
 import { getCFWCatLibraryOptions } from "@/components/_dal/options";
+import { getOfflineLibCFWType } from "@/components/_dal/offline-options";
 export default function Details({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
 
     const [healthConcerns, setHealthConcerns] = useState(() => {
@@ -37,7 +38,7 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const CFWCat = await getCFWCatLibraryOptions();
+                const CFWCat = await getOfflineLibCFWType(); //await getCFWCatLibraryOptions();
                 setCfwCatOptions(CFWCat);
 
 

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getDeploymentAreaLibraryOptions, getTypeOfWorkLibraryOptions } from "@/components/_dal/options";
+import { getOfflineLibDeploymentArea, getOfflineLibTypeOfWork } from "@/components/_dal/offline-options";
 export default function PrefferedDeploymentArea({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
@@ -41,10 +42,10 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateCa
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const deployment_area = await getDeploymentAreaLibraryOptions();
+                const deployment_area = await getOfflineLibDeploymentArea(); //await getDeploymentAreaLibraryOptions();
                 setDeploymentAreaOptions(deployment_area);
 
-                const type_of_work = await getTypeOfWorkLibraryOptions();
+                const type_of_work = await getOfflineLibTypeOfWork(); //await getTypeOfWorkLibraryOptions();
                 setTypeOfWorkOptions(type_of_work);
                 if (typeof window !== "undefined") {
                     const storedPrefferedDeployment = localStorage.getItem("preferred_deployment");

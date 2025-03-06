@@ -20,6 +20,7 @@ import { getFileToUploadLibraryOptions } from "@/components/_dal/options";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getOfflineLibFilesToUpload } from "@/components/_dal/offline-options";
 export default function Attachments({ errors }: { errors: any }) {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -33,7 +34,7 @@ export default function Attachments({ errors }: { errors: any }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const files_upload = await getFileToUploadLibraryOptions();
+                const files_upload = await getOfflineLibFilesToUpload(); //await getFileToUploadLibraryOptions();
                 setfilesToUploadOptions(files_upload);
 
                 const attachments = localStorage.getItem("attachments");
