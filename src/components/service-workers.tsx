@@ -10,9 +10,9 @@ export default function ServiceWorker() {
           const customSW = await navigator.serviceWorker.register("/custom-sw.js");
           console.log("✅ Custom Service Worker registered with scope:", customSW.scope);
 
-          // Only register sw.js if it's necessary
-          const defaultSW = await navigator.serviceWorker.register("/sw.js");
-          console.log("✅ Default Service Worker registered with scope:", defaultSW.scope);
+          // // Only register sw.js if it's necessary
+          // const defaultSW = await navigator.serviceWorker.register("/sw.js");
+          // console.log("✅ Default Service Worker registered with scope:", defaultSW.scope);
 
           // Check for updates
           customSW.onupdatefound = () => {

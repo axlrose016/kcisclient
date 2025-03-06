@@ -2,6 +2,7 @@ const CACHE_NAME = "site-static-v1";
 const ASSETS = [
     "/", 
     "/manifest.json",
+    "/personprofile/form" // Add the route to cache it
 ];
 
 // Install event: Cache static assets safely
@@ -43,22 +44,22 @@ self.addEventListener("activate", (event) => {
 
 // Fetch event: Serve cached assets and dynamically cache Next.js static files
 self.addEventListener("fetch", (event) => {
-    if (event.request.url.includes("/_next/static/")) {
+    if (event.request.mode === "navigate") {
         event.respondWith(
             caches.open(CACHE_NAME).then((cache) => {
                 return fetch(event.request)
                     .then((response) => {
-                        cache.put(event.request, response.clone()); // Cache Next.js static files dynamically
+                        cache.put(event.request, response.clone()); // Cache the visited page
                         return response;
                     })
-                    .catch(() => caches.match(event.request)); // Serve cached version if offline
+                    .catch(() => caches.match(event.request) || caches.match("/")); // Serve cached version or fallback to home
             })
         );
     } else {
         event.respondWith(
             caches.match(event.request).then((cachedResponse) => {
                 return cachedResponse || fetch(event.request).catch(() => {
-                    if (event.request.mode === "navigate") {
+                    if (event.request.destination === "document") {
                         return caches.match("/"); // Fallback to home page if offline
                     }
                 });
