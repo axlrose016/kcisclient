@@ -4,6 +4,6 @@ export {}
 
 export type SessionPayload = {
     id: string;
-    userData: IUserData[];
+    userData: IUserData;
     sessionExpiration: Date;
 }

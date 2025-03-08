@@ -11,9 +11,31 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCivilStatusLibraryOptions, getEducationalAttainmentLibraryOptions, getExtensionNameLibraryOptions, getIDCardLibraryOptions, getRelationshipToBeneficiaryLibraryOptions, getSexLibraryOptions } from "@/components/_dal/options";
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSexOptions } from "@/components/_dal/offline-options";
 
 
 export default function PWDRepresentative({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+
+    const [cfwPWDRepresentative, setCfwPWDRepresentative] = useState(() => {
+        if (globalThis.window) {
+            const storedCFWPWDRepresentative = localStorage.getItem("cfwPWDRepresentative");
+            return storedCFWPWDRepresentative ? JSON.parse(storedCFWPWDRepresentative) : {};
+        }
+        return {};
+    })
+
+    useEffect(() => {
+        localStorage.setItem("cfwPWDRepresentative", JSON.stringify(cfwPWDRepresentative));
+    }, [cfwPWDRepresentative]);
+
+    const updatingCfwPWDRepresentative = (field: any, value: any) => {
+        setCfwPWDRepresentative((prev: any) => ({
+            ...prev, [field]: value
+        }));
+    }
+
+
+
     const [cfwOptions, setCfwOptions] = useState<LibraryOption[]>([]);
     const [selectedCfwCategory, setSelectedCfwCategory] = useState("");
     const [selectedHealthConcern, setSelectedHealthConcern] = useState("");
@@ -36,19 +58,19 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
 
     const [regionOptions, setRegionOptions] = useState<LibraryOption[]>([]);
     const [selectedRegion, setSelectedRegion] = useState("");
-    const [selectedRegionId, setSelectedRegionId] = useState<number | null>(null);
+    const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
 
     const [provinceOptions, setProvinceOptions] = useState<LibraryOption[]>([]);
     const [selectedProvince, setSelectedProvince] = useState("");
-    const [selectedProvinceId, setSelectedProvinceId] = useState<number | null>(null);
+    const [selectedProvinceId, setSelectedProvinceId] = useState<string | null>(null);
 
     const [BarangayOptions, setBarangayOptions] = useState<LibraryOption[]>([]);
     const [selectedBarangay, setSelectedBarangay] = useState("");
-    const [selectedBarangayId, setSelectedBarangayId] = useState<number | null>(null);
+    const [selectedBarangayId, setSelectedBarangayId] = useState<string | null>(null);
 
     const [cityOptions, setCityOptions] = useState<LibraryOption[]>([]);
     const [selectedCity, setSelectedCity] = useState("");
-    const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
+    const [selectedCityId, setSelectedCityId] = useState<string | null>(null);
 
     const [sexOptions, setSexOptions] = useState<LibraryOption[]>([]);
     const [selectedSex, setSelectedSex] = useState("");
@@ -61,63 +83,63 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const sex = await getSexLibraryOptions();
+                const sex = await getOfflineLibSexOptions();//await getSexLibraryOptions();
                 setSexOptions(sex);
 
-                const representative_civil_status_id = await getCivilStatusLibraryOptions();
+                const representative_civil_status_id = await getOfflineCivilStatusLibraryOptions();//await getCivilStatusLibraryOptions();
                 setCivilStatusOptions(representative_civil_status_id);
 
                 // const modality = await getModalityLibraryOptions();
                 // setModalityOptions(modality);
 
-                const representative_extension_name_id = await getExtensionNameLibraryOptions();
+                const representative_extension_name_id = await getOfflineExtensionLibraryOptions();//await getExtensionNameLibraryOptions();
                 setExtensionNameOptions(representative_extension_name_id);
 
-                const educational_attainment = await getEducationalAttainmentLibraryOptions();
+                const educational_attainment = await getOfflineLibEducationalAttainment();//await getEducationalAttainmentLibraryOptions();
                 setEducationalAttainmentOptions(educational_attainment);
 
-                const id_card = await getIDCardLibraryOptions();
+                const id_card = await getOfflineLibIdCard();//await getIDCardLibraryOptions();
                 setIDCardOptions(id_card);
 
-                const relationship_to_beneficiary_id = await getRelationshipToBeneficiaryLibraryOptions();
+                const relationship_to_beneficiary_id = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToBeneficiaryLibraryOptions();
                 setRelationshipToBeneficiaryOptions(relationship_to_beneficiary_id);
 
-                const region = await fetchPIMS();
-                // Ensure the response has data and map it to LibraryOption format
-                const mappedRegions: LibraryOption[] = region.map((item: any) => ({
-                    id: item.Id,         // Assuming 'id' exists in fetched data
-                    name: item.Name,     // Assuming 'name' exists in fetched data
-                }));
+                // const region = await fetchPIMS();
+                // // Ensure the response has data and map it to LibraryOption format
+                // const mappedRegions: LibraryOption[] = region.map((item: any) => ({
+                //     id: item.Id,         // Assuming 'id' exists in fetched data
+                //     name: item.Name,     // Assuming 'name' exists in fetched data
+                // }));
 
-                setRegionOptions(mappedRegions); // Update state with mapped data
+                //setRegionOptions(mappedRegions); // Update state with mapped data
 
                 // 
-                const province = await fetchPIMSProvince();
+                // const province = await fetchPIMSProvince();
 
-                const mappedProvince: LibraryOption[] = province.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedProvince: LibraryOption[] = province.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setProvinceOptions(mappedProvince);
+                //setProvinceOptions(mappedProvince);
 
-                const city = await fetchPIMSCity();
+                // const city = await fetchPIMSCity();
 
-                const mappedCity: LibraryOption[] = city.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedCity: LibraryOption[] = city.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setCityOptions(mappedCity);
+                //setCityOptions(mappedCity);
 
-                const barangay = await fetchPIMSBrgy();
+                // const barangay = await fetchPIMSBrgy();
 
-                const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+                // const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
+                //     id: item.Id,
+                //     name: item.Name,
+                // }));
 
-                setBarangayOptions(mappedBarangay);
+                // setBarangayOptions(mappedBarangay);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -134,51 +156,54 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
 
     const handlRelationshipToBeneficiaryChange = (id: number) => {
         console.log("Selected Relationship to beneficiary ID:", id);
-        updateCapturedData("cfw", "representative_relationship_to_beneficiary", id, 4);
+        updatingCfwPWDRepresentative("representative_relationship_to_beneficiary", id);
         setSelectedRelationshipToBeneficiaryId(id);
     };
     const handlExtensionNameChange = (id: number) => {
         console.log("Selected Extension name ID:", id);
-        updateCapturedData("cfw", "representative_extension_name_id", id, 4);
+        updatingCfwPWDRepresentative("representative_extension_name_id", id);
         setSelectedExtensionNameId(id);
     };
     const handleCivilStatusChange = (id: number) => {
         console.log("Selected Civil Status ID:", id);
-        updateCapturedData("cfw", "representative_civil_status_id", id, 4);
+        updatingCfwPWDRepresentative("representative_civil_status_id", id);
         setSelectedCivilStatusId(id);
     };
-    const handleRegionChange = (id: number) => {
+    const handleRegionChange = (id: string) => {
         console.log("Selected Region ID:", id);
+        updatingCfwPWDRepresentative("representative_region_code", id);
         setSelectedRegionId(id);
     };
-    const handleProvinceChange = (id: number) => {
+    const handleProvinceChange = (id: string) => {
         console.log("Selected Province ID:", id);
+        updatingCfwPWDRepresentative("representative_province_code", id);
         setSelectedProvinceId(id);
     };
-    const handleCityChange = (id: number) => {
+    const handleCityChange = (id: string) => {
         console.log("Selected City ID:", id);
+        updatingCfwPWDRepresentative("representative_city_code", id);
         setSelectedCityId(id);
     };
-    const handleBarangayChange = (id: number) => {
+    const handleBarangayChange = (id: string) => {
         console.log("Selected Barangay ID:", id);
-        updateCapturedData("cfw", "representative_brgy_code", id, 4);
+        updatingCfwPWDRepresentative("representative_brgy_code", id);
         setSelectedBarangayId(id);
     };
     const handleSexChange = (id: number) => {
         console.log("Selected Sex ID:", id);
-        updateCapturedData("cfw", "representative_sex_id", id, 4);
+        updatingCfwPWDRepresentative("representative_sex_id", id);
         setSelectedSexId(id);
     };
     const handleEducationalAttainmentChange = (id: number) => {
         console.log("Selected Educational Attainment ID:", id);
-        updateCapturedData("cfw", "representative_educational_attainment_id", id, 4);
+        updatingCfwPWDRepresentative("representative_educational_attainment_id", id);
         setSelectedEducationalAttainmentId(id);
     };
     const [dob, setDob] = useState<string>("");
     const [age, setAge] = useState<number | "">("");
     const handleDOBChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedDate = event.target.value;
-        updateCapturedData("cfw", "representative_birthdate", selectedDate, 4);
+        updatingCfwPWDRepresentative("representative_birthdate", selectedDate);
         setDob(selectedDate);
         computeAge(selectedDate);
     };
@@ -200,7 +225,7 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
             calculatedAge--;
         }
 
-        updateCapturedData("cfw", "representative_age", calculatedAge, 4);
+        updatingCfwPWDRepresentative("representative_age", calculatedAge);
         setAge(calculatedAge);
     };
     const handleCfwCategoryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -214,106 +239,149 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
         setSelectedHealthConcern(value);
 
         if (value === "no") {
-            // updateCapturedData("cfw", "representative_has_health_concern", 0);
-            // updateCapturedData("cfw", "immediate_health_concern_details", ""); // Clear health concern details
-            updateCapturedData("cfw", "representative_has_health_concern", 0, 4);
+            // updatingCfwPWDRepresentative( "representative_has_health_concern", 0);
+            // updatingCfwPWDRepresentative( "immediate_health_concern_details", ""); // Clear health concern details
+            updatingCfwPWDRepresentative('representative_health_concern_details', "")
+            updatingCfwPWDRepresentative("representative_has_health_concern", 0);
         } else {
-            // updateCapturedData("cfw", "has_immediate_health_concern", 1);
+            // updatingCfwPWDRepresentative( "has_immediate_health_concern", 1);
             // Updating cfw at index 4
-            updateCapturedData("cfw", "representative_has_health_concern", 1, 4);
+            updatingCfwPWDRepresentative("representative_has_health_concern", 1);
         }
-        // setSelectedHealthConcern(event.target.value);
-        // if (event.target.value === "no") {
-        //     (document.getElementById("representative_health_concern_details") as HTMLTextAreaElement).value = "";
-        // }
+        setSelectedHealthConcern(value);
+        console.log("representative health concern?: " + value);
+        if (event.target.value === "no") {
+            (document.getElementById("representative_health_concern_details") as HTMLTextAreaElement).value = "";
+        }
     };
     const handleIDCardChange = (id: number) => {
         console.log("Selected ID Card ID:", id);
-        updateCapturedData("cfw", "representative_id_card_id", id, 4);
+        updatingCfwPWDRepresentative("representative_id_card_id", id);
         setSelectedIDCardId(id);
     };
 
+    const [isPWDRepresentative, setIsPWDRepresentative] = useState(false);
+    const handleCheckIsPWDRepresentative = () => {
+        updatingCfwPWDRepresentative("is_cfw_representative", !isPWDRepresentative);
+        // const cfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
+        // if (cfwGeneralInfo) {
+
+        //     const parsedcfwGeneralInfo = JSON.parse(cfwGeneralInfo);
+
+        // }
+
+        setIsPWDRepresentative(!isPWDRepresentative);
+        // console.log("is PWD Rep? ", !isPWDRepresentative);
+    }
     return (
         <>
             <div className="">
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
+                <div className="flex items-center gap-2 p-3">
+                    <Input
+                        type="checkbox"
+                        id="is_cfw_pwd_representative"
+                        checked={cfwPWDRepresentative.is_cfw_representative}
+                        onChange={handleCheckIsPWDRepresentative}
+                        className="w-4 h-4 cursor-pointer" />
+                    <label
+                        htmlFor="is_cfw_pwd_representative"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70  cursor-pointer"
+                    >
+                        CFW PWD Representative
+                    </label>
+                </div>
+
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1 mb-2   ${cfwPWDRepresentative.is_cfw_representative === true ? "" : "hidden"}`}>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_last_name" className="block text-sm font-medium">Last Name</Label>
                         <Input
+                            value={cfwPWDRepresentative.representative_last_name || ""}
+                            // value={cfwPWDRepresentative.representative_last_name}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_last_name', e.target.value)}
+                            // onChange={(e) => updatingCfwPWDRepresentative( 'representative_last_name', e.target.value)}
                             id="representative_last_name"
                             name="representative_last_name"
                             className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_last_name', e.target.value, 4)}
                         />
                         {errors?.representative_last_name && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_last_name[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_last_name}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_first_name" className="block text-sm font-medium">First Name</Label>
                         <Input
+                            value={cfwPWDRepresentative.representative_first_name || ""}
+                            // value={cfwPWDRepresentative.representative_first_name}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_first_name', e.target.value)}
+                            // onChange={(e) => updatingCfwPWDRepresentative( 'representative_first_name', e.target.value)}
                             id="representative_first_name"
                             name="representative_first_name"
                             className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_first_name', e.target.value, 4)}
                         />
                         {errors?.representative_first_name && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_first_name[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_first_name}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_middle_name" className="block text-sm font-medium">Middle Name</Label>
                         <Input
+                            value={cfwPWDRepresentative.representative_middle_name || ""}
                             id="representative_middle_name"
                             name="representative_middle_name"
                             className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_middle_name', e.target.value, 4)}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_middle_name', e.target.value)}
                         />
                         {errors?.representative_middle_name && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_middle_name[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_middle_name}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium">Extension Name</Label>
                         <FormDropDown
                             options={extensionNameOptions}
-                            selectedOption={selectedExtensionNameId}
+                            selectedOption={cfwPWDRepresentative.representative_extension_name_id || ""}
                             onChange={handlExtensionNameChange}
                         />
                         {errors?.representative_extension_name_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_extension_name_id[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_extension_name_id}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_sitio" className="block text-sm font-medium">House No/Street/Purok</Label>
-                        <Input id="representative_sitio" name="representative_sitio" className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_sitio', e.target.value, 4)} />
+                        <Input
+                            value={cfwPWDRepresentative.representative_sitio || ""}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_sitio', e.target.value)}
+                            id="representative_sitio"
+                            name="representative_sitio"
+                            className="mt-1 block w-full"
+                        />
                         {errors?.representative_sitio && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_sitio[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_sitio}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="region_representative" className="block text-sm font-medium">Region</Label>
                         <FormDropDown
+                            selectedOption={cfwPWDRepresentative.representative_region_code || ""}
+                            onChange={handleRegionChange}
                             id="region_representative"
                             options={regionOptions}
-                            selectedOption={selectedRegionId}
-                            onChange={handleRegionChange}
                         />
                         {errors?.region_representative && (
-                            <p className="mt-2 text-sm text-red-500">{errors.region_representative[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.region_representative}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="province_representative" className="block text-sm font-medium">Province</Label>
                         <FormDropDown
+                            selectedOption={cfwPWDRepresentative.representative_province_code || ""}
                             id="province_representative"
                             options={provinceOptions}
-                            selectedOption={selectedProvinceId}
+                            // selectedOption={selectedProvinceId}
                             onChange={handleProvinceChange}
                         />
                         {errors?.province && (
-                            <p className="mt-2 text-sm text-red-500">{errors.province[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.province}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -321,11 +389,11 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                         <FormDropDown
                             id="municipality_representative"
                             options={cityOptions}
-                            selectedOption={selectedCityId}
+                            selectedOption={cfwPWDRepresentative.representative_city_code || ""}
                             onChange={handleCityChange}
                         />
                         {errors?.municipality_representative && (
-                            <p className="mt-2 text-sm text-red-500">{errors.municipality_representative[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.municipality_representative}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -333,103 +401,123 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                         <FormDropDown
                             id="representative_brgy_code"
                             options={BarangayOptions}
-                            selectedOption={selectedBarangayId}
+                            // selectedOption={selectedBarangayId}
+                            selectedOption={cfwPWDRepresentative.representative_brgy_code || ""}
                             onChange={handleBarangayChange}
                         />
                         {errors?.representative_brgy_code && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_brgy_code[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_brgy_code}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="representative_relationship_to_beneficiary_id" className="block text-sm font-medium">Relationship to Beneficiary</Label>
+                        <Label htmlFor="representative_relationship_to_beneficiary" className="block text-sm font-medium">Relationship to Beneficiary</Label>
                         <FormDropDown
-                            id="representative_relationship_to_beneficiary_id"
                             options={relationshipToBeneficiaryOptions}
-                            selectedOption={selectedRelationshipToBeneficiaryId}
+                            selectedOption={cfwPWDRepresentative.representative_relationship_to_beneficiary}
                             onChange={handlRelationshipToBeneficiaryChange}
+                            id="representative_relationship_to_beneficiary"
                         />
 
-                        {errors?.representative_relationship_to_beneficiary_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_relationship_to_beneficiary_id[0]}</p>
+
+                        {errors?.representative_relationship_to_beneficiary && (
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_relationship_to_beneficiary}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_birthdate" className="block text-sm font-medium">Birthday</Label>
                         <Input
+                            value={cfwPWDRepresentative.representative_birthdate || ""}
+                            onChange={handleDOBChange}
                             id="representative_birthdate"
                             name="representative_birthdate"
                             type='date' className='mt-1'
-                            onChange={handleDOBChange} />
+                        />
                         {errors?.representative_birthdate && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_birthdate[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_birthdate}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_age" className="block text-sm font-medium">Age</Label>
                         <Input
+                            value={cfwPWDRepresentative.representative_age || ""}
                             id="representative_age"
                             name="representative_age"
                             type="number"
-                            placeholder="Enter your Age"
+                            placeholder="0"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-center"
-                            value={age}
+                            // value={age}
                             disabled
 
                         />
                         {errors?.representative_age && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_age[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_age}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_occupation" className="block text-sm font-medium">Work (if available)</Label>
-                        <Input id="representative_occupation" name="representative_occupation" className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_occupation', e.target.value, 4)}
+                        <Input
+                            value={cfwPWDRepresentative.representative_occupation || ""}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_occupation', e.target.value)}
+                            id="representative_occupation"
+                            name="representative_occupation"
+                            className="mt-1 block w-full"
                         />
                         {errors?.representative_occupation && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_occupation[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_occupation}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_monthly_salary" className="block text-sm font-medium">Monthly Salary</Label>
-                        <Input type="number" id="representative_monthly_salary" name="monthly_salary" className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_monthly_salary', e.target.value, 4)}
+                        <Input
+                            value={cfwPWDRepresentative.representative_monthly_salary || ""}
+                            type="number"
+                            id="representative_monthly_salary"
+                            name="monthly_salary"
+                            className="mt-1 block w-full"
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_monthly_salary', e.target.value)}
                         />
                         {errors?.representative_monthly_salary && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_monthly_salary[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_monthly_salary}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_educational_attainment_id" className="block text-sm font-medium">Highest Educational Attainment</Label>
 
                         <FormDropDown
+                            selectedOption={cfwPWDRepresentative.representative_educational_attainment_id || ""}
                             id="representative_educational_attainment_id"
                             options={educationalAttainmentOptions}
-                            selectedOption={selectedEducationalAttainmentId}
+                            // selectedOption={selectedEducationalAttainmentId}
                             onChange={handleEducationalAttainmentChange}
                         />
 
                         {errors?.representative_educational_attainment_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_educational_attainment_id[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_educational_attainment_id}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_sex_id" className="block text-sm font-medium">Sex</Label>
                         <FormDropDown
+
                             id="representative_sex_id"
                             options={sexOptions}
-                            selectedOption={selectedSexId}
+                            selectedOption={cfwPWDRepresentative.representative_sex_id || ""}
                             onChange={handleSexChange}
                         />
                         {errors?.representative_sex_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_sex_id[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_sex_id}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_contact_number" className="block text-sm font-medium">Contact Number</Label>
-                        <Input id="representative_contact_number" name="representative_contact_number" className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_contact_number', e.target.value, 4)} />
+                        <Input
+                            value={cfwPWDRepresentative.representative_contact_number || ""}
+                            id="representative_contact_number"
+                            name="representative_contact_number"
+                            className="mt-1 block w-full"
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_contact_number', e.target.value)} />
                         {errors?.representative_contact_number && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_contact_number[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_contact_number}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -437,42 +525,49 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                         <FormDropDown
                             id="representative_id_card_id"
                             options={iDCardOptions}
-                            selectedOption={selectedIDCardId}
+                            selectedOption={cfwPWDRepresentative.representative_id_card_id || ""}
                             onChange={handleIDCardChange}
                         />
                         {errors?.representative_id_card_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_id_card_id[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_id_card_id}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_id_card_number" className="block text-sm font-medium">ID Card Number</Label>
-                        <Input id="representative_id_card_number" name="representative_id_card_number" className="mt-1 block w-full"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_id_card_number', e.target.value, 4)}
+                        <Input
+                            value={cfwPWDRepresentative.representative_id_card_number || ""}
+                            id="representative_id_card_number"
+                            name="representative_id_card_number"
+                            className="mt-1 block w-full"
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_id_card_number', e.target.value)}
                         />
                         {errors?.representative_id_card_number && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_id_card_number[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_id_card_number}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_civil_status_id" className="block text-sm font-medium">Civil Status</Label>
                         <FormDropDown
                             options={civilStatusOptions}
-                            selectedOption={selectedCivilStatusId}
+                            selectedOption={cfwPWDRepresentative.representative_civil_status_id || ""}
                             onChange={handleCivilStatusChange}
                         />
                         {errors?.representative_civil_status_id && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_civil_status_id[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_civil_status_id}</p>
                         )}
                     </div>
-                    <div className="p-2 col-span-1">
+                    {/* <div className="p-2 col-span-1 ">
                         <Label htmlFor="health_declaration" className="block text-sm font-medium">Health Declaration of the Representative</Label>
-                        <Textarea id="health_declaration" name="health_declaration" rows={4} className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            onChange={(e) => updateCapturedData("cfw", 'health_declaration', e.target.value, 4)}
+                        <Textarea id="health_declaration"
+                            value={cfwPWDRepresentative.representative_health_concern_details}
+                            name="health_declaration"
+                            rows={4} className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            onChange={(e) => updatingCfwPWDRepresentative( 'health_declaration', e.target.value)}
                         />
                         {errors?.health_declaration && (
-                            <p className="mt-2 text-sm text-red-500">{errors.health_declaration[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.health_declaration}</p>
                         )}
-                    </div>
+                    </div> */}
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_has_health_concern" className="block text-sm font-medium">Do you have any immediate health concerns that you think may affect your work?</Label>
                         <div className="mt-2">
@@ -483,6 +578,7 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                                     type="radio"
                                     value="yes"
                                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    checked={cfwPWDRepresentative.representative_has_health_concern === 1}
                                     onChange={handleHealthConcernChange}
                                 />
                                 <Label htmlFor="health_concerns_yes" className="ml-3 block text-sm font-medium text-gray-700">
@@ -496,6 +592,7 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                                     type="radio"
                                     value="no"
                                     className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                                    checked={cfwPWDRepresentative.representative_has_health_concern === 0}
                                     onChange={handleHealthConcernChange}
                                 />
                                 <Label htmlFor="health_concerns_no" className="ml-3 block text-sm font-medium text-gray-700">
@@ -504,7 +601,7 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                             </div>
                         </div>
                         {errors?.representative_has_health_concern && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_has_health_concern[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_has_health_concern}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -515,20 +612,26 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                                 name="representative_health_concern_details"
                                 rows={4}
                                 className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                disabled={selectedCfwCategory !== "1"}
-                                onChange={(e) => updateCapturedData("cfw", 'representative_health_concern_details', e.target.value, 4)}
+                                value={cfwPWDRepresentative.representative_health_concern_details || ""}
+                                disabled={cfwPWDRepresentative.representative_has_health_concern === 0}
+                                onChange={(e) => updatingCfwPWDRepresentative('representative_health_concern_details', e.target.value)}
                             />
                         </div>
                         {errors?.representative_health_concern_details && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_health_concern_details[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_health_concern_details}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_skills" className="block text-sm font-medium">Skills Assessment of the Representative</Label>
-                        <Textarea id="representative_skills" name="representative_skills" rows={4} className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            onChange={(e) => updateCapturedData("cfw", 'representative_skills', e.target.value, 4)} />
+                        <Textarea
+                            id="representative_skills"
+                            name="representative_skills"
+                            rows={4}
+                            className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                            value={cfwPWDRepresentative.representative_skills || ""}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_skills', e.target.value)} />
                         {errors?.representative_skills && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_skills[0]}</p>
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_skills}</p>
                         )}
                     </div>
                 </div>

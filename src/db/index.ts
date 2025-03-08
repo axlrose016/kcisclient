@@ -11,10 +11,10 @@ const client = createClient({ url: DB_FILE});
 
 export const db = drizzle(client);
 
-// if (shouldMigrate) {
-//     await import("./utils/migrate")
-//       .then((m) => m.migrateDatabase(db))
-//       .catch((err) => console.error("Migration failed:", err));
+if (shouldMigrate) {
+    await import("./utils/migrate")
+      .then((m) => m.migrateDatabase(db))
+      .catch((err) => console.error("Migration failed:", err));
 
-//     await seedLibrary(db);
-//   }
+    await seedLibrary(db);
+  }

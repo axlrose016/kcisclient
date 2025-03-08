@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/app-sidebar";
-import { cookies } from "next/headers";
-import { decrypt } from "@/lib/sessions";
-import LoginPage from "./auth/page";
 import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
+import ClientSessionCheck from "./clientSession";
+import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
 
+// Load custom fonts
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -20,11 +18,13 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
-const APP_NAME = "PWA App";
-const APP_DEFAULT_TITLE = "My Awesome PWA App";
-const APP_TITLE_TEMPLATE = "%s - PWA App";
+// Constants for the app metadata
+const APP_NAME = "KALAHI-CIDSS Information System";
+const APP_DEFAULT_TITLE = "KCIS";
+const APP_TITLE_TEMPLATE = "%s - KCIS";
 const APP_DESCRIPTION = "Best PWA app in the world!";
 
+// Metadata for the app
 export const metadata: Metadata = {
   applicationName: APP_NAME,
   title: {
@@ -37,7 +37,6 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: APP_DEFAULT_TITLE,
-    // startUpImage: [],
   },
   formatDetection: {
     telephone: false,
@@ -61,23 +60,11 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-  const cookie = (await cookies()).get('session')?.value;
-  let session = null;
-  if (cookie) {
-    session = await decrypt(cookie);
-  }
-
-  const isAuthenticated = session ? true : false;
-
-
-
   return (
     <html lang="en">
       <head>
@@ -97,7 +84,6 @@ export default async function RootLayout({
         <link rel="apple-touch-icon" sizes="152x152" href="/icons/touch-icon-ipad.png" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/touch-icon-iphone-retina.png" />
         <link rel="apple-touch-icon" sizes="167x167" href="/icons/touch-icon-ipad-retina.png" />
-
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
         <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
         <link rel="manifest" href="/manifest.json" />
@@ -118,22 +104,13 @@ export default async function RootLayout({
         <meta property="og:url" content="https://yourdomain.com" />
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        {
-          isAuthenticated ?
-          (
-            <SidebarProvider>
-              <AppSidebar />
-              <main className="w-full">
-                <SidebarTrigger />
-                {children}
-              </main>
-              <Toaster />
-            </SidebarProvider>
-          ): (
-            <LoginPage/>
-        )}
-        <ServiceWorker/>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} cz-shortcut-listen="true">
+        <ClientSessionCheck>
+          {children}
+        </ClientSessionCheck>
+        <ServiceWorker />
+        <Toaster />
+        <FloatingPWAStatusAvatar/>
       </body>
     </html>
   );

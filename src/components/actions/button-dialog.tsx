@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog"
 import { DialogTitle } from "@radix-ui/react-dialog";
 import { useState } from "react";
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 interface ButtonDialogProps {
   dialogForm: React.ElementType;
@@ -27,9 +28,9 @@ export function ButtonDialog({ dialogForm: DialogForm, label, css,record_id, dia
         className="w-full sm:max-w-screen-lg sm:p-6 bg-white rounded-lg shadow-lg overflow-y-auto">
         <DialogHeader>
             <DialogTitle>
-                <div className="flex flex-col">
-                    <h1 className="text-2xl font-bold">{dialog_title}</h1>
-                </div>
+              <div className="flex flex-col">
+                  <h1 className="text-2xl font-bold">{dialog_title}</h1>
+              </div>
             </DialogTitle>
         </DialogHeader>
         <DialogForm record_id={record_id}/> 

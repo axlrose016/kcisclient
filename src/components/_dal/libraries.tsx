@@ -53,6 +53,8 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
 
 const fetchPIMSData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
     try {
+        const burl = api_pims_base_url;
+        console.log("The base api pims base url is " + api_pims_base_url);
         const response = await fetch(api_pims_base_url + endpoint);
         if (!response.ok) { 
             console.log("goods!");
@@ -102,11 +104,10 @@ export const fetchLibSex = createFetchFunction("/api/lib_sex/", "Failed to fetch
 export const fetchLibAncestralDomainCoverage = createFetchFunction("/api/lib_ancestral_domain_coverage/", "Failed to fetch Library: Ancestral Domain Coverage");
 export const fetchLibBarangay = createFetchFunction("/api/lib_brgy/", "Failed to fetch Library: Barangay");
 export const fetchLibCycle = createFetchFunction("/api/lib_cycle/", "Failed to fetch Library: Cycle");
-export const fetchPIMS = createFetchFunctionPIMS("api/v2/intervention_library/get_lib_region","Failed to fetch PIMS Data");
-export const fetchPIMSProvince = createFetchFunctionPIMS("api/online/lib_province/open_access?id=010000000","Failed to fetch PIMS Region Data");
-export const fetchPIMSCity = createFetchFunctionPIMS("api/online/lib_city/open_access?id=012800000","Failed to fetch PIMS Municipality Data");
-export const fetchPIMSBrgy = createFetchFunctionPIMS("api/online/lib_brgy/open_access?id=012801000","Failed to fetch PIMS Barangay Data");
-
 export const fetchOfflineRoles = createFetchOfflineLibrary("/api/roles/","Failed to fetch Offline Data: Roles",roles);
 export const fetchOfflineModules = createFetchOfflineLibrary("/api/modules/","Failed to fetch Offline Data: Modules", modules);
 export const fetchOfflinePermissions = createFetchOfflineLibrary("/api/permissions/", "Failed to fetch Offline Data: Permissions", permissions);
+export const fetchPIMS = createFetchFunctionPIMS("/api/v2/intervention_library/get_lib_region","Failed to fetch PIMS Data");
+export const fetchPIMSProvince = createFetchFunctionPIMS("/api/online/lib_province/open_access?id=010000000","Failed to fetch PIMS Region Data");
+export const fetchPIMSCity = createFetchFunctionPIMS("/api/online/lib_city/open_access?id=012800000","Failed to fetch PIMS Municipality Data");
+export const fetchPIMSBrgy = createFetchFunctionPIMS("/api/online/lib_brgy/open_access?id=012801000","Failed to fetch PIMS Barangay Data");

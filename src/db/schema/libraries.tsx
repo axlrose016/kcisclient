@@ -244,6 +244,7 @@ export const lib_mode = sqliteTable('lib_mode', {
     remarks: text('remarks'),
 })
 
+
 export const lib_occupation = sqliteTable('lib_occupation', {
     id: integer('id').notNull().primaryKey(),
     occupation_description: text('occupation_description').notNull(),
@@ -273,6 +274,7 @@ export const lib_sex = sqliteTable('lib_sex', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 })
+
 export const lib_volunteer_committee = sqliteTable('lib_volunteer_committee', {
     id: integer('id').primaryKey().notNull(),
     name: text('name').notNull(),
@@ -288,6 +290,7 @@ export const lib_volunteer_committee = sqliteTable('lib_volunteer_committee', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 })
+
 export const lib_volunteer_committee_position = sqliteTable('lib_volunteer_committee_position', {
     id: integer('id').primaryKey().notNull(),
     name: text('name').notNull(),
@@ -325,7 +328,7 @@ export const lib_ancestral_domain_coverage = sqliteTable('lib_ancestral_domain_c
 })
 
 
-// beneficiary category
+// beneficiary cfw category ()
 export const lib_cfw_category = sqliteTable('lib_cfw_category', {
     id: integer('id').notNull().primaryKey(),
     category_name: text('category_name'),
@@ -340,7 +343,8 @@ export const lib_cfw_category = sqliteTable('lib_cfw_category', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
-// for family with family background as bene of cfw program 
+
+
 export const lib_cfw_type = sqliteTable('lib_cfw_type', {
     id: integer('id').notNull().primaryKey(),
     cfw_type_name: text('cfw_type_name'),
@@ -355,6 +359,10 @@ export const lib_cfw_type = sqliteTable('lib_cfw_type', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
+
+
+
+
 
 export const lib_modality_sub_category = sqliteTable('lib_modality_sub_category', {
     id: integer('id').notNull().primaryKey(),
@@ -371,6 +379,25 @@ export const lib_modality_sub_category = sqliteTable('lib_modality_sub_category'
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
+
+ 
+export const lib_sectors = sqliteTable('lib_sectors', {
+    id: integer('id').notNull().primaryKey(),
+    sector_name: text('sector_name'),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+
+
+
 export const lib_type_of_work = sqliteTable('lib_type_of_work', {
     id: integer('id').notNull().primaryKey(),
     work_name: text('work_name'),
@@ -385,6 +412,7 @@ export const lib_type_of_work = sqliteTable('lib_type_of_work', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
+
 export const lib_id_card = sqliteTable('lib_id_card', {
     id: integer('id').notNull().primaryKey(),
     id_card_name: text('id_card_name'),
@@ -399,6 +427,7 @@ export const lib_id_card = sqliteTable('lib_id_card', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
+
 export const lib_relationship_to_beneficiary = sqliteTable('lib_relationship_to_beneficiary', {
     id: integer('id').notNull().primaryKey(),
     relationship_name: text('relationship_name'),
@@ -428,6 +457,7 @@ export const lib_ip_group = sqliteTable('lib_ip_group', {
     is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
     remarks: text('remarks'),
 });
+
 export const lib_type_of_disability = sqliteTable('lib_type_of_disability', {
     id: integer('id').notNull().primaryKey(),
     disability_name: text('disability_name'),
@@ -541,6 +571,20 @@ export const lib_position = sqliteTable("lib_position", {
     remarks: text('remarks'),
 });
 
+export const lib_files_to_upload = sqliteTable("lib_files_to_upload", {
+    id: integer("id").notNull().primaryKey(),
+    file_name: text("file_name"),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
 
 
 

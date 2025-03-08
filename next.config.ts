@@ -17,9 +17,6 @@ const withPWA = require("@ducanh2912/next-pwa").default({
       experimental: {
         reactServerComponents: false,  // Disable React Server Components if you're not using them
       },
-      env: {
-        NEXT_PUBLIC_API_BASE_URL: process.env.API_BASE_URL,
-      },
       async headers() {
         return [
           {
@@ -59,5 +56,10 @@ const withPWA = require("@ducanh2912/next-pwa").default({
   module.exports = withPWA({
     eslint: {
       ignoreDuringBuilds: true, // Disables ESLint during builds
+    },
+    env: {
+      NEXT_PUBLIC_API_BASE_URL: process.env.API_BASE_URL,
+      NEXT_PUBLIC_API_PIMS_BASE_URL: process.env.API_PIMS_BASE_URL,
+      NEXT_SESSION_SECRET_KEY: process.env.SESSION_SECRET_KEY
     },
   });

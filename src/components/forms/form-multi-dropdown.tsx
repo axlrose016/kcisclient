@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from 'lucide-react'
+import { Check, ChevronsUpDown, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -13,87 +13,61 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { Badge } from "../ui/badge"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Badge } from "@/components/ui/badge"
 
-const frameworks = [
-  {
-    value: "next.js",
-    label: "Next.js",
-  },
-  {
-    value: "sveltekit",
-    label: "SvelteKit",
-  },
-  {
-    value: "nuxt.js",
-    label: "Nuxt.js",
-  },
-  {
-    value: "remix",
-    label: "Remix",
-  },
-  {
-    value: "astro",
-    label: "Astro",
-  },
-]
+type OptionItems = {
+  id: number
+  name: string
+}
 
-export function FormMultiDropDown() {
+type FormMultiDropDownProps = {
+  options: OptionItems[] // Pass your disabilities library as options
+  selectedValues: string[] // Pass the current selected values
+  onChange: (updatedValues: string[]) => void // Handle value changes
+}
+
+export function FormMultiDropDown({ options, selectedValues, onChange }: FormMultiDropDownProps) {
   const [open, setOpen] = React.useState(false)
-  const [selectedValues, setSelectedValues] = React.useState<string[]>([])
 
   const handleSelect = (currentValue: string) => {
-    setSelectedValues((prev) =>
-      prev.includes(currentValue)
-        ? prev.filter((value) => value !== currentValue)
-        : [...prev, currentValue]
-    )
+    const updatedValues = selectedValues.includes(currentValue)
+      ? selectedValues.filter((value) => value !== currentValue)
+      : [...selectedValues, currentValue]
+
+    onChange(updatedValues)
   }
 
   const handleRemove = (valueToRemove: string) => {
-    setSelectedValues((prev) =>
-      prev.filter((value) => value !== valueToRemove)
-    )
+    const updatedValues = selectedValues.filter((value) => value !== valueToRemove)
+    onChange(updatedValues)
   }
 
   const handleClear = () => {
-    setSelectedValues([])
+    onChange([])
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[300px] justify-between"
-        >
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[300px] h-300 justify-between overflow-y-auto">
           <div className="flex items-center gap-1 truncate">
             {selectedValues.length > 0 ? (
               <>
-                <div className="flex flex-wrap gap-1 max-w-[230px] overflow-hidden">
+                <div className="flex flex-wrap gap-1 max-w-[230px] overflow-auto">
+                {/* <div className="flex flex-wrap items-center gap-1 max-w-[500px] min-w-0 max-h-[50px] overflow-auto"> */}
+
                   {selectedValues.slice(0, 2).map((value) => (
-                    <Badge
-                      key={value}
-                      variant="secondary"
-                      className="truncate max-w-[100px]"
-                    >
-                      {frameworks.find((framework) => framework.value === value)?.label}
+                    <Badge key={value} variant="secondary"                     
+                    className="truncate max-w-[500px] inline-flex items-center px-2 py-1 whitespace-nowrap w-auto ">
+                      {options.find((option) => option.id === Number(value))?.name}
                     </Badge>
                   ))}
                 </div>
-                {selectedValues.length > 2 && (
-                  <Badge variant="secondary">+{selectedValues.length - 2}</Badge>
-                )}
+                {selectedValues.length > 2 && <Badge variant="secondary">+{selectedValues.length - 2}</Badge>}
               </>
             ) : (
-              "Select frameworks..."
+              "Select disabilities..."
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
@@ -101,23 +75,23 @@ export function FormMultiDropDown() {
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0">
         <Command>
-          <CommandInput placeholder="Search framework..." />
+          <CommandInput placeholder="Search disability..." />
           <CommandList>
-            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandEmpty>No disability found.</CommandEmpty>
             <CommandGroup>
-              {frameworks.map((framework) => (
+              {options.map((option) => (
                 <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={handleSelect}
+                  key={option.id}
+                  value={option.id.toString()}
+                  onSelect={() => handleSelect(option.id.toString())}
                 >
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedValues.includes(framework.value) ? "opacity-100" : "opacity-0"
+                      selectedValues.includes(option.id.toString()) ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {framework.label}
+                  {option.name}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -126,36 +100,26 @@ export function FormMultiDropDown() {
             <div className="border-t p-2">
               <div className="flex flex-wrap gap-1 mb-2">
                 {selectedValues.map((value) => (
-                  <Badge
-                    key={value}
-                    variant="secondary"
-                    className="truncate max-w-[120px]"
-                  >
-                    {frameworks.find((framework) => framework.value === value)?.label}
+                  <Badge key={value} variant="secondary" className="truncate max-w-[120px]">
+                    {options.find((option) => option.id === Number(value))?.name}
                     <button
-                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      className="ml-1 inline-flex items-center rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 w-auto"
                       onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleRemove(value)
-                        }
+                        if (e.key === "Enter") handleRemove(value);
                       }}
                       onMouseDown={(e) => {
-                        e.preventDefault()
-                        e.stopPropagation()
+                        e.preventDefault();
+                        e.stopPropagation();
                       }}
                       onClick={() => handleRemove(value)}
                     >
-                      <X className="h-3 w-3" />
+                      <X className="h-3 w-3 ml-1" />
                     </button>
+
                   </Badge>
                 ))}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={handleClear}
-              >
+              <Button variant="outline" size="sm" className="w-full" onClick={handleClear}>
                 Clear all
               </Button>
             </div>
@@ -165,4 +129,3 @@ export function FormMultiDropDown() {
     </Popover>
   )
 }
-

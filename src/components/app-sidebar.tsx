@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/sidebar"
 import { Team } from "./types"
 import { SessionPayload } from "@/types/globals"
+import { IUserData } from "./interfaces/iuser"
+import { getSession } from "@/lib/sessions-client"
 
 const data = {
   user: {
@@ -155,60 +157,62 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [filteredSub, setFilteredSub] = React.useState(data.navMain)
   const [isLoading, setIsLoading] = React.useState(false);
   const [user, setUser] = React.useState(data.user);
+  const [userTeam, setUserTeam] = React.useState<IUserData>();
 
   React.useEffect(() => {
     async function loadUserData() {
       setIsLoading(true);
-      const response = await fetch("/api/session", { cache: "no-store" });
-      if (!response.ok) {
-        console.error("Failed to fetch session data");
-        return;
+      const _session = await getSession() as SessionPayload;
+      //const session = (await response.json()) as SessionPayload;
+      console.log("SideBar Session: ", _session);
+      if(_session != null){
+        user.email = _session.userData.email!;
+        user.name = _session.userData.name!;
+        user.role = _session.userData.role!;
+        const userTeams = _session.userData; 
+        setUserTeam(userTeams);      
+        const navTeam = data.teams.filter((team) =>
+          userTeams?.userAccess?.some((mod) => mod.module === team.name)
+        );
+  
+        setFilteredTeam(navTeam);
+        setActiveTeam(navTeam[0])
+        setIsLoading(false);
+        setUser(user);
       }
-      const session = (await response.json()) as SessionPayload;
-      user.email = session.userData[0].email!;
-      user.name = session.userData[0].name!;
-      user.role = session.userData[0].role!;
-      const userTeams = session.userData[0].userAccess; 
-      
-      const navTeam = data.teams.filter((team) =>
-        userTeams?.some(t => team.name === t.module) // Ensure we return the comparison result
-      );
+    }
+    loadUserData();
+  }, []);
 
-      // Filter para sa module
-      const navMain = data.navMain.filter(
-        (nav) =>
-          nav.modules.includes(activeTeam.name) // Filter based on active team
-      );  
+  React.useEffect(() => {
+    async function loadNavMain(){
+        // Filter para sa module
+        const navMain = data.navMain.filter(
+          (nav) =>
+            nav.modules.includes(activeTeam.name) // Filter based on active team
+        );  
+  
+        const filteredSubModule = data.navMain.filter(item => 
+          item.modules.includes(activeTeam.name)
+        );
 
-      const filteredSubModule = data.navMain.filter(item => 
-        item.modules.includes(activeTeam.name)
-      );
-
-
-      const filteredChildModule = filteredSubModule
-      .map(module => ({
-        ...module,
-        items: module.items?.filter(permissions => 
-          userTeams?.some(access => 
-            access.permission && permissions.permission.includes(access.permission)
+        const filteredChildModule = filteredSubModule
+        .map(module => ({
+          ...module,
+          items: module.items?.filter(permissions => 
+            userTeam?.userAccess?.some(access =>
+                access.permission && permissions.permission.includes(access.permission)
+              )
           )
-        )
-      }))
-      .filter(module => module.items && module.items.length > 0);
+        }))
+        .filter(module => module.items && module.items.length > 0);
 
-      setFilteredTeam(data.teams);
-      setActiveTeam(navTeam[0]);
-      setFilteredNavMain(navMain);
-      //setFilteredSub(filteredChildModule)
-      setIsLoading(false);
-      setUser(user);
+        setFilteredNavMain(navMain);
+        setFilteredSub(filteredChildModule)
     }
 
-    loadUserData();
-
-  }, [activeTeam]);
-
- 
+    loadNavMain();
+  }, [activeTeam])
 
   return (
     <>

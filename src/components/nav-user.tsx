@@ -29,8 +29,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { logout } from "@/app/auth/actions"
-import ServerStatus from "./ui/network-badge"
+import { deleteSession } from "@/lib/sessions-client"
+import { useRouter } from "next/navigation"
 
 export function NavUser({
   user,
@@ -41,11 +41,16 @@ export function NavUser({
     role: string
     avatar: string
   }
-}) {
+}) 
+{
+  const router = useRouter()
   const { isMobile } = useSidebar()
   const handleLogout = async () => {
     try {
-        await logout(); // Call the logout function
+      await deleteSession();
+      window.location.href = '/login';
+      //router.push('/login');
+      console.log('URL updated, but waiting for navigation');
     } catch (error) {
         console.error("Failed to log out:", error);
     }
@@ -87,7 +92,6 @@ export function NavUser({
                   <span className="truncate font-semibold">{user.name}</span>
                   <span className="truncate text-xs">{user.email}</span>
                 </div>
-                <ServerStatus/>
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />

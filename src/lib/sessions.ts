@@ -9,7 +9,7 @@ import { IUserData } from "@/components/interfaces/iuser";
 const secretKey = process.env.SESSION_SECRET_KEY;
 const encodedKey = new TextEncoder().encode(secretKey);
 
-export async function createSession(id: string, userData: IUserData[]){
+export async function createSession(id: string, userData: IUserData){
     const sessionExpiration = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     const session = await encrypt({id, userData, sessionExpiration});
 
@@ -37,7 +37,7 @@ export async function decrypt(session: string | undefined = ""){
         const {payload} = await jwtVerify(session, encodedKey, {
             algorithms: ["HS256"],
         });
-        console.log("session is verified");
+        console.log("Server session is verified");
         return payload;
     } catch(error){
         console.log("Failed to verify session",error);
