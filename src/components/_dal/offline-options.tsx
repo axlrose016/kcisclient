@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { LibraryOption } from "../interfaces/library-interface";
-import { dexieDb } from "@/db/offline/Dexie/dexieDb";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 
 const getOfflineLibraryOptions = (library: string, descriptionField: string): () => Promise<LibraryOption[]> => {
     return cache(async () => {

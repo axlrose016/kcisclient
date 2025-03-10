@@ -11,10 +11,10 @@ import { Button } from "@/components/ui/button"
 import type { IUser, IUserAccess } from "@/components/interfaces/iuser"
 import { getModules, getPermissions, getRoles } from "@/db/offline/Dexie/schema/library-service"
 import { toast } from "@/hooks/use-toast"
-import { dexieDb } from "@/db/offline/Dexie/dexieDb"
 import { addUser, addUserAccess, checkUserExists, trxAddUserWithAccess } from "@/db/offline/Dexie/schema/user-service"
 import { v4 as uuidv4 } from 'uuid';
 import { redirect, useRouter } from "next/navigation"
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 
 const formSchema = z
   .object({

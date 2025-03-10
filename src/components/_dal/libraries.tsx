@@ -1,10 +1,7 @@
-"use server";
+"use client";
 
 import { cache } from "react";
-import { db } from "@/db";
 import { modules, permissions, roles } from "@/db/schema/libraries";
-import initSqlJs from "sql.js";
-import { sqliteDb } from "@/db/offline/sqlJsInit";
 const api_base_url = process.env.NEXT_PUBLIC_API_BASE_URL;
 const api_pims_base_url = process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
 
@@ -13,8 +10,8 @@ const fetchOfflineLibrary = cache(async (endpoint: string, errorMessage: string,
         const response = await fetch(api_base_url + endpoint);
         if(!response.ok){
             if(offline_table){
-                const offlineData = await sqliteDb.select().from(offline_table).all();
-                return offlineData;
+                //const offlineData = await sqliteDb.select().from(offline_table).all();
+                //return offlineData;
             }else{
                 throw new Error(errorMessage);
             }
@@ -22,9 +19,9 @@ const fetchOfflineLibrary = cache(async (endpoint: string, errorMessage: string,
         return await response.json();
     } catch(error){
         if(offline_table){
-            const offlineData = await sqliteDb.select().from(offline_table).all();
-            return offlineData;
-        }else{
+            //const offlineData = await sqliteDb.select().from(offline_table).all();
+            //return offlineData;
+        }else{ 
             throw new Error(errorMessage);
         }
     }
@@ -35,8 +32,8 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         const response = await fetch(api_base_url + endpoint);
         if (!response.ok) { 
             if (offline_table) {
-                const offlineData = await db.select().from(offline_table).all();
-                return offlineData; 
+                //const offlineData = await db.select().from(offline_table).all();
+                //return offlineData; 
             } else {
                 throw new Error(errorMessage);
             }
@@ -44,8 +41,8 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         return await response.json();
     } catch (error) {
         if (offline_table) {
-            const offlineData = await db.select().from(offline_table).all();
-            return offlineData;
+            //const offlineData = await db.select().from(offline_table).all();
+            //return offlineData;
         }
         throw new Error(errorMessage); 
     }

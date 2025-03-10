@@ -1,5 +1,5 @@
 import  { EntityTable } from 'dexie';
-import { dexieDb } from '../dexieDb'; // Assuming dexieDb is properly initialized elsewhere
+import { dexieDb } from '../databases/dexieDb'; // Assuming dexieDb is properly initialized elsewhere
 import { IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
 import { hashPassword } from '@/lib/utils';

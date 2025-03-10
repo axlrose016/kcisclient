@@ -1,5 +1,5 @@
 import { EntityTable } from "dexie";
-import { dexieDb } from "../dexieDb";
+import { dexieDb } from "../databases/dexieDb";
 import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 
 const tblRoles = dexieDb.table('roles') as EntityTable<IRoles, 'id'>;

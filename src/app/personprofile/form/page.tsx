@@ -33,9 +33,19 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
 import SectorDetails from './sectors'
+import { IPersonProfile, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile'
+import { v4 as uuidv4 } from 'uuid';
+import { fstat } from 'fs'
+import { IAttachments } from '@/components/interfaces/general/attachments'
+import { ConfirmSave, SessionPayload } from '@/types/globals'
+import { getSession } from '@/lib/sessions-client'
+import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb'
 
 export default function PersonProfileForm() {
+  const module = "personprofile";
+  let _session = {} as SessionPayload;
   const [combinedData, setCombinedData] = useState({});
+  const [confirmed, setConfirmed] = useState(false);
 
   // cfw
 
@@ -295,9 +305,6 @@ export default function PersonProfileForm() {
     setAge(ageNumber.toString());
   };
 
-
-
-
   const updateCapturedData = (section: string, field: string, value: any, index: number = -1) => {
     setCapturedData((prevData) => {
       let updatedData = { ...prevData };
@@ -333,7 +340,6 @@ export default function PersonProfileForm() {
   }
 
   const [displayPic, setDisplayPic] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchData = async () => {
       debugger;
@@ -356,9 +362,7 @@ export default function PersonProfileForm() {
         const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
         setSectorsOptions(sectors);
 
-
-
-
+        _session = await getSession() as SessionPayload;
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -463,13 +467,13 @@ export default function PersonProfileForm() {
       label: "Contact Information",
       content: (
         <div className="bg-card rounded-lg">
-          {/* <ContactDetails
+          <ContactDetails
             // errors={errors} 
             errors={errors}
             capturedData={capturedData}
             updateCapturedData={updateCapturedData}
             selectedModalityId={selectedModalityId}
-          /> */}
+          />
         </div>
       ),
     },
@@ -553,7 +557,7 @@ export default function PersonProfileForm() {
           label: "Volunteer Details",
           content: (
             <div className="bg-card rounded-lg">
-              {/* <VolunteerDetails errors={errors} /> */}
+                <VolunteerDetails errors={errors} />
             </div>
           ),
         }, {
@@ -561,7 +565,7 @@ export default function PersonProfileForm() {
           label: "KC Trainings",
           content: (
             <div className="bg-card rounded-lg">
-              {/* <KCTrainings errors={errors} /> */}
+              <KCTrainings errors={errors} /> 
             </div>
           ),
         }, {
@@ -569,7 +573,7 @@ export default function PersonProfileForm() {
           label: "Capacity Building",
           content: (
             <div className="bg-card rounded-lg">
-              {/* <CapacityBuilding errors={errors} /> */}
+              <CapacityBuilding errors={errors} /> 
             </div>
           ),
         },
@@ -578,7 +582,7 @@ export default function PersonProfileForm() {
           label: "ERS Work Record",
           content: (
             <div className="bg-card rounded-lg">
-              {/* <Ers_work_record errors={errors} /> */}
+              <Ers_work_record errors={errors} />
             </div>
           ),
         },
@@ -665,13 +669,11 @@ export default function PersonProfileForm() {
     });
   }
 
-
-
   const appendData = (key: any, data: any) => {
     setCombinedData((prevData) => {
       const updatedData = { ...prevData, [key]: data };
       // console.log("updated data", updatedData);
-      localStorage.setItem("combinedData", JSON.stringify(updatedData));
+      //localStorage.setItem("combinedData", JSON.stringify(updatedData));
       return updatedData;
     });
   };
@@ -684,9 +686,249 @@ export default function PersonProfileForm() {
   //   }
   // }, [combinedData]);
 
-  // useEffect(() => {
-  //   console.log(combinedData);
-  // }, [combinedData])
+  useEffect(() => {
+    debugger;
+    console.log(combinedData);
+    if(confirmed){
+      if (combinedData) {
+        const pls = JSON.parse(JSON.stringify(combinedData));
+        console.log("from LS ", pls);
+        const fd = pls;
+
+        const modality_id = fd.common_data.modality_id;
+        
+        let formPersonProfile: IPersonProfile;
+        let formPersonProfileSector: IPersonProfileSector;
+        let formPersonProfileDisability: IPersonProfileDisability;
+        let formPersonProfileFamilyComposition: IPersonProfileFamilyComposition;
+        let formAttachments: IAttachments;
+
+        if (modality_id === 25) {
+          let _id = uuidv4();
+          formPersonProfile = {
+            id: _id,
+            modality_id: fd.common_data?.modality_id || null,
+            extension_name: fd.common_data?.extension_name || null,
+            birthplace: fd.common_data?.birthplace || null,
+            sex_id: fd.common_data?.sex_id || null,
+            first_name: fd.common_data?.first_name || null,
+            last_name: fd.common_data?.last_name || null,
+            middle_name: fd.common_data?.middle_name || null,
+            civil_status_id: fd.common_data?.civil_status_id || null,
+            birthdate: fd.common_data?.birthdate || null,
+            age: fd.common_data?.age || null,
+            philsys_id_no: fd.common_data?.philsys_id_no || null,
+            sitio:fd.contact_details?.sition || null,
+            brgy_code: fd.contact_details?.brgy_code || null,
+            cellphone_no: fd.contact_details?.cellphone_no || null,
+            cellphone_no_secondary: fd.contact_details?.cellphone_no_secondary || null,
+            email: fd.contact_details?.email || null,
+            sitio_current_address: fd.contact_details?.sitio_present_address || null,
+            barangay_code_current: fd.contact_details?.barangay_code_present_address || null,
+            is_permanent_same_as_current_address: fd.contact_details?.is_same_as_permanent_address === true ? true : false  || null,
+            has_immediate_health_concern: fd.health_concerns?.has_immediate_health_concern === true ? true : false || null,
+            immediate_health_concern: fd.health_concerns?.immediate_health_concern || null,
+            school_name: fd.educational_attainment?.school_name || null,
+            campus: fd.educational_attainment?.campus || null,
+            school_address: fd.educational_attainment?.school_address || null,
+            course_id: fd.educational_attainment?.course_id ?? 0, // Integer defaulting to 0
+            year_graduated: fd.educational_attainment?.year_graduated || null,
+            year_level_id: fd.educational_attainment?.year_level_id ?? 0,
+
+            current_occupation: fd.employment?.current_occupation || null,
+            id_card: fd.employment?.id_card ?? 0, // Integer defaulting to 0
+            occupation_id_card_number: fd.employment?.occupation_id_card_number || null,
+            skills: fd.employment?.skills || null,
+
+            deployment_area_id: fd.preferred_deployment?.deployment_area_id ?? 0, // Integer defaulting to 0
+            deployment_area_address: fd.preferred_deployment?.deployment_area_address || null,
+            preffered_type_of_work_id: fd.preferred_deployment?.preffered_type_of_work_id ?? 0, // Integer defaulting to 0
+
+            modality_sub_category_id: fd.cfw_general_info?.modality_sub_category_id || null,
+
+
+            is_pwd_representative: fd.cfw_representative?.is_cfw_representative === true ? true : false || null,
+
+
+            ip_group_id: fd.ip_group_id || null,
+
+            cwf_category_id: null,
+            cfwp_id_no: null,
+            no_of_children: null,
+            is_pantawid: false,
+            is_pantawid_leader: false,
+            is_slp: false,
+            address: null,
+            sitio_current: null,
+            brgy_code_current: null,
+            is_lgu_official: false,
+            is_mdc: false,
+            is_bdc: false,
+            is_bspmc: false,
+            is_bdrrmc_bdc_twg: false,
+            is_bdrrmc_expanded_bdrrmc: false,
+            is_mdrrmc: false,
+            is_hh_head: false,
+            academe:0,
+            business:0,
+            differently_abled:0,
+            farmer:0,
+            fisherfolks:0,
+            government:0,
+            ip:0,
+            ngo:0,
+            po:0,
+            religious:0,
+            senior_citizen:0,
+            women:0,
+            solo_parent:0,
+            out_of_school_youth:0,
+            children_and_youth_in_need_of_special_protection:0,
+            family_heads_in_need_of_assistance:0, 
+            affected_by_disaster:0,
+            persons_with_disability:0,
+            others: null,
+            family_member_name: null,
+            relationship_to_family_member: null,
+
+            //CFW Representative
+            representative_last_name: fd.cfw_representative?.representative_last_name || null,
+            representative_first_name: fd.cfw_representative?.representative_first_name || null,
+            representative_middle_name: fd.cfw_representative?.representative_middle_name || null,
+            representative_extension_name_id: fd.cfw_representative?.representative_extension_name_id || null,
+            representative_sitio: fd.cfw_representative?.representative_sitio || null,
+            representative_brgy_code: fd.cfw_representative?.representative_brgy_code || null,
+            representative_relationship_to_beneficiary: fd.cfw_representative?.representative_relationship_to_beneficiary || null,
+            representative_birthdate: fd.cfw_representative?.representative_birthdate || null,
+            representative_age: fd.cfw_representative?.representative_age || null,
+            representative_occupation: fd.cfw_representative?.representative_occupation || null,
+            representative_monthly_salary: fd.cfw_representative?.representative_monthly_salary || null,
+            representative_educational_attainment_id: fd.cfw_representative?.representative_educational_attainment_id || null,
+            representative_sex_id: fd.cfw_representative?.representative_sex_id || null,
+            representative_contact_number: fd.cfw_representative?.representative_contact_number || null,
+            representative_id_card_id: fd.cfw_representative?.representative_id_card_id || null,
+            representative_id_card_number: fd.cfw_representative?.representative_id_card_number || null,
+            representative_address: fd.cfw_representative?.representative_address || null,
+            representative_civil_status_id: fd.cfw_representative?.representative_civil_status_id || null,
+            representative_has_health_concern: fd.cfw_representative?.representative_has_health_concern || null,
+            representative_health_concern_details: fd.cfw_representative?.representative_health_concern_details || null,
+            representative_skills: fd.cfw_representative?.representative_skills || null,
+          
+            created_by: _session.id,
+            created_date: new Date().toISOString(),
+            last_modified_by: null,
+            last_modified_date: null,
+            push_date: null,
+            push_status_id: 2,
+            deleted_by: null,
+            deleted_date: null,
+            is_deleted: false,
+            remarks:"Person Profile Created",
+          }
+          formPersonProfileSector = {
+            id: uuidv4(),
+            person_profile_id: _id,
+            sector_id: fd.sectors?.sector_id || null,
+            created_by: _session.id,
+            created_date: new Date().toISOString(),
+            last_modified_by: null,
+            last_modified_date: null,
+            push_date: null,
+            push_status_id: 2,
+            deleted_by: null,
+            deleted_date: null,
+            is_deleted: false,
+            remarks: "Person Profile Sector Created",
+          }
+          formPersonProfileDisability = {
+            id: uuidv4(),
+            person_profile_id: _id,
+            type_of_disability_id: fd.disabilities?.disability_id || null,
+            created_by: _session.id,
+            created_date: new Date().toISOString(),
+            last_modified_by: null,
+            last_modified_date: null,
+            push_date: null,
+            push_status_id: 2,
+            deleted_by: null,
+            deleted_date: null,
+            is_deleted: false,
+            remarks: "Person Profile Disability Created",
+          }
+          formPersonProfileFamilyComposition = {
+            id: uuidv4(),
+            person_profile_id: _id,
+            name: fd.family_composition?.name || null,
+            birthdate: fd.family_composition?.birthdate || null,
+            age: fd.family_composition?.age || null,
+            contact_number: fd.family_composition?.contact_number || null,
+            highest_educational_attainment_id: fd.family_composition?.highest_educational_attainment_id || null,
+            monthly_income: fd.family_composition?.monthly_income || null,
+            relationship_to_the_beneficiary_id: fd.family_composition?.relationship_to_the_beneficiary_id || null,
+            work: fd.family_composition?.work || null,
+            created_by: _session.id,
+            created_date: new Date().toISOString(),
+            last_modified_by: null,
+            last_modified_date: null,
+            push_date: null,
+            push_status_id: 2,
+            deleted_by: null,
+            deleted_date: null,
+            is_deleted: false,
+            remarks: "Person Profile Disability Created",
+          }
+          formAttachments = {
+            id: uuidv4(),
+            record_id: _id,
+            file_path: fd.attachments?.file_path || null,
+            file_name: fd.attachments?.file_name || null,
+            file_id: fd.attachments?.file_id || null,
+            module_path: module,
+            created_by: _session.id,
+            created_date: new Date().toISOString(),
+            last_modified_by: null,
+            last_modified_date: null,
+            push_date: null,
+            push_status_id: 2,
+            deleted_by: null,
+            deleted_date: null,
+            is_deleted: false,
+            remarks: "Person Profile Attachment Created",
+          }
+        }
+
+        dexieDb.open();
+
+        dexieDb.transaction('rw', [dexieDb.person_profile,
+          dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
+          dexieDb.attachments], async () => {
+          try{
+            await dexieDb.person_profile.add(formPersonProfile);
+            await dexieDb.person_profile_sector.add(formPersonProfileSector);
+            await dexieDb.person_profile_disability.add(formPersonProfileDisability);
+            await dexieDb.person_profile_family_composition.add(formPersonProfileFamilyComposition);
+            await dexieDb.attachments.add(formAttachments);
+            console.log("Person Profile added to IndexedDB");
+          }catch(error){
+            console.error("Error adding Person Profile to IndexedDB", error);
+          }
+        }).catch(error => {
+          console.log('Transaction failed: ', error);
+        });
+        //const response = await submit({}, JSON.stringify(pls));
+        //console.log("SERVER RESPONSE", JSON.stringify(response));
+        //console.log("SERVER RESPONSE", response);
+
+      setChkToggle(false);
+      // setbtnToggle(true);
+      toast({
+        variant: "green",
+        title: "Success",
+        description: "Record has been saved!",
+      });
+      };
+    }
+  }, [confirmed])
 
   const [isAccepted, setIsAccepted] = useState(false);
   const [chkToggle, setChkToggle] = useState(true);
@@ -694,22 +936,23 @@ export default function PersonProfileForm() {
 
 
   const confirmSave = async () => {
+    debugger;
+    setConfirmed(true);
+  }
 
-    const ls = localStorage.getItem("combinedData");
-    if (ls) {
-      const pls = JSON.parse(ls);
-      console.log("from LS ", pls);
-      //const response = await submit({}, JSON.stringify(pls));
-      //console.log("SERVER RESPONSE", JSON.stringify(response));
-      //console.log("SERVER RESPONSE", response);
-    }
-
-    setChkToggle(false);
-    // setbtnToggle(true);
+  const showToastConfirmation = (confirmSave : ConfirmSave) => {
     toast({
-      variant: "green",
-      title: "Success",
-      description: "Record has been saved!",
+      variant: "destructive",
+      title: "You are about to save the form, continue?",
+      description: "This will save the data. This action cannot be undone.",
+      action: (
+        <button
+          onClick={() => confirmSave()}  // saving to server
+          className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Confirm
+        </button>
+      ),
     });
   };
 
@@ -921,24 +1164,24 @@ export default function PersonProfileForm() {
         errorToast("Please select a modality!");
         return;
       }
-      localStorage.setItem("combinedData", JSON.stringify(combinedData));
+      //localStorage.setItem("combinedData", JSON.stringify(combinedData));
 
-      toast({
-        variant: "destructive",
-        title: "You are about to save the form, continue?",
-        description: "This will save the data. This action cannot be undone.",
-        action: (
-          <button
-            onClick={() => confirmSave()}  //saving to server
-            className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+      // toast({
+      //   variant: "destructive",
+      //   title: "You are about to save the form, continue?",
+      //   description: "This will save the data. This action cannot be undone.",
+      //   action: (
+      //     <button
+      //       onClick={() => confirmSave()}  //saving to server
+      //       className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
 
-          >
-            Confirm
-          </button>
-        ),
-      });
+      //     >
+      //       Confirm
+      //     </button>
+      //   ),
+      // });
 
-
+      showToastConfirmation(confirmSave);
     }
     else {
       setLoading(false);
@@ -1256,14 +1499,3 @@ export default function PersonProfileForm() {
     
   )
 }
-
-function SubmitButton() {
-  const { pending } = useFormStatus()
-
-  return (
-    <Button type="submit" disabled={pending}>
-      {pending ? 'Registering...' : 'Register'}
-    </Button>
-  )
-}
-
