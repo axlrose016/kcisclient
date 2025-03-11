@@ -67,7 +67,7 @@ export function FormMultiDropDown({ options, selectedValues, onChange }: FormMul
                 {selectedValues.length > 2 && <Badge variant="secondary">+{selectedValues.length - 2}</Badge>}
               </>
             ) : (
-              "Select disabilities..."
+              "Select Disabilities..."
             )}
           </div>
           <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />

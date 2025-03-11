@@ -410,7 +410,9 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
             <div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
                     <div className="p-2 sm:col-span-4">
-                        <Label htmlFor="cfw_program_details" className="block text-sm font-medium p-2">Has your family ever been a beneficiary of the Cash-for-Work Program of DSWD? (e.g., Tara Basa Program, CFW for Disaster, etc.)</Label>
+                        <Label htmlFor="cfw_program_details" className="block text-sm font-medium p-2">
+                            Have you/or member/s of your family ever been a beneficiary of the Cash-for-Work Programs of the DSWD?
+                        </Label>
                         <div className="mt-2 flex items-center space-x-6 p-2">
                             <div className="flex items-center">
                                 <input
@@ -459,14 +461,15 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
 
                                 <Dialog modal={false}>
                                     <DialogTrigger asChild>
-                                        <p className="border px-2 py-3 mr-2">
+                                        <p className="border px-4 py-2 mr-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition">
                                             Add New Entry
                                         </p>
                                     </DialogTrigger>
+
                                     <DialogContent className="sm:max-w-[425px]">
                                         <DialogHeader>
-                                            <DialogTitle className="text-left">Beneficiary History</DialogTitle>
-                                            <DialogDescription className="text-left">
+                                            <DialogTitle className="text-left mb-3">Beneficiary History</DialogTitle>
+                                            <DialogDescription className="text-left text-justify mt-3">
                                                 Please indicate if your family has ever been a beneficiary of the Cash-for-Work Program of DSWD (e.g., Tara Basa Program, CFW for Disaster, etc.). Write the year served.
                                             </DialogDescription>
                                         </DialogHeader>

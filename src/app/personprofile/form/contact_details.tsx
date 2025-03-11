@@ -85,6 +85,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
     }
 
+    const [selectedModalityID, setSelectedModalityID] = useState(number);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -136,6 +137,13 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         setContactDetails(JSON.parse(storedContactDetails));
                     }
                 }
+
+                const common_data = localStorage.getItem("common_data");
+                if (common_data) {
+                    const parsedCommonData = JSON.parse(common_data);
+                    setSelectedModalityID(parsedCommonData.modality_id);
+                }
+
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -218,19 +226,20 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
             contactDetails.region_code_present_address = contactDetails.region_code;
             contactDetails.province_code_present_address = contactDetails.province_code;
             contactDetails.city_code_present_address = contactDetails.city_code;
+            contactDetails.brgy_code_present_address = contactDetails.barangay_code;
         }
         updatingContactDetails("is_same_as_permanent_address", !isSameAddress);
     }
     return (
         <>
-            <div className="space-y-3">
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 bg-gray-200 p-3 mb-0">
+            <div className="space-y-3 pt-3">
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1 ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color " : "bg-black"} text-white p-3 mb-0`}>
                     Permanent Address
                 </div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2 mt-0">
 
                     <div className="p-2 col-span-2">
-                        <Label htmlFor="sitio" className="block text-sm font-medium">House No/Street/Purok<span className='text-red-500'> *</span></Label>
+                        <Label htmlFor="sitio" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
                         <Input
                             // value={capturedData.common_data.sitio}
                             value={contactDetails.sitio || ""}
@@ -288,7 +297,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             <p className="mt-2 text-sm text-red-500">{errors.municipality_contact_number}</p>
                         )}
                     </div >
-                    <div className="p-2 col-span-2">
+                    <div className="p-2 col-span-2 mb-3">
                         <Label htmlFor="barangay_contact_details" className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
                         <FormDropDown
                             id="barangay_contact_details"
@@ -302,7 +311,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         )}
                     </div >
                 </div>
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 bg-gray-200 p-3">
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-black" : ""}  p-3 bg-black text-white mt-3`}>
                     Present Address
                 </div>
                 <div className="flex items-center gap-2 p-3">
@@ -323,7 +332,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2">
                     <div className="p-2 col-span-2">
-                        <Label htmlFor="sitio_present_address" className="block text-sm font-medium">House No/Street/Purok<span className='text-red-500'> *</span></Label>
+                        <Label htmlFor="sitio_present_address" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
                         <Input
                             // value={capturedData.common_data.sitio}
                             value={contactDetails.sitio_present_address || ""}
@@ -382,7 +391,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             <p className="mt-2 text-sm text-red-500">{errors.municipality_contact_details_present_address}</p>
                         )}
                     </div >
-                    <div className="p-2 col-span-2">
+                    <div className="p-2 col-span-2 mb-3">
                         <Label htmlFor="barangay_contact_details_present_address" className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
                         <FormDropDown
                             id="barangay_contact_details_present_address"
@@ -396,7 +405,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         )}
                     </div >
                 </div>
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 bg-gray-200 p-3">
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  p-3 ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-white" : "bg-black text-white"}  `}>
                     Contact Numbers and Email
                 </div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2">

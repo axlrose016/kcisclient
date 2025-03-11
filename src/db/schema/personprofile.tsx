@@ -187,7 +187,7 @@ export const review_approve = sqliteTable("review_approve", {
 
 
 export const person_profile_disability = sqliteTable('person_profile_disability', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text('person_profile_id'),
     type_of_disability_id: integer('type_of_disability_id'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -204,7 +204,7 @@ export const person_profile_disability = sqliteTable('person_profile_disability'
 
 
 export const person_profile_engagement_history = sqliteTable('person_profile_engagement_history', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text("person_profile_id"),
     modality_id: integer('modality_id'),
     status_id: integer('status_id'),
@@ -225,7 +225,7 @@ export const person_profile_engagement_history = sqliteTable('person_profile_eng
 });
 
 export const person_profile_family_composition = sqliteTable('person_profile_family_composition', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text("person_profile_id"),
     name: text('name'),
     birthdate: text('birthdate'),
@@ -248,7 +248,7 @@ export const person_profile_family_composition = sqliteTable('person_profile_fam
 });
 
 export const person_profile_file_upload = sqliteTable('person_profile_file_upload', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text('person_profile_id'),
     file_id: integer('file_id'),
     file_name: text('file_name'), //this is the name of the file that has been uploaded
@@ -265,7 +265,7 @@ export const person_profile_file_upload = sqliteTable('person_profile_file_uploa
 });
 
 export const cfw_family_program_details = sqliteTable('cfw_family_program_details', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text("person_profile_id"),
     cfw_type_id: integer('cfw_type_id'),
     year_served: integer('year_served'),
@@ -282,7 +282,7 @@ export const cfw_family_program_details = sqliteTable('cfw_family_program_detail
 });
 
 export const person_profile_sector = sqliteTable('person_profile_sector', {
-    id: integer('id').notNull().primaryKey(),
+    id: text("id").notNull().primaryKey(),
     person_profile_id: text('person_profile_id'),
     sector_id: integer('sector_id'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),

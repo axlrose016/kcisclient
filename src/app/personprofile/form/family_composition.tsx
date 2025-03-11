@@ -389,8 +389,11 @@ export default function FamilyComposition({ errors }: { errors: any }) {
 
                             <Dialog modal={false}>
                                 <DialogTrigger asChild>
-                                    <p className="ml-2 border px-3 py-3 cursor-pointer">Add Record</p>
+                                    <p className="border px-4 py-2 ml-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition">
+                                        Add New Entry
+                                    </p>
                                 </DialogTrigger>
+
                                 <DialogPortal>
                                     <DialogContent className="sm:max-w-[425px] max-h-full overflow-y-auto">
                                         <DialogHeader>

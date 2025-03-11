@@ -58,7 +58,7 @@ export default function LoginPage() {
           })
         }
         const decryptedPassword = await hashPassword(data.password, user?.salt);
-        if(user?.password === decryptedPassword && user.email === data.email)
+        if(user?.password === decryptedPassword && (user.email === data.email || user.username == data.email))
         {
           let userData: IUserData | null; 
           userData = await getUserData(user.id);

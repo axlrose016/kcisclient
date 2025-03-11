@@ -10,6 +10,7 @@ export default {
   theme: {
   	extend: {
   		colors: {
+			cfw_bg_color: '#2e4942',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

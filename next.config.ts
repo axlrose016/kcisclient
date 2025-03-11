@@ -15,6 +15,9 @@ const withPWA = require("@ducanh2912/next-pwa").default({
         font: "/fallback-font.woff2",
       },
       experimental: {
+        // turbo: {
+        //   enabled: true,
+        // },
         reactServerComponents: false,  // Disable React Server Components if you're not using them
       },
       async headers() {

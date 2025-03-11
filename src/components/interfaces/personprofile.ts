@@ -22,7 +22,6 @@ export interface IPersonProfile {
   address: string | null;
   sitio: string | null;
   brgy_code: string;
-  sitio_current: string | null;
   brgy_code_current: string | null;
   cellphone_no: string | null;
   cellphone_no_secondary: string | null;
@@ -66,7 +65,6 @@ export interface IPersonProfile {
   family_member_name: string | null;
   relationship_to_family_member: string | null;
   sitio_current_address: string;
-  barangay_code_current: string;
   is_permanent_same_as_current_address: boolean | null;
   id_card: number | 0;
   occupation_id_card_number: string;

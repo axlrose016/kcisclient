@@ -130,7 +130,8 @@ export async function seed(db: any) {
             { "id": 2, "extension_name": "Sr.", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 3, "extension_name": "II", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 4, "extension_name": "III", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 5, "extension_name": "IV", "created_by": "00000000-0000-0000-0000-000000000000" }
+            { "id": 5, "extension_name": "IV", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 6, "extension_name": "N/A", "created_by": "00000000-0000-0000-0000-000000000000" }
 
         ];
         // CFW FOR COLLEGE GRADUATES AND STUDENTS
@@ -197,7 +198,11 @@ export async function seed(db: any) {
             { "id": 6, "disability_name": "Psychosocial Disability", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 7, "disability_name": "Autism Spectrum Disorder", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 8, "disability_name": "Multiple Disabilities", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 9, "disability_name": "Chronic Illness-related Disability", "created_by": "00000000-0000-0000-0000-000000000000" }
+            { "id": 9, "disability_name": "Chronic Illness-related Disability", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 10, "disability_name": "Mental Disability", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 11, "disability_name": "Learning Disability", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 12, "disability_name": "Rare Disease", "created_by": "00000000-0000-0000-0000-000000000000" },
+
         ];
 
         const _fund_source = [
@@ -308,14 +313,13 @@ export async function seed(db: any) {
             { "id": 2, "name": "Chair", "is_active": 1, "created_by": "00000000-0000-0000-0000-000000000000" }
         ];
         const _cfw_type = [
-            { "id": 1, "cfw_type_name": "CFW for Disaster", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 2, "cfw_type_name": "Tara Basa", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 3, cfw_type_name: "Food-for-Work (FFW)", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 4, cfw_type_name: "Capacity Building", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 5, cfw_type_name: "Technical Assistance", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 6, cfw_type_name: "Emergency Response", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 7, cfw_type_name: "Community Support", "created_by": "00000000-0000-0000-0000-000000000000" },
-            // { "id": 8, cfw_type_name: "Livelihood Assistance", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 1, "cfw_type_name": "DRMB - FarmAralan", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 2, "cfw_type_name": "DRMB - LAWA (Local Adaption to Water Access)", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 3, "cfw_type_name": "DRMB - BINHI (Breaking Insufficiency through Nutritious Harvest for the Impoverished)", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 4, "cfw_type_name": "STB - Tara Basa Tutoring Program", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 5, "cfw_type_name": "KC - Cash-for-Work Program for College Graduates and Students", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 6, "cfw_type_name": "KC - Cash-for-Work Program for Econolically Poor and Vulnerable Communities/ Sectors", "created_by": "00000000-0000-0000-0000-000000000000" },
+
         ];
 
 
@@ -508,24 +512,33 @@ export async function seed(db: any) {
             { id: 1, sector_name: "Women", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 2, sector_name: "Out of School Youth (OSY)", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 3, sector_name: "Persons with Disabilities (PWD)", created_by: "00000000-0000-0000-0000-000000000000" },
-            { id: 4, sector_name: "Indigenous People", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 4, sector_name: "Indigenous People (IP)", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 5, sector_name: "Family Heads in Need of Assistance", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 6, sector_name: "Senior Citizen", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 7, sector_name: "Solo Parent", created_by: "00000000-0000-0000-0000-000000000000" },
-            { id: 8, sector_name: "Affected by Disaster", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 8, sector_name: "4Ps Beneficiary", created_by: "00000000-0000-0000-0000-000000000000" },
             { id: 9, sector_name: "Children and Youth in Need of Special Protection", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 10, sector_name: "Youth", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 11, sector_name: "Pregnant Women", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 12, sector_name: "Farmer", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 13, sector_name: "Fisherfolk", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 14, sector_name: "Urban Poor", created_by: "00000000-0000-0000-0000-000000000000" },
+            { id: 15, sector_name: "Laborers", created_by: "00000000-0000-0000-0000-000000000000" },
         ];
 
         const _files_to_upload = [
-            { "id": 1, "file_name": "Primary ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 1, "file_name": "Primary Valid ID", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 2, "file_name": "Secondary ID", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 3, "file_name": "PWD ID", "created_by": "00000000-0000-0000-0000-000000000000" },
             { "id": 4, "file_name": "School ID", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 5, "file_name": "Certificate of Registration from School", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 6, "file_name": "TOR/Diploma/Certification from the School Registrar", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 7, "file_name": "Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },
-            { "id": 8, "file_name": "1x1 Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
-            { "id": 9, "file_name": "Display Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            { "id": 5, "file_name": "School ID", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 6, "file_name": "Valid ID of Representative", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 7, "file_name": "TOR/Diploma or any proof of graduation for graduates and Certificate of Enrolment for students", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 8, "file_name": "Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },
+            { "id": 9, "file_name": "Certificate of Eligibility/ Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            { "id": 10, "file_name": "Certificate of Eligibility/ Certificate of Indigency", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            { "id": 11, "file_name": "Display Picture", "created_by": "00000000-0000-0000-0000-000000000000" },          
+            
         ];
 
         const _ip_groups = [

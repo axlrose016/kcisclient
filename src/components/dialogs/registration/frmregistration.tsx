@@ -112,6 +112,8 @@ export default function RegistrationForm({ className, ...props }: React.Componen
             try {
                 await dexieDb.users.add(formUser);
                 await dexieDb.useraccess.add(formUserAccess);
+                console.log("User: ", formUser);
+                console.log("Access: ",formUserAccess);
             } catch (error) {
                 console.error('Transaction failed: ', error);
                 throw error; 

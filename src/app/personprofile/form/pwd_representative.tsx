@@ -287,7 +287,7 @@ export default function PWDRepresentative({ errors, capturedData, updateCaptured
                         htmlFor="is_cfw_pwd_representative"
                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70  cursor-pointer"
                     >
-                        CFW PWD Representative
+                        Are you the CFW PWD Representative?
                     </label>
                 </div>
 
