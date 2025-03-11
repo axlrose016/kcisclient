@@ -65,6 +65,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const noSideBarRoutes = ["/punch"];
   return (
     <html lang="en">
       <head>
@@ -106,7 +107,9 @@ export default async function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} cz-shortcut-listen="true">
         <ClientSessionCheck>
+
           {children}
+
         </ClientSessionCheck>
         <ServiceWorker />
         <Toaster />

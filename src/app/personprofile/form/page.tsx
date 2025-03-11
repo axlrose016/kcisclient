@@ -1221,336 +1221,336 @@ export default function PersonProfileForm() {
     setIsAccepted((prev) => !prev);
   };
   return (
-    <div className='w-full'>
-      <Card>
-        <CardHeader>
-          <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
-            {/* Logo Section */}
-            <div className="flex-shrink-0">
-              <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
-            </div>
 
-            {/* Title Section */}
-            <div className="text-lg font-semibold mt-2 md:mt-0">
-              Beneficiary Profile Form
-            </div>
-          </CardTitle>
+    <Card>
+      <CardHeader>
+        <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
+          {/* Logo Section */}
+          <div className="flex-shrink-0">
+            <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
+          </div>
+
+          {/* Title Section */}
+          <div className="text-lg font-semibold mt-2 md:mt-0">
+            Beneficiary Profile Form
+          </div>
+        </CardTitle>
 
 
-          <CardDescription>
-            <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Important Instructions</h2>
-              <p className="text-gray-700 mb-4">
-                Please read and understand the following before proceeding:
-              </p>
-              <ul className="list-disc list-inside text-gray-600 mb-4">
-                <li>
-                  By submitting this form, you agree to the collection, use, and processing of your personal data in accordance with our{" "}
-                  <span className="text-indigo-600 underline cursor-pointer">
-                    Data Privacy Statement
-                  </span>.
-                </li>
-                <li>
-                  Submitting this form does <span className="font-bold">not guarantee</span> acceptance into any program or service. All submissions are subject to review and approval.
-                </li>
-                <li>
-                  Ensure that all fields are accurately completed. Incomplete or incorrect information may result in disqualification.
-                </li>
-                <li>
-                  Utilize special characters, such as ñ and Ñ, where appropriate.
-                </li>
-              </ul>
+        <CardDescription>
+          <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Important Instructions</h2>
+            <p className="text-gray-700 mb-4">
+              Please read and understand the following before proceeding:
+            </p>
+            <ul className="list-disc list-inside text-gray-600 mb-4">
+              <li>
+                By submitting this form, you agree to the collection, use, and processing of your personal data in accordance with our{" "}
+                <span className="text-indigo-600 underline cursor-pointer">
+                  Data Privacy Statement
+                </span>.
+              </li>
+              <li>
+                Submitting this form does <span className="font-bold">not guarantee</span> acceptance into any program or service. All submissions are subject to review and approval.
+              </li>
+              <li>
+                Ensure that all fields are accurately completed. Incomplete or incorrect information may result in disqualification.
+              </li>
+              <li>
+                Utilize special characters, such as ñ and Ñ, where appropriate.
+              </li>
+            </ul>
 
-            </div>
+          </div>
 
-            {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
-          </CardDescription>
-        </CardHeader>
-        {/* <form onSubmit={handleSubmit}> */}
-        {/* <form action={submitAction}> */}
-        <CardContent>
+          {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
+        </CardDescription>
+      </CardHeader>
+      {/* <form onSubmit={handleSubmit}> */}
+      {/* <form action={submitAction}> */}
+      <CardContent>
 
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
-            {/* Card Container */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4  w-full ">
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
+          {/* Card Container */}
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4  w-full ">
 
-              {/* Image on top (Mobile) / Left (Desktop) */}
-              <div className="flex-shrink-0 md:h-full lg:h-full">
-                <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 h-full">
-                  {/* Avatar - Center Horizontally & Vertically */}
-                  <div className="p-3 col-span-full flex justify-center items-center min-h-[250px]">
-                    <Avatar className="h-[200px] w-[200px]">
-                      {displayPic ? (
-                        <AvatarImage src={displayPic} alt="Display Picture" />
-                      ) : (
-                        <AvatarFallback>KC</AvatarFallback>
-                      )}
-                    </Avatar>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Inputs below image (Mobile) / Right (Desktop) */}
-              <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-3 w-full">
-
-                <div className="p-2">
-                  <Label htmlFor="modality_id" className="block text-sm font-medium mb-1  ">Select Modality<span className='text-red-500'> *</span> </Label>
-                  <FormDropDown
-
-                    id="modality_id"
-                    options={modalityOptions}
-                    selectedOption={commonData.modality_id || ""}
-                    onChange={handlModalityChange}
-                  // onChange={(e) => updatingCommonData("modality_id", e.target.id)}
-
-                  />
-                  {errors?.modality_id && (
-                    <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
-                  )}
-                </div>
-                <div className={`p-2  ${commonData.modality_id !== undefined && commonData.modality_id === 25 ? "" : "hidden"}`}>
-                  <Label htmlFor="modality_sub_category_id" className="block text-sm font-medium mb-1">CFW Category<span className='text-red-500'> *</span></Label>
-                  <FormDropDown
-
-                    id="modality_sub_category_id"
-                    options={modalitySubCategoryOptions}
-                    // selectedOption={selectedModalitySubCategoryId}
-                    selectedOption={cfwGeneralInfo.modality_sub_category_id || ""}
-
-                    onChange={handlModalitySubCategoryChange}
-
-                  />
-                  {errors?.modality_id && (
-                    <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="first_name" className="block text-sm font-medium mb-1">First Name<span className='text-red-500'> *</span></Label>
-                  <Input
-                    value={commonData.first_name || ""}
-                    // value={capturedData.common_data.first_name}
-                    // onChange={(e) => updateCapturedData("common_data", 'first_name', e.target.value)}
-                    onChange={(e) => updatingCommonData('first_name', e.target.value)}
-                    // onChange={(e) => updateCommonData('first_name', e.target.value)}
-                    // onBlur={handleBlur}
-                    id="first_name"
-                    name="first_name"
-                    type="text"
-                    placeholder="Enter your First Name"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                  {errors?.first_name && (
-                    <p className="mt-2 text-sm text-red-500">{errors.first_name}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="middle_name" className="block text-sm font-medium mb-1">Middle Name 
-                    {/* &nbsp;<input type='checkbox' />No Middle Name */}
-                    </Label>
-                
-                  <Input
-                    // onBlur={handleBlur}
-                    // onChange={(e) => updateCommonData('middle_name', e.target.value)}
-                    value={commonData.middle_name || ""}
-                    onChange={(e) => updatingCommonData('middle_name', e.target.value)}
-                    // onChange={(e) => updateCapturedData("common_data", 'middle_name', e.target.value)}
-                    id="middle_name"
-                    name="middle_name"
-                    type="text"
-                    placeholder="Enter your Middle Name"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                </div>
-                <div className="p-2"><Label htmlFor="last_name" className="block text-sm font-medium mb-1">Last Name<span className='text-red-500'> *</span></Label>
-                  <Input
-
-                    value={commonData.last_name || ""}
-                    onChange={(e) => updatingCommonData('last_name', e.target.value)}
-                    id="last_name"
-                    name="last_name"
-                    type="text"
-                    placeholder="Enter your Last Name"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                  {errors?.last_name && (
-                    <p className="mt-2 text-sm text-red-500">{errors.last_name}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="extension_name" className="block text-sm font-medium mb-1 mb-1">Extension Name</Label>
-                  <FormDropDown
-
-                    id="extension_name"
-                    options={extensionNameOptions}
-                    selectedOption={commonData.extension_name_id || ""}
-                    onChange={handlExtensionNameChange}
-                  />
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="sex_id" className="block text-sm font-medium mb-1">Sex<span className='text-red-500'> *</span></Label>
-                  <FormDropDown
-
-                    id="sex_id"
-                    options={sexOptions}
-                    selectedOption={commonData.sex_id || ""}
-                    // selectedOption={selectedSexId}
-                    onChange={handleSexChange}
-                  />
-                  {errors?.sex_id && (
-                    <p className="mt-2 text-sm text-red-500">{errors.sex_id}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="civil_status_id" className="block text-sm font-medium mb-1">Civil Status<span className='text-red-500'> *</span></Label>
-                  <FormDropDown
-
-                    id="civil_status_id"
-                    options={civilStatusOptions}
-                    // selectedOption={commonData.civil_status_id || ""}
-                    selectedOption={commonData.civil_status_id || 2 || ""}
-                    // selectedOption={selectedCivilStatusId}
-                    onChange={handleCivilStatusChange}
-                  />
-                  {errors?.civil_status_id && (
-                    <p className="mt-2 text-sm text-red-500">{errors.civil_status_id}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="birthdate" className="block text-sm font-medium mb-1">Birth Date<span className='text-red-500'> *</span></Label>
-                  <Input
-                    //  onChange={(e) => updateCommonData('first_name', e.target.value)}
-                    id="birthdate"
-                    name="birthdate"
-                    type="date"
-                    placeholder="MM/DD/YYYY"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    value={commonData.birthdate || ""}
-                    onChange={handleDOBChange}
-                  />
-                  {errors?.birthdate && (
-                    <p className="mt-2 text-sm text-red-500">{errors.birthdate}</p>
-                  )}
-
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="age" className="block text-sm font-medium mb-1">Age<span className='text-red-500'> *</span></Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="text"
-                    placeholder="0"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-center"
-                    value={commonData.age || 0}
-                    // value={age.toString()}
-                    // onChange={(e) => updateCommonData('age', age.toString())}
-                    readOnly
-                  />
-
-                </div>
-                <div className="p-2"><Label htmlFor="philsys_id_no" className="block text-sm font-medium mb-1">PhilSys ID Number</Label>
-                  <Input
-                    // onChange={(e) => updateCommonData('philsys_id_no', e.target.value)}
-                    type="text"
-                    id="philsys_id_no"
-                    name="philsys_id_no"
-                    placeholder="0000-0000000-000"
-                    maxLength={16} // 4 + 7 + 1 digits + 2 hyphens
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    // value={capturedData?.common_data?.philsys_id_no || ""}
-                    value={commonData.philsys_id_no || ""}
-                    onChange={(e) => updatingCommonData("philsys_id_no", e.target.value)}
-                  />
-                  {/* <PhilSysInput                        
-                          /> */}
-                  {/* may id na sa component */}
-                  {errors?.philsys_id_no && (
-                    <p className="mt-2 text-sm text-red-500">{errors.philsys_id_no}</p>
-                  )}
-                </div>
-                <div className="p-2">
-                  <Label htmlFor="birthplace" className="block text-sm font-medium mb-1">Birthplace <span className='text-red-500'> *</span></Label>
-                  <Textarea
-                    value={commonData.birthplace || ""}
-                    // value={capturedData.common_data.birthplace}
-                    onChange={(e) => updatingCommonData('birthplace', e.target.value)}
-                    // onChange={(e) => updateCapturedData("common_data", 'birthplace', e.target.value)}
-                    // onChange={(e) => updateCommonData('first_name', e.target.value)}
-                    // onBlur={handleBlur}
-                    id="birthplace"
-                    name="birthplace"
-                    placeholder="Enter your Birthplace (Region, Province, Municipality and Barangay"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  />
-                  {errors?.birthplace && (
-                    <p className="mt-2 text-sm text-red-500">{errors.birthplace}</p>
-                  )}
+            {/* Image on top (Mobile) / Left (Desktop) */}
+            <div className="flex-shrink-0 md:h-full lg:h-full">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 h-full">
+                {/* Avatar - Center Horizontally & Vertically */}
+                <div className="p-3 col-span-full flex justify-center items-center min-h-[250px]">
+                  <Avatar className="h-[200px] w-[200px]">
+                    {displayPic ? (
+                      <AvatarImage src={displayPic} alt="Display Picture" />
+                    ) : (
+                      <AvatarFallback>KC</AvatarFallback>
+                    )}
+                  </Avatar>
                 </div>
               </div>
 
             </div>
-          </div>
 
+            {/* Inputs below image (Mobile) / Right (Desktop) */}
+            <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-3 w-full">
 
+              <div className="p-2">
+                <Label htmlFor="modality_id" className="block text-sm font-medium mb-1  ">Select Modality<span className='text-red-500'> *</span> </Label>
+                <FormDropDown
 
+                  id="modality_id"
+                  options={modalityOptions}
+                  selectedOption={commonData.modality_id || ""}
+                  onChange={handlModalityChange}
+                // onChange={(e) => updatingCommonData("modality_id", e.target.id)}
 
-
-          <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-
-
-            {/* inputs */}
-
-
-
-
-
-          </div>
-
-
-          <div className="p-3 col-span-full">
-
-            <FormTabs tabs={tabs} className={commonData.modality_id !== undefined ? "" : "hidden"} />
-          </div>
-
-        </CardContent>
-        <CardFooter className="mt-10 pt-5 sticky bottom-0 bg-white shadow-md z-50">
-
-
-
-          <div className="flex flex-col space-y-4">
-
-
-            {/* Checkbox Section */}
-            <div className='px-3'>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  checked={isAccepted}
-                  onChange={handleCheckboxChange}
-                  className="w-4 h-4"
                 />
-                <span>
-                  I accept the <strong>Terms and Conditions</strong> and the{" "}
-                  <strong>Data Privacy Statement</strong>.
-                </span>
-              </label>
+                {errors?.modality_id && (
+                  <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
+                )}
+              </div>
+              <div className={`p-2  ${commonData.modality_id !== undefined && commonData.modality_id === 25 ? "" : "hidden"}`}>
+                <Label htmlFor="modality_sub_category_id" className="block text-sm font-medium mb-1">CFW Category<span className='text-red-500'> *</span></Label>
+                <FormDropDown
+
+                  id="modality_sub_category_id"
+                  options={modalitySubCategoryOptions}
+                  // selectedOption={selectedModalitySubCategoryId}
+                  selectedOption={cfwGeneralInfo.modality_sub_category_id || ""}
+
+                  onChange={handlModalitySubCategoryChange}
+
+                />
+                {errors?.modality_id && (
+                  <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="first_name" className="block text-sm font-medium mb-1">First Name<span className='text-red-500'> *</span></Label>
+                <Input
+                  value={commonData.first_name || ""}
+                  // value={capturedData.common_data.first_name}
+                  // onChange={(e) => updateCapturedData("common_data", 'first_name', e.target.value)}
+                  onChange={(e) => updatingCommonData('first_name', e.target.value)}
+                  // onChange={(e) => updateCommonData('first_name', e.target.value)}
+                  // onBlur={handleBlur}
+                  id="first_name"
+                  name="first_name"
+                  type="text"
+                  placeholder="Enter your First Name"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+                {errors?.first_name && (
+                  <p className="mt-2 text-sm text-red-500">{errors.first_name}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="middle_name" className="block text-sm font-medium mb-1">Middle Name 
+                  {/* &nbsp;<input type='checkbox' />No Middle Name */}
+                  </Label>
+               
+                <Input
+                  // onBlur={handleBlur}
+                  // onChange={(e) => updateCommonData('middle_name', e.target.value)}
+                  value={commonData.middle_name || ""}
+                  onChange={(e) => updatingCommonData('middle_name', e.target.value)}
+                  // onChange={(e) => updateCapturedData("common_data", 'middle_name', e.target.value)}
+                  id="middle_name"
+                  name="middle_name"
+                  type="text"
+                  placeholder="Enter your Middle Name"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+              </div>
+              <div className="p-2"><Label htmlFor="last_name" className="block text-sm font-medium mb-1">Last Name<span className='text-red-500'> *</span></Label>
+                <Input
+
+                  value={commonData.last_name || ""}
+                  onChange={(e) => updatingCommonData('last_name', e.target.value)}
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  placeholder="Enter your Last Name"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+                {errors?.last_name && (
+                  <p className="mt-2 text-sm text-red-500">{errors.last_name}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="extension_name" className="block text-sm font-medium mb-1 mb-1">Extension Name</Label>
+                <FormDropDown
+
+                  id="extension_name"
+                  options={extensionNameOptions}
+                  selectedOption={commonData.extension_name_id || ""}
+                  onChange={handlExtensionNameChange}
+                />
+              </div>
+              <div className="p-2">
+                <Label htmlFor="sex_id" className="block text-sm font-medium mb-1">Sex<span className='text-red-500'> *</span></Label>
+                <FormDropDown
+
+                  id="sex_id"
+                  options={sexOptions}
+                  selectedOption={commonData.sex_id || ""}
+                  // selectedOption={selectedSexId}
+                  onChange={handleSexChange}
+                />
+                {errors?.sex_id && (
+                  <p className="mt-2 text-sm text-red-500">{errors.sex_id}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="civil_status_id" className="block text-sm font-medium mb-1">Civil Status<span className='text-red-500'> *</span></Label>
+                <FormDropDown
+
+                  id="civil_status_id"
+                  options={civilStatusOptions}
+                  // selectedOption={commonData.civil_status_id || ""}
+                  selectedOption={commonData.civil_status_id || 2 || ""}
+                  // selectedOption={selectedCivilStatusId}
+                  onChange={handleCivilStatusChange}
+                />
+                {errors?.civil_status_id && (
+                  <p className="mt-2 text-sm text-red-500">{errors.civil_status_id}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="birthdate" className="block text-sm font-medium mb-1">Birth Date<span className='text-red-500'> *</span></Label>
+                <Input
+                  //  onChange={(e) => updateCommonData('first_name', e.target.value)}
+                  id="birthdate"
+                  name="birthdate"
+                  type="date"
+                  placeholder="MM/DD/YYYY"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  value={commonData.birthdate || ""}
+                  onChange={handleDOBChange}
+                />
+                {errors?.birthdate && (
+                  <p className="mt-2 text-sm text-red-500">{errors.birthdate}</p>
+                )}
+
+              </div>
+              <div className="p-2">
+                <Label htmlFor="age" className="block text-sm font-medium mb-1">Age<span className='text-red-500'> *</span></Label>
+                <Input
+                  id="age"
+                  name="age"
+                  type="text"
+                  placeholder="0"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-center"
+                  value={commonData.age || 0}
+                  // value={age.toString()}
+                  // onChange={(e) => updateCommonData('age', age.toString())}
+                  readOnly
+                />
+
+              </div>
+              <div className="p-2"><Label htmlFor="philsys_id_no" className="block text-sm font-medium mb-1">PhilSys ID Number</Label>
+                <Input
+                  // onChange={(e) => updateCommonData('philsys_id_no', e.target.value)}
+                  type="text"
+                  id="philsys_id_no"
+                  name="philsys_id_no"
+                  placeholder="0000-0000000-000"
+                  maxLength={16} // 4 + 7 + 1 digits + 2 hyphens
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  // value={capturedData?.common_data?.philsys_id_no || ""}
+                  value={commonData.philsys_id_no || ""}
+                  onChange={(e) => updatingCommonData("philsys_id_no", e.target.value)}
+                />
+                {/* <PhilSysInput                        
+                        /> */}
+                {/* may id na sa component */}
+                {errors?.philsys_id_no && (
+                  <p className="mt-2 text-sm text-red-500">{errors.philsys_id_no}</p>
+                )}
+              </div>
+              <div className="p-2">
+                <Label htmlFor="birthplace" className="block text-sm font-medium mb-1">Birthplace <span className='text-red-500'> *</span></Label>
+                <Textarea
+                  value={commonData.birthplace || ""}
+                  // value={capturedData.common_data.birthplace}
+                  onChange={(e) => updatingCommonData('birthplace', e.target.value)}
+                  // onChange={(e) => updateCapturedData("common_data", 'birthplace', e.target.value)}
+                  // onChange={(e) => updateCommonData('first_name', e.target.value)}
+                  // onBlur={handleBlur}
+                  id="birthplace"
+                  name="birthplace"
+                  placeholder="Enter your Birthplace (Region, Province, Municipality and Barangay"
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                />
+                {errors?.birthplace && (
+                  <p className="mt-2 text-sm text-red-500">{errors.birthplace}</p>
+                )}
+              </div>
             </div>
 
-            {/* Save Button Section */}
-            <div className='px-3'>
-              {/* <Button onClick={handleSubmit} disabled={!isAccepted || loading || btnToggle} > */}
-              <Button onClick={handleSubmit} disabled={btnToggle} >
-                {loading ? <Loader2 className={`animate-spin size-5 ${Number(selectedModalityId) === 25 ? "bg-cfw_bg_color text-black" : ""}`} /> : ""}
-                {loading ? "Saving..." : "Save"}
-              </Button>
-            </div>
+          </div>
+        </div>
+
+
+
+
+
+        <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+
+          {/* inputs */}
+
+
+
+
+
+        </div>
+
+
+        <div className="p-3 col-span-full">
+
+          <FormTabs tabs={tabs} className={commonData.modality_id !== undefined ? "" : "hidden"} />
+        </div>
+
+      </CardContent>
+      <CardFooter className="mt-10 pt-5 sticky bottom-0 bg-white shadow-md z-50">
+
+
+
+        <div className="flex flex-col space-y-4">
+
+
+          {/* Checkbox Section */}
+          <div className='px-3'>
+            <label className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={isAccepted}
+                onChange={handleCheckboxChange}
+                className="w-4 h-4"
+              />
+              <span>
+                I accept the <strong>Terms and Conditions</strong> and the{" "}
+                <strong>Data Privacy Statement</strong>.
+              </span>
+            </label>
           </div>
 
-          {/* <ButtonSubmit disabled={loading} label="Submit" onClick={handleSubmit} /> */}
-          {/* <ButtonSubmit disabled={true} label="Submit" /> */}
-        </CardFooter>
-        {/* </form> */}
-      </Card >
-    </div>
+          {/* Save Button Section */}
+          <div className='px-3'>
+            {/* <Button onClick={handleSubmit} disabled={!isAccepted || loading || btnToggle} > */}
+            <Button onClick={handleSubmit} disabled={btnToggle} >
+              {loading ? <Loader2 className={`animate-spin size-5 ${Number(selectedModalityId) === 25 ? "bg-cfw_bg_color text-black" : ""}`} /> : ""}
+              {loading ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </div>
+
+        {/* <ButtonSubmit disabled={loading} label="Submit" onClick={handleSubmit} /> */}
+        {/* <ButtonSubmit disabled={true} label="Submit" /> */}
+      </CardFooter>
+      {/* </form> */}
+    </Card >
+
   )
 }

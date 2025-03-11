@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getSession } from '@/lib/sessions-client';
 import { AppSidebar } from '@/components/app-sidebar';
-import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import LoginPage from './login/page';
 import { useRouter } from 'next/navigation';
 
@@ -42,10 +42,13 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   return isAuthenticated ? (
     <SidebarProvider>
       <AppSidebar />
-      <main className="w-full">
-        <SidebarTrigger />
-        {children}
-      </main>
+      <SidebarInset className="overflow-x-hidden">
+        <header className="flex h-16 items-center border-b px-4">
+          <SidebarTrigger className="mr-2" />
+          <h1 className="text-lg font-medium">Beneficiary Profile Form</h1>
+        </header>
+        <main className="flex-1 overflow-x-hidden p-4">{children}</main>
+      </SidebarInset>
     </SidebarProvider>
   ) : (
     <LoginPage />
