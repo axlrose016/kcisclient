@@ -227,9 +227,11 @@ export default function SectorDetails({ errors }: { errors: any }) {
                     let sectorFields = sectors.map((sector, index) => ({
                         id: sector.id,
                         name: sector.name,
+                        answer: ""
                     }))
                     const stringedSectors = JSON.stringify(sectorFields);
                     localStorage.setItem("sectors", stringedSectors);
+                    console.log("stringedSectors", stringedSectors);
                     storedSectors = stringedSectors;
                 }
 
