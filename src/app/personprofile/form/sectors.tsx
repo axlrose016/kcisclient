@@ -292,7 +292,7 @@ export default function SectorDetails({ errors }: { errors: any }) {
                 <div className="grid grid-cols-1 mb-2">
                     {commonData.modality_id !== undefined && commonData.modality_id === 25 ? (
                         <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 gap-4">
-                            {(Array.isArray(storedSect) ? storedSect : []).map((sector: any, index: number) =>
+                            {(Array.isArray(sectorOptions) ? sectorOptions : []).map((sector: any, index: number) =>
                                 sector.id >= 1 && sector.id <= 9 ? (
                                     <div key={index + 10.2}>
                                         {/* {index === 3 && <div className="md:col-span-1 bg-transparent" key={index}></div>} Empty Space */}
