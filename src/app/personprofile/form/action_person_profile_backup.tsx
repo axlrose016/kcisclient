@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { db } from "@/db";
 import { redirect } from 'next/navigation';
 import { randomUUID } from 'crypto';
-import { cfw_family_program_details, person_profile, person_profile_family_composition, person_profile_sector } from '@/db/schema/personprofile';
+import { person_profile_cfw_fam_program_details, person_profile, person_profile_family_composition, person_profile_sector } from '@/db/schema/personprofile';
 import { resourceUsage } from 'process';
 import { error } from 'console';
 import { errors } from 'jose';
@@ -268,6 +268,7 @@ export async function submit(prevState: any, formData: any) {
           dataToInsert.representative_has_health_concern = formCFWIndex4["representative_has_health_concern"];
           dataToInsert.representative_health_concern_details = formCFWIndex4["representative_health_concern_details"];
           dataToInsert.representative_skills = formCFWIndex4["representative_skills"];
+          // push status 1 = uploaded
           // push status id = 2 for uploading
 
           const result = await trx
@@ -321,7 +322,7 @@ export async function submit(prevState: any, formData: any) {
             // cfw_type_id
             // year_served
             const resultProgramDetails = await trx
-              .insert(cfw_family_program_details)
+              .insert(person_profile_cfw_fam_program_details)
               .values(dataToInsertProgramDetails);
             // }
           }

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getDeploymentAreaLibraryOptions, getTypeOfWorkLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibDeploymentArea, getOfflineLibTypeOfWork } from "@/components/_dal/offline-options";
-export default function PrefferedDeploymentArea({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
 

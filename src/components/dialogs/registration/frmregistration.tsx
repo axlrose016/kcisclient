@@ -43,23 +43,23 @@ export default function RegistrationForm({ className, ...props }: React.Componen
 
   const onSubmit = async (data: FormData) => {
     try {
-        const _role = (await getRoles()).filter(w => w.role_description === "Guest");
-        const _module = (await getModules()).filter(w => w.module_description === "Person Profile")
-        const _permission = (await getPermissions()).filter(w => w.permission_description === "Can Add") 
+      const _role = (await getRoles()).filter(w => w.role_description === "Guest");
+      const _module = (await getModules()).filter(w => w.module_description === "Person Profile")
+      const _permission = (await getPermissions()).filter(w => w.permission_description === "Can Add")
 
-        if(_role.length <= 0 || _module.length <= 0 || _permission.length <= 0){
-            toast({
-                variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: "Please refresh the page and try again!.",
-            })
-            return;
-        }
+      if (_role.length <= 0 || _module.length <= 0 || _permission.length <= 0) {
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "Please refresh the page and try again!.",
+        })
+        return;
+      }
 
-        const _id = uuidv4();
-        const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a random salt
-        const hashedPassword : string = await hashPassword(data.password, salt);
-        const formUser: IUser = {
+      const _id = uuidv4();
+      const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a random salt
+      const hashedPassword: string = await hashPassword(data.password, salt);
+      const formUser: IUser = {
         id: _id,
         username: data.username,
         email: data.email,
@@ -76,70 +76,80 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         deleted_by: "",
         is_deleted: false,
         remarks: "",
-        }
-        
-        const formUserAccess: IUserAccess ={
-          id: uuidv4(),
-          user_id: _id,
-          module_id: _module[0].id,
-          permission_id: _permission[0].id,
-          created_date: new Date().toISOString(),
-          created_by: _id,
-          last_modified_date: "",
-          last_modified_by: "",
-          push_status_id: 2, //1 Uploaded, 2 For Uploading
-          push_date: "",
-          deleted_date: "",
-          deleted_by: "",
-          is_deleted: false,
-          remarks: "",
-        }
+      }
 
-        //OFFLINE
-        await dexieDb.open();
-        
-        const isExist = await checkUserExists(data.email, data.username);
-        if(isExist){
-          toast({
-            variant: "warning",
-            title: "Warning!",
-            description: "The Email or Username is already exist!",
-          })
-          return;
-        }
+      const formUserAccess: IUserAccess = {
+        id: uuidv4(),
+        user_id: _id,
+        module_id: _module[0].id,
+        permission_id: _permission[0].id,
+        created_date: new Date().toISOString(),
+        created_by: _id,
+        last_modified_date: "",
+        last_modified_by: "",
+        push_status_id: 2, //1 Uploaded, 2 For Uploading
+        push_date: "",
+        deleted_date: "",
+        deleted_by: "",
+        is_deleted: false,
+        remarks: "",
+      }
 
-        dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
-            try {
-                await dexieDb.users.add(formUser);
-                await dexieDb.useraccess.add(formUserAccess);
-                console.log("User: ", formUser);
-                console.log("Access: ",formUserAccess);
-            } catch (error) {
-                console.error('Transaction failed: ', error);
-                throw error; 
-            }
-        }).catch((error) => {
-            console.error('Transaction failed: ', error);
-        });
+      //OFFLINE
+      await dexieDb.open();
 
-        //ONLINE
-        //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
+      const isExist = await checkUserExists(data.email, data.username);
+      if (isExist) {
         toast({
-          variant: "green",
-          title: "Success.",
-          description: "User Successfully Registered!",
-          onTransitionEnd: () => {
-            reset()
-            window.location.reload();
-          }
+          variant: "warning",
+          title: "Warning!",
+          description: "The Email or Username is already exist!",
         })
+        return;
+      }
+
+      dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
+        try {
+          await dexieDb.users.add(formUser);
+          await dexieDb.useraccess.add(formUserAccess);
+          console.log("User: ", formUser);
+          console.log("Access: ", formUserAccess);
+        } catch (error) {
+          console.error('Transaction failed: ', error);
+          throw error;
+        }
+      }).catch((error) => {
+        console.error('Transaction failed: ', error);
+      });
+
+      //ONLINE
+      //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
+      toast({
+        variant: "green",
+        title: "Success.",
+        description: "Congratulations! Your account has been successfully created. You can now log in and get started.",
+      });
+
+      setTimeout(() => {
+        reset();
+        window.location.reload();
+      }, 3000); // Adjust the delay as needed
+      // toast({
+      //   variant: "green",
+      //   title: "Success.",
+      //   description: "User Successfully Registered!",
+      //   onTransitionEnd: () => {
+      //     reset()
+      //     window.location.reload();
+      //   }
+      // })
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request. Please try again >> " +error,
+        description: "There was a problem with your request. Please try again >> " + error,
       })
-    } 
+    }
   }
 
   return (

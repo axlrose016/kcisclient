@@ -28,10 +28,11 @@ interface FormDropDownProps {
   onChange: (id: any) => void; // Function that receives the selected ID
   menuPortalTarget?: string;
   readOnly?: boolean;
+  disabled?: boolean;
 
 }
 
-export function FormDropDown({ options, selectedOption, label, onChange, id, menuPortalTarget, readOnly }: FormDropDownProps) {
+export function FormDropDown({ options, selectedOption, label, onChange, id, menuPortalTarget, readOnly, disabled }: FormDropDownProps) {
   const [open, setOpen] = React.useState(false);
   // const [selected, setSelected] = React.useState<number>(Number(selectedOption));
   const [selectedId, setSelectedId] = React.useState<any | null>(selectedOption);
@@ -74,11 +75,12 @@ export function FormDropDown({ options, selectedOption, label, onChange, id, men
             variant="outline"
             role="combobox"
             aria-expanded={open}
-            className={`w-full justify-between overflow-hidden ${readOnly ? "truncate pointer-events-none" : ""}`}
+            className={`w-full justify-between text-ellipsis overflow-hidden ${readOnly ? "truncate pointer-events-none cursor-not-allowed" : ""}`}
+
             // className="w-full justify-between overflow-hidden truncate pointer-events-none"
             onClick={(e) => e.stopPropagation()}
-            
-            // disabled={readOnly}
+
+          // disabled={readOnly}
           >
             <span className="truncate max-w-full">{selectedId !== null ? options.find((option) => option.id === selectedId)?.name : label}</span>
             <ChevronsUpDown className="opacity-50 ml-2 flex-shrink-0" />

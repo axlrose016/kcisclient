@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useEffect, useState, useRef } from 'react'
 import { useFormStatus } from 'react-dom'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,35 +34,78 @@ import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
 import SectorDetails from './sectors'
 import { IPersonProfile, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile'
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4, validate } from 'uuid';
 import { fstat } from 'fs'
 import { IAttachments } from '@/components/interfaces/general/attachments'
 import { ConfirmSave, SessionPayload } from '@/types/globals'
 import { getSession } from '@/lib/sessions-client'
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb'
+import { CheckCircle } from "lucide-react";
+import { ToastAction } from '@/components/ui/toast'
 
 export default function PersonProfileForm() {
   const module = "personprofile";
   let _session = {} as SessionPayload;
   const [combinedData, setCombinedData] = useState({});
   const [confirmed, setConfirmed] = useState(false);
+  const [isMiddleNameEnabled, setIsMiddleNameEnabled] = useState(true);
+  const middleNameRef = useRef<HTMLInputElement>(null);
+  const [hasPhilsysId, setHasPhilsysId] = useState(true);
+  const philSysIDRef = useRef<HTMLInputElement>(null);
 
-  // cfw
+  const [activeTab, setActiveTab] = useState("contact");
+
+  useEffect(() => {
+    if (hasPhilsysId && philSysIDRef.current) {
+      philSysIDRef.current.focus(); // Auto-focus when enabled
+    }
+  }, [hasPhilsysId]);
+
+
+
+  const chkHasPhilSysId = (e: any) => {
+    // alert(e);
+    setHasPhilsysId(!hasPhilsysId);
+    updatingCommonData('philsys_id_no', "")
+    updatingCommonData('has_philsys_id', !hasPhilsysId);
+  }
+  useEffect(() => {
+    if (hasPhilsysId && philSysIDRef.current) {
+      philSysIDRef.current.focus(); // Auto-focus when enabled
+    }
+  }, [hasPhilsysId]);
+
+  useEffect(() => {
+    if (isMiddleNameEnabled && middleNameRef.current) {
+      middleNameRef.current.focus(); // Auto-focus when enabled
+    }
+  }, [isMiddleNameEnabled]);
+
+
+
+  const chkIsMiddleNameEnabled = (e: any) => {
+    // alert(e);
+    setIsMiddleNameEnabled(!isMiddleNameEnabled);
+    updatingCommonData('middle_name', "")
+    updatingCommonData('has_middle_name', !isMiddleNameEnabled);
+  }
 
   const [commonData, setCommonData] = useState(() => {
+    // debugger;
     if (globalThis.window) {
       const storedCommonData = localStorage.getItem("common_data");
       if (storedCommonData !== null) {
         return storedCommonData ? JSON.parse(storedCommonData) : {};
+      } else {
+        const defaultData = { civil_status_id: 4, has_middle_name: true, has_philsys_id: true, extension_name_id: 5 };
+        localStorage.setItem("common_data", JSON.stringify(defaultData));
+
+        return defaultData;
       }
     }
 
     return {};
-    // if (typeof window !== "undefined") {
-    //   const storedCommonData = localStorage.getItem("commonData");
-    //   return storedCommonData ? JSON.parse(storedCommonData) : {};
-    // }
-    // return {};
+
   });
 
   useEffect(() => {
@@ -93,15 +136,6 @@ export default function PersonProfileForm() {
     }));
   }
 
-  //  sectors 
-
-
-
-
-  // useEffect(() => {
-  //   console.log("commonData in localStorage:", localStorage.getItem("commonData"));
-  // }, []);
-  // end of CFW
 
 
 
@@ -113,12 +147,12 @@ export default function PersonProfileForm() {
   const [selectedSexId, setSelectedSexId] = useState<number | null>(null);
 
   const [civilStatusOptions, setCivilStatusOptions] = useState<LibraryOption[]>([]);
-  const [selectedCivilStatus, setSelectedCivilStatus] = useState("");
-  const [selectedCivilStatusId, setSelectedCivilStatusId] = useState<number | null>(null);
+  const [selectedCivilStatus, setSelectedCivilStatus] = useState("Single");
+  const [selectedCivilStatusId, setSelectedCivilStatusId] = useState<number | null>(4);
 
   const [modalityOptions, setModalityOptions] = useState<LibraryOption[]>([]);
   const [selectedModality, setSelectedModality] = useState("");
-  const [selectedModalityId, setSelectedModalityId] = useState<number | null>(null);
+  // const [selectedModalityID, setSelectedModalityId] = useState<number | null>(null);
 
   const [extensionNameOptions, setExtensionNameOptions] = useState<LibraryOption[]>([]);
   const [selectedExtensionNameId, setSelectedExtensionNameId] = useState<number | null>(null);
@@ -143,137 +177,12 @@ export default function PersonProfileForm() {
   // const [selectedSex, setSelectedSex] = useState("");
   // const [selectedSexId, setSelectedSexId] = useState<number | null>(null);
   const [dummyId, setDummyId] = useState("");
+  const [selectedModalityID, setSelectedModalityID] = useState<number | null>(null);
 
-
-  
-
-  // array that separate data by modality
-  const [capturedData, setCapturedData] = useState({
-
-    common_data: {
-      modality_id: 0,
-      first_name: '',
-      middle_name: '',
-      last_name: '',
-      extension_name: 0,
-      sex_id: 0,
-      civil_status_id: 0,
-      birthdate: "",
-      age: 0,
-
-      sitio: "",
-      region_code: "",
-      pronvince_code: "",
-      city_code: "",
-      barangay_code: "",
-      cellphone_no: "",
-      cellphone_no_secondary: "",
-      email: "",
-      birthplace: "",
-      philsys_id_no: "",
-      profile_picture: ""
-
-
-    },
-
-    // this is for cfw alone
-    cfw: [
-      {
-        sectors: []
-      },
-      {
-        // junction table
-        program_details: [
-        ]
-      },
-
-      {
-        disabilities: [
-
-        ]
-      },
-      {
-
-        family_composition: [
-
-          // { name: "", relationship_to_the_beneficiary_id: 0, birthdate: "", age: 0, highest_educational_attainment_id: 0, work: "", monthly_income: "", contact_number: "" }
-        ]
-      },
-      {
-        modality_sub_category_id: 0,
-        current_occupation: "",
-        id_card: 0,
-        occupation_id_card_number: "",
-        women: "",
-        is_family_beneficiary_of_cfw: 0,
-        ip: "",
-        ip_group_id: 0,
-        solo_parent: "",
-        children_and_youth_in_need_of_special_protection: "",
-        out_of_school_youth: "",
-        family_heads_in_need_of_assistance: "",
-        affected_by_disaster: "",
-        persons_with_disability: "",
-        senior_citizen: "",
-        has_immediate_health_concern: 0,
-        immediate_health_concern: "",
-
-        school_name: "",
-        campus: "",
-        school_address: "",
-        course_id: 0,
-        year_graduated: "",
-        year_level_id: 0,
-        skills: "",
-        deployment_area_id: 0,
-        deployment_area_address: "",
-        preffered_type_of_work_id: 0,
-        is_need_pwd_id: "",
-        pwd_id_no: "",
-
-        representative_last_name: "",
-        representative_first_name: "",
-        representative_middle_name: "",
-        representative_extension_name_id: "",
-        representative_sitio: "",
-        representative_region_code: "",
-        representative_province_code: "",
-        representative_city_code: "",
-        representative_brgy_code: "",
-        representative_relationship_to_beneficiary: 0,
-        representative_birthdate: "",
-        representative_age: "",
-        representative_occupation: "",
-        representative_monthly_salary: 0,
-        representative_educational_attainment_id: 0,
-        representative_sex_id: 0,
-        representative_contact_number: "",
-        representative_id_card_id: 0,
-        representative_id_card_number: "",
-        representative_civil_status_id: 0,
-        representative_has_health_concern: "",
-        representative_health_concern_details: "",
-        representative_skills: "",
-
-
-      },
-
-
-      {
-
-        // attachments: [
-
-        // { name: "", relationship_to_the_beneficiary_id: 0, birthdate: "", age: 0, highest_educational_attainment_id: 0, work: "", monthly_income: "", contact_number: "" }
-        // ]
-      },
-
-
-    ]
-  });
 
   const handleDOBChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedDate = event.target.value;
-    updateCapturedData("common_data", "birthdate", selectedDate);
+
     updatingCommonData("birthdate", selectedDate);
     // updateCommonData("birthdate", selectedDate);
     setDob(selectedDate);
@@ -300,69 +209,63 @@ export default function PersonProfileForm() {
     }
     // Ensure age is a number (in case of negative or invalid age)
     const ageNumber = Math.max(0, Number(calculatedAge)); // Ensure it's never negative
-    updateCapturedData("common_data", "age", ageNumber);
+
     updatingCommonData("age", ageNumber);
     // updateCommonData("age", ageNumber);
     setAge(ageNumber.toString());
   };
 
-  const updateCapturedData = (section: string, field: string, value: any, index: number = -1) => {
-    setCapturedData((prevData) => {
-      let updatedData = { ...prevData };
-
-      if (section === "common_data") {
-        updatedData.common_data = {
-          ...prevData.common_data,
-          [field]: value,
-        };
-      }
-
-      // else if (section === "cfw" && index >= 0 && index < prevData.cfw.length) {
-      else if (section === "cfw") {
-        if (index === 4) {
-          // all cfw data
-          updatedData.cfw[index] = { ...prevData.cfw[index], [field]: value };
-        } else if (index === 0) {
-          // sectors
-          updatedData.cfw[index] = { ...prevData.cfw[index], [field]: value };
-        } else if (index === 2) {
-          // disabilities
-          updatedData.cfw[index] = { ...prevData.cfw[index], [field]: value };
-        }
-        //  && index >= 0 && index < prevData.cfw.length) {
-      }
-
-
-      // Store the updated data in localStorage
-      localStorage.setItem("formData", JSON.stringify(updatedData));
-
-      return updatedData;
-    });
-  }
 
   const [displayPic, setDisplayPic] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const fetchData = async () => {
-      debugger;
+      // debugger;
       try {
         const sex = await getOfflineLibSexOptions();//await getSexLibraryOptions();
-        setSexOptions(sex);
+        const formattedSex = sex.map(option => ({
+
+          ...option,
+          name: option.name.toUpperCase(), // Convert label to uppercase
+
+        }));
+
+        setSexOptions(formattedSex);
 
         const civil_status = await getOfflineCivilStatusLibraryOptions(); //await getCivilStatusLibraryOptions();
-        setCivilStatusOptions(civil_status);
+        const formattedCivilStatus = civil_status.map(option => ({
+
+          ...option,
+          name: option.name.toUpperCase(), // Convert label to uppercase
+
+        }));
+        setCivilStatusOptions(formattedCivilStatus);
 
         const modality = await getOfflineLibModalityOptions(); //await getModalityLibraryOptions();
         setModalityOptions(modality);
 
         const extension_name = await getOfflineExtensionLibraryOptions(); //await getExtensionNameLibraryOptions();
-        setExtensionNameOptions(extension_name);
+        // Convert label values to uppercase before setting state
+        const formattedExtensions = extension_name.map(option => ({
+
+          ...option,
+          name: option.name.toUpperCase(), // Convert label to uppercase
+
+        }));
+        console.log("Formatted Extension", formattedExtensions);
+        setExtensionNameOptions(formattedExtensions);
 
         const modality_sub_category = await getOfflineLibModalitySubCategoryOptions(); //await getModalitySubCategoryLibraryOptions();
         setModalitySubCategoryOptions(modality_sub_category);
 
         const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
         setSectorsOptions(sectors);
+
+        const common_data = localStorage.getItem("common_data");
+        if (common_data) {
+          const parsedCommonData = JSON.parse(common_data);
+          setSelectedModalityID(parsedCommonData.modality_id);
+        }
 
         _session = await getSession() as SessionPayload;
       } catch (error) {
@@ -373,7 +276,7 @@ export default function PersonProfileForm() {
 
     fetchData();
 
-    
+
   }, []);
   const [btnSaveEnabled, setBtnSaveEnabled] = useState(false);
   useEffect(() => {
@@ -405,28 +308,33 @@ export default function PersonProfileForm() {
   })
 
   const handleSexChange = (id: number) => {
-    updateCapturedData("common_data", "sex_id", id);
+
     // updateCommonData("sex_id", id);
     console.log("Selected Sex ID:", id);
     setSelectedSexId(id);
     updatingCommonData("sex_id", id);
   };
   const handleCivilStatusChange = (id: number) => {
-    updateCapturedData("common_data", "civil_status_id", id);
+
     // updateCommonData("civil_status_id", id);
     console.log("Selected Civil Status ID:", id);
     setSelectedCivilStatusId(id);
     updatingCommonData("civil_status_id", id);
   };
   const handlModalityChange = (id: number) => {
-    setSelectedModalityId(id);
-    updateCapturedData("common_data", "modality_id", id);
+    setSelectedModalityID(id);
+
     // updateCommonData("modality_id", id);
     console.log("Selected Modality ID:", id);
     updatingCommonData("modality_id", id);
-    
+
 
   };
+
+  useEffect(() => {
+    setSelectedModalityID(selectedModalityID);
+    console.log("SELECTED MODALITY ID: ", selectedModalityID);
+  }, [selectedModalityID])
   const handlModalitySubCategoryChange = (id: number) => {
     setSelectedModalitySubCategoryId(id);
     // updateCapturedData("cfw", "modality_sub_category_id", id, 4);
@@ -437,31 +345,98 @@ export default function PersonProfileForm() {
   };
 
   const handlExtensionNameChange = (id: number) => {
-    updateCapturedData("common_data", "extension_name", id);
+
     // updateCommonData("extension_name", id);
     console.log("Selected Extension name ID:", id);
     setSelectedExtensionNameId(id);
     updatingCommonData("extension_name_id", id);
   };
 
+  const handleErrorClick = (tabValue: any, fieldId: any) => {
+    // alert(activeTab + ' ' + tabValue)
+    if (tabValue !== "basic_information") {
+      setActiveTab(activeTab);
 
 
-  // async function handleOnClick(formData: FormData) {
-  //   const result = await submit(formData)
-  //   if (result.success) {
-  //     toast({
-  //       title: "Success",
-  //       description: result.message,
-  //     })
-  //     setErrors({})
-  //   } else {
-  //     setErrors(result.errors || {})
-  //   }
-  // }
+      const tabButton = document.querySelector(`[data-value="${tabValue}"]`) as HTMLButtonElement | null; // Adjust selector based on your implementation
 
+      if (tabButton) {
+
+        tabButton.scrollIntoView({ behavior: "smooth", block: "center" });
+        setActiveTab(tabValue);
+
+        tabButton.click();
+      }
+      else {
+        alert(`Tab button with data-value="${tabValue}" not found.`);
+      }
+
+    } else {
+      // alert(tabValue + ' ' + activeTab)
+      setActiveTab(activeTab);
+    }
+
+    setTimeout(() => {
+      const element = document.getElementById(fieldId) as HTMLElement;
+
+      if (element) {
+
+
+        // Scroll the element to the center of the screen
+        const elementRect = element.getBoundingClientRect();
+        const scrollOffset =
+          window.scrollY + elementRect.top - window.innerHeight / 2 + elementRect.height / 2;
+
+        window.scrollTo({ top: scrollOffset, behavior: "smooth" });
+
+        setTimeout(() => {
+          // First, try focusing if it's an input or select field
+          if (["INPUT", "TEXTAREA", "SELECT"].includes(element.tagName)) {
+            element.focus({ preventScroll: true });
+          } else {
+            // button
+            element.click();
+          }
+        }, 300); // Delay to ensure smooth scrolling finishes
+      } else {
+
+        // for select element
+        if (!fieldId) return;
+
+        let label = document.querySelector('label[for="' + fieldId + '"]'); // Get the label
+
+        if (label) {
+          let dropdownContainer = label.nextElementSibling as HTMLElement | null; // Assume FormDropDown is the next element
+
+          if (dropdownContainer) {
+            let button = dropdownContainer.querySelector('button[role="combobox"]') as HTMLButtonElement | null; // Find the button inside
+
+            if (button) {
+              // alert("Button clicked");
+              // Scroll to the button smoothly
+              button.scrollIntoView({ behavior: "smooth", block: "center" });
+              button.click(); // Simulate button click
+            } else {
+              alert("button not clicked")
+              console.warn("Dropdown button not found inside FormDropDown.");
+            }
+          } else {
+            alert("button not found")
+            console.warn("FormDropDown component not found.");
+          }
+        } else {
+          alert("button not found nor label")
+          console.warn("Label with for='sex_id' not found.");
+        }
+
+
+      }
+    }, 100);
+  };
 
   const tabs = [
-    ...(selectedModalityId === 25 || selectedModalityId === 22
+
+    ...(selectedModalityID === 25 || selectedModalityID === 22
       ? [
 
       ]
@@ -469,16 +444,16 @@ export default function PersonProfileForm() {
 
     // contact details
     {
+
       value: "contact",
       label: "Contact Information",
-      content: (
+      content: activeTab === "contact" && (
         <div className="bg-card rounded-lg">
           <ContactDetails
-            // errors={errors} 
+
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
+            modality_id_global={Number(selectedModalityID)}
+
           />
         </div>
       ),
@@ -488,14 +463,10 @@ export default function PersonProfileForm() {
       value: "details",
       label: "Health Concern",
       // label: "Basic Information",
-      content: (
+      content: activeTab === "details" && (
         <div className="bg-card rounded-lg">
           <Details
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
-          // updateCapturedData={capturedData} 
           />
         </div>
       )
@@ -505,18 +476,15 @@ export default function PersonProfileForm() {
     {
       value: "occupation",
       label: "Employment",
-      content: (
+      content: activeTab === "occupation" && (
         <div className="bg-card rounded-lg">
           <Occupation
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
           />
         </div>
       ),
     },
-    // (cfwGeneralInfo?.modality_sub_category_id === 2 && selectedModalityId === 25
+    // (cfwGeneralInfo?.modality_sub_category_id === 2 && selectedModalityID === 25
     //   ? [
 
     // ]
@@ -539,14 +507,14 @@ export default function PersonProfileForm() {
     },
 
     ...(commonData.modality_id !== 25
-      // ...(selectedModalityId !== 25
+      // ...(selectedModalityID !== 25
       ? [
         {
           value: "volunteerdetails",
           label: "Volunteer Details",
           content: (
             <div className="bg-card rounded-lg">
-                <VolunteerDetails errors={errors} />
+              <VolunteerDetails errors={errors} />
             </div>
           ),
         }, {
@@ -554,7 +522,7 @@ export default function PersonProfileForm() {
           label: "KC Trainings",
           content: (
             <div className="bg-card rounded-lg">
-              <KCTrainings errors={errors} /> 
+              <KCTrainings errors={errors} />
             </div>
           ),
         }, {
@@ -562,7 +530,7 @@ export default function PersonProfileForm() {
           label: "Capacity Building",
           content: (
             <div className="bg-card rounded-lg">
-              <CapacityBuilding errors={errors} /> 
+              <CapacityBuilding errors={errors} />
             </div>
           ),
         },
@@ -586,9 +554,9 @@ export default function PersonProfileForm() {
         <div className="p-3 bg-card rounded-lg">
           <CFWProgramDetails
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
+          // capturedData={capturedData}
+          // updateCapturedData={updateCapturedData}
+          // selectedModalityID={selectedModalityID}
           />
         </div>
       ),
@@ -612,9 +580,9 @@ export default function PersonProfileForm() {
         <div className="p-3 bg-card rounded-lg">
           <HighestEducationalAttainment
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
+          // capturedData={capturedData}
+          // updateCapturedData={updateCapturedData}
+          // selectedModalityID={selectedModalityID}
           />
         </div>
       ),
@@ -627,9 +595,9 @@ export default function PersonProfileForm() {
           <div className="bg-card rounded-lg">
             <PWDRepresentative
               errors={errors}
-              capturedData={capturedData}
-              updateCapturedData={updateCapturedData}
-              selectedModalityId={selectedModalityId}
+            // capturedData={capturedData}
+            // updateCapturedData={updateCapturedData}
+            // selectedModalityID={selectedModalityID}
             />
           </div>
         ),
@@ -644,9 +612,9 @@ export default function PersonProfileForm() {
         <div className="p-3 bg-card rounded-lg">
           <PrefferedDeploymentArea
             errors={errors}
-            capturedData={capturedData}
-            updateCapturedData={updateCapturedData}
-            selectedModalityId={selectedModalityId}
+          // capturedData={capturedData}
+          // updateCapturedData={updateCapturedData}
+          // selectedModalityID={selectedModalityID}
           />
         </div>
       ),
@@ -667,19 +635,36 @@ export default function PersonProfileForm() {
   ]
   // Assume this is your form component
   // function FormComponent() {
-  function errorToast(msg: string) {
-    toast({
+  function errorToast(msg: string, tabValue?: string, fieldId?: string) {
+
+    const toastInstance = toast({
       variant: "destructive",
-      title: "Missing Required Fields",
-      description: msg,
+      description: (
+        <div
+          className="relative cursor-pointer p-4 w-full h-full flex flex-col justify-center"
+          style={{ margin: 0, padding: '8px' }} // Extra inline style to override any margin
+          onClick={() => {
+            toastInstance.dismiss(); // Dismiss toast when clicked
+            handleErrorClick(tabValue, fieldId);
+          }}
+        >
+          <p className="text-xl">{msg}</p>
+          <p className="text-xs opacity-80 mt-2">
+            Oops! Something’s missing. Click here to dismiss this alert.
+          </p>
+          {/* <p className="text-xs opacity-80 mt-2">
+            You can dismiss this message by sliding it away, clicking the "×" button, or selecting "Fix issue" to go to the field.
+          </p> */}
+        </div>
+      ),
     });
   }
 
+
+
   const appendData = (key: any, data: any) => {
     setCombinedData((prevData) => {
-      const updatedData = { ...prevData, [key]: data };
-      // console.log("updated data", updatedData);
-      //localStorage.setItem("combinedData", JSON.stringify(updatedData));
+      const updatedData = { ...prevData, [key]: data };      
       return updatedData;
     });
   };
@@ -693,16 +678,16 @@ export default function PersonProfileForm() {
   // }, [combinedData]);
 
   useEffect(() => {
-    debugger;
+    // debugger;
     console.log(combinedData);
-    if(confirmed){
+    if (confirmed) {
       if (combinedData) {
         const pls = JSON.parse(JSON.stringify(combinedData));
         console.log("from LS ", pls);
         const fd = pls;
 
         const modality_id = fd.common_data.modality_id;
-        
+
         let formPersonProfile: IPersonProfile;
         let formPersonProfileSector: IPersonProfileSector;
         let formPersonProfileDisability: IPersonProfileDisability;
@@ -724,14 +709,14 @@ export default function PersonProfileForm() {
             birthdate: fd.common_data?.birthdate || null,
             age: fd.common_data?.age || null,
             philsys_id_no: fd.common_data?.philsys_id_no || null,
-            sitio:fd.contact_details?.sition || null,
+            sitio: fd.contact_details?.sition || null,
             brgy_code: fd.contact_details?.brgy_code || null,
             cellphone_no: fd.contact_details?.cellphone_no || null,
             cellphone_no_secondary: fd.contact_details?.cellphone_no_secondary || null,
             email: fd.contact_details?.email || null,
             sitio_current_address: fd.contact_details?.sitio_present_address || null,
             brgy_code_current: fd.contact_details?.barangay_code_present_address || null,
-            is_permanent_same_as_current_address: fd.contact_details?.is_same_as_permanent_address === true ? true : false  || null,
+            is_permanent_same_as_current_address: fd.contact_details?.is_same_as_permanent_address === true ? true : false || null,
             has_immediate_health_concern: fd.health_concerns?.has_immediate_health_concern === true ? true : false || null,
             immediate_health_concern: fd.health_concerns?.immediate_health_concern || null,
             school_name: fd.educational_attainment?.school_name || null,
@@ -773,24 +758,24 @@ export default function PersonProfileForm() {
             is_bdrrmc_expanded_bdrrmc: false,
             is_mdrrmc: false,
             is_hh_head: false,
-            academe:0,
-            business:0,
-            differently_abled:0,
-            farmer:0,
-            fisherfolks:0,
-            government:0,
-            ip:0,
-            ngo:0,
-            po:0,
-            religious:0,
-            senior_citizen:0,
-            women:0,
-            solo_parent:0,
-            out_of_school_youth:0,
-            children_and_youth_in_need_of_special_protection:0,
-            family_heads_in_need_of_assistance:0, 
-            affected_by_disaster:0,
-            persons_with_disability:0,
+            academe: 0,
+            business: 0,
+            differently_abled: 0,
+            farmer: 0,
+            fisherfolks: 0,
+            government: 0,
+            ip: 0,
+            ngo: 0,
+            po: 0,
+            religious: 0,
+            senior_citizen: 0,
+            women: 0,
+            solo_parent: 0,
+            out_of_school_youth: 0,
+            children_and_youth_in_need_of_special_protection: 0,
+            family_heads_in_need_of_assistance: 0,
+            affected_by_disaster: 0,
+            persons_with_disability: 0,
             others: null,
             family_member_name: null,
             relationship_to_family_member: null,
@@ -817,7 +802,7 @@ export default function PersonProfileForm() {
             representative_has_health_concern: fd.cfw_representative?.representative_has_health_concern || null,
             representative_health_concern_details: fd.cfw_representative?.representative_health_concern_details || null,
             representative_skills: fd.cfw_representative?.representative_skills || null,
-          
+
             created_by: _session.id,
             created_date: new Date().toISOString(),
             last_modified_by: null,
@@ -827,7 +812,7 @@ export default function PersonProfileForm() {
             deleted_by: null,
             deleted_date: null,
             is_deleted: false,
-            remarks:"Person Profile Created",
+            remarks: "Person Profile Created",
           }
           formPersonProfileSector = {
             id: uuidv4(),
@@ -904,20 +889,20 @@ export default function PersonProfileForm() {
         dexieDb.open();
 
         dexieDb.transaction('rw', [dexieDb.person_profile,
-          dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
-          dexieDb.attachments], async () => {
-          try{
+        dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
+        dexieDb.attachments], async () => {
+          try {
             await dexieDb.person_profile.add(formPersonProfile);
             await dexieDb.person_profile_sector.add(formPersonProfileSector);
             await dexieDb.person_profile_disability.add(formPersonProfileDisability);
             await dexieDb.person_profile_family_composition.add(formPersonProfileFamilyComposition);
             await dexieDb.attachments.add(formAttachments);
-            console.log("person_profile",JSON.stringify(formPersonProfile));
+            console.log("person_profile", JSON.stringify(formPersonProfile));
             console.log("sector", JSON.stringify(formPersonProfileSector));
             console.log("disability", JSON.stringify(formPersonProfileDisability));
             console.log("family", JSON.stringify(formPersonProfileFamilyComposition));
             console.log("Person Profile added to IndexedDB");
-          }catch(error){
+          } catch (error) {
             console.error("Error adding Person Profile to IndexedDB", error);
           }
         }).catch(error => {
@@ -927,13 +912,13 @@ export default function PersonProfileForm() {
         //console.log("SERVER RESPONSE", JSON.stringify(response));
         //console.log("SERVER RESPONSE", response);
 
-      setChkToggle(false);
-      // setbtnToggle(true);
-      toast({
-        variant: "green",
-        title: "Success",
-        description: "Record has been saved!",
-      });
+        setChkToggle(false);
+        // setbtnToggle(true);
+        toast({
+          variant: "green",
+          title: "Success",
+          description: "Record has been saved!",
+        });
       };
     }
   }, [confirmed])
@@ -942,14 +927,14 @@ export default function PersonProfileForm() {
   const [chkToggle, setChkToggle] = useState(true);
   const [btnToggle, setbtnToggle] = useState(false);
 
-  
+
 
   const confirmSave = async () => {
     debugger;
     setConfirmed(true);
   }
 
-  const showToastConfirmation = (confirmSave : ConfirmSave) => {
+  const showToastConfirmation = (confirmSave: ConfirmSave) => {
     toast({
       variant: "destructive",
       title: "You are about to save the form, continue?",
@@ -966,10 +951,7 @@ export default function PersonProfileForm() {
   };
 
   const handleSubmit = async () => {
-    if (!isAccepted) {
-      errorToast("Please check the terms and agreement before submitting.");
-      return;
-    }
+
 
     // e.preventDefault(); // Prevent the default form submission
     // 1 check what modality
@@ -1010,84 +992,156 @@ export default function PersonProfileForm() {
         // setLoading(true);
         console.log("CFW");
         // 2 validation
-        if (!parsedCommonData.modality_id) { errorToast("Modality is required!"); return; }
-        if (!parsedCommonData.first_name) { errorToast("First name is required!"); return; }
-        if (!parsedCommonData.middle_name) { errorToast("Middle name is required!"); return; }
-        if (!parsedCommonData.last_name) { errorToast("Last name is required!"); return; }
-        if (!parsedCommonData.birthdate) { errorToast("Birthdate is required!"); return; }
-        if (!parsedCommonData.age || parsedCommonData.age <= 18) { errorToast("Valid age is required!"); return; }
-        // if (!parsedCommonData.philsys_id_no) { errorToast("PhilSys ID number is required!"); return; }
-        if (!parsedCommonData.birthplace) { errorToast("Birthplace is required!"); return; }
-        if (!parsedCommonData.extension_name_id) { errorToast("Extension name is required!"); return; }
-        if (!parsedCommonData.sex_id) { errorToast("Sex is required!"); return; }
-        if (!parsedCommonData.civil_status_id) { errorToast("Civil status is required!"); return; }
+        const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
+        if (!storedcfwGeneralInfo) { errorToast("Modality Sub category is required!", "basic_information", "modality_sub_category_id"); return; }
+        const parsedcfwGeneralInfo = JSON.parse(storedcfwGeneralInfo);
+        if (!parsedcfwGeneralInfo.modality_sub_category_id) { errorToast("Modality Sub category is required!", "basic_information", "modality_sub_category_id"); return; }
+
+        if (!parsedCommonData.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
+        if (!parsedCommonData.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
+        if (!parsedCommonData.first_name) { errorToast("First name is required!", "basic_information", "first_name"); return; }
+        if (!parsedCommonData.middle_name && isMiddleNameEnabled) { errorToast("Middle name is required!", "basic_information", "middle_name"); return; }
+        if (!parsedCommonData.last_name) { errorToast("Last name is required!", "basic_information", "last_name"); return; }
+        // if (!parsedCommonData.extension_name_id) { errorToast("Extension  name is required!", "basic_information", "extension_name"); return; }
+        if (!parsedCommonData.sex_id) { errorToast("Sex field is required!", "basic_information", "sex_id"); return; }
+        if (!parsedCommonData.civil_status_id) { errorToast("Civil status is required!", "basic_information", "civil_status_id"); return; }
+        if (!parsedCommonData.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
+        if (!parsedCommonData.age || parsedCommonData.age <= 18 || parsedCommonData.age >= 71) {
+          errorToast("Invalid age! Please enter a valid age between 18 and 70 years old.", "basic_information", "birthdate"); return;
+        }
+        if (!parsedCommonData.philsys_id_no && hasPhilsysId) { errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no"); return; }
+        // alert(parsedCommonData.philsys_id_no.length)
+        if (hasPhilsysId && (!parsedCommonData.philsys_id_no || parsedCommonData.philsys_id_no.length < 19)) {
+          errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no");
+          return;
+        }
+        if (!parsedCommonData.birthplace) { errorToast("Birthplace is required!", "basic_information", "birthplace"); return; }
 
         const storedContactDetails = localStorage.getItem("contactDetails");
-        if (!storedContactDetails) { errorToast("Contact Details required!"); return; }
+        if (!storedContactDetails) { errorToast("Contact Details required!", "contact", "region_contact_details"); return; }
         const parsedContactDetails = JSON.parse(storedContactDetails);
-        if (!parsedContactDetails.sitio) { errorToast("Sitio is required!"); return; }
-        if (!parsedContactDetails.cellphone_no) { errorToast("Primary cellphone number is required!"); return; }
-        if (!parsedContactDetails.cellphone_no_secondary) { errorToast("Secondary cellphone number is required!"); return; }
-        if (!parsedContactDetails.email) { errorToast("Email is required!"); return; }
-        if (!parsedContactDetails.region_code) { errorToast("Region is required!"); return; }
-        if (!parsedContactDetails.province_code) { errorToast("Province is required!"); return; }
-        if (!parsedContactDetails.city_code) { errorToast("City/Municipality is required!"); return; }
-        if (!parsedContactDetails.barangay_code) { errorToast("Barangay is required!"); return; }
+
+        if (!parsedContactDetails.region_code) { errorToast("Region is required!", "contact", "region_contact_details"); return; }
+        if (!parsedContactDetails.province_code) { errorToast("Province is required!", "contact", "province_contact_details"); return; }
+        if (!parsedContactDetails.city_code) { errorToast("City/Municipality is required!", "contact", "municipality_contact_number"); return; }
+        if (!parsedContactDetails.barangay_code) { errorToast("Barangay is required!", "contact", "barangay_contact_details"); return; }
+        if (!parsedContactDetails.sitio) { errorToast("Sitio is required!", "contact", "sitio"); return; }
+        if (!parsedContactDetails.region_code_present_address) { errorToast("Present Region is required!", "contact", "region_contact_details_present_address"); return; }
+        if (!parsedContactDetails.province_code_present_address) { errorToast("Present Province is required!", "contact", "province_contact_details_present_address"); return; }
+        if (!parsedContactDetails.city_code_present_address) { errorToast("Present City/Municipality is required!", "contact", "municipality_contact_details_present_address"); return; }
+        if (!parsedContactDetails.brgy_code_present_address) { errorToast("Present Barangay is required!", "contact", "barangay_contact_details_present_address"); return; }
+        if (!parsedContactDetails.sitio_present_address) { errorToast("Present Sitio is required!", "contact", "sitio_present_address"); return; }
+        // alert(parsedContactDetails.cellphone_no.length)
+        if (parsedContactDetails.cellphone_no.length < 13) { errorToast("Primary cellphone number is required!", "contact", "cellphone_no"); return; }
+        if (!parsedContactDetails.email) { errorToast("Email is required!", "contact", "email"); return; }
+        // Regular Expression to check valid email format
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailPattern.test(parsedContactDetails.email)) {
+          errorToast("Invalid email format! Please enter a valid email.", "contact", "email");
+          return;
+        }
         // if (!parsedContactDetails.is_same_as_permanent_address) { errorToast("is_same_as_permanent_address is empty!"); return; }
-        if (!parsedContactDetails.sitio_present_address) { errorToast("Present Sitio is required!"); return; }
-        if (!parsedContactDetails.region_code_present_address) { errorToast("Present Region is required!"); return; }
-        if (!parsedContactDetails.province_code_present_address) { errorToast("Present Province is required!"); return; }
-        if (!parsedContactDetails.city_code_present_address) { errorToast("Present City/Municipality is required!"); return; }
-        if (!parsedContactDetails.barangay_code_present_address) { errorToast("Present Barangay is required!"); return; }
 
 
         const storedHealthConcern = localStorage.getItem("healthConcerns");
-        if (!storedHealthConcern) { errorToast("Health Concern required!"); return; }
+        if (!storedHealthConcern) { errorToast("Health Concern required!", "details", ""); return; }
         const parsedHealthConcerns = JSON.parse(storedHealthConcern);
-        if (parsedHealthConcerns.has_immediate_health_concern === 1 && !parsedHealthConcerns.immediate_health_concern) { errorToast("Health Concern details is required!"); return; }
+        try {
+          const parsedHealthConcern = JSON.parse(storedHealthConcern);
+
+          if (typeof parsedHealthConcern === "object" && parsedHealthConcern !== null && Object.keys(parsedHealthConcern).length === 0) {
+            errorToast("Health Concern cannot be empty!", "details", "");
+            return;
+          }
+        } catch (error) {
+          errorToast("Invalid Health Concern data!");
+          return;
+        }
+
+        if (parsedHealthConcerns.has_immediate_health_concern === 1 && !parsedHealthConcerns.immediate_health_concern) { errorToast("Health Concern details is required!", "details", "immediate_health_concern"); return; }
 
 
         const storedEmployment = localStorage.getItem("employment");
-        if (!storedEmployment) { errorToast("Skills required!"); return; }
+
+        if (!storedEmployment) { errorToast("Skills required!", "occupation", ""); return; }
         const parsedEmployments = JSON.parse(storedEmployment);
-        if (!parsedEmployments.skills) { errorToast("Skill is required!"); return; }
+
+        // alert(parsedEmployments.has_occupation + " " + parsedEmployments.current_occupation)
+        if (parsedEmployments.has_occupation && !parsedEmployments.current_occupation?.trim()) {
+          errorToast("Occupation is required!", "occupation", "current_occupation");
+          return;
+        }
+
+
+
+        if (!parsedEmployments.skills) { errorToast("Skill is required!", "occupation", "skills"); return; }
 
 
         const storedSectors = localStorage.getItem("sectors");
-        if (!storedSectors) { errorToast("Skills required!"); return; }
+        if (!storedSectors) { errorToast("Sectors required!", "sector", ""); return; }
         const parsedSectors = JSON.parse(storedSectors);
+
+        // Check if there is at least one non-empty "YES" in the sectors
+        const hasYesAnswer = parsedSectors.some((sector: { answer: string }) => sector.answer.trim() !== "");
+
+        if (!hasYesAnswer) {
+          errorToast("At least one sector must be selected!", "sector", "");
+          return;
+        }
+
+
+
         if (parsedSectors[2].answer === "Yes") {
           // check if there is disabilities
+
           const storedDisabilities = localStorage.getItem("disabilities");
-          if (!storedDisabilities) { errorToast("Pease select a disability!"); return; }
+
+          if (!storedDisabilities) { errorToast("Pease select a disability!", "sector", "type_of_disabilities"); return; }
           const parsedDisabilities = JSON.parse(storedDisabilities);
-          // Convert ["1", "5"] → { disability_id_1: 1, disability_id_5: 5 }
+
+          if (!Array.isArray(parsedDisabilities) || parsedDisabilities.length === 0) {
+            errorToast("Please select a disability!", "sector", "type_of_disabilities");
+            return;
+          }
+
           const formattedDisabilities = Object.fromEntries(
             parsedDisabilities.map((id: any) => [`disability_id_${id}`, Number(id)])
           );
 
           appendData("disabilities", formattedDisabilities);
         }
+
         if (parsedSectors[3].answer === "Yes") {
           // check if there is disabilities
           const storedIPGroupId = localStorage.getItem("ipgroup_id");
-          if (!storedIPGroupId) { errorToast("Pease select an IP Group!"); return; }
+          if (!storedIPGroupId) { errorToast("Pease select an IP Group!", "sector", "ip_group"); return; }
           const parsedIpGroupId = JSON.parse(storedIPGroupId);
-          if (parsedIpGroupId === 0) { errorToast("Pease select an IP Group"); return; }
+          if (parsedIpGroupId === 0) { errorToast("Pease select an IP Group", "sector", "ip_group"); return; }
           appendData("ip_group_id", parsedIpGroupId);
         }
 
 
+        // debugger;
+        const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
+        if (!storedHasProgramDetails) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+        // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
+        if (storedHasProgramDetails === "yes") {
+          const storedProgramDetails = localStorage.getItem("programDetails");
+          if (!storedProgramDetails) { errorToast("CFW Program details required!","cash_for_work", ""); return; }
+          const parsedProgramDetails = JSON.parse(storedProgramDetails);
+          appendData("program_details", parsedProgramDetails);
+
+        }
+
         const storedFamilyComposition = localStorage.getItem("family_composition");
-        if (!storedFamilyComposition) { errorToast("Family composition is required!"); return; }
+        if (!storedFamilyComposition) { errorToast("Family composition is required!","family_composition",""); return; }
         const parsedFamilyComposition = JSON.parse(storedFamilyComposition);
-        if (parsedFamilyComposition.family_composition.length <= 0) { errorToast("Family composition is required!"); return; }
+        if (parsedFamilyComposition.family_composition.length <= 0) { errorToast("Family composition is required!","family_composition",""); return; }
         // console.log(parsedFamilyComposition.family_composition.length);
 
 
-        const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
-        if (!storedcfwGeneralInfo) { errorToast("Modality Sub category is required!"); return; }
-        const parsedcfwGeneralInfo = JSON.parse(storedcfwGeneralInfo);
+
 
 
         const storedEducationalAttainment = localStorage.getItem("educational_attainment");
@@ -1117,6 +1171,7 @@ export default function PersonProfileForm() {
         if (!parsedAttachments[0].file_name) { errorToast("Primary ID is required!"); return; }
         if (!parsedAttachments[8].file_name) { errorToast("Profile Picture is required!"); return; }
 
+        if (!isAccepted) { errorToast("Please check the terms and agreement before submitting."); return; }
 
         appendData("common_data", parsedCommonData);
         appendData("contact_details", parsedContactDetails);
@@ -1145,18 +1200,7 @@ export default function PersonProfileForm() {
           appendData("cfw_representative", parsedCfwPWDRepresentative);
         }
 
-        // debugger;
-        // optional to
-        const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
-        if (!storedHasProgramDetails) { errorToast("CFW Program details required!"); return; }
-        // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
-        if (storedHasProgramDetails === "yes") {
-          const storedProgramDetails = localStorage.getItem("programDetails");
-          if (!storedProgramDetails) { errorToast("CFW Program details required!"); return; }
-          const parsedProgramDetails = JSON.parse(storedProgramDetails);
-          appendData("program_details", parsedProgramDetails);
 
-        }
 
 
         // console.log("combined data is", combinedData);
@@ -1170,7 +1214,8 @@ export default function PersonProfileForm() {
 
       else {
         console.log("No modality selected!");
-        errorToast("Please select a modality!");
+        if (!parsedCommonData.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
+        // errorToast("Please select a modality!");
         return;
       }
       //localStorage.setItem("combinedData", JSON.stringify(combinedData));
@@ -1220,11 +1265,43 @@ export default function PersonProfileForm() {
   const handleCheckboxChange = () => {
     setIsAccepted((prev) => !prev);
   };
+
+
+  // function sampleClick() {
+  //   let labelfor = "sex_id";
+  //   let label = document.querySelector('label[for="' + labelfor + '"]'); // Get the label
+
+  //   if (label) {
+  //     let dropdownContainer = label.nextElementSibling as HTMLElement | null; // Assume FormDropDown is the next element
+
+  //     if (dropdownContainer) {
+  //       let button = dropdownContainer.querySelector('button[role="combobox"]') as HTMLButtonElement | null; // Find the button inside
+
+  //       if (button) {
+  //         // alert("Button clicked");
+  //         // Scroll to the button smoothly
+  //         button.scrollIntoView({ behavior: "smooth", block: "center" });
+  //         button.click(); // Simulate button click
+  //       } else {
+  //         alert("button not clicked")
+  //         console.warn("Dropdown button not found inside FormDropDown.");
+  //       }
+  //     } else {
+  //       alert("button not found")
+  //       console.warn("FormDropDown component not found.");
+  //     }
+  //   } else {
+  //     alert("button not found nor label")
+  //     console.warn("Label with for='sex_id' not found.");
+  //   }
+
+  // }
+
   return (
 
     <Card>
       <CardHeader>
-        <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
+        <CardTitle className="mb-2  flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
           {/* Logo Section */}
           <div className="flex-shrink-0">
             <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
@@ -1232,6 +1309,7 @@ export default function PersonProfileForm() {
 
           {/* Title Section */}
           <div className="text-lg font-semibold mt-2 md:mt-0">
+
             Beneficiary Profile Form
           </div>
         </CardTitle>
@@ -1271,14 +1349,25 @@ export default function PersonProfileForm() {
       <CardContent>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-3">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start w-full">
+            <div
+              className={`grid sm:grid-cols-4 sm:grid-rows-1 w-full ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-black" : ""
+                } p-3 bg-black text-white mt-3`}
+            >
+              <span className="flex items-center gap-1">
+                General Information
+                {/* <CheckCircle className="h-6 w-6 text-white-500 " /> */}
+              </span>
+            </div>
+          </div>
           {/* Card Container */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4  w-full ">
+          <div className="flex flex-col gap-4 sm:flex-row items-center sm:items-start w-full justify-between">
 
             {/* Image on top (Mobile) / Left (Desktop) */}
             <div className="flex-shrink-0 md:h-full lg:h-full">
-              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 h-full">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3  h-full">
                 {/* Avatar - Center Horizontally & Vertically */}
-                <div className="p-3 col-span-full flex justify-center items-center min-h-[250px]">
+                <div className=" col-span-full flex justify-center items-center min-h-[250px]">
                   <Avatar className="h-[200px] w-[200px]">
                     {displayPic ? (
                       <AvatarImage src={displayPic} alt="Display Picture" />
@@ -1292,25 +1381,26 @@ export default function PersonProfileForm() {
             </div>
 
             {/* Inputs below image (Mobile) / Right (Desktop) */}
-            <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-3 w-full">
+            <div className="grid sm:grid-cols-1 lg:grid-cols-3 gap-4 w-full">
 
-              <div className="p-2">
-                <Label htmlFor="modality_id" className="block text-sm font-medium mb-1  ">Select Modality<span className='text-red-500'> *</span> </Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="modality_id" className="block text-md font-medium mb-1">Select Modality<span className='text-red-500'> *</span> </Label>
                 <FormDropDown
 
                   id="modality_id"
                   options={modalityOptions}
                   selectedOption={commonData.modality_id || ""}
                   onChange={handlModalityChange}
+
                 // onChange={(e) => updatingCommonData("modality_id", e.target.id)}
 
                 />
                 {errors?.modality_id && (
-                  <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.modality_id}</p>
                 )}
               </div>
-              <div className={`p-2  ${commonData.modality_id !== undefined && commonData.modality_id === 25 ? "" : "hidden"}`}>
-                <Label htmlFor="modality_sub_category_id" className="block text-sm font-medium mb-1">CFW Category<span className='text-red-500'> *</span></Label>
+              <div className={`sm:py-1 md:p-1  ${commonData.modality_id !== undefined && commonData.modality_id === 25 ? "" : "hidden"}`}>
+                <Label htmlFor="modality_sub_category_id" className="block text-md  font-medium mb-1">CFW Category<span className='text-red-500'> *</span></Label>
                 <FormDropDown
 
                   id="modality_sub_category_id"
@@ -1322,18 +1412,16 @@ export default function PersonProfileForm() {
 
                 />
                 {errors?.modality_id && (
-                  <p className="mt-2 text-sm text-red-500">{errors.modality_id}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.modality_id}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="first_name" className="block text-sm font-medium mb-1">First Name<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="first_name" className="block text-md  font-medium mb-1">First Name<span className='text-red-500'> *</span></Label>
                 <Input
                   value={commonData.first_name || ""}
-                  // value={capturedData.common_data.first_name}
-                  // onChange={(e) => updateCapturedData("common_data", 'first_name', e.target.value)}
-                  onChange={(e) => updatingCommonData('first_name', e.target.value)}
-                  // onChange={(e) => updateCommonData('first_name', e.target.value)}
-                  // onBlur={handleBlur}
+
+                  onChange={(e) => updatingCommonData('first_name', e.target.value.toUpperCase())}
+
                   id="first_name"
                   name="first_name"
                   type="text"
@@ -1341,32 +1429,44 @@ export default function PersonProfileForm() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
                 {errors?.first_name && (
-                  <p className="mt-2 text-sm text-red-500">{errors.first_name}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.first_name}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="middle_name" className="block text-sm font-medium mb-1">Middle Name 
-                  {/* &nbsp;<input type='checkbox' />No Middle Name */}
+              <div className="sm:py-1 md:p-1">
+
+
+
+                <div className="flex items-center space-x-1">
+                  <Input type='checkbox'
+                    className="w-4 h-4 cursor-pointer"
+                    id='middle_name_toggle'
+                    checked={isMiddleNameEnabled}
+                    onChange={(e) => chkIsMiddleNameEnabled(e.target.checked)}
+                  />
+                  <Label htmlFor="middle_name" className="block text-md  font-medium">
+                    WITH Middle Name
                   </Label>
-               
+                </div>
                 <Input
+                  ref={middleNameRef}
                   // onBlur={handleBlur}
                   // onChange={(e) => updateCommonData('middle_name', e.target.value)}
-                  value={commonData.middle_name || ""}
-                  onChange={(e) => updatingCommonData('middle_name', e.target.value)}
+                  value={isMiddleNameEnabled ? commonData.middle_name || "" : ""}
+                  onChange={(e) => updatingCommonData('middle_name', e.target.value.toUpperCase())}
                   // onChange={(e) => updateCapturedData("common_data", 'middle_name', e.target.value)}
                   id="middle_name"
                   name="middle_name"
                   type="text"
-                  placeholder="Enter your Middle Name"
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  placeholder={isMiddleNameEnabled ? "Enter your Middle Name" : "No Middle Name"}     //  "No Middle Name"
+                  // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className={`${!isMiddleNameEnabled ? "bg-gray-200 cursor-not-allowed" : ""} mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
                 />
               </div>
-              <div className="p-2"><Label htmlFor="last_name" className="block text-sm font-medium mb-1">Last Name<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1"><Label htmlFor="last_name" className="block text-md  font-medium mb-1">Last Name<span className='text-red-500'> *</span></Label>
                 <Input
 
                   value={commonData.last_name || ""}
-                  onChange={(e) => updatingCommonData('last_name', e.target.value)}
+                  onChange={(e) => updatingCommonData('last_name', e.target.value.toUpperCase())}
                   id="last_name"
                   name="last_name"
                   type="text"
@@ -1374,11 +1474,11 @@ export default function PersonProfileForm() {
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
                 {errors?.last_name && (
-                  <p className="mt-2 text-sm text-red-500">{errors.last_name}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.last_name}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="extension_name" className="block text-sm font-medium mb-1 mb-1">Extension Name</Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="extension_name" className="block text-md  font-medium mb-1 mb-1">Extension Name</Label>
                 <FormDropDown
 
                   id="extension_name"
@@ -1387,8 +1487,8 @@ export default function PersonProfileForm() {
                   onChange={handlExtensionNameChange}
                 />
               </div>
-              <div className="p-2">
-                <Label htmlFor="sex_id" className="block text-sm font-medium mb-1">Sex<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="sex_id" className="block text-md  font-medium mb-1">Sex<span className='text-red-500'> *</span></Label>
                 <FormDropDown
 
                   id="sex_id"
@@ -1398,26 +1498,26 @@ export default function PersonProfileForm() {
                   onChange={handleSexChange}
                 />
                 {errors?.sex_id && (
-                  <p className="mt-2 text-sm text-red-500">{errors.sex_id}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.sex_id}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="civil_status_id" className="block text-sm font-medium mb-1">Civil Status<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="civil_status_id" className="block text-md  font-medium mb-1">Civil Status<span className='text-red-500'> *</span></Label>
                 <FormDropDown
 
                   id="civil_status_id"
                   options={civilStatusOptions}
                   // selectedOption={commonData.civil_status_id || ""}
-                  selectedOption={commonData.civil_status_id || 2 || ""}
+                  selectedOption={commonData.civil_status_id || 4 || ""}
                   // selectedOption={selectedCivilStatusId}
                   onChange={handleCivilStatusChange}
                 />
                 {errors?.civil_status_id && (
-                  <p className="mt-2 text-sm text-red-500">{errors.civil_status_id}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.civil_status_id}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="birthdate" className="block text-sm font-medium mb-1">Birth Date<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="birthdate" className="block text-md  font-medium mb-1">Birth Date<span className='text-red-500'> *</span></Label>
                 <Input
                   //  onChange={(e) => updateCommonData('first_name', e.target.value)}
                   id="birthdate"
@@ -1429,12 +1529,13 @@ export default function PersonProfileForm() {
                   onChange={handleDOBChange}
                 />
                 {errors?.birthdate && (
-                  <p className="mt-2 text-sm text-red-500">{errors.birthdate}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.birthdate}</p>
                 )}
 
               </div>
-              <div className="p-2">
-                <Label htmlFor="age" className="block text-sm font-medium mb-1">Age<span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+
+                <Label htmlFor="age" className="block text-md  font-medium mb-1">Age<span className='text-red-500'> *</span></Label>
                 <Input
                   id="age"
                   name="age"
@@ -1448,42 +1549,59 @@ export default function PersonProfileForm() {
                 />
 
               </div>
-              <div className="p-2"><Label htmlFor="philsys_id_no" className="block text-sm font-medium mb-1">PhilSys ID Number</Label>
+              <div className="sm:py-1 md:p-1">
+
+                <div className="flex items-center space-x-1">
+                  <Input type='checkbox'
+                    className="w-4 h-4 cursor-pointer"
+                    id='philsys_id_number_toggle'
+                    checked={hasPhilsysId}
+                    onChange={(e) => chkHasPhilSysId(e.target.checked)}
+                  />
+                  <Label htmlFor="middle_name" className="block text-md  font-medium">
+                    WITH PhilSys ID Number
+                  </Label>
+                </div>
+
                 <Input
-                  // onChange={(e) => updateCommonData('philsys_id_no', e.target.value)}
+                  ref={philSysIDRef}
                   type="text"
                   id="philsys_id_no"
                   name="philsys_id_no"
                   placeholder="0000-0000000-000"
-                  maxLength={16} // 4 + 7 + 1 digits + 2 hyphens
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                  // value={capturedData?.common_data?.philsys_id_no || ""}
+                  maxLength={19} // 4 + 7 + 1 digits + 2 hyphens
+                  // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                  className={`${!hasPhilsysId ? "bg-gray-200 cursor-not-allowed" : ""} mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
+
                   value={commonData.philsys_id_no || ""}
-                  onChange={(e) => updatingCommonData("philsys_id_no", e.target.value)}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+                    if (value.length > 4) value = value.slice(0, 4) + "-" + value.slice(4);
+                    if (value.length > 9) value = value.slice(0, 9) + "-" + value.slice(9);
+                    if (value.length > 14) value = value.slice(0, 14) + "-" + value.slice(14);
+                    if (value.length > 19) value = value.slice(0, 19) + "-" + value.slice(19);
+                    updatingCommonData("philsys_id_no", value.slice(0, 19)); // Limit to 16 characters
+                  }}
                 />
                 {/* <PhilSysInput                        
                         /> */}
                 {/* may id na sa component */}
                 {errors?.philsys_id_no && (
-                  <p className="mt-2 text-sm text-red-500">{errors.philsys_id_no}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.philsys_id_no}</p>
                 )}
               </div>
-              <div className="p-2">
-                <Label htmlFor="birthplace" className="block text-sm font-medium mb-1">Birthplace <span className='text-red-500'> *</span></Label>
+              <div className="sm:py-1 md:p-1">
+                <Label htmlFor="birthplace" className="block text-md  font-medium mb-1">Birthplace <span className='text-red-500'> *</span></Label>
                 <Textarea
                   value={commonData.birthplace || ""}
-                  // value={capturedData.common_data.birthplace}
-                  onChange={(e) => updatingCommonData('birthplace', e.target.value)}
-                  // onChange={(e) => updateCapturedData("common_data", 'birthplace', e.target.value)}
-                  // onChange={(e) => updateCommonData('first_name', e.target.value)}
-                  // onBlur={handleBlur}
+                  onChange={(e) => updatingCommonData('birthplace', e.target.value.toUpperCase())}
                   id="birthplace"
                   name="birthplace"
-                  placeholder="Enter your Birthplace (Region, Province, Municipality and Barangay"
+                  placeholder="Enter your Birthplace (Region, Province, Municipality, Barangay and Street #/ Sitio"
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                 />
                 {errors?.birthplace && (
-                  <p className="mt-2 text-sm text-red-500">{errors.birthplace}</p>
+                  <p className="mt-2 text-md  text-red-500">{errors.birthplace}</p>
                 )}
               </div>
             </div>
@@ -1507,9 +1625,9 @@ export default function PersonProfileForm() {
         </div>
 
 
-        <div className="p-3 col-span-full">
+        <div className="p-3">
 
-          <FormTabs tabs={tabs} className={commonData.modality_id !== undefined ? "" : "hidden"} />
+          <FormTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} className={commonData.modality_id !== undefined ? "" : "hidden"} />
         </div>
 
       </CardContent>
@@ -1524,6 +1642,7 @@ export default function PersonProfileForm() {
           <div className='px-3'>
             <label className="flex items-center space-x-2">
               <input
+                id='i_accept'
                 type="checkbox"
                 checked={isAccepted}
                 onChange={handleCheckboxChange}
@@ -1538,9 +1657,10 @@ export default function PersonProfileForm() {
 
           {/* Save Button Section */}
           <div className='px-3'>
+            {/* <Button onClick={sampleClick} >Click Me</Button> */}
             {/* <Button onClick={handleSubmit} disabled={!isAccepted || loading || btnToggle} > */}
             <Button onClick={handleSubmit} disabled={btnToggle} >
-              {loading ? <Loader2 className={`animate-spin size-5 ${Number(selectedModalityId) === 25 ? "bg-cfw_bg_color text-black" : ""}`} /> : ""}
+              {loading ? <Loader2 className={`animate-spin size-5 ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-black" : ""}`} /> : ""}
               {loading ? "Saving..." : "Save"}
             </Button>
           </div>
@@ -1554,3 +1674,6 @@ export default function PersonProfileForm() {
 
   )
 }
+
+
+

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { number } from "zod";
 
-export default function ContactDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+export default function ContactDetails({ errors, modality_id_global }: { errors: any; modality_id_global: number }) {
     const [regionOptions, setRegionOptions] = useState<LibraryOption[]>([]);
     const [selectedRegion, setSelectedRegion] = useState("");
     const [selectedRegionId, setSelectedRegionId] = useState<string>();
@@ -85,9 +85,32 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
     }
 
-    const [selectedModalityID, setSelectedModalityID] = useState(number);
+    const [selectedModalityID, setSelectedModalityID] = useState<number | null>(null);
+
+    const [commonData, setCommonData] = useState(() => {
+        if (globalThis.window) {
+            const storedCommonData = localStorage.getItem("common_data");
+            if (storedCommonData !== null) {
+                return storedCommonData ? JSON.parse(storedCommonData) : {};
+            }
+        }
+
+        return {};
+
+    });
 
     useEffect(() => {
+        localStorage.setItem("common_data", JSON.stringify(commonData));
+        const common_data = localStorage.getItem("common_data");
+        if (common_data) {
+            const parsedCommonData = JSON.parse(common_data);
+            setSelectedModalityID(parsedCommonData.modality_id);
+        }
+    }, [commonData]);
+
+    useEffect(() => {
+        console.log("MODALITY ID GLOBAL: ", modality_id_global);
+
         const fetchData = async () => {
             try {
                 // const province = await getProvinceLibraryOptions();
@@ -168,14 +191,10 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
         updatingContactDetails("region_code_present_address", region_code_present_address);
     };
 
-    const handleSitioPermanentChange = () => {
-        if (isSameAddress) {
-            // setEncodedSitioPresent
-        }
-    }
+
     const handleProvinceChange = (id: string) => {
         console.log("Selected Province ID:", id);
-        updateCapturedData("common_data", "province_code", id);
+        // updateCapturedData("common_data", "province_code", id);
         setSelectedProvinceId(id);
         updatingContactDetails("province_code", id);
     };
@@ -188,7 +207,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
     };
     const handleCityChange = (id: string) => {
         console.log("Selected City ID:", id);
-        updateCapturedData("common_data", "city_code", id);
+        // updateCapturedData("common_data", "city_code", id);
         setSelectedCityId(id);
         updatingContactDetails("city_code", id);
     };
@@ -206,7 +225,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
     const handleBarangayChange = (id: string) => {
         console.log("Selected Barangay ID:", id);
-        updateCapturedData("common_data", "barangay_code", id);
+        // updateCapturedData("common_data", "barangay_code", id);
         setSelectedBarangayId(id);
         updatingContactDetails("barangay_code", id);
     };
@@ -233,28 +252,12 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
     return (
         <>
             <div className="space-y-3 pt-3">
-                <div className={`grid sm:grid-cols-4 sm:grid-rows-1 ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color " : "bg-black"} text-white p-3 mb-0`}>
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1 ${modality_id_global === 25 ? "bg-cfw_bg_color " : "bg-black"} text-white p-3 mb-0`}>
                     Permanent Address
                 </div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2 mt-0">
 
-                    <div className="p-2 col-span-2">
-                        <Label htmlFor="sitio" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
-                        <Input
-                            // value={capturedData.common_data.sitio}
-                            value={contactDetails.sitio || ""}
-                            onChange={(e) => updatingContactDetails("sitio", e.target.value)}
-                            // onChange={(e) => updateCapturedData("common_data", 'sitio', e.target.value)}
-                            id="sitio"
-                            name="sitio"
-                            type="text"
-                            placeholder="Enter your House No/Street/Purok"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        />
-                        {errors?.sitio && (
-                            <p className="mt-2 text-sm text-red-500">{errors.sitio}</p>
-                        )}
-                    </div>
+
                     <div className="p-2 col-span-2">
                         <Label htmlFor="region_contact_details" className="block text-sm font-medium mb-[5px]">Region<span className='text-red-500'> *</span></Label>
 
@@ -310,8 +313,25 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             <p className="mt-2 text-sm text-red-500">{errors.barangay_contact_details}</p>
                         )}
                     </div >
+                    <div className="p-2 col-span-2">
+                        <Label htmlFor="sitio" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
+                        <Input
+                            // value={capturedData.common_data.sitio}
+                            value={contactDetails.sitio || ""}
+                            onChange={(e) => updatingContactDetails("sitio", e.target.value.toUpperCase())}
+                            // onChange={(e) => updateCapturedData("common_data", 'sitio', e.target.value)}
+                            id="sitio"
+                            name="sitio"
+                            type="text"
+                            placeholder="Enter your House No/Street/Purok"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                        />
+                        {errors?.sitio && (
+                            <p className="mt-2 text-sm text-red-500">{errors.sitio}</p>
+                        )}
+                    </div>
                 </div>
-                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-black" : ""}  p-3 bg-black text-white mt-3`}>
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  ${modality_id_global === 25 ? "bg-cfw_bg_color text-black" : ""}  p-3 bg-black text-white mt-3`}>
                     Present Address
                 </div>
                 <div className="flex items-center gap-2 p-3">
@@ -331,24 +351,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
 
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2">
-                    <div className="p-2 col-span-2">
-                        <Label htmlFor="sitio_present_address" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
-                        <Input
-                            // value={capturedData.common_data.sitio}
-                            value={contactDetails.sitio_present_address || ""}
-                            onChange={(e) => updatingContactDetails("sitio_present_address", e.target.value)}
-                            // onChange={(e) => updateCapturedData("common_data", 'sitio', e.target.value)}
-                            id="sitio_present_address"
-                            name="sitio_present_address"
-                            type="text"
-                            placeholder="Enter your Present House No/Street/Purok"
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            readOnly={isSameAddress}
-                        />
-                        {errors?.sitio_present_address && (
-                            <p className="mt-2 text-sm text-red-500">{errors.sitio_present_address}</p>
-                        )}
-                    </div>
+
                     <div className="p-2 col-span-2">
                         <Label htmlFor="region_contact_details_present_address" className="block text-sm font-medium mb-[5px]">Region<span className='text-red-500'> *</span></Label>
 
@@ -404,31 +407,101 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             <p className="mt-2 text-sm text-red-500">{errors.barangay_contact_details_present_address}</p>
                         )}
                     </div >
+                    <div className="p-2 col-span-2">
+                        <Label htmlFor="sitio_present_address" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
+                        <Input
+                            // value={capturedData.common_data.sitio}
+                            value={contactDetails.sitio_present_address || ""}
+                            onChange={(e) => updatingContactDetails("sitio_present_address", e.target.value.toUpperCase())}
+                            // onChange={(e) => updateCapturedData("common_data", 'sitio', e.target.value)}
+                            id="sitio_present_address"
+                            name="sitio_present_address"
+                            type="text"
+                            placeholder="Enter your Present House No/Street/Purok"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            readOnly={isSameAddress}
+                        />
+                        {errors?.sitio_present_address && (
+                            <p className="mt-2 text-sm text-red-500">{errors.sitio_present_address}</p>
+                        )}
+                    </div>
                 </div>
-                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  p-3 ${Number(selectedModalityID) === 25 ? "bg-cfw_bg_color text-white" : "bg-black text-white"}  `}>
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-1  p-3 ${modality_id_global === 25 ? "bg-cfw_bg_color text-white" : "bg-black text-white"}  `}>
                     Contact Numbers and Email
                 </div>
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2">
                     <div className="p-2 col-span-2">
                         <Label htmlFor="cellphone_no" className="block text-sm font-medium">Contact Number (Primary)<span className='text-red-500'> *</span></Label>
                         <Input
-                            value={contactDetails.cellphone_no}
-                            // value={capturedData.common_data.cellphone_no}
+                            value={contactDetails.cellphone_no === "" ? "09" : contactDetails.cellphone_no}
                             id="cellphone_no"
                             name="cellphone_no"
-                            type="text"
+                            type="text" // Keep it as "text" to allow formatting
                             placeholder="Enter your primary contact number"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                            onChange={(e) => updatingContactDetails("cellphone_no", e.target.value)}
-                        // onChange={(e) => updateCapturedData("common_data", "cellphone_no", e.target.value)}
+                            maxLength={13} // Account for the dashes (XXXX-XXX-XXXX = 13 characters)
+                            onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+
+                                if (!value.startsWith("09")) {
+                                    value = "09" + value.replace(/^09/, "");
+                                }
+
+                                // Apply formatting (XXXX-XXX-XXXX)
+                                if (value.length > 4) value = value.slice(0, 4) + "-" + value.slice(4);
+                                if (value.length > 8) value = value.slice(0, 8) + "-" + value.slice(8);
+
+                                // Limit to 13 characters (including dashes)
+                                if (value.length > 13) value = value.slice(0, 13);
+                                // alert(value)
+                                // Update state
+                                setContactDetails((prev) => ({
+                                    ...prev,
+                                    cellphone_no: value,
+                                }));
+                                updatingContactDetails('cellphone_no', value)
+                            }}
                         />
+
                         {errors?.cellphone_no && (
                             <p className="mt-2 text-sm text-red-500">{errors.cellphone_no}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-2">
-                        <Label htmlFor="cellphone_no_secondary" className="block text-sm font-medium">Contact Number (Secondary)<span className='text-red-500'> *</span></Label>
+                        <Label htmlFor="cellphone_no_secondary" className="block text-sm font-medium">Contact Number (Secondary)</Label>
                         <Input
+                            value={contactDetails.cellphone_no_secondary === "" ? "09" : contactDetails.cellphone_no_secondary}
+                            // value={contactDetails.cellphone_no_secondary}
+                            id="cellphone_no_secondary"
+                            name="cellphone_no_secondary"
+                            type="text" // Keep it as "text" to allow formatting
+                            placeholder="Enter your secondary contact number"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                            maxLength={13} // Account for the dashes (XXXX-XXX-XXXX = 13 characters)
+                            onChange={(e) => {
+                                let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters
+
+                                if (!value.startsWith("09")) {
+                                    value = "09" + value.replace(/^09/, "");
+                                }
+
+                                // Apply formatting (XXXX-XXX-XXXX)
+                                if (value.length > 4) value = value.slice(0, 4) + "-" + value.slice(4);
+                                if (value.length > 8) value = value.slice(0, 8) + "-" + value.slice(8);
+
+                                // Limit to 13 characters (including dashes)
+                                if (value.length > 13) value = value.slice(0, 13);
+                                updatingContactDetails('cellphone_no_secondary', value)
+                                // Update state
+                                setContactDetails((prev) => ({
+                                    ...prev,
+                                    cellphone_no_secondary: value,
+                                }));
+                            }}
+                        />
+
+
+                        {/* <Input
                             value={contactDetails.cellphone_no_secondary}
                             // value={capturedData.common_data.cellphone_no_secondary}
                             id="cellphone_no_secondary"
@@ -438,7 +511,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             onChange={(e) => updatingContactDetails("cellphone_no_secondary", e.target.value)}
                         // onChange={(e) => updateCapturedData("common_data", "cellphone_no_secondary", e.target.value)}
-                        />
+                        /> */}
                         {errors?.cellphone_no_secondary && (
                             <p className="mt-2 text-sm text-red-500">{errors.cellphone_no_secondary}</p>
                         )}
@@ -446,7 +519,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                     <div className="p-2 col-span-2">
                         <Label htmlFor="email" className="block text-sm font-medium">Active Email Address<span className='text-red-500'> *</span></Label>
                         <Input
-                            value={contactDetails.email}
+                            value={contactDetails.email.toLowerCase()}
                             // value={capturedData.common_data.email}
                             id="email"
                             name="email"

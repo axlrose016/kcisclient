@@ -1,4 +1,5 @@
 export interface LibraryOption{
+  label: any;
   id: any,
   name: string
 }
@@ -287,6 +288,49 @@ export interface ILibTypeOfWork{
 export interface ILibFilesToUpload{
   id:number,
   file_name:string,
+  created_date: string,            
+  created_by: string,              
+  last_modified_date: string | null, 
+  last_modified_by: string | null,  
+  push_status_id: number,     
+  push_date: string,              
+  deleted_date: string | null,      
+  deleted_by: string | null,        
+  is_deleted: boolean,             
+  remarks: string | null,  
+}
+
+export interface ILibIPGroup{
+  id:number,
+  name:string,
+  created_date: string,            
+  created_by: string,              
+  last_modified_date: string | null, 
+  last_modified_by: string | null,  
+  push_status_id: number,     
+  push_date: string,              
+  deleted_date: string | null,      
+  deleted_by: string | null,        
+  is_deleted: boolean,             
+  remarks: string | null,  
+}
+export interface ILibYearServed{
+  id:number,
+  year_served: number,
+  created_date: string,            
+  created_by: string,              
+  last_modified_date: string | null, 
+  last_modified_by: string | null,  
+  push_status_id: number,     
+  push_date: string,              
+  deleted_date: string | null,      
+  deleted_by: string | null,        
+  is_deleted: boolean,             
+  remarks: string | null,  
+}
+export interface ILibProgramTypes{
+  id:number,
+  program_type_name: string,
   created_date: string,            
   created_by: string,              
   last_modified_date: string | null, 

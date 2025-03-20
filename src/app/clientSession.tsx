@@ -45,7 +45,7 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
       <SidebarInset className="overflow-x-hidden">
         <header className="flex h-16 items-center border-b px-4">
           <SidebarTrigger className="mr-2" />
-          <h1 className="text-lg font-medium">Beneficiary Profile Form</h1>
+          {/* <h1 className="text-lg font-medium">Beneficiary Profile Form</h1> */}
         </header>
         <main className="flex-1 overflow-x-hidden p-4">{children}</main>
       </SidebarInset>

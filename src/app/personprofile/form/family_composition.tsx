@@ -17,7 +17,7 @@ import { ButtonDialog } from "@/components/actions/button-dialog";
 import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilycomposition";
 import HighestEducationalAttainment from "./highest_educational_attainment";
 import { toast } from "@/hooks/use-toast";
-import { getOfflineLibEducationalAttainment, getOfflineLibRelationshipToBeneficiary, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
+import { getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibRelationshipToBeneficiary, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
 
 export default function FamilyComposition({ errors }: { errors: any }) {
 
@@ -52,17 +52,27 @@ export default function FamilyComposition({ errors }: { errors: any }) {
 
     const [form_Data, setForm_Data] = useState([]);
 
-
-
+    const [famComFirstName, setfamComFirstName] = useState("");
+    const [famComLastName, setfamComLastName] = useState("");
+    const [famComMiddleName, setfamComMiddleName] = useState("");
+    const [famComSelectedExtNameId, setfamComExtNameId] = useState<number | null>(null);
+    const [programDetailsExtensionNameOptions, setprogramDetailsExtensionNameOptions] = useState<LibraryOption[]>([]);
 
     const [familyComposition, setFamilyComposition] = useState<FamilyCompositionData>({
         family_composition: []
     });
+    const handlExtensionNameChange = (id: number) => {
+
+        // updateCommonData("extension_name", id);
+        console.log("Selected Extension name ID:", id);
+        setfamComExtNameId(id)
+        // setSelectedExtensionNameId(id);
+        // updatingCommonData("extension_name_id", id);
+    };
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const relationship_to_family_member = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToFamilyMemberTypeLibraryOptions();
-                setRelationshipToFamilyMemberOptions(relationship_to_family_member);
+
 
                 const year_level = await getOfflineLibYearLevel();//await getYearLevelLibraryOptions();
                 setYearLevelOptions(year_level);
@@ -92,14 +102,25 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                     setCommonData(cd);
                 }
 
-                // const fd = localStorage.getItem("famCom");
-                // if (fd) {
-                //     setCapturedData(JSON.parse(fd));
-                // } else {
-                //     console.log("No data from famCom");
-                // }
+                const extension_name = await getOfflineExtensionLibraryOptions(); //await getExtensionNameLibraryOptions();
+                // Convert label values to uppercase before setting state
+                const formattedExtensions = extension_name.map(option => ({
 
+                    ...option,
+                    name: option.name.toUpperCase(), // Convert label to uppercase
 
+                }));
+                console.log("Formatted Extension", formattedExtensions);
+                setprogramDetailsExtensionNameOptions(formattedExtensions);
+
+                const relationship_to_family_member = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToFamilyMemberTypeLibraryOptions();
+                const formattedRelationship = relationship_to_family_member.map(option => ({
+
+                    ...option,
+                    name: option.name.toUpperCase(), // Convert label to uppercase
+
+                }));
+                setRelationshipToFamilyMemberOptions(formattedRelationship);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -145,137 +166,171 @@ export default function FamilyComposition({ errors }: { errors: any }) {
         });
     };
 
-    const handleSaveFamMemberData = (e: React.MouseEvent<HTMLButtonElement>) => {
-        e.preventDefault(); // Prevent default button behavior
 
-        console.log("Family Member Name:", familyMemberName);
+    function errorToastFamCom(msg: string){
+        toast({
+            variant: "destructive",
+            title: msg,
+            // description: msg,
+        })
+    }
+
+    function validateAge(ageinput: number){
+
+
+        return false;
+    }
+
+    const handleSavefamComData = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+
+        if (!famComFirstName || famComFirstName.trim() === "") {
+            errorToastFamCom("Please input First Name!");
+            return;
+        }
+        else if (!famComLastName || famComLastName.trim() === "") {
+            errorToastFamCom("Please input Last Name!");
+            return;
+        } 
+        
+        else if(selectedRelationshipToFamilyMemberId === null){
+            errorToastFamCom("Please select a Relationship to Family Member!");
+            return;
+
+        }
+        
+        else {
+            const famCom = localStorage.getItem("family_composition");
+            let prevData: any = { family_composition: [] };
+
+            if (famCom) {
+                prevData = JSON.parse(famCom);
+                console.log("Parsed prevData:", prevData);
+            } else {
+                console.log("No family composition found.");
+            }
+
+            console.log("Before:", prevData);
+
+            // Ensure `family_composition` exists
+            let familyComposition = prevData.family_composition || [];
+
+            // Find the selected relationship
+            const selectedTextRelationshipToFamilyMember = relationshipToFamilyMemberOptions.find(
+                (option) => option.id === selectedRelationshipToFamilyMemberId)?.name || "";
+
+            console.log("Selected Relationship to Bene:", selectedTextRelationshipToFamilyMember);
+
+            // Find the selected highest educational attainment
+            const selectedTextHighestEducationalAttainment = EducationalAttainmentOptions.find(
+                (option) => option.id === selectedEducationalAttainmentId
+            )?.name || "";
+
+            console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
+
+            // Check for duplicate family member by name (case insensitive)
+            const famComExists = familyComposition.some(
+                (member: any) => member.name.toLowerCase() === familyMemberName.toLowerCase()
+            );
+
+            if (famComExists) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "This Family Member already exists.",
+                });
+                alert("This Family Member already exists.");
+                return; // Exit function early
+            }
+
+            // Validations
+            // if (!familyMemberName.trim()) {
+            //     toast({
+            //         variant: "destructive",
+            //         title: "Error",
+            //         description: "Family member's name is required!",
+            //     });
+            //     return;
+            // }
+
+            if (selectedRelationshipToFamilyMemberId === 0 || selectedRelationshipToFamilyMemberId === null) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Relationship to Family member is required!",
+                });
+                return;
+            }
+
+            if (!dob.trim()) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Family member's birthday is required!",
+                });
+                return;
+            }
+
+            if (selectedEducationalAttainmentId === 0) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Highest educational attainment is required!",
+                });
+                return;
+            }
+
+            if (!familyMemberContactNumber.trim()) {
+                toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: "Family Member's Contact number is required!",
+                });
+                return;
+            }
+
+            // Create the new family member object
+            const newFamilyMember = {
+                name: familyMemberName,
+                relationship_to_the_beneficiary: selectedTextRelationshipToFamilyMember,
+                relationship_to_the_beneficiary_id: selectedRelationshipToFamilyMemberId,
+                birthdate: dob,
+                age: age,
+                highest_educational_attainment: selectedTextHighestEducationalAttainment,
+                highest_educational_attainment_id: selectedEducationalAttainmentId,
+                work: familyMemberWork,
+                monthly_income: familyMemberMonthlyIncome,
+                contact_number: familyMemberContactNumber,
+            };
+
+            // Append the new family member to the existing family composition
+            const updatedFamilyComposition = [...familyComposition, newFamilyMember];
+
+            // Update the localStorage and state
+            const updatedData = {
+                ...prevData,
+                family_composition: updatedFamilyComposition,
+            };
+
+            localStorage.setItem("family_composition", JSON.stringify(updatedData));
+
+            // Update the state with the new data
+            setFamilyComposition(updatedData);
+
+            console.log("Updated Family Composition:", updatedData.family_composition);
+
+            toast({
+                variant: "green",
+                title: "Success",
+                description: "Family Member data has been added!",
+            });
+        }
+
+
+        // console.log("Family Member Name:", familyMemberName);
         // debugger;
 
-        const famCom = localStorage.getItem("family_composition");
-        let prevData: any = { family_composition: [] }; // Ensure it's an object with an array
 
-        if (famCom) {
-            prevData = JSON.parse(famCom);
-            console.log("Parsed prevData:", prevData);
-        } else {
-            console.log("No family composition found.");
-        }
-
-        console.log("Before:", prevData);
-
-        // Ensure `family_composition` exists
-        let familyComposition = prevData.family_composition || [];
-
-        // Find the selected relationship
-        const selectedTextRelationshipToFamilyMember = relationshipToFamilyMemberOptions.find(
-            (option) => option.id === selectedRelationshipToFamilyMemberId
-        )?.name || "";
-
-        console.log("Selected Relationship to Bene:", selectedTextRelationshipToFamilyMember);
-
-        // Find the selected highest educational attainment
-        const selectedTextHighestEducationalAttainment = EducationalAttainmentOptions.find(
-            (option) => option.id === selectedEducationalAttainmentId
-        )?.name || "";
-
-        console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
-
-        // Check for duplicate family member by name (case insensitive)
-        const famMemberExists = familyComposition.some(
-            (member: any) => member.name.toLowerCase() === familyMemberName.toLowerCase()
-        );
-
-        if (famMemberExists) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "This Family Member already exists.",
-            });
-            alert("This Family Member already exists.");
-            return; // Exit function early
-        }
-
-        // Validations
-        if (!familyMemberName.trim()) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Family member's name is required!",
-            });
-            return;
-        }
-
-        if (selectedRelationshipToFamilyMemberId === 0 || selectedRelationshipToFamilyMemberId === null) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Relationship to Family member is required!",
-            });
-            return;
-        }
-
-        if (!dob.trim()) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Family member's birthday is required!",
-            });
-            return;
-        }
-
-        if (selectedEducationalAttainmentId === 0) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Highest educational attainment is required!",
-            });
-            return;
-        }
-
-        if (!familyMemberContactNumber.trim()) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Family Member's Contact number is required!",
-            });
-            return;
-        }
-
-        // Create the new family member object
-        const newFamilyMember = {
-            name: familyMemberName,
-            relationship_to_the_beneficiary: selectedTextRelationshipToFamilyMember,
-            relationship_to_the_beneficiary_id: selectedRelationshipToFamilyMemberId,
-            birthdate: dob,
-            age: age,
-            highest_educational_attainment: selectedTextHighestEducationalAttainment,
-            highest_educational_attainment_id: selectedEducationalAttainmentId,
-            work: familyMemberWork,
-            monthly_income: familyMemberMonthlyIncome,
-            contact_number: familyMemberContactNumber,
-        };
-
-        // Append the new family member to the existing family composition
-        const updatedFamilyComposition = [...familyComposition, newFamilyMember];
-
-        // Update the localStorage and state
-        const updatedData = {
-            ...prevData,
-            family_composition: updatedFamilyComposition,
-        };
-
-        localStorage.setItem("family_composition", JSON.stringify(updatedData));
-
-        // Update the state with the new data
-        setFamilyComposition(updatedData);
-
-        console.log("Updated Family Composition:", updatedData.family_composition);
-
-        toast({
-            variant: "green",
-            title: "Success",
-            description: "Family Member data has been added!",
-        });
     };
 
 
@@ -412,8 +467,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                         // work: "", 
                                         // monthly_income: "", 
                                         // contact_number: "" } */}
-                                            <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_name" className="block text-sm font-medium">Name of Family Member<span className='text-red-500'> *</span></Label>
+                                            {/* <div className="p-2 col-span-4">
+                                                <Label htmlFor="family_member_name" className="block text-sm font-medium mb-2">Name of Family Member<span className='text-red-500'> *</span></Label>
                                                 <Input
                                                     type="text"
                                                     id="family_member_name"
@@ -425,15 +480,70 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 {errors?.family_member_name && (
                                                     <p className="mt-2 text-sm text-red-500">{errors.family_member_name}</p>
                                                 )}
-                                            </div>
+                                            </div> */}
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="relationship_to_family_member" className="block text-sm font-medium">Relationship to Family Member<span className='text-red-500'> *</span></Label>
+                                                <Label htmlFor="program_details_first_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's First Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_first_name"
+                                                    placeholder="First Name"
+                                                    className="w-full"
+                                                    value={famComFirstName.toUpperCase()}
+                                                    onChange={(e) => setfamComFirstName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="program_details_middle_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Middle Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_middle_name"
+                                                    placeholder="Middle Name"
+                                                    className="w-full"
+                                                    value={famComMiddleName.toUpperCase()}
+                                                    onChange={(e) => setfamComMiddleName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="program_details_last_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Last Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_last_name"
+                                                    placeholder="Last Name"
+                                                    className="w-full"
+                                                    value={famComLastName.toUpperCase()}
+                                                    onChange={(e) => setfamComLastName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="program_details_extension_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Extension Name
+                                                </Label>
+                                                <FormDropDown
+                                                    id="program_details_extension_name"
+                                                    options={programDetailsExtensionNameOptions}
+                                                    selectedOption={famComSelectedExtNameId}
+                                                    onChange={(value) => handlExtensionNameChange(value)}
+                                                    label="Select an Extension Name (if applicable)"
+                                                />
+                                            </div>
+
+                                            <div className="p-2 col-span-4">
+                                                <Label htmlFor="relationship_to_family_member" className="block text-sm font-medium mb-2">Relationship to Family Member<span className='text-red-500'> *</span></Label>
                                                 <FormDropDown
 
                                                     id="relationship_to_family_member"
                                                     options={relationshipToFamilyMemberOptions}
                                                     selectedOption={selectedRelationshipToFamilyMemberId}
-                                                    onChange={handlRelationshipToFamilyMemberChange}
+                                                    onChange={(value) => handlRelationshipToFamilyMemberChange(value)}
 
                                                 />
                                                 {errors?.relationship_to_family_member && (
@@ -441,7 +551,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_birthdate" className="block text-sm font-medium">Birth Date<span className='text-red-500'> *</span></Label>
+                                                <Label htmlFor="family_member_birthdate" className="block text-sm font-medium mb-2">Birth Date<span className='text-red-500'> *</span></Label>
                                                 <Input
                                                     //  onChange={(e) => updateCommonData('first_name', e.target.value)}
                                                     id="family_member_birthdate"
@@ -455,7 +565,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_age" className="block text-sm font-medium">Age</Label>
+                                                <Label htmlFor="family_member_age" className="block text-sm font-medium mb-2">Age</Label>
                                                 <Input
                                                     type="text"
                                                     id="family_member_age"
@@ -470,7 +580,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_highest_educational_attainment_id" className="block text-sm font-medium">Highest Educational Attainment</Label>
+                                                <Label htmlFor="family_highest_educational_attainment_id" className="block text-sm font-medium mb-2">Highest Educational Attainment</Label>
                                                 <FormDropDown
 
                                                     id="family_highest_educational_attainment_id"
@@ -484,7 +594,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_work" className="block text-sm font-medium">Work</Label>
+                                                <Label htmlFor="family_member_work" className="block text-sm font-medium mb-2">Work</Label>
                                                 <Input
                                                     type="text"
                                                     id="family_member_work"
@@ -499,7 +609,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_monthly_income" className="block text-sm font-medium">Monthly Income</Label>
+                                                <Label htmlFor="family_member_monthly_income" className="block text-sm font-medium mb-2">Monthly Income</Label>
                                                 <Input
                                                     type="text"
                                                     id="family_member_monthly_income"
@@ -513,7 +623,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_contact_number" className="block text-sm font-medium">Contact Number<span className='text-red-500'> *</span></Label>
+                                                <Label htmlFor="family_member_contact_number" className="block text-sm font-medium mb-2">Contact Number<span className='text-red-500'> *</span></Label>
                                                 <Input
                                                     type="text"
                                                     id="family_member_contact_number"
@@ -528,7 +638,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                             </div>
                                         </div>
                                         <DialogFooter>
-                                            <Button onClick={handleSaveFamMemberData}>Save</Button>
+                                            <Button onClick={handleSavefamComData}>Save</Button>
                                         </DialogFooter>
 
                                     </DialogContent>
@@ -610,7 +720,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
             {
                 commonData.modality_id !== undefined && commonData.modality_id === 25 ? (
                     <div className="p-2">
-                        <Label htmlFor="no_of_children" className="block text-sm font-medium">Number of Children</Label>
+                        <Label htmlFor="no_of_children" className="block text-sm font-medium mb-2">Number of Children</Label>
                         <Input
                             id="no_of_children"
                             name="no_of_children"

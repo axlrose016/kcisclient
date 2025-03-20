@@ -14,7 +14,7 @@ import { getCivilStatusLibraryOptions, getEducationalAttainmentLibraryOptions, g
 import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSexOptions } from "@/components/_dal/offline-options";
 
 
-export default function PWDRepresentative({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+export default function PWDRepresentative({ errors }: { errors: any; }) {
 
     const [cfwPWDRepresentative, setCfwPWDRepresentative] = useState(() => {
         if (globalThis.window) {

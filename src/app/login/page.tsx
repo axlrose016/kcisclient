@@ -13,7 +13,7 @@ import RegistrationForm from "@/components/dialogs/registration/frmregistration"
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { getUserByEmail, getUserById, getUserData, getUsers } from "@/db/offline/Dexie/schema/user-service"
+import { getUserByEmail, getUserById, getUserData, getUsers, seedUser, seedUserData } from "@/db/offline/Dexie/schema/user-service"
 import { toast } from "@/hooks/use-toast"
 import { IUserData } from "@/components/interfaces/iuser"
 import { createSession } from "@/lib/sessions-client"
@@ -35,6 +35,7 @@ export default function LoginPage() {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     seedData();  
+    seedUserData();
   }, []);
 
     const {
@@ -48,6 +49,7 @@ export default function LoginPage() {
   
   
     const onSubmit = async (data: FormData) => {
+      debugger;
       try{
         const user = await getUserByEmail(data.email);
         if(user == null){
@@ -76,7 +78,9 @@ export default function LoginPage() {
             return;
           }
           await createSession(user.id, userData);
-          window.location.href = '/dashboard';
+          // test if not yet registered 
+          window.location.href = '/personprofile/form';
+          
         }
         else{
           toast({

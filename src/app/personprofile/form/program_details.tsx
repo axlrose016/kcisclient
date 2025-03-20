@@ -3,19 +3,21 @@ import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { Children, useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption, } from "@/components/ui/table";
 // import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 // import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
-import { Edit, Trash } from "lucide-react"
+import { Edit, Terminal, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getCFWTypeLibraryOptions } from "@/components/_dal/options";
+import { getCFWTypeLibraryOptions, getYearServedLibraryOptions } from "@/components/_dal/options";
 import { DropdownMenu } from "@radix-ui/react-dropdown-menu";
 import { Combobox } from "@/components/ui/combobox";
-
+import {
+    Alert, AlertDescription, AlertTitle
+} from "@/components/ui/alert"
 import {
     Dialog,
     DialogContent,
@@ -27,9 +29,10 @@ import {
 } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast";
 import { year } from "drizzle-orm/mysql-core";
-import { getOfflineLibCFWType } from "@/components/_dal/offline-options";
+import { getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibProgramTypes, getOfflineLibYearServed } from "@/components/_dal/offline-options";
 
-export default function CFWProgramDetails({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+
+export default function CFWProgramDetails({ errors }: { errors: any; }) {
     const [selectedRelation, setSelectedRelation] = useState("");
     const [SelectedIsCFWFamBene, setSelectedIsCFWFamBene] = useState("");
 
@@ -38,10 +41,24 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     const [selectedCFWTypeId, setSelectedCFWTypeId] = useState<number | null>(null);
 
     const [yearServed, setYearServed] = useState("");
+    const [yearServeOptions, setYearServeOptions] = useState<LibraryOption[]>([]);
+    const [selectedYearServedId, setSelectedYearServedId] = useState<number | null>(null);
+
+    const [programTypes, setProgramTypes] = useState("");
+    const [programTypesOptions, setProgramTypesOptions] = useState<LibraryOption[]>([]);
+    const [selectedProgramTypeId, setSelectedProgramTypeId] = useState<number | null>(null);
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+
     // const [capturedData1, setCapturedData] = useState([]);
-    const [capturedData1, setCapturedData] = useState<CapturedData[]>([]);
+    // const [capturedData1, setCapturedData] = useState<CapturedData[]>([]);
     const [parsedData1, setParsedData] = useState([]);
     const [SelectedCFWTypeName, setSelectedCFWTypeName] = useState<string | null>(null);
+
+    const [famMemberFirstName, setfamMemberFirstName] = useState("");
+    const [famMemberLastName, setfamMemberLastName] = useState("");
+    const [famMemberMiddleName, setfamMemberMiddleName] = useState("");
+    const [famMemberSelectedExtNameId, setfamMemberExtNameId] = useState<number | null>(null);
 
     const [formData, setFormData] = useState(() => {
         // Initialize formData from localStorage or set default structure
@@ -52,7 +69,16 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     const [selectedCFWTypeText, setSelectedCFWTypeText] = useState<string | null>(null);
 
     const [hasProgramDetails, setHasProgramDetails] = useState("");
+    const [programDetailsExtensionNameOptions, setprogramDetailsExtensionNameOptions] = useState<LibraryOption[]>([]);
 
+    const handlExtensionNameChange = (id: number) => {
+
+        // updateCommonData("extension_name", id);
+        console.log("Selected Extension name ID:", id);
+        setfamMemberExtNameId(id)
+        // setSelectedExtensionNameId(id);
+        // updatingCommonData("extension_name_id", id);
+    };
     interface ProgramDetail {
         cfw_type_id: string; // Adjust the type as needed
         cfw_type: string;
@@ -82,12 +108,12 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const cfw_type = await getOfflineLibCFWType(); //await getCFWTypeLibraryOptions();
-                const cfwTypes = localStorage.getItem("cfw_type");
-                if (!cfwTypes) {
-                    localStorage.setItem("cfw_type", JSON.stringify(cfw_type));
-                }
-                setCFWTypeOptions(cfw_type);
+                // const cfw_type = await getOfflineLibCFWType(); //await getCFWTypeLibraryOptions();
+                // const cfwTypes = localStorage.getItem("cfw_type");
+                // if (!cfwTypes) {
+                //     localStorage.setItem("cfw_type", JSON.stringify(cfw_type));
+                // }
+                // setCFWTypeOptions(cfw_type);
 
                 const storedHasProgramDetails = localStorage.getItem("cfwHasProgramDetails");
                 if (storedHasProgramDetails !== null) {
@@ -96,18 +122,24 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                 }
 
                 loadProgramDetails();
-                // debugger;
-                // const storedProgramDetails = localStorage.getItem("programDetails");
 
-                // if (storedProgramDetails) {
-                //     setProgramDetails(JSON.parse(storedProgramDetails));
-                // }
-                // else {
-                //     setProgramDetails([]); // Reset if there's no data
-                // }
+                const extension_name = await getOfflineExtensionLibraryOptions(); //await getExtensionNameLibraryOptions();
+                // Convert label values to uppercase before setting state
+                const formattedExtensions = extension_name.map(option => ({
+
+                    ...option,
+                    name: option.name.toUpperCase(), // Convert label to uppercase
+
+                }));
+                console.log("Formatted Extension", formattedExtensions);
+                setprogramDetailsExtensionNameOptions(formattedExtensions);
 
 
+                const yearsServed = await getOfflineLibYearServed();
+                setYearServeOptions(yearsServed)
 
+                const programTypes = await getOfflineLibProgramTypes();
+                setProgramTypesOptions(programTypes)
                 return;
 
                 const formDataLS = localStorage.getItem("formData");
@@ -116,7 +148,7 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                 if (formDataLS) {
                     const parsedData = JSON.parse(formDataLS || "");
                     console.log("Parsed Data: ", parsedData);
-                    setCapturedData(parsedData);
+                    // setCapturedData(parsedData);
                     // setCapturedData(parsedData.cfw[1].program_details);
                     console.log("Final Parsed Data: ", parsedData1);
                     // Check if sectors array exists and is not empty
@@ -143,28 +175,19 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     };
 
     const [cfwType, setcfwType] = useState("");
+
     const handleCFWTypeChange = (id: number) => {
         console.log("Selected CFW Type ID:", id);
 
-        setSelectedCFWTypeId(id);
+        setSelectedProgramTypeId(id);
+        // setSelectedCFWTypeId(id);
+    };
+    const handleYearServedChange = (id: number) => {
+        console.log("Selected Year Served ID:", id);
+
+        setSelectedYearServedId(id);
     };
 
-    const handleCFWTypeChange1 = (e: React.ChangeEvent<HTMLSelectElement>) => {
-
-        console.log(e);
-        // console.log(e.target);
-        // console.log(e.target?.value);
-        // const target = e.target as HTMLSelectElement;
-        // console.log("Value: " + target.value);
-        // const selectedId = Number(target.value); // Extract the selected ID (assuming it's a number)
-        // const selectedText = target.options[target.selectedIndex].text; // Extract the selected text
-
-        // console.log("Selected CFW Type ID:", selectedId);
-        // console.log("Selected CFW Type:", selectedText);
-
-        // setcfwType(selectedText);
-        // setSelectedCFWTypeId(selectedId);
-    };
 
 
     const handleIsCFWFamBene = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -198,7 +221,7 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
         } else {
             // updateCapturedData("cfw", "has_immediate_health_concern", 1);
             // Updating cfw at index 4
-            updateCapturedData("cfw", "is_family_beneficiary_of_cfw", 1, 4);
+            // updateCapturedData("cfw", "is_family_beneficiary_of_cfw", 1, 4);
         }
 
         // if (event.target.value === "no") {
@@ -221,19 +244,42 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
 
     const handleSaveFamBeneData = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault(); // Prevent default button behavior
+        // debugger;
+        // alert(famMemberFirstName + ' ' + famMemberMiddleName + ' ' + famMemberLastName + ' ' + famMemberExtNameId + ' ' + selectedProgramTypeId + ' ' + selectedYearServedId);
+        // return;
+        // console.log("Selected Type is: " + selectedCFWTypeId);
 
-        console.log("Selected Type is: " + selectedCFWTypeId);
-
-        if (selectedCFWTypeId === null) {
+        if (!famMemberFirstName || famMemberFirstName.trim() === "") {
 
             toast({
                 variant: "destructive",
                 title: "Error",
-                description: "Please select a CFW Type!",
+                description: "Please input First Name!",
             })
             return;
         }
-        if (yearServed === "") {
+
+        else if (!famMemberLastName || famMemberLastName.trim() === "") {
+
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please input Last Name!",
+            })
+            return;
+        }
+
+        else if (selectedProgramTypeId === null) {
+
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Please select a Program Type!",
+            })
+            return;
+        }
+        else if (selectedYearServedId == null) {
+
 
             toast({
                 variant: "destructive",
@@ -241,132 +287,145 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                 description: "Year served required!",
             })
             return;
-        }
-
-        if (yearServed.length < 4) {
-            toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Please input a valid year served!",
-            })
-            return;
-        }
-
-
-        console.log("Year Served is: " + yearServed);
-
-        const selectedText = cFWTypeOptions.find(option => option.id === selectedCFWTypeId)?.name;
-        console.log("CFW TYPE " + selectedText);
-        // const selectedText = e.target.options[e.target.selectedIndex].text; // Get the text
-        const newRecord = {
-            // Define your new data here
-            cfw_type_id: selectedCFWTypeId?.toString(),
-            cfw_type: selectedText,
-            year_served: yearServed,
-
-        };
-        // debugger;
-        const programDetails = localStorage.getItem("programDetails");
-        const prevData = programDetails ? JSON.parse(programDetails) : [];
-        // debugger;
-        // Check if prevData is empty
-        const isEmpty = Object.keys(prevData).length === 0;
-        if (isEmpty) {
-            // Insert new record
-
-            addProgramDetail(newRecord);
-            // localStorage.setItem("programDetails", JSON.stringify(newRecord));
-
-            // setCapturedData(JSON.stringify(newRecord));
-            // setProgramDetails([...prevData, newRecord]); // ✅ Correct way
-            toast({
-                variant: "green",
-                title: "Success",
-                description: "New entry has been saved!",
-            })
         } else {
-            // const selectedText = cFWTypeOptions.find(option => option.id === selectedCFWTypeId)?.name;
-            // console.log("Selected Program CFW Type: " + selectedText);
 
-            if (selectedCFWTypeId !== null && Number(selectedCFWTypeId) > 0) {
-                console.log("selectedCFWTypeId is a valid positive number");
-            } else {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Please select a Program Type!",
-                })
-                return;
-            }
+            const selectedProgramTypeName = programTypesOptions.find(option => option.id === selectedProgramTypeId)?.name;
+            const selectedYearServedName = yearServeOptions.find(option => option.id === selectedYearServedId)?.name;
+            const selectedExtensionName = programDetailsExtensionNameOptions.find(option => option.id === famMemberSelectedExtNameId)?.name;
+            // console.log("CFW Program TYPE " + selectedProgramTypeName + " Selected Year Served: " + selectedYearServedName);
 
+            // const selectedText = e.target.options[e.target.selectedIndex].text; // Get the text
+            const newRecord = {
+                // Define your new data here
+                program_type_first_name: famMemberFirstName.toUpperCase(),
+                program_type_middle_name: famMemberMiddleName.toUpperCase(),
+                program_type_last_name: famMemberLastName.toUpperCase(),
+                program_type_ext_name_id: famMemberSelectedExtNameId,
+                program_type_ext_name: selectedExtensionName,
+                program_type_id: selectedProgramTypeId,
+                program_type_name: selectedProgramTypeName,
+                program_type_year_served_id: selectedYearServedId,
+                program_type_year_served_name: selectedYearServedName
 
+            };
+            // debugger;
+            const programDetails = localStorage.getItem("programDetails");
+            const prevData = programDetails ? JSON.parse(programDetails || "") : [];
+            // debugger;
+            // Check if prevData is empty
+            const isEmpty = Object.keys(prevData).length === 0;
+            if (isEmpty) {
+                // Insert new record
 
-
-            // const programArray = Array.isArray(prevData) ? prevData : Object.values(prevData);
-            const programArray = Array.isArray(prevData) ? prevData : [prevData];
-            console.log("Program array is " + typeof programArray);
-            const matchingPrograms = programArray.filter((program: any) =>
-                String(program.cfw_type_id) === String(selectedCFWTypeId) &&
-                String(program.year_served) === String(yearServed)
-            );
-
-            if (matchingPrograms.length > 0) {
-                console.log("Existing programs:", matchingPrograms);
-                // console.log(localStorage.getItem("formData"));
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Record exists!",
-                })
-            } else {
-
-                console.log("No matching programs found.");
-                // Create new program object
-                const newRecord = {
-                    cfw_type_id: String(selectedCFWTypeId),
-                    cfw_type: selectedText, // Change this if dynamic
-                    year_served: String(yearServed),
-                };
-
-                // Append the new data to the array
-                // programArray.push(newRecord);
                 addProgramDetail(newRecord);
-
-                // Save updated array to localStorage
-                // localStorage.setItem("programDetails", JSON.stringify(programArray));
-
-                // const programDetails = JSON.parse(localStorage.getItem("programDetails") || "[]");
-
-                // setProgramDetails([...programDetails, newRecord]);
-                // console.log("New program added:", newRecord);
-                // console.log(localStorage.getItem("formData"));
+                setDialogOpen(false);
                 toast({
                     variant: "green",
                     title: "Success",
                     description: "New entry has been saved!",
                 })
+            } else {
+                // const selectedText = cFWTypeOptions.find(option => option.id === selectedCFWTypeId)?.name;
+                // console.log("Selected Program CFW Type: " + selectedText);
+
+                // if (selectedProgramTypeId !== null && Number(selectedProgramTypeId) > 0) {
+                //     console.log("Selected Program ID is a valid positive number");
+                // } else {
+                //     toast({
+                //         variant: "destructive",
+                //         title: "Error",
+                //         description: "Please select a Program Type!",
+                //     })
+                //     return;
+                // }
+
+
+
+
+                // const programArray = Array.isArray(prevData) ? prevData : Object.values(prevData);
+                const lsProgramDetails = localStorage.getItem("programDetails");
+                if (lsProgramDetails) {
+                    debugger;
+                    // const programArray = Array.isArray(prevData) ? prevData : [prevData];
+                    // console.log("Program array is " + typeof programArray);
+                    const parsedProgramDetails = JSON.parse(lsProgramDetails);
+                    const matchingPrograms = parsedProgramDetails.filter((program: any) => {
+                        return (
+                            Number(program.program_type_id) === Number(selectedProgramTypeId) &&
+                            Number(program.program_type_year_served_id) === Number(selectedYearServedId) &&
+                            program.program_type_first_name.trim().toLowerCase() === famMemberFirstName.trim().toLowerCase() &&
+                            program.program_type_middle_name.trim().toLowerCase() === famMemberMiddleName.trim().toLowerCase() &&
+                            program.program_type_last_name.trim().toLowerCase() === famMemberLastName.trim().toLowerCase() &&
+                            Number(program.program_type_ext_name_id) === Number(famMemberSelectedExtNameId)
+                        );
+                    });
+
+                    if (matchingPrograms.length > 0) {
+                        console.log("Existing programs:", matchingPrograms);
+                        // console.log(localStorage.getItem("formData"));
+                        toast({
+                            variant: "destructive",
+                            title: "Error",
+                            description: "Record exists!",
+                        })
+                    } else {
+
+                        console.log("No matching programs found.");
+                        // Create new program object
+                        const newRecord = {
+                            // Define your new data here
+                            program_type_first_name: famMemberFirstName.toUpperCase(),
+                            program_type_middle_name: famMemberMiddleName.toUpperCase(),
+                            program_type_last_name: famMemberLastName.toUpperCase(),
+                            program_type_ext_name_id: famMemberSelectedExtNameId,
+                            program_type_id: selectedProgramTypeId,
+                            program_type_name: selectedProgramTypeName,
+                            program_type_year_served_id: selectedYearServedId,
+                            program_type_year_served_name: selectedYearServedName
+
+                        };
+
+                        // Append the new data to the array
+                        // programArray.push(newRecord);
+                        addProgramDetail(newRecord);
+
+                        setDialogOpen(false);
+                        toast({
+                            variant: "green",
+                            title: "Success",
+                            description: "New entry has been saved!",
+                        })
+                    }
+                }
+
+
+
             }
-
-
         }
 
 
 
 
+        // console.log("Year Served is: " + yearServed);
+
+
+
+
+
 
     };
 
 
-    type ProgramDetails = {
-        cfw_type: string;
-        year_served: number;
-    };
-    type CFWItem = {
-        program_details?: ProgramDetails[];
-    };
-    type CapturedData = {
-        cfw: CFWItem[];
-    };
+    // type ProgramDetails = {
+    //     cfw_type: string;
+    //     year_served: number;
+    // };
+    // type CFWItem = {
+    //     program_details?: ProgramDetails[];
+    // };
+    // type CapturedData = {
+    //     cfw: CFWItem[];
+    // };
 
     useEffect(() => {
         const storedValue = localStorage.getItem("hasProgramDetails");
@@ -375,14 +434,14 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
         }
     }, [hasProgramDetails]);
 
-    const handleDelete = (cfwTypeId: string, yearServed: string) => {
+    const handleDelete = (cfwTypeId: string, firstName?: string, middleName?: string, lastName?: string, extNameId?: number, yearServedId?: number) => {
         toast({
             variant: "destructive",
             title: "Are you sure?",
-            description: "This action cannot be undone.",
+            description: "You are about to remove the record, continue?",
             action: (
                 <button
-                    onClick={() => confirmDelete(cfwTypeId, yearServed)}
+                    onClick={() => confirmDelete(cfwTypeId, firstName, middleName, lastName, extNameId, yearServedId)}
                     className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
                 >
                     Confirm
@@ -391,9 +450,15 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
         });
     };
 
-    const confirmDelete = (cfwTypeId: string, yearServed: string) => {
+    const confirmDelete = (cfwTypeId: string, firstName?: string, middleName?: string, lastName?: string, extNameId?: number, yearServedId?: number) => {
         const updatedList = programDetails.filter(
-            (program) => !(program.cfw_type_id === cfwTypeId && program.year_served === yearServed)
+            (program) => !(program.program_type_first_name === firstName &&
+                program.program_type_middle_name === middleName &&
+                program.program_type_last_name === lastName &&
+                Number(program.program_type_ext_name_id) === Number(extNameId) &&
+                Number(program.program_type_id) === Number(cfwTypeId) &&
+                Number(program.program_type_year_served_id) === Number(yearServedId)
+            )
         );
 
         setProgramDetails(updatedList); // ✅ Updates state
@@ -408,12 +473,12 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
     return (
         <>
             <div>
-                <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
-                    <div className="p-2 sm:col-span-4">
+                <div className="">
+                    <div className="w-full">
                         <Label htmlFor="cfw_program_details" className="block text-sm font-medium p-2">
                             Have you/or member/s of your family ever been a beneficiary of the Cash-for-Work Programs of the DSWD?
                         </Label>
-                        <div className="mt-2 flex items-center space-x-6 p-2">
+                        <div className="mt-2 ml-2 flex items-center space-x-6">
                             <div className="flex items-center">
                                 <input
                                     checked={hasProgramDetails === "yes"}
@@ -454,79 +519,129 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
 
 
                     {hasProgramDetails !== null && hasProgramDetails === "yes" && (
-                        <div className="p-2 sm:col-span-4">
+                        <div className="mt-4">
 
-                            <div className="flex justify-start mt-2 p-2">
-                                {/* <Button onClick={handleSaveFamBeneData}>Add New</Button> */}
+                            <div className="flex justify-start mt-5 overflow-y-auto">
 
-                                <Dialog modal={false}>
+                                <Dialog modal={false} open={dialogOpen} onOpenChange={setDialogOpen}>
                                     <DialogTrigger asChild>
-                                        <p className="border px-4 py-2 mr-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition">
+                                        <p
+                                            onClick={() => setDialogOpen(true)}
+                                            className="border px-4 py-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition"
+                                        >
                                             Add New Entry
                                         </p>
                                     </DialogTrigger>
 
-                                    <DialogContent className="sm:max-w-[425px]">
+                                    <DialogContent className="w-full max-w-[90vw] md:max-w-[600px] lg:max-w-[660px] max-h-[90vh] overflow-y-auto">
                                         <DialogHeader>
                                             <DialogTitle className="text-left mb-3">Beneficiary History</DialogTitle>
-                                            <DialogDescription className="text-left text-justify mt-3">
-                                                Please indicate if your family has ever been a beneficiary of the Cash-for-Work Program of DSWD (e.g., Tara Basa Program, CFW for Disaster, etc.). Write the year served.
+                                            <DialogDescription className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded-md text-sm">
+                                                Please indicate if your family has ever been a beneficiary of the Cash-for-Work Program of DSWD
+                                                (e.g., Tara Basa Program, CFW for Disaster, etc.). Write the full name and the year served.
                                             </DialogDescription>
                                         </DialogHeader>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
-                                            <div className="p-2 col-span-4">
-                                                <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium mb-2">
+
+                                        <div className="mb-2 w-full space-y-4">
+                                            <div className="px-2">
+                                                <Label htmlFor="program_details_first_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's First Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_first_name"
+                                                    placeholder="First Name"
+                                                    className="w-full"
+                                                    value={famMemberFirstName.toUpperCase()}
+                                                    onChange={(e) => setfamMemberFirstName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="px-2">
+                                                <Label htmlFor="program_details_middle_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Middle Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_middle_name"
+                                                    placeholder="Middle Name"
+                                                    className="w-full"
+                                                    value={famMemberMiddleName.toUpperCase()}
+                                                    onChange={(e) => setfamMemberMiddleName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="px-2">
+                                                <Label htmlFor="program_details_last_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Last Name
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    id="program_details_last_name"
+                                                    placeholder="Last Name"
+                                                    className="w-full"
+                                                    value={famMemberLastName.toUpperCase()}
+                                                    onChange={(e) => setfamMemberLastName(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <div className="px-2">
+                                                <Label htmlFor="program_details_extension_name" className="block text-sm font-medium mb-2">
+                                                    Family Member's Extension Name
+                                                </Label>
+                                                <FormDropDown
+                                                    id="program_details_extension_name"
+                                                    options={programDetailsExtensionNameOptions}
+                                                    selectedOption={famMemberSelectedExtNameId}
+                                                    onChange={(value) => handlExtensionNameChange(value)}
+                                                    label="Select an Extension Name (if applicable)"
+                                                />
+                                            </div>
+
+                                            <div className="px-2 w-[300px] md:w-full lg:w-full">
+                                                <Label htmlFor="program_type" className="block text-sm font-medium mb-2">
                                                     Program Type
                                                 </Label>
                                                 <FormDropDown
-                                                    options={cFWTypeOptions}
-                                                    selectedOption={selectedCFWTypeId}
-                                                    label="Select CFW Type"
+                                                    options={programTypesOptions}
+                                                    selectedOption={selectedProgramTypeId}
+                                                    label="Select CFW Program Type"
                                                     onChange={(value) => handleCFWTypeChange(value)}
-                                                    id="cfw-type-dropdown"
+                                                    id="program_type"
                                                 />
-                                                {errors?.representative_extension_name_id && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.representative_extension_name_id[0]}</p>
-                                                )}
                                             </div>
 
-                                            <div className="p-2 col-span-4">
-                                                <Label htmlFor="year_served" className="block text-sm font-medium">
+                                            <div className="px-2">
+                                                <Label htmlFor="year_served" className="block text-sm font-medium mb-2">
                                                     Year Served
                                                 </Label>
-                                                <Input
-                                                    type="number"
-                                                    max={2025}
+                                                <FormDropDown
+                                                    options={yearServeOptions}
+                                                    selectedOption={selectedYearServedId}
+                                                    label="Select Year Served"
+                                                    onChange={(value) => handleYearServedChange(value)}
                                                     id="year_served"
-                                                    name="year_served"
-                                                    className="mt-1 block w-full"
-                                                    onChange={(e) => setYearServed(e.target.value)}
                                                 />
-                                                {errors?.year_served && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.year_served}</p>
-                                                )}
                                             </div>
                                         </div>
 
                                         <DialogFooter>
-                                            {/* <div>
-                                                <p>New entry has been added!</p>
-                                            </div> */}
                                             <Button onClick={handleSaveFamBeneData}>Save</Button>
                                         </DialogFooter>
                                     </DialogContent>
                                 </Dialog>
 
-
                             </div>
-                            <div className="p-2 col-span-4">
+                            <div className="mt-4">
                                 <Table className="border">
                                     {/* <TableCaption>A list of families that have previously been beneficiaries of the DSWD's CFW Program.</TableCaption> */}
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>Program Type</TableHead>
-                                            <TableHead>Year Served</TableHead>
-                                            <TableHead>Action</TableHead>
+                                            <TableHead className="w-[5%] text-center">#</TableHead>
+                                            <TableHead className="w-[45%] ">Family Member Name</TableHead>
+                                            <TableHead className="w-[40%] ">Program Type</TableHead>
+                                            <TableHead className="w-[10%] text-center">Year Served</TableHead>
+                                            <TableHead className="w-[10%] text-center">Action</TableHead>
 
                                         </TableRow>
                                     </TableHeader>
@@ -538,24 +653,22 @@ export default function CFWProgramDetails({ errors, capturedData, updateCaptured
                                             programDetails && programDetails.length > 0 ? (
                                                 programDetails.map((programDetail: any, index: number) => (
                                                     <TableRow key={index}>
-                                                        <TableCell>{programDetail.cfw_type}</TableCell>
-                                                        <TableCell>{programDetail.year_served}</TableCell>
-                                                        <TableCell>
-                                                            <div className="flex space-x-2">
-                                                                {/* <TooltipProvider>
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger>
-                                                                            <Edit className="w-4 h-4" />
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p>Edit Record</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                </TooltipProvider> */}
+                                                        <TableCell className="text-center">{index + 1}.</TableCell>
+                                                        <TableCell>{programDetail.program_type_first_name} {programDetail.program_type_middle_name}  {programDetail.program_type_last_name} {programDetail.selectedExtensionName} </TableCell>
+                                                        <TableCell>{programDetail.program_type_name}</TableCell>
+                                                        <TableCell className="text-center" >{programDetail.program_type_year_served_name}</TableCell>
+                                                        <TableCell className="text-center">
+                                                            <div className="flex space-x-2 text-center">
+
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger asChild>
-                                                                            <button onClick={() => handleDelete(programDetail.cfw_type_id, programDetail.year_served)}
+                                                                            <button onClick={() => handleDelete(programDetail.program_type_id,
+                                                                                programDetail.program_type_first_name,
+                                                                                programDetail.program_type_middle_name,
+                                                                                programDetail.program_type_last_name,
+                                                                                programDetail.program_type_ext_name_id,
+                                                                                programDetail.program_type_year_served_id)}
                                                                                 className="text-red-500 hover:text-red-700">
                                                                                 <Trash className="w-4 h-4" />
                                                                             </button>

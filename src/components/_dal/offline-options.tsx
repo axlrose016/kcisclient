@@ -9,6 +9,7 @@ const getOfflineLibraryOptions = (library: string, descriptionField: string): ()
         return results.map((row: any) => ({
             id: row.id,
             name: row[descriptionField],
+            label: row[descriptionField]
         }));
     });
 }
@@ -29,3 +30,6 @@ export const getOfflineLibCourses = getOfflineLibraryOptions('lib_courses','cour
 export const getOfflineLibDeploymentArea = getOfflineLibraryOptions('lib_deployment_area','deployment_name');
 export const getOfflineLibTypeOfWork = getOfflineLibraryOptions('lib_type_of_work','work_name');
 export const getOfflineLibFilesToUpload = getOfflineLibraryOptions('lib_files_to_upload','file_name');
+export const getOfflineLibYearServed = getOfflineLibraryOptions('lib_year_served','year_served');
+export const getOfflineLibProgramTypes = getOfflineLibraryOptions('lib_program_types','program_type_name');
+// export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

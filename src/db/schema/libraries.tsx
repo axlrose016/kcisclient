@@ -586,5 +586,34 @@ export const lib_files_to_upload = sqliteTable("lib_files_to_upload", {
     remarks: text('remarks'),
 });
 
+export const lib_year_served = sqliteTable("lib_year_served", {
+    id: integer("id").notNull().primaryKey(),
+    year_served: integer("year_served"),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+export const lib_program_types = sqliteTable("lib_program_types", {
+    id: integer("id").notNull().primaryKey(),
+    program_type_name: text("program_type_name"),
+    created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
+    created_by: text('created_by').notNull(),
+    last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),
+    last_modified_by: text('last_modified_by'),
+    push_status_id: integer('push_status_id').default(0),
+    push_date: text('push_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_date: text('deleted_date').default(sql`CURRENT_TIMESTAMP`),
+    deleted_by: text('deleted_by'),
+    is_deleted: integer('is_deleted', { mode: 'boolean' }).default(false),
+    remarks: text('remarks'),
+});
+
 
 

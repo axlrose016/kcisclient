@@ -264,11 +264,15 @@ export const person_profile_file_upload = sqliteTable('person_profile_file_uploa
     remarks: text('remarks'),
 });
 
-export const cfw_family_program_details = sqliteTable('cfw_family_program_details', {
+export const person_profile_cfw_fam_program_details = sqliteTable('person_profile_cfw_fam_program_details', {
     id: text("id").notNull().primaryKey(),
     person_profile_id: text("person_profile_id"),
-    cfw_type_id: integer('cfw_type_id'),
-    year_served: integer('year_served'),
+    fam_member_first_name: text('fam_member_first_name'),
+    fam_member_middle_name: text('fam_member_middle_name'),
+    fam_member_last_name: text('fam_member_last_name'),
+    fam_member_ext_name_id: text('fam_member_ext_name_id'),
+    program_type_id: integer('program_type_id'),
+    year_served_id: integer('year_served_id'),
     created_date: text('created_date').default(sql`CURRENT_TIMESTAMP`).notNull(),
     created_by: text('created_by').notNull(),
     last_modified_date: text('last_modified_date').default(sql`CURRENT_TIMESTAMP`),

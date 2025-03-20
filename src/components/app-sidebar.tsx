@@ -134,8 +134,18 @@ const data = {
           permission:["Can View","Can Delete"]
         },
         {
-          title: "DTR",
-          url:"#",
+          title: "Daily Time Record",
+          url:"/personprofile/daily-time-record",
+          permission:["Can Add","Can View","Can Delete"]
+        },
+        {
+          title: "Accomplishment Report",
+          url:"/personprofile/accomplishment-report",
+          permission:["Can Add","Can View","Can Delete"]
+        },
+        {
+          title: "Payroll",
+          url:"/personprofile/payroll",
           permission:["Can Add","Can View","Can Delete"]
         }
       ],
@@ -148,6 +158,12 @@ const data = {
       url: "/library",
       icon: Frame,
     },
+    {
+      name: "Attendance",
+      url: "/punch",
+      icon: Frame,
+    },
+
   ],
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {

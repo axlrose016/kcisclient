@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCourseLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibCourses, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
-export default function HighestEducationalAttainment({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+export default function HighestEducationalAttainment({ errors }: { errors: any;   }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
 
@@ -55,16 +55,8 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
         fetchData();
     }, []);
 
-    const handleCourseChange = (id: number) => {
-        console.log("Selected Course ID:", id);
-        inputOnchange("course_id", id.toString());
-        setSelectedCourseId(Number(id));
-    };
-    const handleYearLevelChange = (id: number) => {
-        console.log("Selected Year Level ID:", id);
-        updateCapturedData("cfw", "year_level_id", id, 4);
-        setSelectedYearLevelId(id);
-    };
+ 
+ 
 
     const inputOnchange = (field: string, value: string) => {
         setEducationalAttainment((prev) => {

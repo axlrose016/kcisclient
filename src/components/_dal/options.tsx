@@ -2,8 +2,8 @@
 
 import { db } from "@/db";
 import { LibraryOption } from "../interfaces/library-interface";
-import { lib_ip_group, modules, permissions, roles } from "@/db/schema/libraries";
-import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level } from "@/db/schema/libraries";
+import { lib_ip_group, lib_program_types, modules, permissions, roles } from "@/db/schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, lib_year_served } from "@/db/schema/libraries";
 import { and, eq } from "drizzle-orm";
 import { cache } from "react";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
@@ -18,6 +18,7 @@ const getLibraryOptions = (library: any, descriptionField: string, additionalCon
         return results.map((row: any) => ({
             id: row.id,
             name: row[descriptionField],
+            label: row[descriptionField]
         }));
     });
 };
@@ -51,3 +52,5 @@ export const getModalitySubCategoryLibraryOptions = getLibraryOptions(lib_modali
 export const getSectorsLibraryOptions = getLibraryOptions(lib_sectors, 'sector_name');
 export const getFileToUploadLibraryOptions = getLibraryOptions(lib_files_to_upload, 'file_name', eq(lib_files_to_upload.is_deleted, false));
 export const getIPGroupLibraryOptions = getLibraryOptions(lib_ip_group, 'ip_group_name');
+export const getYearServedLibraryOptions = getLibraryOptions(lib_year_served, 'year_served');
+export const getProgramTypesLibraryOptions = getLibraryOptions(lib_program_types, 'program_type_name');

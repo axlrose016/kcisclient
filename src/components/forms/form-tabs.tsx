@@ -16,17 +16,22 @@ interface ResponsiveTabsProps {
   tabs: TabItem[]
   defaultValue?: string
   className?: string
+  activeTab: string
+  onTabChange: any
 }
 
-export function FormTabs({ tabs, defaultValue, className }: ResponsiveTabsProps) {
-  const [activeTab, setActiveTab] = React.useState(defaultValue || tabs[0].value)
+export function FormTabs({ tabs, defaultValue, className, activeTab, onTabChange }: ResponsiveTabsProps) {
+  // const [activeTab, setActiveTab] = React.useState(defaultValue || tabs[0].value)
   const [showLeftArrow, setShowLeftArrow] = React.useState(false)
   const [showRightArrow, setShowRightArrow] = React.useState(false)
   const tabsListRef = React.useRef<HTMLDivElement>(null)
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value)
-    scrollToTab(value)
+    
+    onTabChange(value);
+    // setActiveTab(value);
+    // alert(value);
+    scrollToTab(value);
   }
 
   const scrollToTab = (value: string) => {

@@ -1,6 +1,6 @@
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { IUser, IUserAccess } from '@/components/interfaces/iuser';
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
 import { IPersonProfile, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
 import { person_profile_disability, person_profile_family_composition } from '@/db/schema/personprofile';
 import Dexie, { Table } from 'dexie';
@@ -35,6 +35,8 @@ class MyDatabase extends Dexie {
     person_profile_disability!: Table<IPersonProfileDisability, string>;
     person_profile_family_composition!: Table<IPersonProfileFamilyComposition, string>;
     attachments!: Table<IAttachments, string>;
+    lib_ip_group!: Table<ILibIPGroup, string>;
+    lib_year_served!: Table<ILibYearServed, string>;
 
     constructor() {
         super('kcisdb');
@@ -60,6 +62,9 @@ class MyDatabase extends Dexie {
             lib_deployment_area: `id, deployment_name, ${commonFields}`,
             lib_type_of_work: `id, work_name, ${commonFields}`,
             lib_files_to_upload: `id, file_name, ${commonFields}`,
+            lib_ip_group: `id, name, ${commonFields}`,
+            lib_year_served: `id, year_served, ${commonFields}`,
+            lib_program_types: `id, program_type_name, ${commonFields}`,
             attachments: `id, record_id, file_id, file_name, file_path, module_path, ${commonFields}`,
             person_profile: 'id, modality_id, cwf_category_id, cfwp_id_no, philsys_id_no, first_name, middle_name, last_name, extension_name, sex_id, civil_status_id, birthdate, age,' +
                             'no_of_children, birthplace, is_pantawid, is_pantawid_leader, is_slp, has_immediate_health_concern, immediate_health_concern, address, sitio, brgy_code, sitio_current, ' + 
@@ -76,6 +81,7 @@ class MyDatabase extends Dexie {
             person_profile_sector: `id, person_profile_id, sector_id, ${commonFields}`,
             person_profile_disability: `id, person_profile_id, type_of_disability_id, ${commonFields}`,
             person_profile_family_composition: `id, person_profile_id, name, birthdate, age, contact_number, highest_educational_attainment_id, monthly_income, relationship_to_the_beneficiary_id, work, ${commonFields}`,
+            
         });
     }
 }

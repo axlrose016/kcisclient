@@ -25,9 +25,10 @@ type FormMultiDropDownProps = {
   options: OptionItems[] // Pass your disabilities library as options
   selectedValues: string[] // Pass the current selected values
   onChange: (updatedValues: string[]) => void // Handle value changes
+  id?: any
 }
 
-export function FormMultiDropDown({ options, selectedValues, onChange }: FormMultiDropDownProps) {
+export function FormMultiDropDown({ options, selectedValues, onChange, id }: FormMultiDropDownProps) {
   const [open, setOpen] = React.useState(false)
 
   const handleSelect = (currentValue: string) => {
@@ -48,23 +49,23 @@ export function FormMultiDropDown({ options, selectedValues, onChange }: FormMul
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} >
       <PopoverTrigger asChild>
-        <Button variant="outline" role="combobox" aria-expanded={open} className="w-[300px] h-300 justify-between overflow-y-auto">
+        <Button id={id} variant="outline" role="combobox" aria-expanded={open} className="w-full h-300 justify-between overflow-y-auto">
           <div className="flex items-center gap-1 truncate">
             {selectedValues.length > 0 ? (
               <>
-                <div className="flex flex-wrap gap-1 max-w-[230px] overflow-auto">
-                {/* <div className="flex flex-wrap items-center gap-1 max-w-[500px] min-w-0 max-h-[50px] overflow-auto"> */}
+                <div className="flex flex-wrap gap-1 w-full overflow-auto">
+                  {/* <div className="flex flex-wrap items-center gap-1 max-w-[500px] min-w-0 max-h-[50px] overflow-auto"> */}
 
                   {selectedValues.slice(0, 2).map((value) => (
-                    <Badge key={value} variant="secondary"                     
-                    className="truncate max-w-[500px] inline-flex items-center px-2 py-1 whitespace-nowrap w-auto ">
+                    <Badge key={value} variant="secondary"
+                      className="truncate max-w-[500px] inline-flex items-center px-2 py-1 whitespace-nowrap w-auto">
                       {options.find((option) => option.id === Number(value))?.name}
                     </Badge>
                   ))}
                 </div>
-                {selectedValues.length > 2 && <Badge variant="secondary">+{selectedValues.length - 2}</Badge>}
+                {selectedValues.length > 2 && <Badge variant="secondary" className="text-center">+{selectedValues.length - 2}</Badge>}
               </>
             ) : (
               "Select Disabilities..."

@@ -138,7 +138,9 @@ export default function Attachments({ errors }: { errors: any }) {
     };
 
     const handleSaveFileUpload = () => {
-
+        debugger;
+        const MAX_FILE_SIZE = 5; // * 1024 * 1024; // 50MB in bytes
+        const fileSizeInMB = (Number(fileInfo.size) / 1024).toFixed(2);
         // console.log("File path " + fileInfo.file_path);
         if (fileToUploadId === 0 || fileToUploadId < 0) {
             toast({
@@ -153,7 +155,15 @@ export default function Attachments({ errors }: { errors: any }) {
                 title: "Error",
                 description: "Please select a file to upload."
             });
-        } else {
+        }
+        else if (Number(fileSizeInMB) > MAX_FILE_SIZE) {
+            toast({
+                variant: "destructive",
+                title: "Error",
+                description: "File size exceeds 5MB. Please select a smaller file.",
+            });
+        }
+        else {
             console.log("File to upload ID " + fileToUploadId);
             console.log("File name  " + fileInfo.name);
             console.log("File size " + fileInfo.size);
@@ -322,32 +332,32 @@ export default function Attachments({ errors }: { errors: any }) {
                                 uploadedFiles
                                     .filter((f) => f.file_name !== "")
                                     .map((f, index) => (
-                                        <>
-                                            <TableRow key={index}>
-                                                <TableCell>{f.file_to_upload}</TableCell>
-                                                <TableCell>{f.file_name}</TableCell>
-                                                <TableCell>{f.file_size ? `${f.file_size} KB` : "N/A"}</TableCell>
-                                                <TableCell>
-                                                    <div className="flex space-x-2">
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <button
-                                                                        onClick={() => handleDeleteFileRecord(f.id)}
-                                                                        className="text-red-500 hover:text-red-700"
-                                                                    >
-                                                                        <Trash className="w-4 h-4" />
-                                                                    </button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Delete Record</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        </>
+
+                                        <TableRow key={f.id}>
+                                            <TableCell>{f.file_to_upload}</TableCell>
+                                            <TableCell>{f.file_name}</TableCell>
+                                            <TableCell>{f.file_size ? `${f.file_size} KB` : "N/A"}</TableCell>
+                                            <TableCell>
+                                                <div className="flex space-x-2">
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <button
+                                                                    onClick={() => handleDeleteFileRecord(f.id)}
+                                                                    className="text-red-500 hover:text-red-700"
+                                                                >
+                                                                    <Trash className="w-4 h-4" />
+                                                                </button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Delete Record</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+
                                     ))
                             ) : (
                                 <TableRow key={0}>

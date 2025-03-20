@@ -64,6 +64,27 @@
       "when": 1741573623747,
       "tag": "0008_flawless_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1742384643212,
+      "tag": "0009_wet_lady_ursula",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1742436274793,
+      "tag": "0010_nasty_shriek",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1742439279940,
+      "tag": "0011_round_vargas",
+      "breakpoints": true
     }
   ]
 }

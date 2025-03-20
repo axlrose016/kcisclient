@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhilSysInput } from "@/components/ui/philsys_mask";
 import { getCFWCatLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibCFWType } from "@/components/_dal/offline-options";
-export default function Details({ errors, capturedData, updateCapturedData, selectedModalityId }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any }) {
+export default function Details({ errors }: { errors: any; }) {
 
     const [healthConcerns, setHealthConcerns] = useState(() => {
         const storedHealthConcerns = localStorage.getItem("healthConcerns");
@@ -54,12 +54,7 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
         console.log("Selected Province ID:", id);
         setSelectedCFWCatId(id);
     };
-    const handleSkillsChange = (value: string) => {
-        // console.log("Selected Province ID:", id);
-        updateCapturedData("cfw", "skills", value, 4);
-        // setSelectedCFWCatId(id);
-    };
-
+  
 
 
     const handleHealthConcernChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -68,10 +63,10 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
         // updatingHealthConcerns("immediate_health_concern", value);
         // updatingHealthConcerns("has_immediate_health_concern", value);
         if (value === "no") {
-            updateCapturedData("cfw", "has_immediate_health_concern", 0);
+            // updateCapturedData("cfw", "has_immediate_health_concern", 0);
             // updateCapturedData("cfw", "immediate_health_concern_details", ""); // Clear health concern details
-            updateCapturedData("cfw", "has_immediate_health_concern", 0, 4);
-            updateCapturedData("cfw", "immediate_health_concern", "", 4);
+            // updateCapturedData("cfw", "has_immediate_health_concern", 0, 4);
+            // updateCapturedData("cfw", "immediate_health_concern", "", 4);
             // updatingHealthConcerns("immediate_health_concern", "");
             setHealthConcern("");
             updatingHealthConcerns("has_immediate_health_concern", 0);
@@ -80,7 +75,7 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
         } else {
             // updateCapturedData("cfw", "has_immediate_health_concern", 1);
             // Updating cfw at index 4
-            updateCapturedData("cfw", "has_immediate_health_concern", 1, 4);
+            // updateCapturedData("cfw", "has_immediate_health_concern", 1, 4);
             // healthConcerns.immediate_health_concern = 1;
             updatingHealthConcerns("has_immediate_health_concern", 1);
         }
@@ -170,7 +165,7 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
                         <Textarea
                             value={healthConcerns.immediate_health_concern}
                             // value={capturedData.cfw[4].immediate_health_concern}
-                            onChange={(e) => updatingHealthConcerns('immediate_health_concern', e.target.value)}
+                            onChange={(e) => updatingHealthConcerns('immediate_health_concern', e.target.value.toUpperCase())}
                             // onChange={(e) => updateCapturedData("cfw", 'immediate_health_concern', e.target.value, 4)}
                             id="immediate_health_concern"
                             name="immediate_health_concern"
