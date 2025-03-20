@@ -217,23 +217,22 @@ export default function SectorDetails({ errors }: { errors: any }) {
 
 
 
-                // debugger;
-                const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
-                setSectorOptions(sectors);
-
-                // check if there is value from localstorage
-                let storedSectors = localStorage.getItem("sectors");
-                if (!storedSectors) {
-                    let sectorFields = sectors.map((sector, index) => ({
-                        id: sector.id,
-                        name: sector.name,
-                        answer: ""
-                    }))
-                    const stringedSectors = JSON.stringify(sectorFields);
-                    localStorage.setItem("sectors", stringedSectors);
-                    storedSectors = stringedSectors;
-                }
-
+                 // debugger;
+                 const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
+                 setSectorOptions(sectors);
+ 
+                 // check if there is value from localstorage
+                 let storedSectors = sectors as any;//localStorage.getItem("sectors");
+                 if (!storedSectors) {
+                     let sectorFields = sectors.map((sector, index) => ({
+                         id: sector.id,
+                         name: sector.name,
+                     }))
+                     const stringedSectors = JSON.stringify(sectorFields);
+                     localStorage.setItem("sectors", stringedSectors);
+                     storedSectors = stringedSectors;
+                 }
+ 
                 // const sectorsFromLS = localStorage.getItem("sectors");
                 setStoredSect(JSON.parse(storedSectors));
                 console.log("Stored Sectors;  ", storedSectors);
