@@ -223,7 +223,7 @@ export default function SectorDetails({ errors }: { errors: any }) {
  
                  // check if there is value from localstorage
                  let storedSectors = sectors as any;//localStorage.getItem("sectors");
-                 if (!storedSectors) {
+                 if (storedSectors) {
                      let sectorFields = sectors.map((sector, index) => ({
                          id: sector.id,
                          name: sector.name,
