@@ -11,7 +11,6 @@ import React from "react";
 import { parse } from "path";
 import { constructNow } from "date-fns";
 import { getOfflineLibSectorsLibraryOptions, getOfflineLibTypeOfDisability } from "@/components/_dal/offline-options";
-import { fetchPIMSIPGroup } from "@/components/_dal/libraries";
 
 export default function SectorDetails({ errors }: { errors: any }) {
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
@@ -31,6 +30,24 @@ export default function SectorDetails({ errors }: { errors: any }) {
     const [selectedIpGroup, setselectedIpGroup] = useState("");
     const [selectedIpGroupId, setselectedIpGroupId] = useState(0);
 
+    // useEffect(() => {
+    //     console.log("Data is : " + typeof selectedIpGroupId);
+    // }, [selectedIpGroupId])
+
+    // const [sectorsArrayfromLS, setSectorsArrayfromLS] = useState<Sector[]>([]);
+    // () => {
+    // if (typeof window !== "undefined") {
+    //     const sect = localStorage.getItem("sectors");
+    //     console.log("Sect value is ", sect);
+    //     return (sect) ? JSON.parse(sect) : {}
+    // }
+    // return {};
+    // });
+
+    // useEffect(() => {
+    //     localStorage.setItem("sectors", JSON.stringify(sectorsArrayfromLS))
+    // }, [sectorsArrayfromLS])
+    // const [selectedDisabilties, setSelectedDisabilties] = useState<string[]>([])
     const [selectedDisabilities, setSelectedDisabilities] = React.useState<string[]>([])
     const [disabilityOptions, setDisabilityOptions] = useState<{ id: number; name: string }[]>([])
 
@@ -73,7 +90,21 @@ export default function SectorDetails({ errors }: { errors: any }) {
         const dis = localStorage.getItem("disabilities");
         (dis !== null) ? localStorage.removeItem("disabilities") : "";
         localStorage.setItem("disabilities", JSON.stringify(updatedDisabilities));
+        // const formData = localStorage.getItem("formData");
+        // const prevData = formData ? JSON.parse(formData) : { cfw: [{}, {}, {}] };
 
+        // const updatedData = {
+        //     ...prevData,
+        //     cfw: prevData.cfw.map((cfwItem: any, index: number) => {
+        //         if (index !== 2) return cfwItem; // Only modify index 2
+
+        //         // Update the disabilities array directly with the new values
+        //         return { ...cfwItem, disabilities: updatedDisabilities };
+        //     }),
+        // };
+
+        // localStorage.setItem("formData", JSON.stringify(updatedData));
+        // setCapturedData(updatedData); // Update your local state if necessary
     };
 
 
@@ -92,7 +123,6 @@ export default function SectorDetails({ errors }: { errors: any }) {
             setSelectedPersonsWithDisability("Yes");
 
         } else if (sectorId === 3 && value === "No") {
-            setSelectedDisabilities([]);
             setSelectedPersonsWithDisability("No");
         }
         // debugger;
@@ -101,7 +131,7 @@ export default function SectorDetails({ errors }: { errors: any }) {
             setSelectedIP("Yes");
             localStorage.setItem("ipgroup_id", "0");
         } else if (sectorId === 4 && value === "No") {
-            setSelectedIP("No");
+            setSelectedIP("No");            
             localStorage.removeItem("ipgroup_id");
         }
         // setSectorsArrayfromLS(sectorsObj);
@@ -196,25 +226,6 @@ export default function SectorDetails({ errors }: { errors: any }) {
         const fetchData = async () => {
             try {
 
-                const ipgroup = await getIPGroupLibraryOptions(); //await getModalityLibraryOptions();
-                setIpGroupsOptions(ipgroup);
-                // debugger;
-                // const ipgroup = await fetchPIMSIPGroup();
-                // if (ipgroup) {
-                //     // Ensure the response has data and map it to LibraryOption format
-                //     const mappedIPGroup: LibraryOption[] = ipgroup.map((item: any) => ({
-                //         id: item.Id,         // Assuming 'id' exists in fetched data
-                //         name: item.Name,     // Assuming 'name' exists in fetched data
-                //     }));
-
-                //     console.log(mappedIPGroup);
-
-                //     if (mappedIPGroup) {
-
-                //         setIpGroupsOptions(mappedIPGroup); // Update state with mapped data
-                //     }
-                // }
-
 
 
                 // debugger;
@@ -231,7 +242,6 @@ export default function SectorDetails({ errors }: { errors: any }) {
                     }))
                     const stringedSectors = JSON.stringify(sectorFields);
                     localStorage.setItem("sectors", stringedSectors);
-                    console.log("stringedSectors", stringedSectors);
                     storedSectors = stringedSectors;
                 }
 
@@ -249,8 +259,6 @@ export default function SectorDetails({ errors }: { errors: any }) {
                 setDisabilityOptions(convertedData)  // Now it matches the expected format
                 // console.log("Disability Options: " + convertedData);
                 // setDisabilityOptions(type_of_disability);
-
-                // const ipgroup = await getOfflineLibIP
 
                 // debugger;
                 const storedDisabs = localStorage.getItem("disabilities");
@@ -287,138 +295,108 @@ export default function SectorDetails({ errors }: { errors: any }) {
         setSelectedTypeOfDisabilityId(id);
     };
     return (
-        <div key={0.1}>
+        <>
             <div className="space-y-12">
-                <div className="grid grid-cols-1 mb-2">
-                    {commonData.modality_id !== undefined && commonData.modality_id === 25 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-4 gap-4">
-                            {(Array.isArray(sectorOptions) ? sectorOptions : []).map((sector: any, index: number) =>
+                <div className="grid sm:grid-cols-4 sm:grid-rows-2 gap-y-5 gap-x-[50px] mb-2">
+                    {
+
+                        commonData.modality_id !== undefined && commonData.modality_id === 25 ? (
+                            (Array.isArray(sectorOptions) ? sectorOptions : []).map((sector: any, index: number) => (
                                 sector.id >= 1 && sector.id <= 9 ? (
-                                    <div key={index + 10.2}>
-                                        {/* {index === 3 && <div className="md:col-span-1 bg-transparent" key={index}></div>} Empty Space */}
+                                    <div className="p-2" key={index}>
+                                        <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">{sector.name}</Label>
+                                        <div className="mt-1 flex items-center gap-4">
+                                            <Input
+                                                className="mr-0 w-4 h-4"
+                                                type="radio"
+                                                id={`sector${sector.id}Yes`}
+                                                name={`sector${sector.id}`}
+                                                value="Yes"
+                                                // checked="Yes"
+                                                checked={sector.answer === "Yes"}
+                                                // checked={sector.answer === "Yes" || ""}
+                                                onChange={(e) => handleSectorChange(sector.id, e.target.value)}
+                                            // onChange={(e) => handleSectorChange(sector.id, e.target.value)}
+                                            />
+                                            <Label htmlFor={`sector${sector.id}Yes`} className="mr-4">Yes</Label>
 
-                                        <div className="p-2 flex flex-col" key={index}>
-                                            {/* Sector Radio Buttons */}
-                                            <div>
-                                                <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">
-                                                    {sector.name}
-                                                </Label>
-
-                                                <div className="mt-1 flex items-center gap-2">
-                                                    <Input
-                                                        className="w-4 h-4"
-                                                        type="radio"
-                                                        id={`sector${sector.id}Yes`}
-                                                        name={`sector${sector.id}`}
-                                                        value="Yes"
-                                                        checked={sector.answer === "Yes"}
-                                                        onChange={(e) => handleSectorChange(sector.id, e.target.value)}
-                                                    />
-                                                    <Label htmlFor={`sector${sector.id}Yes`} className="mr-4">Yes</Label>
-
-                                                    <Input
-                                                        className="w-4 h-4"
-                                                        type="radio"
-                                                        id={`sector${sector.id}No`}
-                                                        name={`sector${sector.id}`}
-                                                        value="No"
-                                                        checked={sector.answer === "No"}
-                                                        onChange={(e) => handleSectorChange(sector.id, e.target.value)}
-                                                    />
-                                                    <Label htmlFor={`sector${sector.id}No`}>No</Label>
-                                                </div>
-
-                                                {/* Validation Message for Sector */}
-                                                {errors?.[`sector${sector.id}`] && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors[`sector${sector.id}`]}</p>
-                                                )}
-                                            </div>
+                                            <Input
+                                                className="w-4 h-4"
+                                                type="radio"
+                                                id={`sector${sector.id}No`}
+                                                name={`sector${sector.id}`}
+                                                value="No"
+                                                checked={sector.answer === "No"}
+                                                // checked={sectorsArrayfromLS[sector.id].answer === "No" || false}
+                                                onChange={(e) => handleSectorChange(sector.id, e.target.value)}
+                                            />
+                                            <Label htmlFor={`sector${sector.id}No`}>No</Label>
 
                                         </div>
-
-                                        {index === 2 && <div className="p-2 md:col-span-1 bg-transparent" key={index + 2.1}>
-                                            <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">
-                                                Type of Disability
-                                            </Label>
-                                            <div className={`mt-1 ${storedSect?.[2]?.answer !== "Yes" ? "pointer-events-none opacity-50" : ""}`}>
-
-                                                <FormMultiDropDown
-                                                    id="type_of_disabilities"
-                                                    options={disabilityOptions}
-                                                    selectedValues={storedSect?.[2]?.answer === "Yes" ? selectedDisabilities : []}
-                                                    onChange={handleDisabilitiesChange}
-                                                />
-                                            </div>
-                                        </div>}
-                                        {index === 3 && <div className="p-2 md:col-span-1 bg-transparent" key={index + 3.1}>
-                                            <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
-                                            <div className={`mt-1 ${storedSect?.[3]?.answer !== "Yes" ? "pointer-events-none opacity-50" : ""}`}>
-                                                <FormDropDown
-                                                    id="ip_group"
-                                                    options={ipGroupsOptions}
-                                                    onChange={handleIPGroupChange}
-                                                    selectedOption={selectedIpGroupId}
-                                                // selectedOption={Number(selectedIpGroupId)}
-
-                                                />
-                                            </div>
-                                        </div>}
+                                        {
+                                            errors?.[`sector${sector.id}`] && (
+                                                <p className="mt-2 text-sm text-red-500">{errors[`sector${sector.id}`]}</p>
+                                            )
+                                        }
                                     </div>
+
                                 ) : null
-                            )}
-                        </div>
-                    ) : null}
+                            ))
 
+                        ) : null
 
-
-                    {/* {index === 2 && storedSect?.[2]?.answer === "Yes" && ( */}
-                    {/* {storedSect?.[2]?.answer === "Yes" && (
-                        <div className="p-2 flex flex-col" > */}
-                    {/* <div className="p-2 flex flex-col" key={index}> */}
-                    {/* <div className="md:col-span-3 flex flex-col p-2"> */}
-                    {/* <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">
-                                Type of Disability
-                            </Label> */}
-
-                    {/* <div className="mt-1">
+                    }
+                    {/* dto natapos sa pagdisplay ng disabilities, need dn ng pang IP */}
+                    {storedSect.length > 2 && storedSect[2]?.answer === "Yes" && (
+                        <div className="p-2  ">
+                            <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
+                            <div className="mt-1">
                                 <FormMultiDropDown
                                     options={disabilityOptions}
                                     selectedValues={selectedDisabilities}
                                     onChange={handleDisabilitiesChange}
                                 />
-                            </div> */}
 
-                    {/* 
+
+                            </div>
+                            {errors?.type_of_disabilities && (
+                                <p className="mt-2 text-sm text-red-500">{errors.type_of_disabilities}</p>
+                            )}
                         </div>
                     )}
-
-
                     {storedSect.length > 3 && storedSect[3].answer === "Yes" && (
-                        <div className="p-2 flex flex-col "> */}
-                    {/* <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
+                        <div className="p-2  ">
+                            <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
                             <div className="mt-1">
                                 <FormDropDown
                                     id="ip_group"
                                     options={ipGroupsOptions}
                                     onChange={handleIPGroupChange}
                                     selectedOption={selectedIpGroupId}
-                                // selectedOption={Number(selectedIpGroupId)}
-
+                                    // selectedOption={Number(selectedIpGroupId)}
+                              
                                 />
-                            </div> */}
-                    {/* {errors?.ip_group && (
+                            </div>
+                            {errors?.ip_group && (
                                 <p className="mt-2 text-sm text-red-500">{errors.ip_group}</p>
 
-                            )} */}
+                            )}
 
 
-                    {/* </div> */}
+                        </div>
 
 
-                    {/* )} */}
+                    )}
 
                 </div>
+
+
+
+
+
             </div >
-        </div>
+
+
+        </>
     )
 }
