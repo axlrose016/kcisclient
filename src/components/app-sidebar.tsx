@@ -186,6 +186,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         user.name = _session.userData.name!;
         user.role = _session.userData.role!;
         const userTeams = _session.userData; 
+        // debugger;
         setUserTeam(userTeams);      
         const navTeam = data.teams.filter((team) =>
           userTeams?.userAccess?.some((mod) => mod.module === team.name)

@@ -205,6 +205,7 @@ export const person_profile_disability = sqliteTable('person_profile_disability'
 
 export const person_profile_engagement_history = sqliteTable('person_profile_engagement_history', {
     id: text("id").notNull().primaryKey(),
+    family_composition_id: text('family_composition_id'),
     person_profile_id: text("person_profile_id"),
     modality_id: integer('modality_id'),
     status_id: integer('status_id'),

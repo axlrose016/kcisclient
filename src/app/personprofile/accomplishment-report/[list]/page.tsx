@@ -12,6 +12,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
 
 
+interface IData {
+    id: string;
+    date_cover: string;
+    total_hours: number;
+    status: string;
+}
 
 export const initialData = [
     {
@@ -32,7 +38,7 @@ export const initialData = [
         total_hours: 72,
         status: 'Pending'
     }
-];
+] as { id: string; date_cover: string; total_hours: number; status: string; }[] ;
 
 
 const columns = [
@@ -60,16 +66,16 @@ const columns = [
     },
 ];
 
-const baseUrl = 'personprofile/payroll'
+const baseUrl = 'personprofile/accomplishment-report'
 
-export default function PayrollUserList() {
+export default function AccomplishmentReportUsersList() {
 
     const router = useRouter();
     const params = useParams<{ list: string; id: string }>()
 
     console.log('params', params)
 
-    const [data, setData] = useState(initialData);
+    const [data, setData] = useState<{ id: string; date_cover: string; total_hours: number; status: string; }[]>(initialData);
 
     const handleEdit = (row: any) => {
         console.log('Edit:', row);
@@ -101,7 +107,7 @@ export default function PayrollUserList() {
 
                     {/* Title Section */}
                     <div className="text-lg font-semibold mt-2 md:mt-0">
-                        Payroll
+                        Accomplishment Report
                     </div>
                 </CardTitle>
             </CardHeader>
@@ -109,7 +115,7 @@ export default function PayrollUserList() {
 
                 <div className="min-h-screen">
 
-                    <div className="flex items-center space-x-4 mb-6">
+                <div className="flex items-center space-x-4 mb-6">
                         <Avatar>
                             <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" alt="User name" />
                             <AvatarFallback>AF</AvatarFallback>
@@ -118,12 +124,7 @@ export default function PayrollUserList() {
                             <h2 className="text-lg font-semibold">Jane Cooper</h2>
                             <p className="text-sm text-gray-500">Quezon City University</p>
                         </div>
-                        <Button onClick={() => console.log('enteries', null)} size="sm" className="flex items-center gap-2">
-                            <Printer className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={() => console.log('enteries', null)} size="sm" className="flex items-center gap-2">
-                            <Download className="w-4 h-4" />
-                        </Button>
+                       
 
                     </div>
 
@@ -134,8 +135,6 @@ export default function PayrollUserList() {
                         onDelete={handleDelete}
                         onRowClick={handleRowClick}
                         onAddNewRecord={handleAddNewRecord}
-                        simpleView={true}
-                        
                     />
                 </div>
 

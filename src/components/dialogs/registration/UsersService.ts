@@ -1,48 +1,30 @@
+import { IUser, IUserAccess } from '@/components/interfaces/iuser';
 import axios from 'axios';
 
-// Define the data structure using TypeScript interface
-interface Users {
-  username: string;
-  email: string;
-  password: string;
-  role_id: string;
-  created_date: string;
-  created_by: string;
-  last_modified_date?: string;
-  last_modified_by?: string;
-  push_status_id: number;
-  push_date?: string;
-  deleted_date?: string;
-  deleted_by?: string;
-  is_deleted: boolean;
-  remarks?: string;
-}
 
-class PersonProfileService {
-  private apiUrl: string;
+class UsersService {
+  private userApi = 'https://kcnfms.dswd.gov.ph/api/auth_users/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
 
-  constructor() {
-    // http://127.0.0.1:8000/
-    this.apiUrl = 'http://10.10.10.162:9000/api/users/';
-    // this.apiUrl = 'http://127.0.0.1:8000/api/person_profile/';
-  }
-
-  // Method to sync data in bulk
-  async syncBulkData(dataArray: Users[]): Promise<any> {
+  async syncUserData(userData: IUser,userAccess: IUserAccess[]): Promise<any> {
+    const payload = {
+      user: userData,
+      user_access: userAccess
+    }
+    console.log("User payload!", Array(payload));
     try {
-      console.log(dataArray);
-      console.log(this.apiUrl);
-      const response = await axios.post(this.apiUrl, dataArray, {
+      debugger;
+      const response = await axios.post(this.userApi, Array(payload), {
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      return response.data;
+      console.log("User successfully synchronized!", response.data);
+      return true;
     } catch (error) {
-      console.error('Error syncing bulk data:', error);
-      throw error;
+      console.error('Error syncing user data:', error);
+      return false;
     }
   }
 }
 
-export default new PersonProfileService();
+export default new UsersService();

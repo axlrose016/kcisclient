@@ -12,9 +12,10 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCivilStatusLibraryOptions, getEducationalAttainmentLibraryOptions, getExtensionNameLibraryOptions, getIDCardLibraryOptions, getRelationshipToBeneficiaryLibraryOptions, getSexLibraryOptions } from "@/components/_dal/options";
 import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSexOptions } from "@/components/_dal/offline-options";
+import { IPersonProfile } from "@/components/interfaces/personprofile";
 
 
-export default function PWDRepresentative({ errors }: { errors: any; }) {
+export default function PWDRepresentative({ errors, capturedData }: { errors: any; capturedData: Partial<IPersonProfile>; }) {
 
     const [cfwPWDRepresentative, setCfwPWDRepresentative] = useState(() => {
         if (globalThis.window) {
@@ -295,7 +296,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_last_name" className="block text-sm font-medium">Last Name</Label>
                         <Input
-                            value={cfwPWDRepresentative.representative_last_name || ""}
+                            value={cfwPWDRepresentative.representative_last_name.toUpperCase() || ""}
                             // value={cfwPWDRepresentative.representative_last_name}
                             onChange={(e) => updatingCfwPWDRepresentative('representative_last_name', e.target.value)}
                             // onChange={(e) => updatingCfwPWDRepresentative( 'representative_last_name', e.target.value)}
@@ -310,7 +311,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_first_name" className="block text-sm font-medium">First Name</Label>
                         <Input
-                            value={cfwPWDRepresentative.representative_first_name || ""}
+                            value={cfwPWDRepresentative.representative_first_name.toUpperCase() || ""}
                             // value={cfwPWDRepresentative.representative_first_name}
                             onChange={(e) => updatingCfwPWDRepresentative('representative_first_name', e.target.value)}
                             // onChange={(e) => updatingCfwPWDRepresentative( 'representative_first_name', e.target.value)}
@@ -325,7 +326,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_middle_name" className="block text-sm font-medium">Middle Name</Label>
                         <Input
-                            value={cfwPWDRepresentative.representative_middle_name || ""}
+                            value={cfwPWDRepresentative.representative_middle_name.toUpperCase() || ""}
                             id="representative_middle_name"
                             name="representative_middle_name"
                             className="mt-1 block w-full"
@@ -336,31 +337,20 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         )}
                     </div>
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium">Extension Name</Label>
+                        <Label htmlFor="representative_extension_name_id" className="block text-sm font-medium mb-1 ">Extension Name</Label>
                         <FormDropDown
                             options={extensionNameOptions}
                             selectedOption={cfwPWDRepresentative.representative_extension_name_id || ""}
                             onChange={handlExtensionNameChange}
+                            
                         />
                         {errors?.representative_extension_name_id && (
                             <p className="mt-2 text-sm text-red-500">{errors.representative_extension_name_id}</p>
                         )}
                     </div>
+
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="representative_sitio" className="block text-sm font-medium">House No/Street/Purok</Label>
-                        <Input
-                            value={cfwPWDRepresentative.representative_sitio || ""}
-                            onChange={(e) => updatingCfwPWDRepresentative('representative_sitio', e.target.value)}
-                            id="representative_sitio"
-                            name="representative_sitio"
-                            className="mt-1 block w-full"
-                        />
-                        {errors?.representative_sitio && (
-                            <p className="mt-2 text-sm text-red-500">{errors.representative_sitio}</p>
-                        )}
-                    </div>
-                    <div className="p-2 col-span-1">
-                        <Label htmlFor="region_representative" className="block text-sm font-medium">Region</Label>
+                        <Label htmlFor="region_representative" className="block text-sm font-medium mt-1">Region</Label>
                         <FormDropDown
                             selectedOption={cfwPWDRepresentative.representative_region_code || ""}
                             onChange={handleRegionChange}
@@ -372,7 +362,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         )}
                     </div>
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="province_representative" className="block text-sm font-medium">Province</Label>
+                        <Label htmlFor="province_representative" className="block text-sm font-medium  mt-1 ">Province</Label>
                         <FormDropDown
                             selectedOption={cfwPWDRepresentative.representative_province_code || ""}
                             id="province_representative"
@@ -385,7 +375,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         )}
                     </div>
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="municipality_representative" className="block text-sm font-medium">Municipality</Label>
+                        <Label htmlFor="municipality_representative" className="block text-sm font-medium mt-1 ">Municipality</Label>
                         <FormDropDown
                             id="municipality_representative"
                             options={cityOptions}
@@ -397,7 +387,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         )}
                     </div>
                     <div className="p-2 col-span-1">
-                        <Label htmlFor="representative_brgy_code" className="block text-sm font-medium">Barangay</Label>
+                        <Label htmlFor="representative_brgy_code" className="block text-sm font-medium mt-1 ">Barangay</Label>
                         <FormDropDown
                             id="representative_brgy_code"
                             options={BarangayOptions}
@@ -407,6 +397,19 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         />
                         {errors?.representative_brgy_code && (
                             <p className="mt-2 text-sm text-red-500">{errors.representative_brgy_code}</p>
+                        )}
+                    </div>
+                    <div className="p-2 col-span-1">
+                        <Label htmlFor="representative_sitio" className="block text-sm font-medium">House No/Street/Purok</Label>
+                        <Input
+                            value={cfwPWDRepresentative.representative_sitio || ""}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_sitio', e.target.value)}
+                            id="representative_sitio"
+                            name="representative_sitio"
+                            
+                        />
+                        {errors?.representative_sitio && (
+                            <p className="mt-2 text-sm text-red-500">{errors.representative_sitio}</p>
                         )}
                     </div>
                     <div className="p-2 col-span-1">
@@ -430,7 +433,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                             onChange={handleDOBChange}
                             id="representative_birthdate"
                             name="representative_birthdate"
-                            type='date' className='mt-1'
+                            type='date'  
                         />
                         {errors?.representative_birthdate && (
                             <p className="mt-2 text-sm text-red-500">{errors.representative_birthdate}</p>
@@ -457,7 +460,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                         <Label htmlFor="representative_occupation" className="block text-sm font-medium">Work (if available)</Label>
                         <Input
                             value={cfwPWDRepresentative.representative_occupation || ""}
-                            onChange={(e) => updatingCfwPWDRepresentative('representative_occupation', e.target.value)}
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_occupation', e.target.value.toUpperCase())}
                             id="representative_occupation"
                             name="representative_occupation"
                             className="mt-1 block w-full"
@@ -556,18 +559,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                             <p className="mt-2 text-sm text-red-500">{errors.representative_civil_status_id}</p>
                         )}
                     </div>
-                    {/* <div className="p-2 col-span-1 ">
-                        <Label htmlFor="health_declaration" className="block text-sm font-medium">Health Declaration of the Representative</Label>
-                        <Textarea id="health_declaration"
-                            value={cfwPWDRepresentative.representative_health_concern_details}
-                            name="health_declaration"
-                            rows={4} className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                            onChange={(e) => updatingCfwPWDRepresentative( 'health_declaration', e.target.value)}
-                        />
-                        {errors?.health_declaration && (
-                            <p className="mt-2 text-sm text-red-500">{errors.health_declaration}</p>
-                        )}
-                    </div> */}
+
                     <div className="p-2 col-span-1">
                         <Label htmlFor="representative_has_health_concern" className="block text-sm font-medium">Do you have any immediate health concerns that you think may affect your work?</Label>
                         <div className="mt-2">
@@ -614,7 +606,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                                 className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                                 value={cfwPWDRepresentative.representative_health_concern_details || ""}
                                 disabled={cfwPWDRepresentative.representative_has_health_concern === 0}
-                                onChange={(e) => updatingCfwPWDRepresentative('representative_health_concern_details', e.target.value)}
+                                onChange={(e) => updatingCfwPWDRepresentative('representative_health_concern_details', e.target.value.toUpperCase())}
                             />
                         </div>
                         {errors?.representative_health_concern_details && (
@@ -629,7 +621,7 @@ export default function PWDRepresentative({ errors }: { errors: any; }) {
                             rows={4}
                             className="block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
                             value={cfwPWDRepresentative.representative_skills || ""}
-                            onChange={(e) => updatingCfwPWDRepresentative('representative_skills', e.target.value)} />
+                            onChange={(e) => updatingCfwPWDRepresentative('representative_skills', e.target.value.toUpperCase())} />
                         {errors?.representative_skills && (
                             <p className="mt-2 text-sm text-red-500">{errors.representative_skills}</p>
                         )}

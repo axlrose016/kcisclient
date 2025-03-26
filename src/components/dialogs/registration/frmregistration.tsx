@@ -15,6 +15,9 @@ import { addUser, addUserAccess, checkUserExists, trxAddUserWithAccess } from "@
 import { v4 as uuidv4 } from 'uuid';
 import { redirect, useRouter } from "next/navigation"
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
+import { useOnlineStatus } from "@/hooks/use-network"
+import UsersService from "./UsersService"
+import { datetime } from "drizzle-orm/mysql-core"
 
 const formSchema = z
   .object({
@@ -31,6 +34,7 @@ const formSchema = z
 type FormData = z.infer<typeof formSchema>
 
 export default function RegistrationForm({ className, ...props }: React.ComponentProps<"div">) {
+  const isOnline = useOnlineStatus()
   const router = useRouter();
   const {
     register,
@@ -42,10 +46,13 @@ export default function RegistrationForm({ className, ...props }: React.Componen
   })
 
   const onSubmit = async (data: FormData) => {
-    try {
+   // try {
       const _role = (await getRoles()).filter(w => w.role_description === "Guest");
+      console.log('_role',_role)
       const _module = (await getModules()).filter(w => w.module_description === "Person Profile")
+      console.log('_module',_module)
       const _permission = (await getPermissions()).filter(w => w.permission_description === "Can Add")
+      console.log('_permission',_permission)
 
       if (_role.length <= 0 || _module.length <= 0 || _permission.length <= 0) {
         toast({
@@ -57,8 +64,12 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       }
 
       const _id = uuidv4();
+      console.log('_permission',_id)
       const salt = crypto.getRandomValues(new Uint8Array(16)); // Generate a random salt
+      console.log('salt',salt)
+      console.log('data',data)
       const hashedPassword: string = await hashPassword(data.password, salt);
+      console.log('hashedPassword',hashedPassword)
       const formUser: IUser = {
         id: _id,
         username: data.username,
@@ -68,35 +79,50 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         role_id: _role[0].id,
         created_date: new Date().toISOString(),
         created_by: _id,
-        last_modified_date: "",
-        last_modified_by: "",
-        push_status_id: 2, //1 Uploaded, 2 For Uploading
-        push_date: "",
-        deleted_date: "",
-        deleted_by: "",
+        last_modified_by: null,
+        last_modified_date: null,
+        push_date: null,
+        push_status_id: 2,
+        deleted_by: null,
+        deleted_date: null,
         is_deleted: false,
         remarks: "",
       }
-
-      const formUserAccess: IUserAccess = {
+        
+      const formUserAccess: IUserAccess ={
         id: uuidv4(),
         user_id: _id,
         module_id: _module[0].id,
         permission_id: _permission[0].id,
         created_date: new Date().toISOString(),
         created_by: _id,
-        last_modified_date: "",
-        last_modified_by: "",
-        push_status_id: 2, //1 Uploaded, 2 For Uploading
-        push_date: "",
-        deleted_date: "",
-        deleted_by: "",
+        last_modified_by: null,
+        last_modified_date: null,
+        push_date: null,
+        push_status_id: 2,
+        deleted_by: null,
+        deleted_date: null,
         is_deleted: false,
         remarks: "",
       }
 
+      console.log('formUserAccess',formUserAccess)
+
       //OFFLINE
-      await dexieDb.open();
+      const saveUser = async () => {
+        try {
+          await dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
+            await Promise.all([
+              dexieDb.users.add(formUser),
+              dexieDb.useraccess.add(formUserAccess),
+            ]);
+            console.log("User: ", formUser);
+            console.log("Access: ", formUserAccess);
+          });
+        } catch (error) {
+          console.error('Transaction failed: ', error);
+        }
+      };
 
       const isExist = await checkUserExists(data.email, data.username);
       if (isExist) {
@@ -107,20 +133,15 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         })
         return;
       }
+      
+      saveUser();
 
-      dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
-        try {
-          await dexieDb.users.add(formUser);
-          await dexieDb.useraccess.add(formUserAccess);
-          console.log("User: ", formUser);
-          console.log("Access: ", formUserAccess);
-        } catch (error) {
-          console.error('Transaction failed: ', error);
-          throw error;
-        }
-      }).catch((error) => {
-        console.error('Transaction failed: ', error);
-      });
+      //TRY TO SYNC 
+      const uploaded = await UsersService.syncUserData(formUser, Array(formUserAccess));
+      debugger;
+      if(uploaded){
+        saveUser();
+      }
 
       //ONLINE
       //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
@@ -143,13 +164,13 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       //     window.location.reload();
       //   }
       // })
-    } catch (error) {
+   // } catch (error) {
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request. Please try again >> " + error,
-      })
-    }
+        description: "There was a problem with your request. Please try again >> " + 'error',
+     })
+    // }
   }
 
   return (
@@ -162,7 +183,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
                 Username
               </label>
               <div className="mt-2">
-                <Input id="username" type="text" {...register("username")} placeholder="Juan D. Dragon" />
+                <Input id="username" type="text" {...register("username")} placeholder="Juan D. Dragon"  className="normal-case"/>
               </div>
               {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username.message}</p>}
             </div>
@@ -171,7 +192,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
                 Email
               </label>
               <div className="mt-2">
-                <Input id="email" type="email" {...register("email")} placeholder="email@example.com" />
+                <Input id="email" type="email" {...register("email")} placeholder="email@example.com" className="lowercase" />
               </div>
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
             </div>

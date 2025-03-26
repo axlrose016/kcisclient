@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption, } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
-import { Edit, Trash } from "lucide-react"
+import { Check, Edit, Info, Trash, Upload } from "lucide-react"
 
 import { useState, useRef, useEffect, ChangeEvent } from "react"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { toast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getOfflineLibFilesToUpload } from "@/components/_dal/offline-options";
-export default function Attachments({ errors }: { errors: any }) {
+import localforage from "localforage";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+
+import { IAttachments } from "@/components/interfaces/general/attachments";
+import { getSession } from "@/lib/sessions-client";
+import { SessionPayload } from "@/types/globals";
+export default function Attachments({ errors, capturedData, updateFormData }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void }) {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -29,43 +35,122 @@ export default function Attachments({ errors }: { errors: any }) {
     const [filesToUploadOptions, setfilesToUploadOptions] = useState<LibraryOption[]>([]);
     const [selectedFileId, setSelectedFileId] = useState();
     const [selectedFile, setSelectedFile] = useState();
+    const [session, setSession] = useState<SessionPayload | null>(null);
 
+    const [attachmentsDexie, setAttachmentsDexie] = useState({});
+    const [attachments, setAttachments] = useState<IAttachments[]>([]);
+    const [attachmentNames, setAttachmentNames] = useState<Record<number, string>>({});
+
+    const fetchAttachments = async () => {
+        if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+
+        try {
+            const allAttachments = await dexieDb.attachments.toArray(); // Get all records
+            setAttachmentsDexie(allAttachments); // Store in state
+            console.log("✅ Fetched Attachments:", allAttachments);
+        } catch (error) {
+            console.error("❌ Error fetching attachments:", error);
+        }
+    };
+
+    useEffect(() => {
+        const fetchAttachments = async () => {
+            if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+
+            try {
+                const allAttachments = await dexieDb.attachments.toArray();
+
+                // Exclude file_ids 3, 6, and 8
+                const filteredRecords = allAttachments.filter(
+                    (record) => ![5, 6, 13].includes(Number(record.file_id))
+                );
+                setAttachments(allAttachments); // No error now
+
+                const files_to_upload = await getOfflineLibFilesToUpload();
+                const attachment_map = Object.fromEntries(files_to_upload.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setAttachmentNames(attachment_map);
+                updateFormData(allAttachments);
+                console.log("✅ Attachments fetched:", allAttachments);
+            } catch (error) {
+                console.error("❌ Error fetching attachments:", error);
+            }
+        };
+
+        fetchAttachments();
+    }, [attachments]);
+
+    const handleUploadFile = async (e: ChangeEvent<HTMLInputElement>, id: number) => {
+        const file = e.target.files?.[0]; // Get the first selected file
+        // alert(id)
+        if (!file) return; // Exit if no file is selected           
+        if (!id || typeof id !== "number") {
+            console.warn("⚠️ Invalid file_id:", id);
+            return;
+        }
+        try {
+            if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+
+            // Create a Blob for the file
+            const fileBlob = new Blob([file], { type: file.type });
+
+            // Check if a record with the same file_id exists
+            const existingRecord = await dexieDb.attachments
+                .where("file_id") // Search by indexed field
+                .equals(id)
+                .first();
+            // alert("Existing type is " + existingRecord);
+            if (existingRecord) {
+                // ✅ Modify existing record
+                await dexieDb.attachments.update(existingRecord.id, {
+                    file_name: file.name,
+                    file_type: file.type,
+                    file_path: fileBlob,
+                    last_modified_date: new Date().toISOString()
+                });
+                console.log(`✅ Updated record for file_id: ${id}`);
+            } else {
+                // ✅ Add a new record if none exists
+
+
+                await dexieDb.attachments.add({
+                    id: crypto.randomUUID(), // Generate unique ID
+                    record_id: crypto.randomUUID(),
+                    module_path: "personprofile",
+                    file_id: Number(id),
+                    file_name: file.name,
+                    file_type: file.type,
+                    file_path: fileBlob,
+                    created_date: new Date().toISOString(),
+                    last_modified_date: null,
+                    user_id: session?.id ?? "",
+                    created_by: session?.id ?? "", //for changing
+                    last_modified_by: null,
+                    push_status_id: 0,
+                    push_date: null,
+                    deleted_date: null,
+                    deleted_by: null,
+                    is_deleted: false,
+                    remarks: null
+                });
+                console.log(`✅ Added new record for file_id: ${id}`);
+            }
+
+            e.target.value = "";
+        } catch (error) {
+            console.error("⚠️ Error handling file upload:", error);
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const files_upload = await getOfflineLibFilesToUpload(); //await getFileToUploadLibraryOptions();
-                setfilesToUploadOptions(files_upload);
+                // const files_upload = await getOfflineLibFilesToUpload(); //await getFileToUploadLibraryOptions();
+                // setfilesToUploadOptions(files_upload);
 
-                const attachments = localStorage.getItem("attachments");
-                // Check if attachments exist and contain data
-                let parsedData = [];
-                if (attachments) {
-                    try {
-                        parsedData = JSON.parse(attachments) || [];
-                    } catch (error) {
-                        console.error("Error parsing attachments:", error);
-                        parsedData = [];
-                    }
-                }
+                if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
 
-                if (parsedData.length === 0) {
-                    parsedData = files_upload.map(file => ({
-                        id: file.id,          // ID from files_upload
-                        file_to_upload: file.name, // File reference from library
-                        file_name: "",        // Placeholder for file name
-                        file_size: "",         // Placeholder for file size
-                        file_path: ""
-                    }));
-
-                    // Save to localStorage
-                    localStorage.setItem("attachments", JSON.stringify(parsedData));
-                }
-
-                // Update state
-                setUploadedFiles(parsedData);
-
-
+                const _session = await getSession() as SessionPayload;
+                setSession(_session);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -91,12 +176,7 @@ export default function Attachments({ errors }: { errors: any }) {
     const [fileToUploadId, setFileToUploadId] = useState(0);
     const handleSelectFileChange = (id: number) => {
         const selectedIndex = id; // Get selected index
-        // const selectedOption = event.target.options[selectedIndex]; // Get selected option
-        // const id = Number(selectedOption.getAttribute("data-id")); // Retrieve id from data attribute
-        // const value = selectedOption.textContent || ""; // Get text content
 
-        // setFileToUpload(value);
-        // setFileToUploadId(id);
         setFileToUploadId(id);
         console.log("Selected id: " + selectedIndex);
         // console.log(`Selected File: ${value}, ID: ${id}`);
@@ -237,125 +317,74 @@ export default function Attachments({ errors }: { errors: any }) {
 
             <div className="p-2 sm:col-span-4">
 
-                <div className="flex justify-end">
 
-
-
-
-                    <Dialog modal={false}>
-                        <DialogTrigger asChild>
-                            <p className="border px-2 py-3 mr-2 cursor-pointer">
-                                Attach a file
-                            </p>
-                        </DialogTrigger>
-                        <DialogContent className="sm:max-w-[425px]">
-                            <DialogHeader>
-                                <DialogTitle className="text-left">Attach a file</DialogTitle>
-                                <DialogDescription className="text-left">
-                                    Please select the file you want to upload. Browse and choose the desired file, then click "Upload" to proceed.
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2 md:grid-cols-1">
-                                {/* <div className="mt-2">
-                                    {fileInfo.file_path && (
-                                        <><Avatar className="h-[100px] w-[100px]">
-                                            <AvatarImage src={fileInfo.file_path} alt="KCIS" />
-                                            <AvatarFallback>KC</AvatarFallback>
-                                        </Avatar>
-                                        </>
-                                    )}
-                                </div> */}
-                                <div className="p-2 col-span-1">
-                                    <Label htmlFor="select_file" className="block text-sm font-medium mb-2">What file to upload?</Label>
-
-                                    <FormDropDown
-                                        options={filesToUploadOptions}
-                                        selectedOption={selectedFileId} // Pass the selected ID
-                                        label="Select a file to upload."
-                                        onChange={(e) => handleSelectFileChange(e)}
-                                        // onChange={handleCFWTypeChange}
-                                        id="select_file"
-                                    />
-
-                                    {errors?.select_file && (
-                                        <p className="mt-2 text-sm text-red-500">{errors.select_file}</p>
-                                    )}
-                                </div>
-
-                                <div className="mt-2 mx-2  h-32 border-2 border-dashed border-gray-400 flex flex-col items-center justify-center rounded-lg cursor-pointer hover:bg-gray-100 transition">
-                                    <label htmlFor="file-upload" className="text-gray-500 text-sm flex flex-col items-center cursor-pointer">
-                                        📤 <span className="mt-1">Click to upload</span>
-                                    </label>
-                                    {/* 
-                                    ID Number
-                                    <Input
-                                                    type="text"
-                                                    id="family_member_contact_number"
-                                                    name="family_member_contact_number"
-                                                    className="mt-1 block w-full mb-2"
-                                                    onChange={(e) => setfamilyMemberContactNumber(e.target.value)}
-
-                                                /> */}
-                                    <input
-                                        type="file"
-                                        id="file-upload"
-                                        className="hidden"
-                                        onChange={handleFileElementChange}
-                                    />
-                                    {fileInfo.name && (
-                                        <div className="mt-2 text-sm text-gray-700 text-center">
-                                            <p><strong>File:</strong> {fileInfo.name}</p>
-                                            <p><strong>Size:</strong> {fileInfo.size}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <DialogFooter>
-                                <Button onClick={handleSaveFileUpload}>Upload</Button>
-                            </DialogFooter>
-                        </DialogContent>
-                    </Dialog>
-                </div>
                 <div className="p-2 col-span-4">
+                    <div className="flex items-center space-x-2 p-5 bg-white shadow-md rounded-md mb-5">
+                        {/* <Info className="w-5 h-5 text-blue-500" /> */}
+                        <p className="text-xl text-black-500 flex items-center">
+                            Click the &nbsp; <Upload className="w-5 h-5 text-blue-500 inline-block" /> &nbsp; icon to upload or change a file.
+                        </p>
+                    </div>
+                </div>
+
+
+                <div className="p-2 col-span-4">
+
                     <Table className="border">
                         <TableHeader>
                             <TableRow key={0}>
-                                <TableHead>Uploaded File</TableHead>
-                                <TableHead>File Name</TableHead>
-                                <TableHead>File Size</TableHead>
-                                <TableHead>Action</TableHead>
+
+                                <TableHead className="w-[10px]"><Check className="w-5 h-5 text-green-500" /></TableHead>
+                                <TableHead>File to Upload</TableHead>
+                                {/* <TableHead>File Name</TableHead>
+                                <TableHead>File Size</TableHead> */}
+                                <TableHead className="text-center">Action</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {uploadedFiles.length > 0 && uploadedFiles.some((f) => f.file_name !== "") ? (
-
-                                uploadedFiles
-                                    .filter((f) => f.file_name !== "")
+                            {attachments.length > 0 ? (
+                                attachments
+                                    .filter((record) => ![5, 6, 12, 13].includes(record.file_id)) // Excludes 3, 4, and 7
+                                    // .sort((a, b) => a.file_to_upload_name.localeCompare(b.file_to_upload_name))
                                     .map((f, index) => (
 
                                         <TableRow key={f.id}>
-                                            <TableCell>{f.file_to_upload}</TableCell>
-                                            <TableCell>{f.file_name}</TableCell>
-                                            <TableCell>{f.file_size ? `${f.file_size} KB` : "N/A"}</TableCell>
+                                            <TableCell className="w-[10px]">
+                                                {f.file_type !== "" ? <Check className="w-5 h-5 text-green-500" /> : ""}
+                                            </TableCell>
                                             <TableCell>
-                                                <div className="flex space-x-2">
+                                                <div className="flex items-center space-x-2">
+                                                    {attachmentNames[f.file_id]}
+
+                                                </div>
+                                            </TableCell>
+
+                                            <TableCell>
+                                                <div className="flex justify-center items-center space-x-2">
                                                     <TooltipProvider>
                                                         <Tooltip>
                                                             <TooltipTrigger asChild>
-                                                                <button
-                                                                    onClick={() => handleDeleteFileRecord(f.id)}
-                                                                    className="text-red-500 hover:text-red-700"
-                                                                >
-                                                                    <Trash className="w-4 h-4" />
-                                                                </button>
+                                                                <label htmlFor={`file-upload-${f.id}`} className="cursor-pointer text-blue-500 hover:text-blue-700">
+                                                                    <Upload className="w-4 h-4" />
+                                                                </label>
                                                             </TooltipTrigger>
                                                             <TooltipContent>
-                                                                <p>Delete Record</p>
+                                                                <p>Upload a File</p>
                                                             </TooltipContent>
                                                         </Tooltip>
                                                     </TooltipProvider>
+
+                                                    <input
+                                                        id={`file-upload-${f.id}`}
+                                                        type="file"
+                                                        className="hidden"
+                                                        onChange={(e) => handleUploadFile(e, Number(f.file_id))}
+                                                        accept=".jpg,.png,.pdf" // Adjust as needed
+                                                    />
                                                 </div>
                                             </TableCell>
+
+
                                         </TableRow>
 
                                     ))

@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
   SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -28,14 +29,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   Select,
@@ -45,21 +52,42 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { ArrowUpDown, Edit, Filter, MoreHorizontal, Plus, Trash, X } from 'lucide-react';
+import {
+  ArrowUpDown,
+  ChevronFirst,
+  ChevronLast,
+  Download,
+  Edit,
+  Filter,
+  LayoutGrid,
+  MoreHorizontal,
+  Plus,
+  RefreshCw,
+  Settings,
+  Table as TableIcon,
+  Trash,
+  X
+} from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { cn } from '@/lib/utils';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface DynamicTableProps {
   data: any[];
-  columns: any[];
+  columns?: any[];
   onEdit?: (row: any) => void;
   onDelete?: (row: any) => void;
   onRowClick?: (row: any) => void;
   onAddNewRecord?: (record: any) => void;
-    customActions?: {
+  onRefresh?: () => void;
+  customActions?: {
     label: string;
     icon: any;
     onClick: (row: any) => void;
   }[];
-  showAddNewRecord?:boolean,
+  enableRowSelection?: boolean;
+  simpleView?: boolean;
 }
 
 interface Filter {
@@ -67,49 +95,176 @@ interface Filter {
   value: string;
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+const DEFAULT_PAGE_SIZE = 10;
+
+type ViewMode = 'table' | 'grid';
+
 export function AppTable({
   data,
-  columns,
+  columns: providedColumns,
   onEdit,
   onDelete,
   onRowClick,
   onAddNewRecord,
+  onRefresh,
   customActions,
-  showAddNewRecord = false,
+  enableRowSelection = false,
+  simpleView = false,
 }: DynamicTableProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState('');
   const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
   const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedColumn, setSelectedColumn] = useState('');
   const [selectedValue, setSelectedValue] = useState('');
+  const [filterInputValue, setFilterInputValue] = useState('');
   const [newRecord, setNewRecord] = useState<Record<string, string>>({});
   const [editingFilter, setEditingFilter] = useState<Filter | null>(null);
+  const [rowToDelete, setRowToDelete] = useState<any>(null);
+  const [editingRow, setEditingRow] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const createQueryString = useCallback(
+    (params: Record<string, string | null>) => {
+      const newSearchParams = new URLSearchParams(searchParams?.toString());
+      Object.entries(params).forEach(([key, value]) => {
+        if (value === null) {
+          newSearchParams.delete(key);
+        } else {
+          newSearchParams.set(key, value);
+        }
+      });
+      return newSearchParams.toString();
+    },
+    [searchParams]
+  );
+
+  const updateUrl = useCallback((params: Record<string, string | null>) => {
+    const queryString = createQueryString(params);
+    router.push(`${pathname}${queryString ? `?${queryString}` : ''}`);
+  }, [router, pathname, createQueryString]);
+
+  const removeSelectedRow = (rowId: string, event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    const newSelected = new Set(selectedRows);
+    newSelected.delete(rowId);
+    setSelectedRows(newSelected);
+  };
+
+  const columns = useMemo(() => {
+    if (providedColumns) return providedColumns;
+    
+    if (data.length === 0) return [];
+
+    const sampleRow = data[0];
+    return Object.keys(sampleRow).map(key => ({
+      id: key,
+      header: key.split('_').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' '),
+      accessorKey: key,
+      filterType: typeof sampleRow[key] === 'boolean' ? 'select' : 'text',
+      filterOptions: typeof sampleRow[key] === 'boolean' ? ['true', 'false'] : undefined,
+      sortable: true
+    }));
+  }, [data, providedColumns]);
+
+  useEffect(() => {
+    const search = searchParams?.get('search') || '';
+    const sort = searchParams?.get('sort');
+    const filters = searchParams?.get('filters');
+    const currentPage = searchParams?.get('page');
+    const size = searchParams?.get('pageSize');
+    const visibility = searchParams?.get('columnVisibility');
+    const view = searchParams?.get('view') as ViewMode;
+
+    setGlobalFilter(search);
+    if (sort) setSorting(JSON.parse(sort));
+    if (filters) setActiveFilters(JSON.parse(filters));
+    if (currentPage) setPage(parseInt(currentPage));
+    if (size) setPageSize(parseInt(size));
+    if (visibility) setColumnVisibility(JSON.parse(visibility));
+    if (view) setViewMode(view);
+  }, [searchParams]);
+
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setIsRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setIsRefreshing(false);
+      }
+    }
+  };
+
+  const toggleRowSelection = (rowId: string, event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(rowId)) {
+      newSelected.delete(rowId);
+    } else {
+      newSelected.add(rowId);
+    }
+    setSelectedRows(newSelected);
+  };
+
+  const toggleAllRows = (checked: boolean) => {
+    if (checked) {
+      const allIds = data.map(row => row.id);
+      setSelectedRows(new Set(allIds));
+    } else {
+      setSelectedRows(new Set());
+    }
+  };
 
   const handleAddFilter = () => {
-    if (selectedColumn && selectedValue) {
-      if (editingFilter) {
-        setActiveFilters(activeFilters.map(f => 
-          f.column === editingFilter.column ? { column: selectedColumn, value: selectedValue } : f
-        ));
-      } else {
-        setActiveFilters([...activeFilters, { column: selectedColumn, value: selectedValue }]);
+    if (selectedColumn) {
+      const column = columns.find(col => col.id === selectedColumn);
+      const value = column?.filterType === 'select' ? selectedValue : filterInputValue;
+      
+      if (value) {
+        const newFilters = editingFilter
+          ? activeFilters.map(f => 
+              f.column === editingFilter.column ? { column: selectedColumn, value } : f
+            )
+          : [...activeFilters, { column: selectedColumn, value }];
+        
+        setActiveFilters(newFilters);
+        updateUrl({ filters: JSON.stringify(newFilters) });
+        
+        const tableColumn = table.getColumn(selectedColumn);
+        if (tableColumn) {
+          tableColumn.setFilterValue(value);
+        }
+        
+        setShowFilterDialog(false);
+        setSelectedColumn('');
+        setSelectedValue('');
+        setFilterInputValue('');
+        setEditingFilter(null);
       }
-      const column = table.getColumn(selectedColumn);
-      if (column) {
-        column.setFilterValue(selectedValue);
-      }
-      setShowFilterDialog(false);
-      setSelectedColumn('');
-      setSelectedValue('');
-      setEditingFilter(null);
     }
   };
 
   const handleRemoveFilter = (filter: Filter) => {
-    setActiveFilters(activeFilters.filter(f => f.column !== filter.column));
+    const newFilters = activeFilters.filter(f => f.column !== filter.column);
+    setActiveFilters(newFilters);
+    updateUrl({ filters: JSON.stringify(newFilters) });
+    
     const column = table.getColumn(filter.column);
     if (column) {
       column.setFilterValue('');
@@ -119,26 +274,108 @@ export function AppTable({
   const handleEditFilter = (filter: Filter) => {
     setEditingFilter(filter);
     setSelectedColumn(filter.column);
-    setSelectedValue(filter.value);
+    const column = columns.find(col => col.id === filter.column);
+    if (column?.filterType === 'select') {
+      setSelectedValue(filter.value);
+    } else {
+      setFilterInputValue(filter.value);
+    }
     setShowFilterDialog(true);
   };
 
+  const handleEdit = (row: any) => {
+    setEditingRow(row);
+    setNewRecord(row);
+    setShowAddDialog(true);
+  };
+
+  const handleDelete = (row: any) => {
+    setRowToDelete(row);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
+    if (rowToDelete && onDelete) {
+      onDelete(rowToDelete);
+      setShowDeleteDialog(false);
+      setRowToDelete(null);
+    }
+  };
+
   const handleSubmitNewRecord = () => {
-    if (onAddNewRecord) {
+    if (editingRow) {
+      if (onEdit) {
+        onEdit({ ...editingRow, ...newRecord });
+      }
+      setEditingRow(null);
+    } else if (onAddNewRecord) {
       onAddNewRecord(newRecord);
     }
     setNewRecord({});
     setShowAddDialog(false);
   };
 
+  const handleDownloadCSV = () => {
+    const visibleColumns = columns.filter(col => columnVisibility[col.id] !== false);
+    const headers = visibleColumns.map(col => col.header).join(',');
+    const rows = data.map(row => 
+      visibleColumns.map(col => `"${row[col.accessorKey]}"`).join(',')
+    ).join('\n');
+    const csv = `${headers}\n${rows}`;
+    
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'table-data.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleBulkDelete = () => {
+    if (onDelete && selectedRows.size > 0) {
+      const rowsToDelete = data.filter(row => selectedRows.has(row.id));
+      rowsToDelete.forEach(row => onDelete(row));
+      setSelectedRows(new Set());
+    }
+  };
+
   const tableColumns: ColumnDef<any>[] = [
+    ...(enableRowSelection ? [{
+      id: 'select',
+      header: ({ table }:any) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => toggleAllRows(!!value)}
+          aria-label="Select all"
+          className="translate-y-[2px]"
+        />
+      ),
+      cell: ({ row }:any) => (
+        <Checkbox
+          checked={selectedRows.has(row.original.id)}
+          onCheckedChange={() => toggleRowSelection(row.original.id)}
+          aria-label="Select row"
+          className="translate-y-[2px]"
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    }] : []),
     ...columns.map((col) => ({
+      id: col.id,
       accessorKey: col.accessorKey,
       header: ({ column }: any) => {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+            onClick={() => {
+              const newSorting = column.getIsSorted() === 'asc' 
+                ? [{ id: col.id, desc: true }] 
+                : [{ id: col.id, desc: false }];
+              setSorting(newSorting);
+              updateUrl({ sort: JSON.stringify(newSorting) });
+            }}
             className="w-full flex items-center justify-between"
           >
             {col.header}
@@ -147,43 +384,76 @@ export function AppTable({
         );
       },
       enableSorting: col.sortable,
+      cell: ({ row }:any) => {
+        const value = row.getValue(col.id);
+        return (
+          <div className={cn(
+            "transition-opacity duration-200",
+            isRefreshing && "opacity-50"
+          )}>
+            {col.cell ? col.cell(value) : value}
+          </div>
+        );
+      },
     })),
     {
       id: 'actions',
+      header: 'Actions',
       cell: ({ row }) => {
         const rowData = row.original;
 
         return (
-          <div className="flex items-center gap-2">
+          <div className={cn(
+            "flex items-center gap-0.5 transition-opacity duration-200",
+            isRefreshing && "opacity-50"
+          )}>
             {onEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit(rowData);
-                }}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(rowData);
+                      }}
+                      disabled={isRefreshing}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {onDelete && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(rowData);
-                }}
-              >
-                <Trash className="h-4 w-4" />
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(rowData);
+                      }}
+                      disabled={isRefreshing}
+                    >
+                      <Trash className="h-3 w-3" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
             {customActions && customActions.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon">
-                    <MoreHorizontal className="h-4 w-4" />
+                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isRefreshing}>
+                    <MoreHorizontal className="h-3 w-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -219,221 +489,516 @@ export function AppTable({
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: (visibility) => {
+      setColumnVisibility(visibility);
+      updateUrl({ columnVisibility: JSON.stringify(visibility) });
+    },
     state: {
       sorting,
       columnFilters,
       globalFilter,
+      columnVisibility,
+      pagination: {
+        pageIndex: page - 1,
+        pageSize,
+      },
     },
   });
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1 flex items-center gap-2">
-          <Input
-            placeholder="Search..."
-            value={globalFilter ?? ''}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="max-w-sm"
-          />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => {
-              setEditingFilter(null);
-              setSelectedColumn('');
-              setSelectedValue('');
-              setShowFilterDialog(true);
-            }}
-          >
-            <Filter className="h-4 w-4" />
-          </Button>
-        </div>
-        {showAddNewRecord &&  <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add New
-        </Button>}
-      </div>
-
-      {activeFilters.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {activeFilters.map((filter, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="cursor-pointer capitalize"
-              onClick={() => handleEditFilter(filter)}
-            >
-              {filter.column}: {filter.value}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-4 w-4 ml-2"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemoveFilter(filter);
+      {!simpleView && (
+        <>
+          <div className="flex items-center gap-4">
+            <div className="flex-1 flex items-center gap-2">
+              <Input
+                placeholder="Search..."
+                value={globalFilter ?? ''}
+                onChange={(e) => {
+                  setGlobalFilter(e.target.value);
+                  updateUrl({ search: e.target.value });
                 }}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
+                className="max-w-sm"
+                disabled={isRefreshing}
+              />
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        setEditingFilter(null);
+                        setSelectedColumn('');
+                        setSelectedValue('');
+                        setFilterInputValue('');
+                        setShowFilterDialog(true);
+                      }}
+                      disabled={isRefreshing}
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Add Filter</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={handleDownloadCSV}
+                      disabled={isRefreshing}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Download CSV</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenu>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" size="icon" disabled={isRefreshing}>
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Table Settings</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <DropdownMenuContent align="end" className="w-[200px]">
+                  <DropdownMenuLabel>Table Settings</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuGroup>
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger>
+                        <TableIcon className="mr-2 h-4 w-4" />
+                        View Mode
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setViewMode('table');
+                            updateUrl({ view: 'table' });
+                          }}
+                        >
+                          <TableIcon className="mr-2 h-4 w-4" />
+                          Table View
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setViewMode('grid');
+                            updateUrl({ view: 'grid' });
+                          }}
+                        >
+                          <LayoutGrid className="mr-2 h-4 w-4" />
+                          Grid View
+                        </DropdownMenuItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  </DropdownMenuGroup>
+
+                  <DropdownMenuSeparator />
+                  
+                  <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
+                    Toggle Columns
+                  </DropdownMenuLabel>
+                  {columns.map((column) => (
+                    <DropdownMenuCheckboxItem
+                      key={column.id}
+                      className="capitalize"
+                      checked={columnVisibility[column.id] !== false}
+                      onCheckedChange={(value) =>
+                        table.getColumn(column.id)?.toggleVisibility(!!value)
+                      }
+                    >
+                      {column.header}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              {onRefresh && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                      >
+                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Refresh Data</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              {selectedRows.size > 0 && onDelete && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDelete}
+                        disabled={isRefreshing}
+                      >
+                        <Trash className="mr-2 h-4 w-4" />
+                        Delete Selected ({selectedRows.size})
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Delete Selected Records</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {onAddNewRecord && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        onClick={() => {
+                          setEditingRow(null);
+                          setNewRecord({});
+                          setShowAddDialog(true);
+                        }}
+                        disabled={isRefreshing}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add New
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add New Record</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
+          </div>
+
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {activeFilters.map((filter, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className={cn(
+                    "cursor-pointer capitalize",
+                    isRefreshing && "opacity-50"
+                  )}
+                  onClick={() => !isRefreshing && handleEditFilter(filter)}
+                >
+                  {filter.column}: {filter.value}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 ml-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      !isRefreshing && handleRemoveFilter(filter);
+                    }}
+                    disabled={isRefreshing}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
+                </Badge>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {viewMode === 'table' ? (
+        <div className="rounded-md border overflow-hidden">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-primary hover:bg-primary">
+                  {table.getHeaderGroups().map((headerGroup) =>
+                    headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={`${
+                          header.id === headerGroup.headers[0].id ||
+                          header.id === 'actions'
+                            ? 'sticky z-10'
+                            : ''
+                        } ${
+                          header.id === headerGroup.headers[0].id
+                            ? 'left-0'
+                            : header.id === 'actions'
+                            ? 'right-0'
+                            : ''
+                        } text-primary-foreground border-[0.5px] border-primary-foreground/10`}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    ))
+                  )}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className={cn(
+                        "hover:bg-muted/50",
+                        selectedRows.has(row.original.id) && "bg-muted",
+                        isRefreshing && "opacity-50"
+                      )}
+                      onClick={() => !isRefreshing && onRowClick?.(row.original)}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          key={cell.id}
+                          className={`${
+                            cell.column.id === row.getVisibleCells()[0].column.id ||
+                            cell.column.id === 'actions'
+                              ? 'sticky z-10 bg-background'
+                              : ''
+                          } ${
+                            cell.column.id === row.getVisibleCells()[0].column.id
+                              ? 'left-0'
+                              : cell.column.id === 'actions'
+                              ? 'right-0'
+                              : ''
+                          }`}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length + 1}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      ) : (
+        <div className={cn(
+          "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+          isRefreshing && "opacity-50"
+        )}>
+          {table.getRowModel().rows.map((row) => (
+            <div
+              key={row.id}
+              className={cn(
+                "p-4 rounded-lg border cursor-pointer hover:bg-muted/50",
+                selectedRows.has(row.original.id) && "bg-muted"
+              )}
+              onClick={() => !isRefreshing && onRowClick?.(row.original)}
+            >
+              {row.getVisibleCells().map((cell) => (
+                cell.column.id !== 'actions' && (
+                  <div key={cell.id} className="mb-2">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      {columns.find(col => col.id === cell.column.id)?.header}
+                    </div>
+                    <div>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </div>
+                  </div>
+                )
+              ))}
+              <div className="mt-4 flex justify-end">
+                {flexRender(
+                  tableColumns[tableColumns.length - 1].cell,
+                  { row } as any
+                )}
+              </div>
+            </div>
           ))}
         </div>
       )}
 
-      <div className="rounded-md border overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-primary hover:bg-primary">
-                {table.getHeaderGroups().map((headerGroup) =>
-                  headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className={`${
-                        header.id === headerGroup.headers[0].id ||
-                        header.id === 'actions'
-                          ? 'sticky z-10'
-                          : ''
-                      } ${
-                        header.id === headerGroup.headers[0].id
-                          ? 'left-0'
-                          : header.id === 'actions'
-                          ? 'right-0'
-                          : ''
-                      } text-primary-foreground border-[0.5px] border-primary-foreground/10`}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  ))
-                )}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => onRowClick?.(row.original)}
+      {!simpleView && (
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">
+              Total {data.length} records
+            </span>
+            <Select
+              value={pageSize.toString()}
+              onValueChange={(value) => {
+                const newSize = parseInt(value);
+                setPageSize(newSize);
+                setPage(1);
+                updateUrl({ 
+                  pageSize: newSize.toString(),
+                  page: '1'
+                });
+              }}
+              disabled={isRefreshing}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <SelectItem key={size} value={size.toString()}>
+                    {size} rows
+                  </SelectItem>
+                ))}
+                <SelectItem value={data.length.toString()}>All</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center space-x-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      setPage(1);
+                      updateUrl({ page: '1' });
+                      table.setPageIndex(0);
+                    }}
+                    disabled={!table.getCanPreviousPage() || isRefreshing}
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={`${
-                          cell.column.id === row.getVisibleCells()[0].column.id ||
-                          cell.column.id === 'actions'
-                            ? 'sticky z-10 bg-background'
-                            : ''
-                        } ${
-                          cell.column.id === row.getVisibleCells()[0].column.id
-                            ? 'left-0'
-                            : cell.column.id === 'actions'
-                            ? 'right-0'
-                            : ''
-                        }`}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length + 1}
-                    className="h-24 text-center"
+                    <ChevronFirst className="h-4 w-4" />
+                  </Button> 
+                </TooltipTrigger>
+                <TooltipContent>First Page</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newPage = page - 1;
+                setPage(newPage);
+                updateUrl({ page: newPage.toString() });
+                table.previousPage();
+              }}
+              disabled={!table.getCanPreviousPage() || isRefreshing}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const newPage = page + 1;
+                setPage(newPage);
+                updateUrl({ page: newPage.toString() });
+                table.nextPage();
+              }}
+              disabled={!table.getCanNextPage() || isRefreshing}
+            >
+              Next
+            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={() => {
+                      const lastPage = table.getPageCount() - 1;
+                      setPage(lastPage + 1);
+                      updateUrl({ page: (lastPage + 1).toString() });
+                      table.setPageIndex(lastPage);
+                    }}
+                    disabled={!table.getCanNextPage() || isRefreshing}
                   >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                    <ChevronLast className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Last Page</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
-      </div>
-
-      <div className="flex items-center justify-end space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
-      </div>
+      )}
 
       <Dialog open={showFilterDialog} onOpenChange={setShowFilterDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              {editingFilter ? 'Edit Filter' : 'Add Filter'}
-            </DialogTitle>
+            <DialogTitle>{editingFilter ? 'Edit Filter' : 'Add Filter'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <Select
-              value={selectedColumn}
-              onValueChange={setSelectedColumn}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select column" />
-              </SelectTrigger>
-              <SelectContent>
-                {columns
-                  .filter((col) => col.filterType === 'select')
-                  .map((col) => (
-                    <SelectItem key={col.id} value={col.id}>
-                      {col.header}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            {selectedColumn && (
+            <div className="grid grid-cols-4 items-center gap-4">
               <Select
-                value={selectedValue}
-                onValueChange={setSelectedValue}
+                value={selectedColumn}
+                onValueChange={setSelectedColumn}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select value" />
+                  <SelectValue placeholder="Select column" />
                 </SelectTrigger>
                 <SelectContent>
-                  {columns
-                    .find((col) => col.id === selectedColumn)
-                    ?.filterOptions.map((option: string) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
+                  {columns.map((column) => (
+                    <SelectItem key={column.id} value={column.id}>
+                      {column.header}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            )}
+              {selectedColumn && (
+                columns.find(col => col.id === selectedColumn)?.filterType === 'select' ? (
+                  <Select
+                    value={selectedValue}
+                    onValueChange={setSelectedValue}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select value" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {columns
+                        .find(col => col.id === selectedColumn)
+                        ?.filterOptions?.map((option:any) => (
+                          <SelectItem key={option} value={option}>
+                            {option}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={filterInputValue}
+                    onChange={(e) => setFilterInputValue(e.target.value)}
+                    placeholder="Enter value"
+                  />
+                )
+              )}
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowFilterDialog(false);
-              setEditingFilter(null);
-            }}>
+            <Button variant="outline" onClick={() => setShowFilterDialog(false)}>
               Cancel
             </Button>
             <Button onClick={handleAddFilter}>
-              {editingFilter ? 'Update Filter' : 'Add Filter'}
+              {editingFilter ? 'Update' : 'Add'} Filter
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -442,34 +1007,56 @@ export function AppTable({
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Record</DialogTitle>
+            <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            {columns.map((col) => (
-              <div key={col.id} className="grid grid-cols-4 items-center gap-4">
-                <label htmlFor={col.id} className="text-right">
-                  {col.header}
-                </label>
-                <Input
-                  id={col.id}
-                  className="col-span-3"
-                  placeholder={`Enter ${col.header.toLowerCase()}`}
-                  value={newRecord[col.accessorKey] || ''}
-                  onChange={(e) =>
-                    setNewRecord({ ...newRecord, [col.accessorKey]: e.target.value })
-                  }
-                />
-              </div>
-            ))}
+            {columns
+              .filter(column => column.id !== 'actions')
+              .map((column) => (
+                <div key={column.id} className="grid grid-cols-4 items-center gap-4">
+                  <label htmlFor={column.id} className="text-right">
+                    {column.header}:
+                  </label>
+                  <Input
+                    id={column.id}
+                    value={newRecord[column.id] || ''}
+                    onChange={(e) =>
+                      setNewRecord((prev) => ({
+                        ...prev,
+                        [column.id]: e.target.value,
+                      }))
+                    }
+                    className="col-span-3"
+                  />
+                </div>
+              ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setShowAddDialog(false);
-              setNewRecord({});
-            }}>
+            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleSubmitNewRecord}>Submit</Button>
+            <Button onClick={handleSubmitNewRecord}>
+              {editingRow ? 'Update' : 'Add'} Record
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Delete</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this record? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

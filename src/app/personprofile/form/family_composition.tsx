@@ -12,14 +12,19 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogPortal } from 
 import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
 import { Edit, Trash } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { getCFWTypeLibraryOptions, getEducationalAttainmentLibraryOptions, getRelationshipToFamilyMemberTypeLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
+import { getCFWTypeLibraryOptions, getEducationalAttainmentLibraryOptions, getLibraryDescription, getRelationshipToFamilyMemberTypeLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilycomposition";
 import HighestEducationalAttainment from "./highest_educational_attainment";
 import { toast } from "@/hooks/use-toast";
 import { getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibRelationshipToBeneficiary, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
+import { IPersonProfileFamilyComposition } from "@/components/interfaces/personprofile";
+import { v4 as uuidv4, validate } from 'uuid';
+import { lib_extension_name } from "@/db/schema/libraries";
 
-export default function FamilyComposition({ errors }: { errors: any }) {
+export default function FamilyComposition({ errors, familyCompositionData, updatedFamComposition }: { errors: any; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
+    updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[]) => void
+ }) {
 
 
     const [relationshipToFamilyMemberOptions, setRelationshipToFamilyMemberOptions] = useState<LibraryOption[]>([]);
@@ -43,12 +48,15 @@ export default function FamilyComposition({ errors }: { errors: any }) {
 
 
     const [familyMemberWork, setfamilyMemberWork] = useState("");
-    const [familyMemberMonthlyIncome, setfamilyMemberMonthlyIncome] = useState("");
-    const [familyMemberContactNumber, setfamilyMemberContactNumber] = useState("");
+    const [familyMemberMonthlyIncome, setfamilyMemberMonthlyIncome] = useState("0.00");
+    const [familyMemberContactNumber, setfamilyMemberContactNumber] = useState("09");
 
     // const [capturedData1, setCapturedData] = useState([]);
     const [capturedData1, setCapturedData] = useState<CapturedData>({ cfw: [{ family_composition: [] }] });
 
+    const [extensionNames, setExtensionNames] = useState<Record<number, string>>({});
+    const [relationshipNames, setRelationshipNames] = useState<Record<number, string>>({});
+    const [educationNames, setEducationNames] = useState<Record<number, string>>({});
 
     const [form_Data, setForm_Data] = useState([]);
 
@@ -56,7 +64,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
     const [famComLastName, setfamComLastName] = useState("");
     const [famComMiddleName, setfamComMiddleName] = useState("");
     const [famComSelectedExtNameId, setfamComExtNameId] = useState<number | null>(null);
-    const [programDetailsExtensionNameOptions, setprogramDetailsExtensionNameOptions] = useState<LibraryOption[]>([]);
+    const [famComSelectedExtName, setfamComExtName] = useState<number | null>(null);
+    const [famComExtensionNameOptions, setfamComExtensionNameOptions] = useState<LibraryOption[]>([]);
 
     const [familyComposition, setFamilyComposition] = useState<FamilyCompositionData>({
         family_composition: []
@@ -69,19 +78,51 @@ export default function FamilyComposition({ errors }: { errors: any }) {
         // setSelectedExtensionNameId(id);
         // updatingCommonData("extension_name_id", id);
     };
+
+    // monthly income
+    const [value, setValue] = useState("")
+
+    const formatNumber = (num: string): string => {
+        // Remove non-numeric characters except decimal point
+        const numericValue = num.replace(/[^\d.]/g, "")
+    
+        // Ensure only one decimal point
+        const parts = numericValue.split(".")
+        const wholePart = parts[0] || ""
+        const decimalPart = parts.length > 1 ? parts[1].slice(0, 2) : ""
+    
+        // Format whole part with commas
+        const formattedWholePart = wholePart.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+    
+        // Combine with decimal part
+        return formattedWholePart + (decimalPart || parts.length > 1 ? "." + decimalPart : "")
+      }
+    const handleFormatMonthlyIncome=(e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value
+
+        // Store the raw value (for form submission)
+        setValue(inputValue)
+    
+        // Format and display the value
+        setfamilyMemberMonthlyIncome(formatNumber(inputValue))
+    }
+
+    useEffect(() => {
+        setfamilyMemberMonthlyIncome(formatNumber(value))
+      }, [value])
+
     useEffect(() => {
         const fetchData = async () => {
             try {
-
-
                 const year_level = await getOfflineLibYearLevel();//await getYearLevelLibraryOptions();
                 setYearLevelOptions(year_level);
 
 
                 const educational_attainment = await getOfflineLibEducationalAttainment();//await getEducationalAttainmentLibraryOptions();
+                const educational_map = Object.fromEntries(educational_attainment.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setEducationNames(educational_map);
                 setEducationalAttainmentOptions(educational_attainment);
-
-
+               
                 let fam_com = localStorage.getItem("family_composition");
 
                 if (!fam_com) {
@@ -103,6 +144,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                 }
 
                 const extension_name = await getOfflineExtensionLibraryOptions(); //await getExtensionNameLibraryOptions();
+                const ext_map = Object.fromEntries(extension_name.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setExtensionNames(ext_map);
                 // Convert label values to uppercase before setting state
                 const formattedExtensions = extension_name.map(option => ({
 
@@ -111,9 +154,11 @@ export default function FamilyComposition({ errors }: { errors: any }) {
 
                 }));
                 console.log("Formatted Extension", formattedExtensions);
-                setprogramDetailsExtensionNameOptions(formattedExtensions);
+                setfamComExtensionNameOptions(formattedExtensions);
 
                 const relationship_to_family_member = await getOfflineLibRelationshipToBeneficiary(); //await getRelationshipToFamilyMemberTypeLibraryOptions();
+                const relationship_map = Object.fromEntries(relationship_to_family_member.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setRelationshipNames(relationship_map);
                 const formattedRelationship = relationship_to_family_member.map(option => ({
 
                     ...option,
@@ -167,7 +212,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
     };
 
 
-    function errorToastFamCom(msg: string){
+    function errorToastFamCom(msg: string) {
         toast({
             variant: "destructive",
             title: msg,
@@ -175,7 +220,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
         })
     }
 
-    function validateAge(ageinput: number){
+    function validateAge(ageinput: number) {
 
 
         return false;
@@ -191,17 +236,29 @@ export default function FamilyComposition({ errors }: { errors: any }) {
         else if (!famComLastName || famComLastName.trim() === "") {
             errorToastFamCom("Please input Last Name!");
             return;
-        } 
-        
-        else if(selectedRelationshipToFamilyMemberId === null){
+        }
+        else if (selectedRelationshipToFamilyMemberId === null) {
             errorToastFamCom("Please select a Relationship to Family Member!");
             return;
-
+        } else if (!dob.trim()) {
+            errorToastFamCom("Family member's birthday is required!");
+            return;
+        } else if (selectedEducationalAttainmentId === 0) {
+            errorToastFamCom("Highest educational attainment is required!");
+            return;
+        } else if (!familyMemberContactNumber.trim()) {
+            errorToastFamCom("Family Member's Contact number is required!");
+            return;
         }
-        
+        else if (Number(familyMemberContactNumber.length) < 13) {
+            errorToastFamCom("Family Member's Contact number is required!");
+            return;
+        }
+
+
         else {
             const famCom = localStorage.getItem("family_composition");
-            let prevData: any = { family_composition: [] };
+            let prevData: any = { family_composition: [] }; // for enhancement since the fam com has sub fam com
 
             if (famCom) {
                 prevData = JSON.parse(famCom);
@@ -215,84 +272,53 @@ export default function FamilyComposition({ errors }: { errors: any }) {
             // Ensure `family_composition` exists
             let familyComposition = prevData.family_composition || [];
 
-            // Find the selected relationship
-            const selectedTextRelationshipToFamilyMember = relationshipToFamilyMemberOptions.find(
-                (option) => option.id === selectedRelationshipToFamilyMemberId)?.name || "";
+            // Find the selected extensionname
+            const selectedFamComExtNameText = famComExtensionNameOptions.find(
+                (option) => option.id === famComSelectedExtNameId)?.name || "";
 
-            console.log("Selected Relationship to Bene:", selectedTextRelationshipToFamilyMember);
-
-            // Find the selected highest educational attainment
             const selectedTextHighestEducationalAttainment = EducationalAttainmentOptions.find(
                 (option) => option.id === selectedEducationalAttainmentId
             )?.name || "";
 
             console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
 
-            // Check for duplicate family member by name (case insensitive)
-            const famComExists = familyComposition.some(
-                (member: any) => member.name.toLowerCase() === familyMemberName.toLowerCase()
+            // 1 = father, 2= mother, 5 = spouse, 7 = grandfather, 8=grandmother    
+            const famComMemberExists = familyComposition.some(
+                (member: any) =>
+                    [1, 2, 5, 7, 8].includes(selectedRelationshipToFamilyMemberId) &&
+                    member.relationship_to_the_beneficiary_id === selectedRelationshipToFamilyMemberId
             );
 
-            if (famComExists) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "This Family Member already exists.",
-                });
-                alert("This Family Member already exists.");
+            if (famComMemberExists) {
+                errorToastFamCom("This Family Member should exists once.");
                 return; // Exit function early
             }
 
-            // Validations
-            // if (!familyMemberName.trim()) {
-            //     toast({
-            //         variant: "destructive",
-            //         title: "Error",
-            //         description: "Family member's name is required!",
-            //     });
-            //     return;
-            // }
 
-            if (selectedRelationshipToFamilyMemberId === 0 || selectedRelationshipToFamilyMemberId === null) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Relationship to Family member is required!",
-                });
-                return;
-            }
+            // Check for duplicate family member by name (case insensitive)
+            const famComExists = familyComposition.some((member: any) =>
+                member.first_name === famComFirstName.toUpperCase() &&
+                member.middle_name === famComMiddleName.toUpperCase() &&
+                member.last_name === famComLastName.toUpperCase() &&
+                member.extension_name_id === famComSelectedExtNameId &&
+                member.extension_name === selectedFamComExtNameText &&
+                member.relationship_to_the_beneficiary_id === selectedRelationshipToFamilyMemberId
+            );
 
-            if (!dob.trim()) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Family member's birthday is required!",
-                });
-                return;
-            }
-
-            if (selectedEducationalAttainmentId === 0) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Highest educational attainment is required!",
-                });
-                return;
-            }
-
-            if (!familyMemberContactNumber.trim()) {
-                toast({
-                    variant: "destructive",
-                    title: "Error",
-                    description: "Family Member's Contact number is required!",
-                });
-                return;
+            if (famComExists) {
+                errorToastFamCom("This Family Member already exists.");
+                return; // Exit function early
             }
 
             // Create the new family member object
             const newFamilyMember = {
-                name: familyMemberName,
-                relationship_to_the_beneficiary: selectedTextRelationshipToFamilyMember,
+                id: uuidv4(), //Usually we assign the id during final saving but we need to assign it here to be able to use from CFW Family Details
+                first_name: famComFirstName,
+                middle_name: famComMiddleName,
+                last_name: famComLastName,
+                extension_name_id: famComSelectedExtNameId,
+                extension_name: selectedFamComExtNameText,
+                //relationship_to_the_beneficiary: selectedTextRelationshipToFamilyMember,
                 relationship_to_the_beneficiary_id: selectedRelationshipToFamilyMemberId,
                 birthdate: dob,
                 age: age,
@@ -312,25 +338,19 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                 family_composition: updatedFamilyComposition,
             };
 
-            localStorage.setItem("family_composition", JSON.stringify(updatedData));
+            localStorage.setItem("family_composition", JSON.stringify(updatedData.family_composition));
 
             // Update the state with the new data
             setFamilyComposition(updatedData);
 
             console.log("Updated Family Composition:", updatedData.family_composition);
-
+            updatedFamComposition(updatedData.family_composition);
             toast({
                 variant: "green",
                 title: "Success",
                 description: "Family Member data has been added!",
             });
         }
-
-
-        // console.log("Family Member Name:", familyMemberName);
-        // debugger;
-
-
     };
 
 
@@ -366,24 +386,11 @@ export default function FamilyComposition({ errors }: { errors: any }) {
         setAge(ageNumber.toString());
     };
 
-    interface FamilyMember {
-        age: number;
-        birthdate: string;
-        contact_number: string;
-        highest_educational_attainment: string;
-        highest_educational_attainment_id: number;
-        monthly_income: number;
-        name: string;
-        relationship_to_the_beneficiary: string;
-        relationship_to_the_beneficiary_id: number;
-        work: string;
-    };
-
     interface FamilyCompositionData {
-        family_composition: FamilyMember[];
+        family_composition: IPersonProfileFamilyComposition[];
     }
     type CFWItem = {
-        family_composition?: FamilyMember[];
+        family_composition?: IPersonProfileFamilyComposition[];
     };
     type CapturedData = {
         cfw: CFWItem[];
@@ -435,6 +442,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
             ),
         });
     };
+
+
     return (
         <>
             <div className="w-full overflow-x-auto " >
@@ -458,29 +467,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                             </DialogDescription>
                                         </DialogHeader>
                                         <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
-                                            {/* // { 
-                                        // name: "", 
-                                        // relationship_to_the_beneficiary_id: 0, 
-                                        // birthdate: "", 
-                                        // age: 0, 
-                                        // highest_educational_attainment_id: 0, 
-                                        // work: "", 
-                                        // monthly_income: "", 
-                                        // contact_number: "" } */}
-                                            {/* <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_name" className="block text-sm font-medium mb-2">Name of Family Member<span className='text-red-500'> *</span></Label>
-                                                <Input
-                                                    type="text"
-                                                    id="family_member_name"
-                                                    name="family_member_name"
-                                                    className="mt-1 block w-full mb-2"
-                                                    onChange={(e) => setFamilyMemberName(e.target.value)}
-                                                    value={familyMemberName}
-                                                />
-                                                {errors?.family_member_name && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.family_member_name}</p>
-                                                )}
-                                            </div> */}
+                                   
                                             <div className="p-2 col-span-4">
                                                 <Label htmlFor="program_details_first_name" className="block text-sm font-medium mb-2">
                                                     Family Member's First Name
@@ -529,7 +516,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 </Label>
                                                 <FormDropDown
                                                     id="program_details_extension_name"
-                                                    options={programDetailsExtensionNameOptions}
+                                                    options={famComExtensionNameOptions}
                                                     selectedOption={famComSelectedExtNameId}
                                                     onChange={(value) => handlExtensionNameChange(value)}
                                                     label="Select an Extension Name (if applicable)"
@@ -570,8 +557,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                     type="text"
                                                     id="family_member_age"
                                                     name="family_member_age"
-                                                    className="mt-1 block w-full mb-2"
-                                                    value={age}
+                                                    className="mt-1 block w-full mb-2 text-center"
+                                                    value={age || 0}
                                                     readOnly
 
                                                 />
@@ -609,13 +596,14 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_monthly_income" className="block text-sm font-medium mb-2">Monthly Income</Label>
+                                                <Label htmlFor="family_member_monthly_income" className="block text-sm font-medium mb-2">Monthly Income (₱)</Label>
                                                 <Input
+                                                    value={familyMemberMonthlyIncome || "0.00"}
                                                     type="text"
                                                     id="family_member_monthly_income"
                                                     name="family_member_monthly_income"
-                                                    className="mt-1 block w-full mb-2"
-                                                    onChange={(e) => setfamilyMemberMonthlyIncome(e.target.value)}
+                                                    className="mt-1 block w-full mb-2 text-right"
+                                                    onChange={handleFormatMonthlyIncome}
 
                                                 />
                                                 {errors?.family_member_monthly_income && (
@@ -625,11 +613,48 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                             <div className="p-2 col-span-4">
                                                 <Label htmlFor="family_member_contact_number" className="block text-sm font-medium mb-2">Contact Number<span className='text-red-500'> *</span></Label>
                                                 <Input
+                                                    value={familyMemberContactNumber}
                                                     type="text"
                                                     id="family_member_contact_number"
                                                     name="family_member_contact_number"
                                                     className="mt-1 block w-full mb-2"
-                                                    onChange={(e) => setfamilyMemberContactNumber(e.target.value)}
+                                                    onChange={(e) => {
+                                                        let newValue = e.target.value.replace(/\D/g, ''); // Remove non-numeric characters
+
+                                                        if (!newValue.startsWith("09")) {
+                                                            newValue = "09"; // Ensure it always starts with 09
+                                                        }
+
+                                                        // Apply formatting (XXXX-XXX-XXXX)
+                                                        if (newValue.length > 4) newValue = newValue.slice(0, 4) + "-" + newValue.slice(4);
+                                                        if (newValue.length > 8) newValue = newValue.slice(0, 8) + "-" + newValue.slice(8);
+
+                                                        // Limit to 13 characters (including dashes)
+                                                        if (newValue.length > 13) newValue = newValue.slice(0, 13);
+
+                                                        // if (newValue.length > 11) {
+                                                        //     newValue = newValue.slice(0, 11); // Limit to 11 digits (without dashes)
+                                                        // }
+
+                                                        // // Format as 0915-7620-296
+                                                        // let formattedValue = newValue;
+                                                        // if (newValue.length > 10) {
+                                                        //     formattedValue = `${newValue.slice(0, 4)}-${newValue.slice(4, 8)}-${newValue.slice(8, 11)}`;
+                                                        // } else if (newValue.length > 7) {
+                                                        //     formattedValue = `${newValue.slice(0, 4)}-${newValue.slice(4, 8)}`;
+                                                        // } else if (newValue.length > 4) {
+                                                        //     formattedValue = `${newValue.slice(0, 4)}-${newValue.slice(4)}`;
+                                                        // }
+
+                                                        setfamilyMemberContactNumber(newValue);
+                                                    }}
+                                                // onChange={(e) => {
+                                                //     const newValue = e.target.value;
+                                                //     if (newValue.startsWith("09") && newValue.length <= 11) {
+                                                //         setfamilyMemberContactNumber(newValue);
+                                                //     }
+                                                //   }}
+                                                // onChange={(e) => setfamilyMemberContactNumber(e.target.value)}
 
                                                 />
                                                 {errors?.family_member_contact_number && (
@@ -650,13 +675,8 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                             <Table className="min-w-[1000px] border">
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>
-                                            {/* {'Type of familyComposition: ' + typeof familyComposition } */}
-                                            {/* {'Type of familyComposition: ' + typeof familyComposition +
-                                                "Family Composition:" + familyComposition +
-                                                "Length of Fam Com:" + Array.isArray(familyComposition) ? familyComposition.length : "Not an array"
-                                            } */}
-                                            Name</TableHead>
+                                        <TableHead className="text-center">#</TableHead>
+                                        <TableHead>Name</TableHead>
                                         <TableHead>Relationship</TableHead>
                                         <TableHead>Birthday</TableHead>
                                         <TableHead>Age</TableHead>
@@ -669,14 +689,15 @@ export default function FamilyComposition({ errors }: { errors: any }) {
                                 </TableHeader>
                                 <TableBody>
 
-                                    {familyComposition?.family_composition && familyComposition.family_composition.length > 0 ? (
-                                        familyComposition.family_composition.map((familyMember: FamilyMember, index: number) => (
+                                    {familyCompositionData ? (
+                                        familyCompositionData.map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
                                             <TableRow key={index}>
-                                                <TableCell>{familyMember.name}</TableCell>
-                                                <TableCell>{familyMember.relationship_to_the_beneficiary}</TableCell>
+                                                <TableCell>{index + 1}.</TableCell>
+                                                <TableCell>{familyMember.first_name} {familyMember.middle_name} {familyMember.last_name} {extensionNames[familyMember.extension_name_id ?? 0] || ""} </TableCell>
+                                                <TableCell>{relationshipNames[familyMember.relationship_to_the_beneficiary_id ?? 0] || "N/A"}</TableCell>
                                                 <TableCell>{familyMember.birthdate}</TableCell>
                                                 <TableCell>{familyMember.age}</TableCell>
-                                                <TableCell>{familyMember.highest_educational_attainment}</TableCell>
+                                                <TableCell>{educationNames[familyMember.highest_educational_attainment_id ?? 0] || ""}</TableCell>
                                                 <TableCell>{familyMember.work}</TableCell>
                                                 <TableCell>{familyMember.monthly_income}</TableCell>
                                                 <TableCell>{familyMember.contact_number}</TableCell>
@@ -690,7 +711,7 @@ export default function FamilyComposition({ errors }: { errors: any }) {
 
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
-                                                                    <p>Delete Record</p>
+                                                                    <p>Remove Record</p>
                                                                 </TooltipContent>
                                                             </Tooltip>
                                                         </TooltipProvider>

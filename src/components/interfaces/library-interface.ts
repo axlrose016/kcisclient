@@ -288,6 +288,7 @@ export interface ILibTypeOfWork{
 export interface ILibFilesToUpload{
   id:number,
   file_name:string,
+  module_path: string,
   created_date: string,            
   created_by: string,              
   last_modified_date: string | null, 

@@ -54,3 +54,18 @@ export const getFileToUploadLibraryOptions = getLibraryOptions(lib_files_to_uplo
 export const getIPGroupLibraryOptions = getLibraryOptions(lib_ip_group, 'ip_group_name');
 export const getYearServedLibraryOptions = getLibraryOptions(lib_year_served, 'year_served');
 export const getProgramTypesLibraryOptions = getLibraryOptions(lib_program_types, 'program_type_name');
+
+
+export const getLibraryDescription = async (
+    library: any,
+    id: number
+  ): Promise<string> => {
+    if (!id) return ''; // Early return if id is 0 or undefined
+    const [result] = await db
+      .select(library.description)
+      .from(library)
+      .where(library.id.eq(id))
+      .execute();
+  
+    return result?.[library.description] ?? ''; // Handle undefined result
+  };

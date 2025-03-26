@@ -99,7 +99,7 @@ export async function getUserData(id: string): Promise<IUserData | null>{
         }
         const userrole = await dexieDb.roles.where('id').equals(user.role_id).first();
         const useraccess = await tblUserAccess.where('user_id').equals(id).toArray();
-        
+        console.log("User Access: ", useraccess);
         const userDataAccess: IUserDataAccess[] = [];
         for (const access of useraccess) {
         const module = await dexieDb.modules.where('id').equals(access.module_id).first();

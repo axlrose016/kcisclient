@@ -8,7 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { PhilSysInput } from "@/components/ui/philsys_mask";
 import { getCFWCatLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibCFWType } from "@/components/_dal/offline-options";
-export default function Details({ errors }: { errors: any; }) {
+import { IPersonProfile } from "@/components/interfaces/personprofile";
+import CFW_Booklet from "@/components/pdf/cfw_booklet";
+export default function Details({ errors, capturedData, updateCapturedData, selectedModalityId,updateFormData }: { errors: any; capturedData: any; updateCapturedData: any, selectedModalityId: any,updateFormData: (newData: Partial<IPersonProfile>) => void}) {
 
     const [healthConcerns, setHealthConcerns] = useState(() => {
         const storedHealthConcerns = localStorage.getItem("healthConcerns");
@@ -20,12 +22,10 @@ export default function Details({ errors }: { errors: any; }) {
     }, [healthConcerns]);
 
     const updatingHealthConcerns = (field: any, value: any) => {
-        setHealthConcerns((prev: any) => ({
-            ...prev, [field]: value
-        }));
+        console.log("TEST ", value);
+        updateFormData({immediate_health_concern:value})
     }
 
-    // debugger;
     const [selectedHealthConcern, setSelectedHealthConcern] = useState("");
     const [healthConcern, setHealthConcern] = useState("");
 
@@ -40,8 +40,6 @@ export default function Details({ errors }: { errors: any; }) {
             try {
                 const CFWCat = await getOfflineLibCFWType(); //await getCFWCatLibraryOptions();
                 setCfwCatOptions(CFWCat);
-
-
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -55,34 +53,30 @@ export default function Details({ errors }: { errors: any; }) {
         setSelectedCFWCatId(id);
     };
   
-
-
     const handleHealthConcernChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         setSelectedHealthConcern(value);
-        // updatingHealthConcerns("immediate_health_concern", value);
-        // updatingHealthConcerns("has_immediate_health_concern", value);
         if (value === "no") {
             // updateCapturedData("cfw", "has_immediate_health_concern", 0);
-            // updateCapturedData("cfw", "immediate_health_concern_details", ""); // Clear health concern details
             // updateCapturedData("cfw", "has_immediate_health_concern", 0, 4);
             // updateCapturedData("cfw", "immediate_health_concern", "", 4);
+            // setHealthConcern("");
             // updatingHealthConcerns("immediate_health_concern", "");
-            setHealthConcern("");
-            updatingHealthConcerns("has_immediate_health_concern", 0);
-            updatingHealthConcerns("immediate_health_concern", "");
+            updateFormData({has_immediate_health_concern:false,immediate_health_concern:""})
 
         } else {
-            // updateCapturedData("cfw", "has_immediate_health_concern", 1);
-            // Updating cfw at index 4
             // updateCapturedData("cfw", "has_immediate_health_concern", 1, 4);
-            // healthConcerns.immediate_health_concern = 1;
-            updatingHealthConcerns("has_immediate_health_concern", 1);
+            // updatingHealthConcerns("immediate_health_concern", value);
+            // updatingHealthConcerns("has_immediate_health_concern", 1);
+            updateFormData({has_immediate_health_concern:true,immediate_health_concern:value})
+
         }
 
         if (event.target.value === "no") {
             (document.getElementById("immediate_health_concern") as HTMLTextAreaElement).value = "";
         }
+        const val = value === "no" ? false : true;
+        updateFormData({ has_immediate_health_concern: val });
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
@@ -93,8 +87,6 @@ export default function Details({ errors }: { errors: any; }) {
             return updatedData;
         });
     };
-
-
 
     return (
         <>
@@ -123,7 +115,7 @@ export default function Details({ errors }: { errors: any; }) {
                     <div className="mt-2">
                         <div className="flex items-center">
                             <input
-                                checked={healthConcerns.has_immediate_health_concern === 1}
+                                checked={capturedData.has_immediate_health_concern === true}
                                 // checked={capturedData.cfw[4].has_immediate_health_concern === 1}
                                 onChange={handleHealthConcernChange}
                                 id="has_immediate_health_concern_yes"
@@ -139,7 +131,7 @@ export default function Details({ errors }: { errors: any; }) {
                         </div>
                         <div className="flex items-center mt-2">
                             <input
-                                checked={healthConcerns.has_immediate_health_concern === 0}
+                                checked={capturedData.has_immediate_health_concern === false}
                                 // checked={capturedData.cfw[4].has_immediate_health_concern === 0}
                                 onChange={handleHealthConcernChange}
                                 id="has_immediate_health_concern_no"
@@ -158,12 +150,12 @@ export default function Details({ errors }: { errors: any; }) {
                         <p className="mt-2 text-sm text-red-500">{errors.has_immediate_health_concern}</p>
                     )}
                 </div>
-                <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${healthConcerns.has_immediate_health_concern === 1 ? "" : "hidden"}`}>
+                <div className={`grid sm:grid-cols-1 sm:grid-rows-1 mb-2  ${capturedData.has_immediate_health_concern === true ? "" : "hidden"}`}>
                 {/* <div className="grid sm:grid-cols-1 sm:grid-rows-1 mb-2"> */}
                     <div className="p-2">
                         <Label htmlFor="immediate_health_concern" className="block text-sm font-medium mb-[5px]">Health Condition</Label>
                         <Textarea
-                            value={healthConcerns.immediate_health_concern}
+                            value={capturedData.immediate_health_concern ?? ""}
                             // value={capturedData.cfw[4].immediate_health_concern}
                             onChange={(e) => updatingHealthConcerns('immediate_health_concern', e.target.value.toUpperCase())}
                             // onChange={(e) => updateCapturedData("cfw", 'immediate_health_concern', e.target.value, 4)}

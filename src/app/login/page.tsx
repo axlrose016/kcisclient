@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { seedData } from "@/db/offline/Dexie/schema/library-service";
-import LoginForm from "./login-form";
 import { cn, hashPassword } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -18,6 +17,9 @@ import { toast } from "@/hooks/use-toast"
 import { IUserData } from "@/components/interfaces/iuser"
 import { createSession } from "@/lib/sessions-client"
 import { useRouter } from 'next/navigation'
+import LoginService from "./LoginService";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { useOnlineStatus } from "@/hooks/use-network";
 
 
 const formSchema = z.object({
@@ -31,6 +33,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>
 
 export default function LoginPage() {
+  const isOnline = useOnlineStatus()
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -46,57 +49,91 @@ export default function LoginPage() {
     } = useForm<FormData>({
       resolver: zodResolver(formSchema),
     })
-  
+    
+    const offlineLogin = async (data: FormData) => {
+      try {
+        const user = await getUserByEmail(data.email);
+    
+        if (!user) {
+          return toast({
+            variant: "destructive",
+            title: "No Record Found!",
+            description: "The email was not found in the database. Please try again!",
+          });
+        }
+    
+        const decryptedPassword = await hashPassword(data.password, user.salt);
+    
+        if (
+          user.password !== decryptedPassword ||
+          (user.email !== data.email && user.username !== data.email)
+        ) {
+          return toast({
+            variant: "destructive",
+            title: "Invalid Credentials!",
+            description: "The email or password is incorrect. Please try again!",
+          });
+        }
+    
+        const userData: IUserData | null = await getUserData(user.id);
+    
+        if (!userData) {
+          return toast({
+            variant: "destructive",
+            title: "Login Error!",
+            description: "There was a problem during login. Please try again!",
+          });
+        }
+        console.log(userData)
+        console.log(user.id)
+        await createSession(user.id, userData);
+    
+        toast({
+          variant: "green",
+          title: "Success!",
+          description: "Welcome to KCIS!",
+        });
+    
+        // Redirect to the profile form if the user is not yet registered
+        window.location.href = "/personprofile/form";
+      } catch (error) {
+        console.error("Login error:", error);
+        toast({
+          variant: "destructive",
+          title: "Unexpected Error!",
+          description: "An unexpected error occurred. Please try again later.",
+        });
+      }
+    };
+    
   
     const onSubmit = async (data: FormData) => {
-      debugger;
-      try{
-        const user = await getUserByEmail(data.email);
-        if(user == null){
-          toast({
-            variant: "destructive",
-            title: "No Record Found!",
-            description: "The Email was not found on the database, Please try again!",
-          })
-        }
-        const decryptedPassword = await hashPassword(data.password, user?.salt);
-        if(user?.password === decryptedPassword && (user.email === data.email || user.username == data.email))
-        {
-          let userData: IUserData | null; 
-          userData = await getUserData(user.id);
-          toast({
-            variant: "green",
-            title: "Success.",
-            description: "Welcome to KCIS!",
-          })
-          if(userData == null){
-            toast({
-              variant: "destructive",
-              title: "Uh oh! Something went wrong.",
-              description: "There was a problem during your login process, Please try again!",
-            })
-            return;
-          }
-          await createSession(user.id, userData);
-          // test if not yet registered 
-          window.location.href = '/personprofile/form';
+      // debugger;
+      try {
+        if (isOnline) {
+          const onlinePayload = await LoginService.onlineLogin(data.email, data.password);
           
+          if (onlinePayload) {
+            await createSession(onlinePayload.user.id, onlinePayload.user.userData);
+            toast({
+              variant: "green",
+              title: "Success!",
+              description: "Welcome to KCIS!",
+            });
+            window.location.href = "/personprofile/form";
+            return; // Exit after successful login
+          }
         }
-        else{
-          toast({
-            variant: "destructive",
-            title: "No Record Found!",
-            description: "The Email or Password is Incorrect, Please try again!",
-          })
-        }
-      }
-      catch(error){
-        console.log("Error: ", error);
+        
+        // If online login fails or offline mode
+        await offlineLogin(data);
+      } catch (error) {
+        console.error("Login Error: ", error);
         toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: "There was a problem during your login process, Please try again!",
-        })
+          description: "There was a problem during your login process. Please try again!",
+        });
       }
     }
     
@@ -122,6 +159,7 @@ export default function LoginPage() {
                     {...register("email")}
                     name="email"
                     placeholder="m@example.com"
+                    className="lowercase"
                     required
                   />
                 </div>

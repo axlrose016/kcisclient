@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getDeploymentAreaLibraryOptions, getTypeOfWorkLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibDeploymentArea, getOfflineLibTypeOfWork } from "@/components/_dal/offline-options";
-export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
+import { IPersonProfile } from "@/components/interfaces/personprofile";
+export default function PrefferedDeploymentArea({ errors, capturedData, updateFormData }: { errors: any; capturedData: Partial<IPersonProfile>; updateFormData: (newData: Partial<IPersonProfile>) => void }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
     const [selectedRelation, setSelectedRelation] = useState("");
 
@@ -20,6 +21,7 @@ export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
 
     const initialPreferredDeployment = {
         deployment_area_id: 0,
+        deployment_area_name: "",
         deployment_area_address: "",
         preffered_type_of_work_id: 0
 
@@ -66,12 +68,14 @@ export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
         console.log("Selected Deployment Area ID:", id);
         setSelectedDeploymentAreaId(id);
         updatingData("deployment_area_id", id);
+        updateFormData({ deployment_area_id: id });
     };
     const handleTypeOfWorkChange = (id: number) => {
         console.log("Selected Type of Work ID:", id);
         // updateCapturedData("cfw", "preffered_type_of_work_id", id, 4);
         setSelectedTypeOfWorkId(id);
         updatingData("preffered_type_of_work_id", id);
+        updateFormData({ preffered_type_of_work_id: id });
     };
 
     return (
@@ -79,16 +83,23 @@ export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
             <div>
                 <div className="flex grid sm:col-span-3 sm:grid-cols-3">
                     <div className="p-2 col-span-4">
-                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium">Name of Office<span className='text-red-500'> *</span></Label>
-                        <FormDropDown
+                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium mb-1">Name of Office<span className='text-red-500'> *</span></Label>
+                        <Input
+                            value={capturedData.deployment_area_name || ""}
+                            onChange={(e) => updateFormData({deployment_area_name:e.target.value})}
+                            id="deployment_area_id"
+                            name="deployment_area_id"
+                            
+                        />
+                        {/* <FormDropDown
 
                             id="deployment_area_id"
                             options={deploymentAreaOptions}
                             // selectedOption={preferredDeployment.deployment_area_id}
                             // onChange={handleDeploymentAreaChange}
-                            selectedOption={preferredDeployment.deployment_area_id}
+                            selectedOption={capturedData.deployment_area_id}
                             onChange={handleDeploymentAreaChange}
-                        />
+                        /> */}
                         {errors?.deployment_area_id && (
                             <p className="mt-2 text-sm text-red-500">{errors.deployment_area_id[0]}</p>
                         )}
@@ -96,13 +107,13 @@ export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
                     <div className="p-2 col-span-4">
                         <Label htmlFor="deployment_area_address" className="block text-sm font-medium">Office Address</Label>
                         <Textarea
-                            value={preferredDeployment.deployment_area_address}
+                            value={capturedData.deployment_area_address}
                             id="deployment_area_address"
                             name="deployment_area_address"
                             placeholder="Enter Office Address"
                             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                             rows={4}
-                            onChange={(e) => updatingData("deployment_area_address", e.target.value)}
+                            onChange={(e) => updateFormData({deployment_area_address: e.target.value})}
                         />
                         {errors?.deployment_area_address && (
                             <p className="mt-2 text-sm text-red-500">{errors.deployment_area_address[0]}</p>
@@ -113,7 +124,7 @@ export default function PrefferedDeploymentArea({ errors }: { errors: any; }) {
                         <FormDropDown
                             id="preffered_type_of_work_id"
                             options={typeOfWorkOptions}
-                            selectedOption={preferredDeployment.preffered_type_of_work_id}
+                            selectedOption={capturedData.preffered_type_of_work_id}
                             onChange={handleTypeOfWorkChange}
                         />
                         {errors?.preffered_type_of_work_id && (

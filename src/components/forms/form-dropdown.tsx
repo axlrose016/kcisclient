@@ -82,7 +82,7 @@ export function FormDropDown({ options, selectedOption, label, onChange, id, men
 
           // disabled={readOnly}
           >
-            <span className="truncate max-w-full">{selectedId !== null ? options.find((option) => option.id === selectedId)?.name : label}</span>
+            <span className="truncate max-w-full uppercase">{selectedId !== null ? options.find((option) => option.id === selectedId)?.name : label}</span>
             <ChevronsUpDown className="opacity-50 ml-2 flex-shrink-0" />
           </Button>
         </PopoverTrigger>
@@ -93,9 +93,9 @@ export function FormDropDown({ options, selectedOption, label, onChange, id, men
               <CommandEmpty>No {label} found.</CommandEmpty>
               <CommandGroup>
                 {options.map((option) => (
-                  <CommandItem key={option.id} value={option.name} onSelect={() => handleSelect(option.id)} className="w-full max-w-[350px]">
+                  <CommandItem key={option.id} value={option.name} onSelect={() => handleSelect(option.id)} className="w-full max-w-full">
 
-                    <span className="relative z-10 text-ellipsis max-w-[250px]">{option.name}</span>
+                    <span className="relative z-10 text-ellipsis max-w-full uppercase">{option.name}</span>
                     <Check className={cn("ml-auto", selectedId === option.id ? "opacity-100" : "opacity-0")} />
                   </CommandItem>
                 ))}

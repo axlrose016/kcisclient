@@ -1,4 +1,4 @@
-import { EntityTable } from "dexie";
+import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
 import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { IUser, IUserAccess } from "@/components/interfaces/iuser";
@@ -1219,7 +1219,7 @@ export const seedLibIdCard: ILibIdCard[] = [
 export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     {
         "id": 1,
-        "educational_attainment_description": "College Graduate",
+        "educational_attainment_description": "N/A",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1233,7 +1233,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 2,
-        "educational_attainment_description": "College Level",
+        "educational_attainment_description": "NO FORMAL EDUCATION",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1247,7 +1247,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 3,
-        "educational_attainment_description": "Doctorate Level",
+        "educational_attainment_description": "DAYCARE",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1261,7 +1261,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 4,
-        "educational_attainment_description": "Elementary Graduate",
+        "educational_attainment_description": "KINDERGARTEN",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1275,7 +1275,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 5,
-        "educational_attainment_description": "Elementary Level",
+        "educational_attainment_description": "ELEMENTARY LEVEL",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1289,7 +1289,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 6,
-        "educational_attainment_description": "Highschool Graduate",
+        "educational_attainment_description": "ELEMENTARY GRADUATE",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1303,7 +1303,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 7,
-        "educational_attainment_description": "Highschool Level",
+        "educational_attainment_description": "HIGH SCHOOL LEVEL",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1317,7 +1317,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 8,
-        "educational_attainment_description": "Master Degree Graduate",
+        "educational_attainment_description": "HIGH SCHOOL GRADUATE",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1331,7 +1331,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 9,
-        "educational_attainment_description": "No Formal Education",
+        "educational_attainment_description": "COLLEGE LEVEL",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1345,7 +1345,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 10,
-        "educational_attainment_description": "With Units in Masteral Degree",
+        "educational_attainment_description": "COLLEGE GRADUATE",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1359,7 +1359,7 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
     },
     {
         "id": 11,
-        "educational_attainment_description": "Vocational",
+        "educational_attainment_description": "WITH UNITS IN MASTERS DEGREE",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1371,7 +1371,67 @@ export const seedLibEducationalAttainment: ILibEducationalAttainment[] = [
         "is_deleted": false,
         "remarks": "Seeded",
     },
-]
+    {
+        "id": 12,
+        "educational_attainment_description": "MASTERS DEGREE",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded",
+    }
+    ,
+    {
+        "id": 13,
+        "educational_attainment_description": "DOCTORATE DEGREE",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded",
+    }
+    ,
+    {
+        "id": 14,
+        "educational_attainment_description": "TECHNICAL-VOCATIONAL EDUCATION AND TRAINING",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded",
+    }
+    ,
+    {
+        "id": 15,
+        "educational_attainment_description": "MASTERS DEGREE",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded",
+    }
+];
+
 export const seedLibRelationshipToBeneficiary: ILibRelationshipToBeneficiary[] = [
     { "id": 1, "relationship_name": "Father", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 2, "relationship_name": "Mother", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
@@ -1417,9 +1477,9 @@ export const seedYearLevel: ILibYearLevel[] = [
 export const seedLibCourses: ILibCourses[] = [
     {
         "id": 1,
-        "course_code": "BSIT",
-        "course_name": "Bachelor of Science in Information Technology",
-        "course_description": "A program focused on the study of computer systems, software development, and network administration.",
+        "course_code": "BSA",
+        "course_name": "BACHELOR OF SCIENCE IN ACCOUNTANCY",
+        "course_description": "A program focused on accounting principles, financial reporting, and auditing.",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1433,9 +1493,9 @@ export const seedLibCourses: ILibCourses[] = [
     },
     {
         "id": 2,
-        "course_code": "BSTM",
-        "course_name": "Bachelor of Science in Tourism Management",
-        "course_description": "A program designed to prepare students for careers in the tourism industry, including hospitality, travel services, and event management.",
+        "course_code": "BSECE",
+        "course_name": "BACHELOR OF SCIENCE IN ELECTRONICS ENGINEERING",
+        "course_description": "A program that focuses on electronics, circuit design, and communication systems.",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1449,9 +1509,9 @@ export const seedLibCourses: ILibCourses[] = [
     },
     {
         "id": 3,
-        "course_code": "BSBA",
-        "course_name": "Bachelor of Science in Business Administration",
-        "course_description": "Focuses on business management, marketing, finance, and entrepreneurship.",
+        "course_code": "BSIE",
+        "course_name": "BACHELOR OF SCIENCE IN INDUSTRIAL ENGINEERING",
+        "course_description": "Focuses on optimizing complex processes and systems for efficiency and productivity.",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1465,9 +1525,57 @@ export const seedLibCourses: ILibCourses[] = [
     },
     {
         "id": 4,
-        "course_code": "BSN",
-        "course_name": "Bachelor of Science in Nursing",
-        "course_description": "A program that trains students to become professional nurses with a focus on healthcare and patient care.",
+        "course_code": "BSENT",
+        "course_name": "BACHELOR OF SCIENCE IN ENTREPRENEURSHIP",
+        "course_description": "A program designed to equip students with skills for starting and managing businesses.",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    },
+    {
+        "id": 5,
+        "course_code": "BSIT",
+        "course_name": "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY",
+        "course_description": "A program focused on the study of computer systems, software development, and network administration.",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    },
+    {
+        "id": 6,
+        "course_code": "BSMA",
+        "course_name": "BACHELOR OF SCIENCE IN MANAGEMENT ACCOUNTING",
+        "course_description": "A program emphasizing financial management, cost analysis, and strategic planning.",
+        "created_date": new Date().toISOString(),
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    },
+    {
+        "id": 7,
+        "course_code": "BSECE",
+        "course_name": "BACHELOR OF SCIENCE IN EARLY CHILDHOOD EDUCATION",
+        "course_description": "A program preparing students for teaching young children in educational settings.",
         "created_date": new Date().toISOString(),
         "created_by": "00000000-0000-0000-0000-000000000000",
         "last_modified_by": "",
@@ -1480,6 +1588,7 @@ export const seedLibCourses: ILibCourses[] = [
         "remarks": "Seeded"
     }
 ];
+
 export const seedLibDeploymentArea: ILibDeploymentArea[] = [
     { "id": 1, "deployment_name": "Metro Manila", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 2, "deployment_name": "Central Visayas", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
@@ -1492,15 +1601,19 @@ export const seedLibTypeOfWork: ILibTypeOfWork[] = [
     { "id": 3, "work_name": "Clerical Work", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" }
 ];
 export const seedFilesToUpload: ILibFilesToUpload[] = [
-    { "id": 1, "file_name": "Primary ID", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 2, "file_name": "Secondary ID", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 3, "file_name": "PWD ID", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 4, "file_name": "School ID", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 5, "file_name": "Certificate of Registration from School", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 6, "file_name": "TOR/Diploma/Certification from the School Registrar", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 7, "file_name": "Certificate of Indigency", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 8, "file_name": "1x1 Picture", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 9, "file_name": "Display Picture", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" }
+    { "id": 1, "file_name": "Primary ID (Front)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 2, "file_name": "Primary ID (Back)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 3, "file_name": "Secondary ID (Front)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 4, "file_name": "Secondary ID (Back)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 5, "file_name": "PWD ID (Front)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 6, "file_name": "PWD ID (Back)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 7, "file_name": "School ID (Front)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 8, "file_name": "School ID (Back)", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 9, "file_name": "Certificate of Registration from School", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 10, "file_name": "TOR/Diploma/Certification from the School Registrar", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 11, "file_name": "Certificate of Indigency", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 12, "file_name": "1x1 Picture", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 13, "file_name": "Profile Picture", "module_path": "personprofile", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" }
 ];
 export const seedIPGroup: ILibIPGroup[] = [
     ...Array.from({ length: 101 }, (_, i) => ({
@@ -1538,12 +1651,12 @@ export const seedYearServed: ILibYearServed[] = [
 ];
 
 export const seedProgramTypes: ILibProgramTypes[] = [
-    { "id": 1, "program_type_name": "FarmAralan", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 2, "program_type_name": "LAWA (Local Adaptation to Water Access)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 3, "program_type_name": "BINHI (Breaking Insufficiency through Nutritious Harvest for the Impoverished)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 4, "program_type_name": "Tara Basa Tutoring Program", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 5, "program_type_name": "Cash-for-Work Program for College Graduates and Students", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { "id": 6, "program_type_name": "Cash-for-Work Program for Economically Poor and Vulnerable Communities/Sectors", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 1, "program_type_name": "DRMB-FarmAralan", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 2, "program_type_name": "DRMB-LAWA (Local Adaptation to Water Access)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 3, "program_type_name": "DRMB-BINHI (Breaking Insufficiency through Nutritious Harvest for the Impoverished)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 4, "program_type_name": "STB-Tara Basa Tutoring Program", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 5, "program_type_name": "KC-Cash-for-Work Program for College Graduates and Students", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { "id": 6, "program_type_name": "KC-Cash-for-Work Program for Economically Poor and Vulnerable Communities/Sectors", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
 
 ];
 
@@ -1573,6 +1686,31 @@ export async function seedData() {
         await tblLibYearServed.bulkPut(seedYearServed);
         await tblLibProgramTypes.bulkPut(seedProgramTypes);
         return "Library seeded successfully!!!";
+        // try {
+        //     await dexieDb.roles.bulkPut(seedRoles);
+        //     await dexieDb.modules.bulkPut(seedModules);
+        //     await dexieDb.permissions.bulkPut(seedPermissions);
+        //     await dexieDb.lib_modality.bulkPut(seedLibModalities);
+        //     await dexieDb.lib_modality_sub_category.bulkPut(seedModalitySubCategory);
+        //     await dexieDb.lib_sex.bulkPut(seedLibSex);
+        //     await dexieDb.lib_civil_status.bulkPut(seedLibCivilStatus);
+        //     await dexieDb.lib_extension_name.bulkPut(seedLibExtensionName);
+        //     await dexieDb.lib_sectors.bulkPut(seedLibSectors);
+        //     await dexieDb.lib_id_card.bulkPut(seedLibIdCard);
+        //     await dexieDb.lib_educational_attainment.bulkPut(seedLibEducationalAttainment);
+        //     await dexieDb.lib_relationship_to_beneficiary.bulkPut(seedLibRelationshipToBeneficiary);
+        //     await dexieDb.lib_type_of_disability.bulkPut(seedTypeofDisability);
+        //     await dexieDb.lib_cfw_type.bulkPut(seedCFWType);
+        //     await dexieDb.lib_year_level.bulkPut(seedYearLevel);
+        //     await dexieDb.lib_courses.bulkPut(seedLibCourses);
+        //     await dexieDb.lib_deployment_area.bulkPut(seedLibDeploymentArea);
+        //     await dexieDb.lib_type_of_work.bulkPut(seedLibTypeOfWork);
+        //     await dexieDb.lib_files_to_upload.bulkPut(seedFilesToUpload);
+        //     console.log("Library seeded successfully!!!");
+        // } catch (error) {
+        //     console.error('Transaction failed: ', error);
+        //     throw error; 
+        // }
     } catch (error) {
         console.error("Error library seed:", error);
         return [];

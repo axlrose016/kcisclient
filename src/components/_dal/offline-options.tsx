@@ -32,4 +32,5 @@ export const getOfflineLibTypeOfWork = getOfflineLibraryOptions('lib_type_of_wor
 export const getOfflineLibFilesToUpload = getOfflineLibraryOptions('lib_files_to_upload','file_name');
 export const getOfflineLibYearServed = getOfflineLibraryOptions('lib_year_served','year_served');
 export const getOfflineLibProgramTypes = getOfflineLibraryOptions('lib_program_types','program_type_name');
+export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_ip_group', 'name')
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

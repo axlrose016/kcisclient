@@ -125,6 +125,13 @@ export default function PayrollPage() {
         setData((prevData) => [...prevData, { id: String(prevData.length + 1), ...newRecord }]);
     };
 
+    const handleRefresh = async () => {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setData(initialData);
+      };
+    
+
     return (
 
         <Card>
@@ -143,19 +150,17 @@ export default function PayrollPage() {
             </CardHeader>
             <CardContent>
 
-                <div className="min-h-screen">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="min-h-screen">
-                            <AppTable
-                                data={data}
-                                columns={columns}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onRowClick={handleRowClick}
-                                onAddNewRecord={handleAddNewRecord}
-                            />
-                        </div>
-                    </div>
+                <div className="min-h-screen"> 
+                   
+                        <AppTable
+                            data={data}
+                            columns={columns}
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
+                            onRowClick={handleRowClick}
+                            onRefresh={handleRefresh}
+                            onAddNewRecord={handleAddNewRecord}
+                        /> 
                 </div>
 
             </CardContent>
