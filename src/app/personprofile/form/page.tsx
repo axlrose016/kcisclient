@@ -1302,56 +1302,56 @@ export default function PersonProfileForm() {
         setSectorsOptions(sectors);
         console.log("Session: ", _session);
 
-        // if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
-        // const existingRecord = await dexieDb.attachments
-        //   .where("file_id")
-        //   .equals(13) //profile picture
-        //   .first();
-        // if (existingRecord?.file_path instanceof Blob) {
-        //   const blobUrl = URL.createObjectURL(existingRecord.file_path);
-        //   console.log("✅ Blob URL:", blobUrl);
-        //   setDisplayPic(blobUrl);
-        // }
-        // await Promise.all(
-        //   files_upload.map(async (file) => {
-        //     const fid = file.id;
-        //     if (isNaN(fid)) {
-        //       console.warn("⚠️ Invalid file_id:", file.id);
-        //       return;
-        //     }
-        //     const attachmentcount = await dexieDb.attachments.toArray();
-        //     if (attachmentcount.length === 0) {
-        //       if (!isMounted) {
-        //         isMounted = true;
-        //         console.log("🚀 Fetching Data...");
-        //         await Promise.all(
-        //           files_upload.map(async (file) => {
-        //             await dexieDb.attachments.put({
-        //               id: crypto.randomUUID(),
-        //               record_id: crypto.randomUUID(),
-        //               module_path: "personprofile",
-        //               file_id: file.id, //
-        //               file_name: file.name, //image1.jpg
-        //               file_type: "",
-        //               file_path: null,
-        //               created_date: new Date().toISOString(),
-        //               last_modified_date: null,
-        //               created_by: session?.id ?? "",
-        //               last_modified_by: null,
-        //               push_status_id: 0,
-        //               push_date: null,
-        //               user_id: session?.id ?? "",
-        //               deleted_date: null,
-        //               deleted_by: null,
-        //               is_deleted: false,
-        //               remarks: null,
-        //             });
-        //           }
-        //           ))
-        //       }
-        //     }
-        //   })
-        // );
+        if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+        const existingRecord = await dexieDb.attachments
+          .where("file_id")
+          .equals(13) //profile picture
+          .first();
+        if (existingRecord?.file_path instanceof Blob) {
+          const blobUrl = URL.createObjectURL(existingRecord.file_path);
+          console.log("✅ Blob URL:", blobUrl);
+          setDisplayPic(blobUrl);
+        }
+        await Promise.all(
+          files_upload.map(async (file) => {
+            const fid = file.id;
+            if (isNaN(fid)) {
+              console.warn("⚠️ Invalid file_id:", file.id);
+              return;
+            }
+            const attachmentcount = await dexieDb.attachments.toArray();
+            if (attachmentcount.length === 0) {
+              if (!isMounted) {
+                isMounted = true;
+                console.log("🚀 Fetching Data...");
+                await Promise.all(
+                  files_upload.map(async (file) => {
+                    await dexieDb.attachments.put({
+                      id: crypto.randomUUID(),
+                      record_id: crypto.randomUUID(),
+                      module_path: "personprofile",
+                      file_id: file.id, //
+                      file_name: file.name, //image1.jpg
+                      file_type: "",
+                      file_path: null,
+                      created_date: new Date().toISOString(),
+                      last_modified_date: null,
+                      created_by: session?.id ?? "",
+                      last_modified_by: null,
+                      push_status_id: 0,
+                      push_date: null,
+                      user_id: session?.id ?? "",
+                      deleted_date: null,
+                      deleted_by: null,
+                      is_deleted: false,
+                      remarks: null,
+                    });
+                  }
+                  ))
+              }
+            }
+          })
+        );
       } catch (error) {
         console.error('Error fetching data:', error);
       }
