@@ -39,9 +39,10 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
     const [EducationalAttainmentOptions, setEducationalAttainmentOptions] = useState<LibraryOption[]>([]);
     const [selectedEducationalAttainment, setSelectedEducationalAttainment] = useState("");
     const [selectedEducationalAttainmentId, setSelectedEducationalAttainmentId] = useState<number | null>(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
 
     const [dob, setDob] = useState<string>("");
-    const [age, setAge] = useState<string>("");
+    const [age, setAge] = useState<number | null>(null);
 
     const [familyMemberName, setFamilyMemberName] = useState("");
 
@@ -123,19 +124,19 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                 setEducationNames(educational_map);
                 setEducationalAttainmentOptions(educational_attainment);
                
-                let fam_com = localStorage.getItem("family_composition");
+                // let fam_com = localStorage.getItem("family_composition");
 
-                if (!fam_com) {
-                    // Initialize with an empty array if no data exists
-                    const initialData = { family_composition: [] };
-                    localStorage.setItem("family_composition", JSON.stringify(initialData));
-                    fam_com = JSON.stringify(initialData);
-                }
+                // if (!fam_com) {
+                //     // Initialize with an empty array if no data exists
+                //     const initialData = { family_composition: [] };
+                //     localStorage.setItem("family_composition", JSON.stringify(initialData));
+                //     fam_com = JSON.stringify(initialData);
+                // }
 
                 // Parse and set the state
-                const parsedData = JSON.parse(fam_com);
-                setFamilyComposition(parsedData);
-                console.log("Family Composition data:", parsedData);
+                // const parsedData = JSON.parse(fam_com);
+                // setFamilyComposition(parsedData);
+                // console.log("Family Composition data:", parsedData);
 
                 const cd = localStorage.getItem("commonData");
                 if (cd) {
@@ -184,6 +185,19 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
         setSelectedYearLevelId(id);
     };
 
+    const clearForm = () => {
+        setfamComFirstName("");
+        setfamComMiddleName("");
+        setfamComLastName("");
+        setfamComExtNameId(null);
+        setSelectedRelationshipToFamilyMemberId(null);
+        setAge(null);
+        setSelectedEducationalAttainmentId(null);
+        setfamilyMemberWork("");
+        setfamilyMemberMonthlyIncome("0.00");
+        setfamilyMemberContactNumber("");
+    };
+    
     // const handlCFWTypeChange = (id: number) => {
     //     console.log("Selected CFW Type ID (ADD):", id);
     //     setSelectedCFWTypeId(id);
@@ -246,33 +260,34 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
         } else if (selectedEducationalAttainmentId === 0) {
             errorToastFamCom("Highest educational attainment is required!");
             return;
-        } else if (!familyMemberContactNumber.trim()) {
-            errorToastFamCom("Family Member's Contact number is required!");
-            return;
         }
-        else if (Number(familyMemberContactNumber.length) < 13) {
-            errorToastFamCom("Family Member's Contact number is required!");
-            return;
-        }
+        // } else if (!familyMemberContactNumber.trim()) {
+        //     errorToastFamCom("Family Member's Contact number is required!");
+        //     return;
+        // }
+        // else if (Number(familyMemberContactNumber.length) < 13) {
+        //     errorToastFamCom("Family Member's Contact number is required!");
+        //     return;
+        // }
 
 
         else {
-            const famCom = localStorage.getItem("family_composition");
-            let prevData: any = { family_composition: [] }; // for enhancement since the fam com has sub fam com
+            // const famCom = localStorage.getItem("family_composition");
+            // let prevData: any = { family_composition: [] }; // for enhancement since the fam com has sub fam com
 
-            if (famCom) {
-                prevData = JSON.parse(famCom);
-                console.log("Parsed prevData:", prevData);
-            } else {
-                console.log("No family composition found.");
-            }
+            // if (famCom) {
+            //     prevData = JSON.parse(famCom);
+            //     console.log("Parsed prevData:", prevData);
+            // } else {
+            //     console.log("No family composition found.");
+            // }
 
-            console.log("Before:", prevData);
+            // console.log("Before:", prevData);
 
-            // Ensure `family_composition` exists
-            let familyComposition = prevData.family_composition || [];
+            // // Ensure `family_composition` exists
+            // let familyComposition = prevData.family_composition || [];
 
-            // Find the selected extensionname
+            // // Find the selected extensionname
             const selectedFamComExtNameText = famComExtensionNameOptions.find(
                 (option) => option.id === famComSelectedExtNameId)?.name || "";
 
@@ -280,10 +295,10 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                 (option) => option.id === selectedEducationalAttainmentId
             )?.name || "";
 
-            console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
+            // console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
 
             // 1 = father, 2= mother, 5 = spouse, 7 = grandfather, 8=grandmother    
-            const famComMemberExists = familyComposition.some(
+            const famComMemberExists = familyCompositionData.some(
                 (member: any) =>
                     [1, 2, 5, 7, 8].includes(selectedRelationshipToFamilyMemberId) &&
                     member.relationship_to_the_beneficiary_id === selectedRelationshipToFamilyMemberId
@@ -296,7 +311,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
 
 
             // Check for duplicate family member by name (case insensitive)
-            const famComExists = familyComposition.some((member: any) =>
+            const famComExists = familyCompositionData.some((member: any) =>
                 member.first_name === famComFirstName.toUpperCase() &&
                 member.middle_name === famComMiddleName.toUpperCase() &&
                 member.last_name === famComLastName.toUpperCase() &&
@@ -329,22 +344,14 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                 contact_number: familyMemberContactNumber,
             };
 
-            // Append the new family member to the existing family composition
-            const updatedFamilyComposition = [...familyComposition, newFamilyMember];
-
-            // Update the localStorage and state
-            const updatedData = {
-                ...prevData,
-                family_composition: updatedFamilyComposition,
-            };
-
-            localStorage.setItem("family_composition", JSON.stringify(updatedData.family_composition));
-
-            // Update the state with the new data
-            setFamilyComposition(updatedData);
-
-            console.log("Updated Family Composition:", updatedData.family_composition);
-            updatedFamComposition(updatedData.family_composition);
+            const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
+                ...familyCompositionData, // Ensure previous data exists
+                newFamilyMember,
+            ];
+          
+            updatedFamComposition(updatedData);
+            clearForm();
+            setIsDialogOpen(false);
             toast({
                 variant: "green",
                 title: "Success",
@@ -365,7 +372,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
 
     const computeAge = (dob: string) => {
         if (!dob) {
-            setAge("0");
+            setAge(0);
             return;
         }
 
@@ -383,7 +390,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
         // Ensure age is a number (in case of negative or invalid age)
         const ageNumber = Math.max(0, Number(calculatedAge)); // Ensure it's never negative
 
-        setAge(ageNumber.toString());
+        setAge(ageNumber);
     };
 
     interface FamilyCompositionData {
@@ -451,8 +458,8 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                     <div className="p-2 col-span-4 ">
                         <div className="flex justify-start">
 
-                            <Dialog modal={false}>
-                                <DialogTrigger asChild>
+                        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={false}>
+                            <DialogTrigger asChild>
                                     <p className="border px-4 py-2 ml-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition">
                                         Add New Entry
                                     </p>
@@ -611,7 +618,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="family_member_contact_number" className="block text-sm font-medium mb-2">Contact Number<span className='text-red-500'> *</span></Label>
+                                                <Label htmlFor="family_member_contact_number" className="block text-sm font-medium mb-2">Contact Number</Label>
                                                 <Input
                                                     value={familyMemberContactNumber}
                                                     type="text"

@@ -104,82 +104,82 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
 
     });
 
-    useEffect(() => {
-        // localStorage.setItem("common_data", JSON.stringify(commonData));
-        const common_data = localStorage.getItem("common_data");
-        if (common_data) {
-            const parsedCommonData = JSON.parse(common_data);
-            setSelectedModalityID(parsedCommonData.modality_id);
-        }
-    }, [commonData]);
+    // useEffect(() => {
+    //     // localStorage.setItem("common_data", JSON.stringify(commonData));
+    //     const common_data = localStorage.getItem("common_data");
+    //     if (common_data) {
+    //         const parsedCommonData = JSON.parse(common_data);
+    //         setSelectedModalityID(parsedCommonData.modality_id);
+    //     }
+    // }, [commonData]);
 
-    useEffect(() => {
-        console.log("MODALITY ID GLOBAL: ", modality_id_global);
+    // useEffect(() => {
+    //     console.log("MODALITY ID GLOBAL: ", modality_id_global);
 
-        const fetchData = async () => {
-            try {
-                // const province = await getProvinceLibraryOptions();
-                // setProvinceOptions(province);
-                // alert("Hello Lord!");
-                // const region = await fetchPIMS();
-                const region = await fetchPIMS();
+    //     const fetchData = async () => {
+    //         try {
+    //             // const province = await getProvinceLibraryOptions();
+    //             // setProvinceOptions(province);
+    //             // alert("Hello Lord!");
+    //             // const region = await fetchPIMS();
+    //             const region = await fetchPIMS();
 
-                // Ensure the response has data and map it to LibraryOption format
-                const mappedRegions: LibraryOption[] = region.map((item: any) => ({
-                    id: item.Id,         // Assuming 'id' exists in fetched data
-                    name: item.Name,     // Assuming 'name' exists in fetched data
-                }));
+    //             // Ensure the response has data and map it to LibraryOption format
+    //             const mappedRegions: LibraryOption[] = region.map((item: any) => ({
+    //                 id: item.Id,         // Assuming 'id' exists in fetched data
+    //                 name: item.Name,     // Assuming 'name' exists in fetched data
+    //             }));
 
-                setRegionOptions(mappedRegions); // Update state with mapped data
+    //             setRegionOptions(mappedRegions); // Update state with mapped data
 
-                const province = await fetchPIMSProvince();
+    //             const province = await fetchPIMSProvince();
 
-                const mappedProvince: LibraryOption[] = province.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+    //             const mappedProvince: LibraryOption[] = province.map((item: any) => ({
+    //                 id: item.Id,
+    //                 name: item.Name,
+    //             }));
 
-                setProvinceOptions(mappedProvince);
+    //             setProvinceOptions(mappedProvince);
 
-                const city = await fetchPIMSCity();
+    //             const city = await fetchPIMSCity();
 
-                const mappedCity: LibraryOption[] = city.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+    //             const mappedCity: LibraryOption[] = city.map((item: any) => ({
+    //                 id: item.Id,
+    //                 name: item.Name,
+    //             }));
 
-                setCityOptions(mappedCity);
+    //             setCityOptions(mappedCity);
 
-                const barangay = await fetchPIMSBrgy();
+    //             const barangay = await fetchPIMSBrgy();
 
-                const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
-                    id: item.Id,
-                    name: item.Name,
-                }));
+    //             const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
+    //                 id: item.Id,
+    //                 name: item.Name,
+    //             }));
 
-                setBarangayOptions(mappedBarangay);
+    //             setBarangayOptions(mappedBarangay);
 
-                if (typeof window !== "undefined") {
-                    const storedContactDetails = localStorage.getItem("contactDetails");
-                    if (storedContactDetails) {
-                        setContactDetails(JSON.parse(storedContactDetails));
-                    }
-                }
+    //             if (typeof window !== "undefined") {
+    //                 const storedContactDetails = localStorage.getItem("contactDetails");
+    //                 if (storedContactDetails) {
+    //                     setContactDetails(JSON.parse(storedContactDetails));
+    //                 }
+    //             }
 
-                const common_data = localStorage.getItem("common_data");
-                if (common_data) {
-                    const parsedCommonData = JSON.parse(common_data);
-                    setSelectedModalityID(parsedCommonData.modality_id);
-                }
+    //             const common_data = localStorage.getItem("common_data");
+    //             if (common_data) {
+    //                 const parsedCommonData = JSON.parse(common_data);
+    //                 setSelectedModalityID(parsedCommonData.modality_id);
+    //             }
 
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
+    //         } catch (error) {
+    //             console.error('Error fetching data:', error);
+    //         }
 
-        };
+    //     };
 
-        fetchData();
-    }, []);
+    //     fetchData();
+    // }, []);
  
     const handleRegionChange = (id: string) => {
         console.log("Selected Region ID:", id);
@@ -264,12 +264,11 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
         setIsSameAddress(!isSameAddress);
         capturedData.is_permanent_same_as_current_address = !isSameAddress;
         if (!isSameAddress) {
-            // capturedData.sitio_present_address = capturedData?.sitio;
-            // capturedData.region_code_present_address = capturedData?.region_code;
-            // capturedData.province_code_present_address = capturedData?.province_code;
-            // capturedData.city_code_present_address = capturedData?.city_code;
-            // capturedData.brgy_code_present_address = capturedData?.brgy_code;
-            updateFormData({sitio_present_address:capturedData?.sitio});
+            capturedData.sitio_present_address = capturedData?.sitio;
+            capturedData.region_code_present_address = capturedData?.region_code;
+            capturedData.province_code_present_address = capturedData?.province_code;
+            capturedData.city_code_present_address = capturedData?.city_code;
+            capturedData.brgy_code_present_address = capturedData?.brgy_code;
             updateFormData({region_code_present_address:capturedData?.region_code});
             updateFormData({province_code_present_address:capturedData?.province_code});
             updateFormData({city_code_present_address:capturedData?.city_code});
@@ -306,16 +305,16 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         }}
                         onChange={(e) => {
                             console.log('LocationAreaSelections > onChange', e)
-                            setSelectedRegionId(e.region_code ?? undefined);
+                            setSelectedBarangayId(e.region_code || null);
                             updatingContactDetails("region_code", e.region_code || null);
 
-                            setSelectedProvinceId(e.province_code ?? undefined);
+                            setSelectedBarangayId(e.province_code || null);
                             updatingContactDetails("province_code", e.province_code || null);
 
-                            setSelectedCityId(e.city_code ?? undefined);
+                            setSelectedBarangayId(e.city_code || null);
                             updatingContactDetails("city_code", e.city_code || null);
 
-                            setSelectedBarangayId(e.brgy_code ?? undefined);
+                            setSelectedBarangayId(e.brgy_code || null);
                             updatingContactDetails("brgy_code", e.brgy_code || null);
                         }}
                         ids={{

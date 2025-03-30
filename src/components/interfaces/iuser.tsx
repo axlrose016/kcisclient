@@ -1,6 +1,7 @@
 //IUserData and IUserrDataAccess is ginagamit para ifilter yung routes.
 //ginagamit din ito para sa middleware para hindi maaccess yung mga protected routes.
 export interface IUserData{
+  token?: string,
   name?: string,
   email?: string,
   photo?: string,

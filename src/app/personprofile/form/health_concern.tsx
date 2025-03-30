@@ -55,6 +55,7 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
   
     const handleHealthConcernChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
+        // console.log('handleHealthConcernChange > value',value)
         setSelectedHealthConcern(value);
         if (value === "no") {
             // updateCapturedData("cfw", "has_immediate_health_concern", 0);
@@ -62,13 +63,13 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
             // updateCapturedData("cfw", "immediate_health_concern", "", 4);
             // setHealthConcern("");
             // updatingHealthConcerns("immediate_health_concern", "");
-            updateFormData({has_immediate_health_concern:false,immediate_health_concern:""})
+            updateFormData({has_immediate_health_concern:false,immediate_health_concern:"no"})
 
         } else {
             // updateCapturedData("cfw", "has_immediate_health_concern", 1, 4);
             // updatingHealthConcerns("immediate_health_concern", value);
             // updatingHealthConcerns("has_immediate_health_concern", 1);
-            updateFormData({has_immediate_health_concern:true,immediate_health_concern:value})
+            updateFormData({has_immediate_health_concern:true,immediate_health_concern: ""})
 
         }
 

@@ -1,6 +1,9 @@
+import GeneratePDF from "../../components/PDF/CFW-Booklet";
+import pdfviewer from "../../components/PDF/pdfviewer";
 export default function PersonProfileDashboard() {
     return (
-        <h1>This is the Person Profile Dashboard</h1>
+        <GeneratePDF/>
     );
 }
+
 

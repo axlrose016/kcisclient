@@ -16,10 +16,12 @@ import { IPersonProfile, IPersonProfileDisability, IPersonProfileSector } from "
 import { v4 as uuidv4 } from 'uuid';
 import { flushAllTraces } from "next/dist/trace";
 
-export default function SectorDetails({ errors, capturedData, sectorData,disabilitiesData, selectedModality, updateFormData, updateSectorData, updateDisabilityData }: { errors: any; capturedData: Partial<IPersonProfile> ;sectorData: Partial<IPersonProfileSector>[]; disabilitiesData: Partial<IPersonProfileDisability>[];selectedModality: any; 
+export default function SectorDetails({ errors, capturedData, sectorData, disabilitiesData, selectedModality, updateFormData, updateSectorData, updateDisabilityData }: {
+    errors: any; capturedData: Partial<IPersonProfile>; sectorData: Partial<IPersonProfileSector>[]; disabilitiesData: Partial<IPersonProfileDisability>[]; selectedModality: any;
     updateFormData: (newData: Partial<IPersonProfile>) => void;
-    updateSectorData: (newData: Partial<IPersonProfileSector>[]) => void; 
-    updateDisabilityData: (newData: Partial<IPersonProfileDisability>[]) => void;  }) {
+    updateSectorData: (newData: Partial<IPersonProfileSector>[]) => void;
+    updateDisabilityData: (newData: Partial<IPersonProfileDisability>[]) => void;
+}) {
 
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
     const [selectedIP, setSelectedIP] = useState(""); //this is for showing and hiding group of IPs
@@ -47,13 +49,13 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
 
     const handleDisabilitiesChange = (updatedDisabilities: string[]) => {
         console.log("Selected Disabilities", updatedDisabilities);
-    
+
         // Store updated disabilities in local storage
         // localStorage.setItem("disabilities", JSON.stringify(updatedDisabilities));
-    
+
         // Track existing disability IDs
         const existingDisabilityIds = disabilitiesData.map(d => d.type_of_disability_id?.toString());
-    
+
         // Mark deleted disabilities
         const updatedData = disabilitiesData.map(disability => {
             const isExisting = updatedDisabilities.includes(disability.type_of_disability_id?.toString() ?? "");
@@ -62,29 +64,29 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
                 is_deleted: !isExisting,
             };
         });
-    
+
         // Add new disabilities if they do not exist
         const newDisabilities = updatedDisabilities.filter(id => !existingDisabilityIds.includes(id)).map(id => ({
             id: uuidv4(),
             type_of_disability_id: Number(id),
             is_deleted: false,
         }));
-    
+
         // Combine updated and new data
         const finalData = [...updatedData, ...newDisabilities];
-    
+
         // Update the disability data
-        localStorage.setItem("person_disabilities",JSON.stringify(finalData));
+        localStorage.setItem("person_disabilities", JSON.stringify(finalData));
         updateDisabilityData(finalData);
     };
-    
+
     const handleSectorChange = (sectorId: number, isSelected: boolean): void => {
         console.log(`${isSelected ? 'Adding' : 'Removing'} sector id:`, sectorId);
-    
+
         const currentData: Partial<IPersonProfileSector>[] = Array.isArray(sectorData) ? sectorData : [];
-    
+
         const existingSector = currentData.find((sector) => sector.sector_id === sectorId);
-    
+
         if (isSelected) {
             if (existingSector) {
                 if (existingSector.is_deleted) {
@@ -102,13 +104,6 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
                 currentData.push(newSector);
                 console.log("New sector added:", newSector);
             }
-
-            if(sectorId === 3){
-                updateFormData({is_pwd: true})
-            }
-            if(sectorId === 4){
-                updateFormData({is_ip: true})
-            }
         } else {
             if (existingSector) {
                 existingSector.is_deleted = true;
@@ -122,15 +117,13 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
                 currentData.push(newSector);
                 console.log("New sector added as deleted:", newSector);
             }
-
-            if(sectorId === 3){
-                updateFormData({is_pwd: false})
-            }
-            if(sectorId === 4){
-                updateFormData({is_ip: false})
-            }
         }
-     
+        if (existingSector?.sector_id === 3) {
+            updateFormData({ is_pwd: isSelected })
+        }
+        if (existingSector?.sector_id === 4) {
+            updateFormData({ is_ip: isSelected })
+        }
         updateSectorData([...currentData]);
     };
 
@@ -158,9 +151,9 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
                         answer: ""
                     }))
                     const stringedSectors = JSON.stringify(sectorFields);
-                    storedSectors = stringedSectors;          
+                    storedSectors = stringedSectors;
                 }
-   
+
                 console.log("Stored Sectors;  ", storedSectors);
 
                 const type_of_disability = await getOfflineLibTypeOfDisability(); //await getTypeOfDisabilityLibraryOptions();
@@ -179,7 +172,7 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
                     setSelectedDisabilities(JSON.parse(storedDisabs));
                 }
 
-                const ip_groups = await  getOfflineLibIPGroup();
+                const ip_groups = await getOfflineLibIPGroup();
                 setIpGroupsOptions(ip_groups);
 
                 // debugger;
@@ -213,7 +206,7 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
         const sector = currentData.find((sector) => sector.sector_id === sectorId);
         return !!sector && !sector.is_deleted;
     };
-    
+
     const isSectorUnselected = (sectorId: number): boolean => {
         const currentData: Partial<IPersonProfileSector>[] = Array.isArray(sectorData) ? sectorData : [];
         const sector = currentData.find((sector) => sector.sector_id === sectorId);
@@ -223,58 +216,68 @@ export default function SectorDetails({ errors, capturedData, sectorData,disabil
         <>
             <div className="space-y-12">
                 <div className="grid sm:grid-cols-4 sm:grid-rows-2 gap-y-5 gap-x-[50px] mb-2">
+                    {/* <div className="flex"> */}
                     {selectedModality === 25 && Array.isArray(sectorOptions) &&
-                    sectorOptions
-                        .filter((sector) => sector.id >= 1 && sector.id <= 9)
-                        .map((sector) => (
-                        <div className="p-2" key={sector.id}>
-                            <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">{sector.name}</Label>
-                            <div className="mt-1 flex items-center gap-4">
-                            {["Yes", "No"].map((value) => (
-                                <div key={value} className="flex items-center gap-1">
-                                <Input
-                                    className="w-4 h-4"
-                                    type="radio"
-                                    id={`sector${sector.id}${value}`}
-                                    name={`sector${sector.id}`}
-                                    value={value}
-                                    checked={value === "Yes" ? isSectorSelected(sector.id) : isSectorUnselected(sector.id)}
-                                    onChange={() => handleSectorChange(sector.id, value === "Yes")}
-                                />
-                                <Label htmlFor={`sector${sector.id}${value}`}>{value}</Label>
-                                </div>
+                        sectorOptions
+                            .filter((sector) => sector.id >= 1 && sector.id <= 19)
+                            .map((sector) => (
+                                <>
+                                    <div className={`p-2`} key={sector.id}>
+                                        <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">{sector.name}</Label>
+                                        <div className="mt-1 flex items-center gap-4">
+                                            {["Yes", "No"].map((value) => (
+                                                <div key={sector.id+value} className="flex items-center gap-1">
+                                                    <Input
+                                                        className="w-4 h-4"
+                                                        type="radio"
+                                                        id={`sector${sector.id}${value}`}
+                                                        name={`sector${sector.id}`}
+                                                        value={value}
+                                                        checked={value === "Yes" ? isSectorSelected(sector.id) : isSectorUnselected(sector.id)}
+                                                        onChange={() => handleSectorChange(sector.id, value === "Yes")}
+                                                    />
+                                                    <Label htmlFor={`sector${sector.id}${value}`}>{value}</Label>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        {errors?.[`sector${sector.id}`] && <p className="mt-2 text-sm text-red-500">{errors[`sector${sector.id}`]}</p>}
+                                    </div>
+
+                                    {sector.id == 6 && capturedData.is_pwd && (
+                                        <div className="p-2">
+                                            <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
+                                            <FormMultiDropDown
+                                                options={disabilityOptions}
+                                                selectedValues={disabilitiesData
+                                                    .filter((d) => !d.is_deleted && d.type_of_disability_id)
+                                                    .map((d) => d.type_of_disability_id!.toString())}
+                                                onChange={handleDisabilitiesChange}
+                                            />
+                                            {errors?.type_of_disabilities && <p className="mt-2 text-sm text-red-500">{errors.type_of_disabilities}</p>}
+                                        </div>
+                                    )}
+
+                                    {sector.id == ( capturedData.is_pwd ? 6:7) && capturedData.is_ip && (
+                                        <div className="p-2">
+                                            <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
+                                            <FormDropDown
+                                                id="ip_group"
+                                                options={ipGroupsOptions}
+                                                onChange={handleIPGroupChange}
+                                                selectedOption={selectedIpGroupId}
+                                            />
+                                            {errors?.ip_group && <p className="mt-2 text-sm text-red-500">{errors.ip_group}</p>}
+                                        </div>
+                                    )}
+
+
+                                    
+                                </>
                             ))}
-                            </div>
-                            {errors?.[`sector${sector.id}`] && <p className="mt-2 text-sm text-red-500">{errors[`sector${sector.id}`]}</p>}
-                        </div>
-                        ))}
 
-                    {capturedData.is_pwd && (
-                    <div className="p-2">
-                        <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
-                        <FormMultiDropDown
-                        options={disabilityOptions}
-                        selectedValues={disabilitiesData
-                            .filter((d) => !d.is_deleted && d.type_of_disability_id)
-                            .map((d) => d.type_of_disability_id!.toString())}
-                        onChange={handleDisabilitiesChange}
-                        />
-                        {errors?.type_of_disabilities && <p className="mt-2 text-sm text-red-500">{errors.type_of_disabilities}</p>}
-                    </div>
-                    )}
 
-                    {capturedData.is_ip && (
-                    <div className="p-2">
-                        <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
-                        <FormDropDown
-                        id="ip_group"
-                        options={ipGroupsOptions}
-                        onChange={handleIPGroupChange}
-                        selectedOption={selectedIpGroupId}
-                        />
-                        {errors?.ip_group && <p className="mt-2 text-sm text-red-500">{errors.ip_group}</p>}
-                    </div>
-                    )}
+
+
                 </div>
             </div >
 

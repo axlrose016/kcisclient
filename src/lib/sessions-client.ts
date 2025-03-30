@@ -10,6 +10,7 @@ interface SessionPayload extends JWTPayload {
   id: string;
   userData: IUserData;
   sessionExpiration: Date;
+  token: string;
 }
 
 // Use environment variable for the session secret key
@@ -17,10 +18,9 @@ const secretKey = process.env.NEXT_SESSION_SECRET_KEY;
 const encodedKey = new TextEncoder().encode(secretKey);
 
 // Function to create session
-export async function createSession(id: string, userData: IUserData): Promise<void> {
-    console.log("Secret Key ", secretKey);
+export async function createSession(id: string, userData: IUserData, token: string): Promise<void> {
     const sessionExpiration = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 1 week expiration
-    const session = await encrypt({ id, userData, sessionExpiration });
+    const session = await encrypt({ id, userData, sessionExpiration, token });
 
     // Set the session cookie
     Cookie.set('session', session, {

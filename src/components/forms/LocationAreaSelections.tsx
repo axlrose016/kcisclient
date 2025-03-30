@@ -160,7 +160,7 @@ export default function LocationAreaSelections({
                 // console.log('LocationAreaSelections > barangays', data)
                 if (data?.status) {
                     const mappedBarangay: LibraryOption[] = data.data.barangay.map((item: any) => ({
-                        id: item.code,         // Assuming 'id' exists in fetched data
+                        id: item.brgy_id,         // Assuming 'id' exists in fetched data
                         name: item.name,     // Assuming 'name' exists in fetched data
                     }));
                     setOptions((prev) => ({ ...prev, barangays: mappedBarangay }))

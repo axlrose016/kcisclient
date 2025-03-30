@@ -1,10 +1,12 @@
 import { IPersonProfile } from '@/components/interfaces/personprofile';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 
+const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
   private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
-
   // Method to sync data in bulk
   async syncBulkData(dataArray: IPersonProfile): Promise<any> {
     debugger;
@@ -13,6 +15,7 @@ class PersonProfileService {
       console.log(this.apiUrl);
       const response = await axios.post(this.apiUrl, dataArray, {
         headers: {
+          Authorization: `Bearer ${_session.token}`,
           'Content-Type': 'application/json',
         },
       });

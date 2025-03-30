@@ -86,7 +86,7 @@ export default function LoginPage() {
         }
         console.log(userData)
         console.log(user.id)
-        await createSession(user.id, userData);
+        await createSession(user.id, userData, "ABC123");
     
         toast({
           variant: "green",
@@ -114,7 +114,7 @@ export default function LoginPage() {
           const onlinePayload = await LoginService.onlineLogin(data.email, data.password);
           
           if (onlinePayload) {
-            await createSession(onlinePayload.user.id, onlinePayload.user.userData);
+            await createSession(onlinePayload.user.id, onlinePayload.user.userData, onlinePayload.token);
             toast({
               variant: "green",
               title: "Success!",

@@ -137,10 +137,12 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       saveUser();
 
       //TRY TO SYNC 
-      const uploaded = await UsersService.syncUserData(formUser, Array(formUserAccess));
-      debugger;
-      if(uploaded){
-        saveUser();
+      if(isOnline){
+        const uploaded = await UsersService.syncUserData(formUser, Array(formUserAccess));
+        debugger;
+        if(uploaded){
+          saveUser();
+        }
       }
 
       //ONLINE
@@ -155,21 +157,12 @@ export default function RegistrationForm({ className, ...props }: React.Componen
         reset();
         window.location.reload();
       }, 3000); // Adjust the delay as needed
-      // toast({
-      //   variant: "green",
-      //   title: "Success.",
-      //   description: "User Successfully Registered!",
-      //   onTransitionEnd: () => {
-      //     reset()
-      //     window.location.reload();
-      //   }
-      // })
-   // } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: "There was a problem with your request. Please try again >> " + 'error',
-     })
+
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Uh oh! Something went wrong.",
+    //     description: "There was a problem with your request. Please try again >> " + 'error',
+    //  })
     // }
   }
 

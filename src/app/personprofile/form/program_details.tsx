@@ -66,6 +66,9 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
     const [hasProgramDetails, setHasProgramDetails] = useState("");
     const [programDetailsExtensionNameOptions, setprogramDetailsExtensionNameOptions] = useState<LibraryOption[]>([]);
 
+    const [programTypeNames, setProgramTypeNames] = useState<Record<number, string>>({});
+    const [yearServedNames, setYearServedNames] = useState<Record<number, string>>({});
+
     interface ProgramDetail {
         cfw_type_id: string; // Adjust the type as needed
         cfw_type: string;
@@ -116,9 +119,13 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
 
 
                 const yearsServed = await getOfflineLibYearServed();
+                const yearsServed_map = Object.fromEntries(yearsServed.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setYearServedNames(yearsServed_map);
                 setYearServeOptions(yearsServed)
 
                 const programTypes = await getOfflineLibProgramTypes();
+                const programType_map = Object.fromEntries(programTypes.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+                setProgramTypeNames(programType_map);
                 setProgramTypesOptions(programTypes)
 
                 const family = familyComposition.map((row: any) => {
@@ -129,7 +136,13 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
                       label: fullName,
                     };
                   });
-                const family_map = Object.fromEntries(family.map((ext: { id: string; name: string }) => [ext.id, ext.name]));
+                  const bene_name = `${capturedData?.first_name || ""} ${capturedData?.middle_name || ""} ${capturedData?.last_name || ""}`.trim();
+                  family.push({
+                    id: capturedData.id,
+                    name: bene_name,
+                    label: bene_name,
+                  });                
+                  const family_map = Object.fromEntries(family.map((ext: { id: string; name: string }) => [ext.id, ext.name]));
                 setFamilyMap(family_map);
                 console.log("Family Composition", family);
                 setFamilyOptions(family);
@@ -147,16 +160,12 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
 
     const handleCFWTypeChange = (id: number) => {
         console.log("Selected CFW Type ID:", id);
-
         setSelectedProgramTypeId(id);
-        // setSelectedCFWTypeId(id);
     };
 
     const handleCFWFamilyMember = (id: string) => {
         console.log("Selected CFW Family Member ID:", id);
-
         setSelectedFamilyMember(id);
-        // setSelectedCFWTypeId(id);
     };
 
     const handleYearServedChange = (id: number) => {
@@ -167,8 +176,7 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
 
 
     const handleIsCFWFamBene = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value === 'true';
-        updateFormData({ hasProgramDetails: value });
+        updateFormData({ hasProgramDetails: JSON.parse(event.target.value) }); // Proper boolean conversion
     };
 
     useEffect(() => {
@@ -339,19 +347,19 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
                 {radioOptions.map((option) => (
                     <div key={option.id} className="flex items-center">
                         <input
-                        checked={capturedData.hasProgramDetails === option.value}
-                        onChange={handleIsCFWFamBene}
-                        id={option.id}
-                        name="cfw_program_details"
-                        type="radio"
-                        value={option.value.toString()}
-                        className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
+                            checked={capturedData.hasProgramDetails === option.value}
+                            onChange={handleIsCFWFamBene}
+                            id={option.id}
+                            name="cfw_program_details"
+                            type="radio"
+                            value={option.value.toString()} // This will pass "true" or "false" as a string
+                            className="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500"
                         />
                         <Label htmlFor={option.id} className="ml-2 text-sm font-medium text-gray-700">
-                        {option.label}
+                            {option.label}
                         </Label>
                     </div>
-                    ))}
+                ))}
                 </div>
 
 
@@ -457,8 +465,8 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
                                                 <TableCell className="text-center">{index + 1}.</TableCell>
                                                 {/* <TableCell>{programDetail.program_type_first_name} {programDetail.program_type_middle_name}  {programDetail.program_type_last_name} {programDetail.selectedExtensionName} </TableCell> */}
                                                 <TableCell>{familyMap[programDetail.family_composition_id ?? ""] || "N/A"}</TableCell>
-                                                <TableCell>{programDetail.program_type_id}</TableCell>
-                                                <TableCell className="text-center" >{programDetail.year_served_id}</TableCell>
+                                                <TableCell>{programTypeNames[programDetail.program_type_id ?? 0] || "N/A"}</TableCell>
+                                                <TableCell className="text-center" >{yearServedNames[programDetail.year_served_id ?? 0] || "N/A"}</TableCell>
                                                 <TableCell className="text-center">
                                                     <div className="flex space-x-2 text-center">
 

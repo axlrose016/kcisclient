@@ -1,9 +1,11 @@
 import { IUser, IUserAccess } from '@/components/interfaces/iuser';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 
 
 class UsersService {
-  private userApi = 'https://kcnfms.dswd.gov.ph/api/auth_users/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+  private userApi = 'http://10.10.10.162:9000/api/auth_users/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
 
   async syncUserData(userData: IUser,userAccess: IUserAccess[]): Promise<any> {
     const payload = {

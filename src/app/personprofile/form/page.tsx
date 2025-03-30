@@ -124,7 +124,7 @@ export default function PersonProfileForm() {
       const familyCompositionMap = new Map(
         validNewData.map((familyComposition) => [familyComposition.id ?? JSON.stringify(familyComposition), familyComposition])
       );
-
+      localStorage.setItem("family_composition",JSON.stringify(Array.from(familyCompositionMap.values())));
       return Array.from(familyCompositionMap.values());
     });
   }
@@ -298,6 +298,7 @@ export default function PersonProfileForm() {
 
   const handleErrorClick = (tabValue: any, fieldId: any) => {
     // alert(activeTab + ' ' + tabValue)
+    console.log('handleErrorClick >',{tabValue,fieldId})
     if (tabValue !== "basic_information") {
       setActiveTab(activeTab);
 
@@ -361,7 +362,7 @@ export default function PersonProfileForm() {
               button.scrollIntoView({ behavior: "smooth", block: "center" });
               button.click(); // Simulate button click
             } else {
-              alert("button not clicked")
+              // alert("button not clicked")
               console.warn("Dropdown button not found inside FormDropDown.");
             }
           } else {
@@ -743,106 +744,127 @@ export default function PersonProfileForm() {
               remarks: "Person Profile Created",
             }
 
-            formPersonProfileSector = formSectorData.map((sector) => ({
-              id: uuidv4(),
-              person_profile_id: _id,
-              sector_id: sector.sector_id ?? 0,
-              user_id: session.id,
-              created_by: session.id,
-              created_date: new Date().toISOString(),
-              last_modified_by: null,
-              last_modified_date: null,
-              push_date: null,
-              push_status_id: 2,
-              deleted_by: null,
-              deleted_date: null,
-              is_deleted: false,
-              remarks: "Person Profile Sector Created",
-            }));
+            formPersonProfileSector = formSectorData.map((sector) => {
+              const sector_id = sector.id ?? uuidv4(); // Declare the variable properly
 
-            formPersonProfileDisability = formDisabilitiesData.map((disability) => ({
-              id: uuidv4(),
-              person_profile_id: _id,
-              type_of_disability_id: disability.type_of_disability_id ?? 0,
-              user_id: session.id,
-              created_by: session.id,
-              created_date: new Date().toISOString(),
-              last_modified_by: null,
-              last_modified_date: null,
-              push_date: null,
-              push_status_id: 2,
-              deleted_by: null,
-              deleted_date: null,
-              is_deleted: false,
-              remarks: "Person Profile Disability Created",
-            }));
+              return {
+                id: sector_id,
+                person_profile_id: _id,
+                sector_id: sector.sector_id ?? 0,
+                user_id: session.id,
+                created_by: session.id,
+                created_date: new Date().toISOString(),
+                last_modified_by: null,
+                last_modified_date: null,
+                push_date: null,
+                push_status_id: 2,
+                deleted_by: null,
+                deleted_date: null,
+                is_deleted: false,
+                remarks: "Person Profile Sector Created",
+              }
+            });
 
-            formPersonProfileFamilyComposition = formFamilyCompositionData.map((fcd) => ({
-              id: uuidv4(),
-              person_profile_id: _id,
-              first_name: fcd.first_name ?? "",
-              middle_name: fcd.middle_name ?? "",
-              last_name: fcd.last_name ?? "",
-              extension_name_id: fcd.extension_name_id ?? 0,
-              birthdate: fcd.birthdate ?? "",
-              age: fcd.age ?? 0,
-              contact_number: fcd.contact_number ?? null,
-              highest_educational_attainment_id: fcd.highest_educational_attainment_id ?? 0,
-              monthly_income: fcd.monthly_income ?? "",
-              relationship_to_the_beneficiary_id: fcd.relationship_to_the_beneficiary_id ?? 0,
-              work: fcd.work ?? "",
-              user_id: session.id,
-              created_by: session.id,
-              created_date: new Date().toISOString(),
-              last_modified_by: null,
-              last_modified_date: null,
-              push_date: null,
-              push_status_id: 2,
-              deleted_by: null,
-              deleted_date: null,
-              is_deleted: false,
-              remarks: "Person Profile Disability Created",
-            }));
+            formPersonProfileDisability = formDisabilitiesData.map((disability) => {
+              const disability_id = disability.id ?? uuidv4(); // Declare the variable properly
 
-            formPersonCFWFamDetails = formCFWFamDetailsData.map((cfwFam) => ({
-              id: uuidv4(),
-              person_profile_id: _id,
-              family_composition_id: cfwFam.family_composition_id ?? "",
-              program_type_id: cfwFam.program_type_id ?? 0,
-              year_served_id: cfwFam.year_served_id ?? 0,
-              user_id: session.id,
-              created_by: session.id,
-              created_date: new Date().toISOString(),
-              last_modified_by: null,
-              last_modified_date: null,
-              push_date: null,
-              push_status_id: 2,
-              deleted_by: null,
-              deleted_date: null,
-              is_deleted: false,
-              remarks: "Person Profile CFW Family Program Details Created",
-            }));
+              return {
+                id: disability_id,
+                person_profile_id: _id,
+                type_of_disability_id: disability.type_of_disability_id ?? 0,
+                user_id: session.id,
+                created_by: session.id,
+                created_date: new Date().toISOString(),
+                last_modified_by: null,
+                last_modified_date: null,
+                push_date: null,
+                push_status_id: 2,
+                deleted_by: null,
+                deleted_date: null,
+                is_deleted: false,
+                remarks: "Person Profile Disability Created",
+                }
+            });
+      
+            formPersonProfileFamilyComposition = formFamilyCompositionData.map((fcd) => {
+              const fcd_id = fcd.id ?? uuidv4(); // Declare the variable properly
+            
+              return {
+                id: fcd_id,
+                person_profile_id: _id,
+                first_name: fcd.first_name ?? "",
+                middle_name: fcd.middle_name ?? "",
+                last_name: fcd.last_name ?? "",
+                extension_name_id: fcd.extension_name_id ?? 0,
+                birthdate: fcd.birthdate ?? "",
+                age: fcd.age ?? 0,
+                contact_number: fcd.contact_number ?? null,
+                highest_educational_attainment_id: fcd.highest_educational_attainment_id ?? 0,
+                monthly_income: fcd.monthly_income ?? "",
+                relationship_to_the_beneficiary_id: fcd.relationship_to_the_beneficiary_id ?? 0,
+                work: fcd.work ?? "",
+                user_id: session.id,
+                created_by: session.id,
+                created_date: new Date().toISOString(),
+                last_modified_by: null,
+                last_modified_date: null,
+                push_date: null,
+                push_status_id: 2,
+                deleted_by: null,
+                deleted_date: null,
+                is_deleted: false,
+                remarks: "Person Profile Disability Created",
+              };
+            });
+            
 
-            formAttachments = formAttachmentsData.map((attachment) => ({
-              id: uuidv4(),
-              record_id: _id,
-              file_path: attachment.file_path ?? null, //blob
-              file_name: attachment.file_name ?? "",
-              file_id: attachment.file_id ?? 0,
-              file_type: attachment.file_type ?? "",
-              module_path: attachment.module_path ?? "",
-              user_id: session.id,
-              created_by: session.id,
-              created_date: new Date().toISOString(),
-              last_modified_by: null,
-              last_modified_date: null,
-              push_date: null,
-              push_status_id: 2,
-              deleted_by: null,
-              deleted_date: null,
-              is_deleted: false,
-              remarks: "Person Profile Attachment Created",
-            }));
+            formPersonCFWFamDetails = formCFWFamDetailsData.map((cfwFam) => {
+              const cfwFam_id = cfwFam.id ?? uuidv4(); // Declare the variable properly
+
+              return{
+                id: cfwFam_id,
+                person_profile_id: _id,
+                family_composition_id: cfwFam.family_composition_id ?? "",
+                program_type_id: cfwFam.program_type_id ?? 0,
+                year_served_id: cfwFam.year_served_id ?? 0,
+                user_id: session.id,
+                created_by: session.id,
+                created_date: new Date().toISOString(),
+                last_modified_by: null,
+                last_modified_date: null,
+                push_date: null,
+                push_status_id: 2,
+                deleted_by: null,
+                deleted_date: null,
+                is_deleted: false,
+                remarks: "Person Profile CFW Family Program Details Created",
+              }
+            });
+
+            formAttachments = formAttachmentsData.map((attachment) => {
+              const attachment_id = attachment.id ?? uuidv4(); // Declare the variable properly
+
+              return {
+                id: attachment_id,
+                record_id: _id,
+                file_path: attachment.file_path ?? null, //blob
+                file_name: attachment.file_name ?? "",
+                file_id: attachment.file_id ?? 0,
+                file_type: attachment.file_type ?? "",
+                module_path: attachment.module_path ?? "",
+                user_id: session.id,
+                created_by: session.id,
+                created_date: new Date().toISOString(),
+                last_modified_by: null,
+                last_modified_date: null,
+                push_date: null,
+                push_status_id: 2,
+                deleted_by: null,
+                deleted_date: null,
+                is_deleted: false,
+                remarks: "Person Profile Attachment Created",
+              }
+            });
           }
 
           dexieDb.open();
@@ -883,6 +905,7 @@ export default function PersonProfileForm() {
     saveData();
   }, [confirmed])
 
+  
   const [isAccepted, setIsAccepted] = useState(false);
   const [chkToggle, setChkToggle] = useState(true);
   const [btnToggle, setbtnToggle] = useState(false);
@@ -955,13 +978,13 @@ export default function PersonProfileForm() {
         // 2 validation
         if (!formData?.modality_id) { errorToast("Modality is required!"); return; }
         if (!formData?.first_name) { errorToast("First name is required!"); return; }
-        if (!formData?.middle_name) { errorToast("Middle name is required!"); return; }
+        if (formData.has_middle_name && !formData?.middle_name) { errorToast("Middle name is required!"); return; }
         if (!formData?.last_name) { errorToast("Last name is required!"); return; }
         if (!formData?.birthdate) { errorToast("Birthdate is required!"); return; }
         if (!formData?.age || formData?.age <= 18) { errorToast("Valid age is required!"); return; }
         // if (!parsedCommonData.philsys_id_no) { errorToast("PhilSys ID number is required!"); return; }
         if (!formData?.birthplace) { errorToast("Birthplace is required!"); return; }
-        if (!formData?.extension_name_id) { errorToast("Extension name is required!"); return; }
+        // if (!formData?.extension_name_id) { errorToast("Extension name is required!"); return; }
         if (!formData?.sex_id) { errorToast("Sex is required!"); return; }
         if (!formData?.civil_status_id) { errorToast("Civil status is required!"); return; }
         const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
@@ -1032,9 +1055,10 @@ export default function PersonProfileForm() {
 
 
         const storedHealthConcern = localStorage.getItem("healthConcerns");
-        if (!formData?.has_immediate_health_concern) { errorToast("Health Concern required!"); return; }
+        console.log('has_immediate_health_concern',formData.has_immediate_health_concern)
+        if (formData?.has_immediate_health_concern == null || undefined) { errorToast("Health Concern required!","details","has_immediate_health_concern"); return; }
         //const parsedHealthConcerns = JSON.parse(storedHealthConcern);
-        if (formData?.has_immediate_health_concern === true && (!formData?.immediate_health_concern || formData?.immediate_health_concern == "")) { errorToast("Health Concern details is required!"); return; }
+        if (formData?.has_immediate_health_concern === true && (!formData?.immediate_health_concern || formData?.immediate_health_concern == "")) { errorToast("Health Concern details is required!","details","immediate_health_concern"); return; }
 
 
         //const storedEmployment = localStorage.getItem("employment");
@@ -1074,7 +1098,7 @@ export default function PersonProfileForm() {
 
 
         const storedSectors = localStorage.getItem("person_sectors");
-        if (!formSectorData || formSectorData.length <= 0) { errorToast("Sectors required!", "sector", ""); return; }
+        if (!formSectorData) { errorToast("Sectors required!", "sector", ""); return; }
         // const parsedSectors = JSON.parse(storedSectors) as IPersonProfileSector[];
 
         // Check if there is at least one non-empty "YES" in the sectors
@@ -1107,8 +1131,6 @@ export default function PersonProfileForm() {
           appendData("ip_group_id", parsedIpGroupId);
         }
 
-        if (!formFamilyCompositionData) { errorToast("Family composition is required!", "family_composition", ""); return; }
-        // console.log(parsedFamilyComposition.family_composition.length);
 
         // debugger;
         const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
@@ -1122,7 +1144,10 @@ export default function PersonProfileForm() {
 
         }
 
-      
+        if (!formFamilyCompositionData) { errorToast("Family composition is required!", "family_composition", ""); return; }
+        // console.log(parsedFamilyComposition.family_composition.length);
+
+
 
 
 
@@ -1133,7 +1158,7 @@ export default function PersonProfileForm() {
         if (!formData?.campus) { errorToast("Campus is required!"); return; }
         if (!formData?.school_address) { errorToast("School address is required!"); return; }
         if (formData?.course_id === 0) { errorToast("Course is required!"); return; }
-        if (!formData?.year_graduated) { errorToast("Year graduated is required!"); return; }
+        if (formData.is_graduate && !formData?.year_graduated) { errorToast("Year graduated is required!"); return; }
 
         // if student to cfw
         // console.log("CFW Sub Cat ID " + parsedcfwGeneralInfo.modality_sub_category_id);
@@ -1303,6 +1328,7 @@ export default function PersonProfileForm() {
         console.log("Session: ", _session);
 
         if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+        const existingRecords = await dexieDb.attachments.toArray();
         const existingRecord = await dexieDb.attachments
           .where("file_id")
           .equals(13) //profile picture
@@ -1374,67 +1400,57 @@ export default function PersonProfileForm() {
           dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
             if(session != null || session != undefined){
               
-              let profile = await dexieDb.person_profile.where('user_id').equals(session.id).first(); // Use first() to get the first match
-              if(profile != null || profile != undefined){
-                setFormData(profile);
-              }else{
-                const profile = JSON.parse(localStorage.getItem("person_profile") || 'null') as IPersonProfile;
-                if(profile != null || profile != undefined){
+              // Fetch Profile (LocalStorage first, then Dexie)
+              let profile: IPersonProfile | null = JSON.parse(localStorage.getItem("person_profile") || "null");
+
+              if (!profile) {
+                  profile = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+              }
+
+              if (profile) {
                   setFormData(profile);
-                }else{
-                  updateFormData({ civil_status_id: 4, id:uuidv4() })
-                }
+              } else {
+                  updateFormData({ civil_status_id: 4,id:uuidv4() }); // Default value
               }
 
-              const sectors = await dexieDb.person_profile_sector.where('person_profile_id').equals(profile?.id ?? '').toArray();
-              if(sectors != null || sectors != undefined){
-                setFormSectorData(sectors);
-              }else{
-                const sectorsData = JSON.parse(localStorage.getItem("person_sectors") || 'null') as IPersonProfileSector[];
-                if (Array.isArray(sectorsData)) {
-                  updateFormSectorData(sectorsData);
-                } else {
-                  updateFormSectorData([]);
-                }
+              // Fetch Sectors (LocalStorage first, then Dexie)
+              let sectors: IPersonProfileSector[] = JSON.parse(localStorage.getItem("person_sectors") || "null") || [];
+
+              if (!Array.isArray(sectors) || sectors.length === 0) {
+                  sectors = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
               }
 
-              debugger;
-              const pwd = await dexieDb.person_profile_disability.where('person_profile_id').equals(profile?.id ?? '').toArray();
-              if (pwd !== null && pwd !== undefined && pwd.length > 0) {
-                setFormDisabilitesData(pwd);
-              }else{
-                const disabilitiesData = JSON.parse(localStorage.getItem("person_disabilities") || 'null') as Partial<IPersonProfileDisability>[];
-                debugger;
-                if(Array.isArray(disabilitiesData)){
-                  updateDisabilitiesData(disabilitiesData);
-                }else{
-                  updateDisabilitiesData([]);
-                }
+              updateFormSectorData(sectors);
+
+              // Fetch Disabilities (LocalStorage first, then Dexie)
+              let pwd: Partial<IPersonProfileDisability>[] = JSON.parse(localStorage.getItem("person_disabilities") || "null") || [];
+
+              if (!Array.isArray(pwd) || pwd.length === 0) {
+                  pwd = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
               }
 
-              const family = await dexieDb.person_profile_family_composition.where('person_profile_id').equals(profile?.id ?? '').toArray();
-              if (family !== null && family !== undefined && family.length > 0) {
-                setFormFamilyCompositionData(family);
-              }else{
-                const familyData = JSON.parse(localStorage.getItem("family_composition") || 'null') as Partial<IPersonProfileFamilyComposition>[];
-                if(Array.isArray(familyData)){
-                  updateFormFamilyCompositionData(familyData);
-                }else{
-                  updateFormFamilyCompositionData([]);
-                }
+              updateDisabilitiesData(pwd);
+
+              // Fetch Family Composition (LocalStorage first, then Dexie)
+              let family: Partial<IPersonProfileFamilyComposition>[] = JSON.parse(localStorage.getItem("family_composition") || "null") || [];
+
+              if (!Array.isArray(family) || family.length === 0) {
+                  family = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
               }
 
-              const cfw_fam_details = await dexieDb.person_profile_cfw_fam_program_details.where('person_profile_id').equals(profile?.id ?? '').toArray();
-              if(cfw_fam_details !== null && cfw_fam_details !== undefined && cfw_fam_details.length > 0){
-                setFormCFWFamDetailsData(cfw_fam_details);
-              }else{
-                const cfwFamilyDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || 'null') as Partial<IPersonProfileFamilyComposition>[];
-                if(Array.isArray(cfwFamilyDetails)){
-                  updateCFWFormData(cfwFamilyDetails);
-                }else{
-                  updateCFWFormData([]);
-                }
+              updateFormFamilyCompositionData(family);
+
+              // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
+              let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
+                  .where("person_profile_id")
+                  .equals(profile?.id ?? "")
+                  .toArray();
+
+              if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
+                  cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
               }
+
+              updateCFWFormData(cfwFamDetails);
 
               debugger;
               const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();     
@@ -1720,7 +1736,7 @@ export default function PersonProfileForm() {
                       <Input type='checkbox'
                         className="w-4 h-4 cursor-pointer"
                         id='middle_name_toggle'
-                        checked={isMiddleNameEnabled}
+                        checked={formData?.has_middle_name ?? false}
                         onChange={(e) => chkIsMiddleNameEnabled(e.target.checked)}
                       />
                       <Label htmlFor="middle_name" className="block text-md  font-medium">

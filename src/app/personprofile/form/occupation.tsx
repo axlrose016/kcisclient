@@ -148,6 +148,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                             id="current_occupation"
                             name="current_occupation"
                             type="text"
+                            disabled={!capturedData.hasOccupation}
                             placeholder={capturedData.hasOccupation ? "Enter your Occupation" : "No Occupation"}
                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 
                                 ${!capturedData.hasOccupation ? "bg-gray-200 cursor-not-allowed" : ""}`}
@@ -164,6 +165,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
+                            disabled={!capturedData.hasOccupation}
                             selectedOption={capturedData.id_card ?? ""}
                             // selectedOption={capturedData.cfw[4].id_card}
                             onChange={(value) => {
@@ -174,7 +176,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                                 }
                             }}
                             id="occupation_id_card"
-                            options={iDCardOptions}
+                            options={iDCardOptions.filter(i=> (capturedData?.age||0) < 60 && i.id !== 9 )}
                             // readOnly={employment.id_card === 11 ? true : false} // Disable if hasOccupation is false
                             readOnly={!capturedData.hasOccupation
                             }
@@ -191,6 +193,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                             id="occupation_id_card_number"
                             name="occupation_id_card_number"
                             type="text"
+                            disabled={!capturedData.hasOccupation}
                             onChange={handleChange}
                             placeholder={!capturedData.hasOccupation && !capturedData.occupation_id_card_number === true ? "Enter your ID Number" : "ID Number not applicable"}
                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 

@@ -138,7 +138,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                      
 
                 </div>
-                <div className={`p-2 col-span-4 ${!capturedData.is_graduate ? "hidden" : ""}   `}>
+                <div className={`p-2 col-span-4`}>
                     <Label htmlFor="school_name" className="block text-sm font-medium">Name of School<span className='text-red-500'> *</span></Label>
                     <Input
                         ref={isGraduateRef}
@@ -154,7 +154,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.school_name}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${!capturedData.is_graduate ? "hidden" : ""}   `}>
+                <div className={`p-2 col-span-4`}>
                     <Label htmlFor="campus" className="block text-sm font-medium">Campus<span className='text-red-500'> *</span></Label>
                     <Input
                         value={capturedData?.campus?.toUpperCase() || ''}
@@ -169,7 +169,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.campus}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${!capturedData.is_graduate ? "hidden" : ""}   `}>
+                <div className={`p-2 col-span-4`}>
                     <Label htmlFor="school_address" className="block text-sm font-medium">School Address<span className='text-red-500'> *</span></Label>
                     <Textarea
                         value={capturedData?.school_address?.toUpperCase() || ''}
@@ -184,7 +184,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.school_address}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${!capturedData.is_graduate ? "hidden" : ""}   `}>
+                <div className={`p-2 col-span-4`}>
                     <Label htmlFor="course_id" className="block text-sm font-medium">Course<span className='text-red-500'> *</span></Label>
                     <FormDropDown
                         id="course_id"
@@ -216,7 +216,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                     <FormDropDown
                         id="year_level_id"
                         options={YearLevelOptions}
-                        selectedOption={Number(capturedData.year_level_id) ?? 0}
+                        selectedOption={Number(capturedData.year_level_id) || ""}
                         onChange={(value) => inputOnchange("year_level_id", value)}
                         disabled={true}
                     // disabled={educationalAttainment.is_graduate}
