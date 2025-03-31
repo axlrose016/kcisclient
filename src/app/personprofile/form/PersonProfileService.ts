@@ -15,7 +15,7 @@ class PersonProfileService {
       console.log(this.apiUrl);
       const response = await axios.post(this.apiUrl, dataArray, {
         headers: {
-          Authorization: `Bearer ${_session.token}`,
+          Authorization: `bearer ${_session.token}`,
           'Content-Type': 'application/json',
         },
       });
