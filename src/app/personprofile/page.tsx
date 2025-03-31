@@ -1,5 +1,5 @@
-import GeneratePDF from "../../components/PDF/CFW-Booklet";
-import pdfviewer from "../../components/PDF/pdfviewer";
+import GeneratePDF from "@/components/pdf/CFW-Booklet";
+
 export default function PersonProfileDashboard() {
     return (
         <GeneratePDF/>
