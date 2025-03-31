@@ -305,16 +305,16 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         }}
                         onChange={(e) => {
                             console.log('LocationAreaSelections > onChange', e)
-                            setSelectedBarangayId(e.region_code || null);
+                            setSelectedRegion(e.region_code || "");
                             updatingContactDetails("region_code", e.region_code || null);
 
-                            setSelectedBarangayId(e.province_code || null);
+                            setSelectedProvince(e.province_code || "");
                             updatingContactDetails("province_code", e.province_code || null);
 
-                            setSelectedBarangayId(e.city_code || null);
+                            setSelectedCity(e.city_code || "");
                             updatingContactDetails("city_code", e.city_code || null);
 
-                            setSelectedBarangayId(e.brgy_code || null);
+                            setSelectedBarangay(e.brgy_code || "");
                             updatingContactDetails("brgy_code", e.brgy_code || null);
                         }}
                         ids={{

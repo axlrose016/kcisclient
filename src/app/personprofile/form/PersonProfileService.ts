@@ -9,7 +9,7 @@ class PersonProfileService {
   private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
   // Method to sync data in bulk
   async syncBulkData(dataArray: IPersonProfile): Promise<any> {
-    debugger;
+    // debugger;
     try {
       console.log(dataArray);
       console.log(this.apiUrl);

@@ -4,7 +4,7 @@ class LoginService {
   private apiUrl = 'https://kcnfms.dswd.gov.ph/api/auth_login/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
 
   async onlineLogin(email:string, password: string): Promise<any> {
-    debugger;
+    // debugger;
     const creds = {
         email: email, password: password
     }

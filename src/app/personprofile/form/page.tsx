@@ -59,7 +59,7 @@ export default function PersonProfileForm() {
   const updateFormData = (newData: Partial<IPersonProfile>) => {
     setFormData((prevData) => {
       const updatedData = { ...prevData, ...newData };
-  
+
       // Save the updated value to localStorage
       localStorage.setItem("person_profile", JSON.stringify(updatedData));
       return updatedData;
@@ -70,18 +70,18 @@ export default function PersonProfileForm() {
     setFormSectorData(() => {
       // Ensure newData is an array
       const validNewData = Array.isArray(newData) ? newData : [];
-  
+
       // Create a Map to track sectors by sector_id
       const sectorMap = new Map(
         validNewData.map((sector) => [sector.sector_id, sector])
       );
       // Return updated sector data (only from newData)
-      localStorage.setItem("person_sectors",JSON.stringify(Array.from(sectorMap.values())));
+      localStorage.setItem("person_sectors", JSON.stringify(Array.from(sectorMap.values())));
       return Array.from(sectorMap.values());
     });
   };
 
-    
+
   const updateDisabilitiesData = (newData: Partial<IPersonProfileDisability>[]) => {
     setFormDisabilitesData(() => {
       const validNewData = Array.isArray(newData) ? newData : [];
@@ -91,7 +91,7 @@ export default function PersonProfileForm() {
       );
 
       // Return updated sector data (only from newData)
-      localStorage.setItem("person_disabilities",JSON.stringify(Array.from(disabilityMap.values())));
+      localStorage.setItem("person_disabilities", JSON.stringify(Array.from(disabilityMap.values())));
       return Array.from(disabilityMap.values());
     });
   };
@@ -124,7 +124,7 @@ export default function PersonProfileForm() {
       const familyCompositionMap = new Map(
         validNewData.map((familyComposition) => [familyComposition.id ?? JSON.stringify(familyComposition), familyComposition])
       );
-      localStorage.setItem("family_composition",JSON.stringify(Array.from(familyCompositionMap.values())));
+      localStorage.setItem("family_composition", JSON.stringify(Array.from(familyCompositionMap.values())));
       return Array.from(familyCompositionMap.values());
     });
   }
@@ -136,7 +136,7 @@ export default function PersonProfileForm() {
       const attachmentMap = new Map(
         validNewData.map((attachment) => [attachment.id, attachment])
       );
-  
+
       return Array.from(attachmentMap.values());
     })
   }
@@ -298,7 +298,7 @@ export default function PersonProfileForm() {
 
   const handleErrorClick = (tabValue: any, fieldId: any) => {
     // alert(activeTab + ' ' + tabValue)
-    console.log('handleErrorClick >',{tabValue,fieldId})
+    console.log('handleErrorClick >', { tabValue, fieldId })
     if (tabValue !== "basic_information") {
       setActiveTab(activeTab);
 
@@ -381,7 +381,7 @@ export default function PersonProfileForm() {
 
   const tabs = [
     ...(formData && (formData?.modality_id === 25 || formData?.modality_id === 22)
-    ? [
+      ? [
 
       ]
       : []),
@@ -632,7 +632,7 @@ export default function PersonProfileForm() {
               sitio_present_address: formData?.sitio_present_address ?? null,
               region_code_present_address: formData?.region_code_present_address ?? null,
               province_code_present_address: formData?.province_code_present_address ?? null,
-              city_code_present_address: formData?.city_code_present_address ??null,
+              city_code_present_address: formData?.city_code_present_address ?? null,
               brgy_code_present_address: formData?.brgy_code_present_address ?? null,
               brgy_code_current: formData?.brgy_code_current ?? null,
               region_code: formData?.region_code ?? "",
@@ -659,15 +659,15 @@ export default function PersonProfileForm() {
               deployment_area_id: formData?.deployment_area_id ?? 0,
               deployment_area_address: formData?.deployment_area_address ?? "",
               preffered_type_of_work_id: formData?.preffered_type_of_work_id ?? 0,
-  
+
               modality_sub_category_id: formData?.modality_sub_category_id ?? null,
-  
-  
+
+
               is_pwd_representative: formData?.is_pwd_representative ?? null,
-  
-  
+
+
               ip_group_id: formData?.ip_group_id ?? 0,
-  
+
               cwf_category_id: null,
               cfwp_id_no: null,
               no_of_children: null,
@@ -683,25 +683,25 @@ export default function PersonProfileForm() {
               is_bdrrmc_expanded_bdrrmc: false,
               is_mdrrmc: false,
               is_hh_head: false,
-              academe:0,
-              business:0,
-              differently_abled:0,
-              farmer:0,
-              fisherfolks:0,
-              government:0,
+              academe: 0,
+              business: 0,
+              differently_abled: 0,
+              farmer: 0,
+              fisherfolks: 0,
+              government: 0,
               is_ip: formData?.is_ip ?? false,
-              is_pwd:formData?.is_pwd ?? false,
-              ngo:0,
-              po:0,
-              religious:0,
-              senior_citizen:0,
-              women:0,
-              solo_parent:0,
-              out_of_school_youth:0,
-              children_and_youth_in_need_of_special_protection:0,
-              family_heads_in_need_of_assistance:0, 
-              affected_by_disaster:0,
-              persons_with_disability:0,
+              is_pwd: formData?.is_pwd ?? false,
+              ngo: 0,
+              po: 0,
+              religious: 0,
+              senior_citizen: 0,
+              women: 0,
+              solo_parent: 0,
+              out_of_school_youth: 0,
+              children_and_youth_in_need_of_special_protection: 0,
+              family_heads_in_need_of_assistance: 0,
+              affected_by_disaster: 0,
+              persons_with_disability: 0,
               others: null,
               family_member_name: null,
               relationship_to_family_member: null,
@@ -729,7 +729,7 @@ export default function PersonProfileForm() {
               representative_has_health_concern: formData?.representative_has_health_concern ?? null,
               representative_health_concern_details: formData?.representative_health_concern_details || null,
               representative_skills: formData?.representative_skills || null,
-            
+
 
               user_id: session.id,
               created_by: session.id,
@@ -884,6 +884,7 @@ export default function PersonProfileForm() {
               localStorage.removeItem("family_composition");
               localStorage.removeItem("person_cfw_program_details");
               localStorage.removeItem("person_disabilities");
+              debugger;
               await PersonProfileService.syncBulkData(formPersonProfile);
             } catch (error) {
               console.error("Error adding Person Profile to IndexedDB", error);
@@ -905,7 +906,7 @@ export default function PersonProfileForm() {
     saveData();
   }, [confirmed])
 
-  
+
   const [isAccepted, setIsAccepted] = useState(false);
   const [chkToggle, setChkToggle] = useState(true);
   const [btnToggle, setbtnToggle] = useState(false);
@@ -985,7 +986,7 @@ export default function PersonProfileForm() {
         // if (!parsedCommonData.philsys_id_no) { errorToast("PhilSys ID number is required!"); return; }
         if (!formData?.birthplace) { errorToast("Birthplace is required!"); return; }
         // if (!formData?.extension_name_id) { errorToast("Extension name is required!"); return; }
-        if (!formData?.sex_id) { errorToast("Sex is required!"); return; }
+        if (!formData?.sex_id) { errorToast("Sex is required!", "basic_information", "sex_id"); return; }
         if (!formData?.civil_status_id) { errorToast("Civil status is required!"); return; }
         const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
         if (!formData?.modality_sub_category_id) { errorToast("Modality Sub category is required!", "basic_information", "modality_sub_category_id"); return; }
@@ -1014,7 +1015,7 @@ export default function PersonProfileForm() {
           !formData?.region_code_present_address || !formData?.province_code_present_address || !formData?.city_code_present_address ||
           !formData?.brgy_code_present_address || !formData?.sitio_present_address || !formData?.region_code_present_address || !formData?.province_code_present_address ||
           !formData?.city_code_present_address || !formData?.brgy_code_present_address || !formData?.cellphone_no || !formData?.cellphone_no_secondary || !formData?.email) {
-          errorToast("Contact Details required!", "contact", "region_contact_details"); return;
+          errorToast("Contact Details required!", "contact", "region_contact_details_present_address"); return;
         }
         // const parsedContactDetails = JSON.parse(storedContactDetails);
         if (!formData?.sitio) { errorToast("Sitio is required!"); return; }
@@ -1055,14 +1056,14 @@ export default function PersonProfileForm() {
 
 
         const storedHealthConcern = localStorage.getItem("healthConcerns");
-        console.log('has_immediate_health_concern',formData.has_immediate_health_concern)
-        if (formData?.has_immediate_health_concern == null || undefined) { errorToast("Health Concern required!","details","has_immediate_health_concern"); return; }
+        console.log('has_immediate_health_concern', formData.has_immediate_health_concern)
+        if (formData?.has_immediate_health_concern == null || undefined) { errorToast("Health Concern required!", "details", "has_immediate_health_concern"); return; }
         //const parsedHealthConcerns = JSON.parse(storedHealthConcern);
-        if (formData?.has_immediate_health_concern === true && (!formData?.immediate_health_concern || formData?.immediate_health_concern == "")) { errorToast("Health Concern details is required!","details","immediate_health_concern"); return; }
+        if (formData?.has_immediate_health_concern === true && (!formData?.immediate_health_concern || formData?.immediate_health_concern == "")) { errorToast("Health Concern details is required!", "details", "immediate_health_concern"); return; }
 
 
         //const storedEmployment = localStorage.getItem("employment");
-        if (!formData?.skills) { errorToast("Skills required!"); return; }
+        if (!formData?.skills) { errorToast("Skills required!", "occupation", "skills"); return; }
         //const parsedEmployments =formData?.skills;
         // if (!storedHealthConcern) { errorToast("Health Concern required!", "details", ""); return; }
         // const parsedHealthConcerns = JSON.parse(storedHealthConcern);
@@ -1134,7 +1135,7 @@ export default function PersonProfileForm() {
 
         // debugger;
         const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
-        debugger;
+        // debugger;
         if (formData?.hasProgramDetails == undefined) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
         // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
         if (formData?.hasProgramDetails) {
@@ -1152,9 +1153,9 @@ export default function PersonProfileForm() {
 
 
         const storedEducationalAttainment = localStorage.getItem("educational_attainment");
-        if (!storedEducationalAttainment) { errorToast("Educational Attainment data is required!"); return; }
+        if (!storedEducationalAttainment) { errorToast("Educational Attainment data is required!", "education", "school_name"); return; }
         const parsedEducationData = JSON.parse(storedEducationalAttainment);
-        if (!formData?.school_name) { errorToast("Name of school is required!"); return; }
+        if (!formData?.school_name) { errorToast("Name of school is required!", "education", "school_name"); return; }
         if (!formData?.campus) { errorToast("Campus is required!"); return; }
         if (!formData?.school_address) { errorToast("School address is required!"); return; }
         if (formData?.course_id === 0) { errorToast("Course is required!"); return; }
@@ -1165,8 +1166,8 @@ export default function PersonProfileForm() {
         // if (parsedcfwGeneralInfo.modality_sub_category_id === 1 && parsedEducationData.year_level_id === 0) { errorToast("Year level is required!"); return; }
         // if (parsedEducationData.modality_sub_category_id === 1 && parsedEducationData.year_level_id === 0) { errorToast("Year level is required!", "education", "year_level_id"); return; }
 
-        if (!formData?.deployment_area_name || !formData?.deployment_area_address) { errorToast("Preferred Deployment Area is required!"); return; }
-        if (formData.preffered_type_of_work_id === 0) { errorToast("Preferred Type of Work is required!"); return; }
+        if (!formData?.deployment_area_name || !formData?.deployment_area_address) { errorToast("Preferred Deployment Area is required!", "deployment", "deployment_area_id"); return; }
+        if (formData.preffered_type_of_work_id === 0 || formData.preffered_type_of_work_id == null) { errorToast("Preferred Type of Work is required!", "deployment", "preffered_type_of_work_id"); return; }
 
 
         // const storedAttachments = localStorage.getItem("attachments");
@@ -1393,72 +1394,72 @@ export default function PersonProfileForm() {
     // debugger;
     const fetchData = async () => {
       try {
-        debugger;
-        await dexieDb.open(); 
+        // debugger;
+        await dexieDb.open();
         await dexieDb.transaction('r', [dexieDb.person_profile,
-          dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
-          dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
-            if(session != null || session != undefined){
-              
-              // Fetch Profile (LocalStorage first, then Dexie)
-              let profile: IPersonProfile | null = JSON.parse(localStorage.getItem("person_profile") || "null");
+        dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
+        dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
+          if (session != null || session != undefined) {
 
-              if (!profile) {
-                  profile = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
-              }
+            // Fetch Profile (LocalStorage first, then Dexie)
+            let profile: IPersonProfile | null = JSON.parse(localStorage.getItem("person_profile") || "null");
 
-              if (profile) {
-                  setFormData(profile);
-              } else {
-                  updateFormData({ civil_status_id: 4,id:uuidv4() }); // Default value
-              }
+            if (!profile) {
+              profile = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+            }
 
-              // Fetch Sectors (LocalStorage first, then Dexie)
-              let sectors: IPersonProfileSector[] = JSON.parse(localStorage.getItem("person_sectors") || "null") || [];
+            if (profile) {
+              setFormData(profile);
+            } else {
+              updateFormData({ civil_status_id: 4, id: uuidv4() }); // Default value
+            }
 
-              if (!Array.isArray(sectors) || sectors.length === 0) {
-                  sectors = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
-              }
+            // Fetch Sectors (LocalStorage first, then Dexie)
+            let sectors: IPersonProfileSector[] = JSON.parse(localStorage.getItem("person_sectors") || "null") || [];
 
-              updateFormSectorData(sectors);
+            if (!Array.isArray(sectors) || sectors.length === 0) {
+              sectors = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+            }
 
-              // Fetch Disabilities (LocalStorage first, then Dexie)
-              let pwd: Partial<IPersonProfileDisability>[] = JSON.parse(localStorage.getItem("person_disabilities") || "null") || [];
+            updateFormSectorData(sectors);
 
-              if (!Array.isArray(pwd) || pwd.length === 0) {
-                  pwd = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
-              }
+            // Fetch Disabilities (LocalStorage first, then Dexie)
+            let pwd: Partial<IPersonProfileDisability>[] = JSON.parse(localStorage.getItem("person_disabilities") || "null") || [];
 
-              updateDisabilitiesData(pwd);
+            if (!Array.isArray(pwd) || pwd.length === 0) {
+              pwd = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+            }
 
-              // Fetch Family Composition (LocalStorage first, then Dexie)
-              let family: Partial<IPersonProfileFamilyComposition>[] = JSON.parse(localStorage.getItem("family_composition") || "null") || [];
+            updateDisabilitiesData(pwd);
 
-              if (!Array.isArray(family) || family.length === 0) {
-                  family = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
-              }
+            // Fetch Family Composition (LocalStorage first, then Dexie)
+            let family: Partial<IPersonProfileFamilyComposition>[] = JSON.parse(localStorage.getItem("family_composition") || "null") || [];
 
-              updateFormFamilyCompositionData(family);
+            if (!Array.isArray(family) || family.length === 0) {
+              family = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+            }
 
-              // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
-              let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
-                  .where("person_profile_id")
-                  .equals(profile?.id ?? "")
-                  .toArray();
+            updateFormFamilyCompositionData(family);
 
-              if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
-                  cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
-              }
+            // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
+            let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
+              .where("person_profile_id")
+              .equals(profile?.id ?? "")
+              .toArray();
 
-              updateCFWFormData(cfwFamDetails);
+            if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
+              cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
+            }
 
-              debugger;
-              const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();     
-              if(person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0){
-                setFormAttachmentsData(person_attachments);
-              }
+            updateCFWFormData(cfwFamDetails);
+
+            // debugger;
+            const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();
+            if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
+              setFormAttachmentsData(person_attachments);
             }
           }
+        }
         );
       } catch (error) {
         console.error("Error fetching Person Profile from IndexedDB", error);
@@ -1532,7 +1533,7 @@ export default function PersonProfileForm() {
             <DialogTitle className='p-5'>Data Privacy Statement and Beneficiary Agreement</DialogTitle>
             <DialogDescription className="max-h-[70vh] overflow-y-auto text-left">
               <span>Terms and Conditions of Engagement</span>
-              <p>This Agreement shall cover the engagement of the Beneficiary with the CFW during the period provided in the table below. The beneficiary shall at all times:</p>
+              This Agreement shall cover the engagement of the Beneficiary with the CFW during the period provided in the table below. The beneficiary shall at all times:
               <ul>
                 <li>Observe the proper code of conduct and comply with the office's rules and regulations during deployment.</li>
                 <li>Attend and participate in KALAHI-CIDSS CFW Program activities, including orientations, discussions, meetings, and training.</li>
@@ -1868,7 +1869,7 @@ export default function PersonProfileForm() {
                       maxLength={19} // 4 + 7 + 1 digits + 2 hyphens
                       // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                       className={`${!hasPhilsysId ? "bg-gray-200 cursor-not-allowed" : ""} mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500`}
-
+                      disabled={!hasPhilsysId}
                       value={formData.philsys_id_no || ""}
                       onChange={(e) => {
                         let value = e.target.value.replace(/\D/g, ""); // Remove non-numeric characters

@@ -85,7 +85,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
 
             return updatedData;
         });
-        updateFormData({[field]:value})
+        updateFormData({ [field]: value })
     };
 
     const chkIsGraduateChange = (e: any) => {
@@ -135,14 +135,18 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         </div>
 
                     </div>
-                     
+
+
 
                 </div>
-                <div className={`p-2 col-span-4`}>
-                    <Label htmlFor="school_name" className="block text-sm font-medium">Name of School<span className='text-red-500'> *</span></Label>
+                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
+                    <Label htmlFor="school_name" className="block text-sm font-medium">Name of School (Please do not abbreviate the name of the school)<span className='text-red-500'> *</span></Label>
                     <Input
                         ref={isGraduateRef}
-                        value={capturedData.school_name ? capturedData.school_name : ""}
+                        value={
+                            capturedData?.is_graduate ? capturedData.school_name : capturedData.school_name = ""
+                        }
+                        // value={capturedData.school_name ? capturedData.school_name : ""}
                         onChange={(e) => inputOnchange("school_name", e.target.value.toUpperCase())}
                         id="school_name"
                         name="school_name"
@@ -154,7 +158,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.school_name}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4`}>
+                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
                     <Label htmlFor="campus" className="block text-sm font-medium">Campus<span className='text-red-500'> *</span></Label>
                     <Input
                         value={capturedData?.campus?.toUpperCase() || ''}
@@ -169,7 +173,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.campus}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4`}>
+                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
                     <Label htmlFor="school_address" className="block text-sm font-medium">School Address<span className='text-red-500'> *</span></Label>
                     <Textarea
                         value={capturedData?.school_address?.toUpperCase() || ''}
@@ -184,7 +188,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         <p className="mt-2 text-sm text-red-500">{errors.school_address}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4`}>
+                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
                     <Label htmlFor="course_id" className="block text-sm font-medium">Course<span className='text-red-500'> *</span></Label>
                     <FormDropDown
                         id="course_id"
@@ -216,7 +220,9 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                     <FormDropDown
                         id="year_level_id"
                         options={YearLevelOptions}
-                        selectedOption={Number(capturedData.year_level_id) || ""}
+                        selectedOption={
+                            !capturedData?.is_graduate ? Number(capturedData.year_level_id) || "" : capturedData.year_level_id = 0
+                        }
                         onChange={(value) => inputOnchange("year_level_id", value)}
                         disabled={true}
                     // disabled={educationalAttainment.is_graduate}

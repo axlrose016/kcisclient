@@ -160,7 +160,7 @@ export default function LocationAreaSelections({
                 // console.log('LocationAreaSelections > barangays', data)
                 if (data?.status) {
                     const mappedBarangay: LibraryOption[] = data.data.barangay.map((item: any) => ({
-                        id: item.brgy_id,         // Assuming 'id' exists in fetched data
+                        id: item.code,         // Assuming 'id' exists in fetched data
                         name: item.name,     // Assuming 'name' exists in fetched data
                     }));
                     setOptions((prev) => ({ ...prev, barangays: mappedBarangay }))
@@ -269,9 +269,9 @@ export default function LocationAreaSelections({
                 )}
             </div >
             <div className="p-2 col-span-2 mb-3">
-                <Label htmlFor={ids.city || "barangay_contact_details"} className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
+                <Label htmlFor={ids.barangay || "barangay_contact_details"} className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
                 <FormDropDown
-                    id={ids.city || "barangay_contact_details"}
+                    id={ids.barangay || "barangay_contact_details"}
                     options={options.barangays}
                     selectedOption={selectedOption.brgy_code}
                     onChange={handleBarangayChange}

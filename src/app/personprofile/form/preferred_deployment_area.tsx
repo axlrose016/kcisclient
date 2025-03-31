@@ -83,12 +83,13 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
             <div>
                 <div className="flex grid sm:col-span-3 sm:grid-cols-3">
                     <div className="p-2 col-span-4">
-                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium mb-1">Name of Office<span className='text-red-500'> *</span></Label>
+                        <Label htmlFor="deployment_area_id" className="block text-sm font-medium mb-1">Name of Office <span className='text-red-500'> *</span></Label>
                         <Input
                             value={capturedData.deployment_area_name || ""}
                             onChange={(e) => updateFormData({deployment_area_name:e.target.value})}
                             id="deployment_area_id"
                             name="deployment_area_id"
+                            placeholder="Enter Name of Office"
                             
                         />
                         {/* <FormDropDown

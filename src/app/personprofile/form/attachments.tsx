@@ -62,7 +62,7 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
 
                 // Exclude file_ids 3, 6, and 8
                 const filteredRecords = allAttachments.filter(
-                    (record) => ![5, 6, 13].includes(Number(record.file_id))
+                    (record) => ![3, 4, 5, 6, 9, 12, 13].includes(Number(record.file_id))
                 );
                 setAttachments(allAttachments); // No error now
 

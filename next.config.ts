@@ -73,9 +73,8 @@ module.exports = withPWA({
     NEXT_PUBLIC_API_BASE_URL: process.env.API_BASE_URL,
     NEXT_PUBLIC_API_PIMS_BASE_URL: process.env.API_PIMS_BASE_URL,
     NEXT_SESSION_SECRET_KEY: process.env.SESSION_SECRET_KEY,
+    NEXT_PUBLIC_DXCLOUD_KEY: process.env.NEXT_PUBLIC_DXCLOUD_KEY,
     NEXT_PUBLIC_DXCLOUD_URL: process.env.NEXT_PUBLIC_DXCLOUD_URL,
-    NEXT_PUBLIC_DXCLOUD_KEY: process.env.NEXT_PUBLIC_DXCLOUD_KEY
-
   },
   async rewrites() {
     return [
