@@ -13,7 +13,6 @@ const getOfflineLibraryOptions = (library: string, descriptionField: string): ()
         }));
     });
 }
-
 export const getOfflineLibModalityOptions = getOfflineLibraryOptions('lib_modality', 'modality_name');
 export const getOfflineLibModalitySubCategoryOptions = getOfflineLibraryOptions('lib_modality_sub_category', 'modality_sub_category_name');
 export const getOfflineLibSexOptions = getOfflineLibraryOptions('lib_sex', 'sex_description');
@@ -26,7 +25,8 @@ export const getOfflineLibRelationshipToBeneficiary = getOfflineLibraryOptions('
 export const getOfflineLibTypeOfDisability = getOfflineLibraryOptions('lib_type_of_disability','disability_name');
 export const getOfflineLibCFWType = getOfflineLibraryOptions('lib_cfw_type','cfw_type_name');
 export const getOfflineLibYearLevel = getOfflineLibraryOptions('lib_year_level','year_level_name');
-export const getOfflineLibCourses = getOfflineLibraryOptions('lib_courses','course_name');
+export const getOfflineLibCourses = getOfflineLibraryOptions('lib_school_programs','program_name');
+export const getOfflineLibSchools = getOfflineLibraryOptions('lib_school_profiles','school_name');
 export const getOfflineLibDeploymentArea = getOfflineLibraryOptions('lib_deployment_area','deployment_name');
 export const getOfflineLibTypeOfWork = getOfflineLibraryOptions('lib_type_of_work','work_name');
 export const getOfflineLibFilesToUpload = getOfflineLibraryOptions('lib_files_to_upload','file_name');

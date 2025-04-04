@@ -232,12 +232,12 @@ export default function LocationAreaSelections({
     return (
         <>
             <div className="p-2 col-span-2">
-                <Label htmlFor={ids.region || "region_contact_details"} className="block text-sm font-medium mb-[5px]">Region<span className='text-red-500'> *</span></Label>
+                <Label htmlFor={ids.region || "region_contact_details_permanent_address"} className="block text-sm font-medium mb-[5px]">Region<span className='text-red-500'> *</span></Label>
 
                 <FormDropDown
                     selectedOption={selectedOption.region_code}
                     onChange={handleRegionChange}
-                    id={ids.region || "region_contact_details"}
+                    id={ids.region || "region_contact_details_permanent_address"}
                     options={options.regions}
                 />
                 {errors?.region_error && (
@@ -245,9 +245,9 @@ export default function LocationAreaSelections({
                 )}
             </div >
             <div className="p-2 col-span-2">
-                <Label htmlFor={ids.province || "province_contact_details"} className="block text-sm font-medium mb-[5px]">Province<span className='text-red-500'> *</span></Label>
+                <Label htmlFor={ids.province || "province_contact_details_permanent_address"} className="block text-sm font-medium mb-[5px]">Province<span className='text-red-500'> *</span></Label>
                 <FormDropDown
-                    id={ids.province || "province_contact_details"}
+                    id={ids.province || "province_contact_details_permanent_address"}
                     options={options.provinces}
                     selectedOption={selectedOption.province_code}
                     onChange={handleProvinceChange}
@@ -257,9 +257,9 @@ export default function LocationAreaSelections({
                 )}
             </div>
             <div className="p-2 col-span-2">
-                <Label htmlFor={ids.city || "municipality_contact_number"} className="block text-sm font-medium mb-[5px]">Municipality<span className='text-red-500'> *</span></Label>
+                <Label htmlFor={ids.city || "municipality_contact_details_permanent_address"} className="block text-sm font-medium mb-[5px]">Municipality<span className='text-red-500'> *</span></Label>
                 <FormDropDown
-                    id={ids.city || "municipality_contact_number"}
+                    id={ids.city || "municipality_contact_details_permanent_address"}
                     options={options.municipalities}
                     selectedOption={selectedOption.city_code}
                     onChange={handleCityChange}
@@ -269,9 +269,9 @@ export default function LocationAreaSelections({
                 )}
             </div >
             <div className="p-2 col-span-2 mb-3">
-                <Label htmlFor={ids.barangay || "barangay_contact_details"} className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
+                <Label htmlFor={ids.barangay || "barangay_contact_details_permanent_address"} className="block text-sm font-medium mb-[5px]">Barangay<span className='text-red-500'> *</span></Label>
                 <FormDropDown
-                    id={ids.barangay || "barangay_contact_details"}
+                    id={ids.barangay || "barangay_contact_details_permanent_address"}
                     options={options.barangays}
                     selectedOption={selectedOption.brgy_code}
                     onChange={handleBarangayChange}

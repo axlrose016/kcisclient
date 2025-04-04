@@ -92,7 +92,6 @@ const createFetchOfflineLibrary = (endpoint: string, errorMessage: string, offli
     return async () => fetchOfflineLibrary(endpoint, errorMessage, offline_table);
 }
 
-
 export const fetchModules = createFetchFunction("/api/modules/", "Failed to fetch modules", modules);
 export const fetchPermissions = createFetchFunction("/api/permissions/", "Failed to fetch permissions", permissions);
 export const fetchRoles = createFetchFunction("/api/roles/", "Failed to fetch roles", roles);

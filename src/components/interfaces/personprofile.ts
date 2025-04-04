@@ -64,9 +64,10 @@ export interface IPersonProfile {
   children_and_youth_in_need_of_special_protection: number;
   family_heads_in_need_of_assistance: number;
   affected_by_disaster: number;
-  persons_with_disability: number;
+  persons_with_disability: boolean | false;
   others: string | null;
-  school_name: string;
+  // school_name: string;
+  school_id: number | null;
   is_graduate: boolean | false;
   campus: string;
   school_address: string;
@@ -74,8 +75,8 @@ export interface IPersonProfile {
   year_graduated: string;
   year_level_id: number;
   skills: string;
-  family_member_name: string | null;
-  relationship_to_family_member: string | null;
+  family_member_name_id: string | null;
+  relationship_to_family_member_id: string | null;
   is_permanent_same_as_current_address: boolean | null;
   id_card: number | 0;
   occupation_id_card_number: string;
@@ -96,7 +97,7 @@ export interface IPersonProfile {
   representative_extension_name_id: number | null;
   representative_sitio: string | null;
   representative_brgy_code: string | null;
-  representative_relationship_to_beneficiary: number | null;
+  representative_relationship_to_beneficiary_id: number | null;
   representative_birthdate: string | null;
   representative_age: number | null;
   representative_occupation: string | null;

@@ -1,6 +1,6 @@
-import  { EntityTable } from 'dexie';
+import { EntityTable } from 'dexie';
 import { dexieDb } from '../databases/dexieDb'; // Assuming dexieDb is properly initialized elsewhere
-import { IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
+import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
 import { hashPassword } from '@/lib/utils';
 
@@ -10,27 +10,27 @@ const tblUserAccess = dexieDb.table('useraccess') as EntityTable<IUserAccess, 'i
 
 // Add user function
 export async function addUser(user: IUser) {
-  try {
-    return await tblUsers.add(user);
-  } catch (error) {
-    console.error("Error adding user:", error);
-    return null;
-  }
+    try {
+        return await tblUsers.add(user);
+    } catch (error) {
+        console.error("Error adding user:", error);
+        return null;
+    }
 }
-export async function bulkAddUser(users: IUser[]){
-    try{
+export async function bulkAddUser(users: IUser[]) {
+    try {
         return await tblUsers.bulkPut(users);
-    }catch(error){
+    } catch (error) {
         console.error("Error adding bulk users:", error);
         return null;
     }
 }
-export async function trxAddUserWithAccess(user:IUser, useraccess: IUserAccess){
+export async function trxAddUserWithAccess(user: IUser, useraccess: IUserAccess) {
     try {
-    dexieDb.transaction('rw', [tblUsers, tblUserAccess], async () => {
-        await tblUsers.add(user);
-        await tblUserAccess.add(useraccess);
-    });
+        dexieDb.transaction('rw', [tblUsers, tblUserAccess], async () => {
+            await tblUsers.add(user);
+            await tblUserAccess.add(useraccess);
+        });
     } catch (error) {
         console.error("Error adding user and access:", error);
         return null;
@@ -38,44 +38,44 @@ export async function trxAddUserWithAccess(user:IUser, useraccess: IUserAccess){
 }
 export async function getUsers() {
     try {
-      const users = await tblUsers.toArray(); 
-      console.log('Users:', users);
-      return users;
+        const users = await tblUsers.toArray();
+        console.log('Users:', users);
+        return users;
     } catch (error) {
-      console.error('Error retrieving users:', error);
-      return [];
+        console.error('Error retrieving users:', error);
+        return [];
     }
 }
 
-export async function getUserById(id:string){
-    try{
+export async function getUserById(id: string) {
+    try {
         return await tblUsers.where("id").equals(id).first();
-    }catch(error){
+    } catch (error) {
         return null;
     }
 }
 
-export async function getUserByEmail(email:string){
-    try{
+export async function getUserByEmail(email: string) {
+    try {
         return await tblUsers.where("email").equals(email).first();
-    }catch(error){
+    } catch (error) {
         return null;
     }
 }
 
 // Add user access
-export async function addUserAccess(useraccess: IUserAccess){
-    try{
+export async function addUserAccess(useraccess: IUserAccess) {
+    try {
         return await tblUserAccess.add(useraccess);
-    }catch(error){
+    } catch (error) {
         console.error("Error adding user access:", error);
         return null;
     }
 }
-export async function bulkAddUserAccess(useraccess: IUserAccess[]){
-    try{
+export async function bulkAddUserAccess(useraccess: IUserAccess[]) {
+    try {
         return await tblUserAccess.bulkPut(useraccess);
-    }catch(error){
+    } catch (error) {
         console.error("Error adding bulk user access:", error);
         return null;
     }
@@ -90,11 +90,10 @@ export async function getUserAccessById(id: string) {
         return [];
     }
 }
-export async function getUserData(id: string): Promise<IUserData | null>{
-    try{
+export async function getUserData(id: string): Promise<IUserData | null> {
+    try {
         const user = await tblUsers.get(id);
-        if(user==null)
-        {
+        if (user == null) {
             return null;
         }
         const userrole = await dexieDb.roles.where('id').equals(user.role_id).first();
@@ -102,15 +101,15 @@ export async function getUserData(id: string): Promise<IUserData | null>{
         console.log("User Access: ", useraccess);
         const userDataAccess: IUserDataAccess[] = [];
         for (const access of useraccess) {
-        const module = await dexieDb.modules.where('id').equals(access.module_id).first();
-        const permission = await dexieDb.permissions.where('id').equals(access.permission_id).first();
+            const module = await dexieDb.modules.where('id').equals(access.module_id).first();
+            const permission = await dexieDb.permissions.where('id').equals(access.permission_id).first();
 
-        userDataAccess.push({
-            role: userrole?.role_description,  
-            module: module?.module_description,
-            module_path: module?.module_path,
-            permission: permission?.permission_description
-        });
+            userDataAccess.push({
+                role: userrole?.role_description,
+                module: module?.module_description,
+                module_path: module?.module_path,
+                permission: permission?.permission_description
+            });
         }
         const userData: IUserData = {
             name: user?.username,
@@ -120,7 +119,7 @@ export async function getUserData(id: string): Promise<IUserData | null>{
             userAccess: userDataAccess
         }
         return userData;
-    }catch(error){
+    } catch (error) {
         console.log('Failed to Get User Data:', error);
         return null;
     }
@@ -128,8 +127,8 @@ export async function getUserData(id: string): Promise<IUserData | null>{
 
 export async function checkUserExists(email: string, username: string) {
     const isExist = await tblUsers.where('email').equals(email)
-    .or('username').equals(username)
-    .count() > 0;
+        .or('username').equals(username)
+        .count() > 0;
     return isExist;
 }
 
@@ -158,14 +157,14 @@ const saltArray = new Uint8Array(Object.values(saltObj));
 
 export const seedUser: IUser[] = [
     {
-        "id": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
-        "username": "axlrose016",
-        "email": "axlrose.villanueva.0416@gmail.com",
+        "id": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
+        "username": "kcadmin123",
+        "email": "kcadmin@gmail.com",
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
-        "salt": Array.from(saltArray ),
+        "salt": Array.from(saltArray),
         "role_id": "d4003a01-36c6-47af-aae5-13d3f04e110f",
         "created_date": "2025-03-11T06:18:58.077Z",
-        "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
+        "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
         "last_modified_by": "",
         "push_status_id": 2,
@@ -192,7 +191,7 @@ export const seedUserAccess: IUserAccess[] = [
         "push_date": "",
         "push_status_id": 2,
         "remarks": "",
-        "user_id": "78636dd9-bca4-46d1-b6aa-75168e7009f1"
+        "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
     },
     {
         "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
@@ -208,7 +207,7 @@ export const seedUserAccess: IUserAccess[] = [
         "push_date": "",
         "push_status_id": 2,
         "remarks": "",
-        "user_id": "78636dd9-bca4-46d1-b6aa-75168e7009f1"
+        "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
     },
     {
         "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
@@ -224,18 +223,152 @@ export const seedUserAccess: IUserAccess[] = [
         "push_date": "",
         "push_status_id": 2,
         "remarks": "",
-        "user_id": "78636dd9-bca4-46d1-b6aa-75168e7009f1"
+        "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
     }
 
 ];
 
+export const seedCFWSchedules: ICFWSchedules[] = [
+    {
+        id: "1",                              // Unique schedule ID
+        record_id: "emp_123",                  // Links to employee record
+        cfw_type_id: "Student",                // "Student" or "Graduate"
+        shift_type: "Fixed",                   // "Fixed", "Flexi", "Rotational"
+        date_start: new Date("2025-04-01"),    // Schedule start date
+        date_end: null,                        // Schedule end date (nullable for ongoing schedules)
+        time_in_1: "08:00:00",                 // First morning IN time (HH:MM:SS)
+        time_out_1: "12:00:00",                // First morning OUT time (HH:MM:SS)
+        time_in_2: "13:00:00",                 // Second morning IN time (HH:MM:SS)
+        time_out_2: "17:00:00",                // Second morning OUT time (HH:MM:SS)
+        time_in_3: "",                         // No afternoon session for Fixed schedule
+        time_out_3: "",
+        time_in_4: "",
+        time_out_4: "",
+        total_hours_required: 8,               // Total required hours for Fixed Graduate
+        status_id: 1,                           // Active status
+        "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "2",
+        record_id: "emp_124",
+        cfw_type_id: "Graduate",
+        shift_type: "Flexi",                   // "Flexi" shift type
+        date_start: new Date("2025-04-01"),
+        date_end: null,
+        time_in_1: "09:00:00",                 // Flexible morning IN
+        time_out_1: "12:00:00",                // Flexible morning OUT
+        time_in_2: "13:00:00",
+        time_out_2: "17:00:00",
+        time_in_3: "",                         // No afternoon session for Flexi schedule
+        time_out_3: "",
+        time_in_4: "",
+        time_out_4: "",
+        total_hours_required: 4,               // 4 hours for Flexi-Student
+        status_id: 1                           // Active status
+        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "3",
+        record_id: "emp_125",
+        cfw_type_id: "Graduate",
+        shift_type: "Fixed",                   // "Fixed" shift type
+        date_start: new Date("2025-04-01"),
+        date_end: null,
+        time_in_1: "08:00:00",                 // Fixed shift start time
+        time_out_1: "12:00:00",                // Fixed shift break
+        time_in_2: "13:00:00",                 // Fixed shift post-break IN time
+        time_out_2: "17:00:00",                // Fixed shift end time
+        time_in_3: "",
+        time_out_3: "",
+        time_in_4: "",
+        time_out_4: "",
+        total_hours_required: 8,               // 8 hours for Fixed Graduate
+        status_id: 1                           // Active status
+        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+
+
+
+];
+
+export const seedCFWTimeLogs: ICFWTimeLogs[] = [
+    {
+        id: "log_001",                               // Unique log entry ID
+        record_id: "emp_123",                         // Employee ID (links to schedules)
+        log_type: "IN",                               // "IN" log type
+        log_datetime: "2025-04-03 08:00:00",         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+        work_session: 1,                              // First session of the day (1st IN/OUT)
+        status: "Pending"                             // Status can be "Pending" or "Completed"
+        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_002",
+        record_id: "emp_123",
+        log_type: "OUT",
+        log_datetime: "2025-04-03 12:00:00",
+        work_session: 1,
+        total_work_hours: 4,                         // Optional total work hours after OUT log
+        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_003",
+        record_id: "emp_123",
+        log_type: "IN",
+        log_datetime: "2025-04-03 13:00:00",
+        work_session: 2,                              // Second session of the day (2nd IN/OUT)
+        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_004",
+        record_id: "emp_123",
+        log_type: "OUT",
+        log_datetime: "2025-04-03 17:00:00",
+        work_session: 2,
+        total_work_hours: 4,                         // Optional total work hours after OUT log
+        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_005",
+        record_id: "emp_124",
+        log_type: "IN",
+        log_datetime: "2025-04-03 09:00:00",
+        work_session: 1,
+        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_006",
+        record_id: "emp_124",
+        log_type: "OUT",
+        log_datetime: "2025-04-03 12:00:00",
+        work_session: 1,
+        total_work_hours: 3,                         // Optional total work hours after OUT log
+        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_007",
+        record_id: "emp_124",
+        log_type: "IN",
+        log_datetime: "2025-04-03 13:00:00",
+        work_session: 2,
+        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: "log_008",
+        record_id: "emp_124",
+        log_type: "OUT",
+        log_datetime: "2025-04-03 16:00:00",
+        work_session: 2,
+        total_work_hours: 3,                         // Optional total work hours after OUT log
+        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    }
+];
 
 
 export async function seedUserData() {
     try {
         await tblUsers.bulkPut(seedUser);
         await tblUserAccess.bulkPut(seedUserAccess);
-        
+
         return "User and User Access seeded successfully!!!";
     } catch (error) {
         console.error("Error User seed:", error);

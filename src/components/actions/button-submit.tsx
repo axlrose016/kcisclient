@@ -9,7 +9,7 @@ interface ButtonSubmitProps {
 
   export function ButtonSubmit({ label, disabled = false }: ButtonSubmitProps) {
     return (
-      <Button variant="default" type="submit" disabled={disabled} aria-busy={disabled}>
+      <Button variant="default" type="submit" disabled={disabled} aria-busy={disabled} className="w-full">
         {disabled ? (
           <>
             <Loader2 className="animate-spin" />

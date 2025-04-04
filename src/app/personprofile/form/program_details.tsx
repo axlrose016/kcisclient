@@ -33,11 +33,12 @@ import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileFamil
 import { getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibProgramTypes, getOfflineLibYearServed } from "@/components/_dal/offline-options";
 
 
-export default function CFWProgramDetails({ errors,capturedData, cfwFamComposition, familyComposition, updateFormData, updateCFWFormData }: { errors: any;capturedData: Partial<IPersonProfile>; 
+export default function CFWProgramDetails({ errors,capturedData, cfwFamComposition, familyComposition, updateFormData, updateCFWFormData, session }: { errors: any;capturedData: Partial<IPersonProfile>; 
     cfwFamComposition:Partial<IPersonProfileCfwFamProgramDetails>[]; 
     familyComposition:Partial<IPersonProfileFamilyComposition>[];
     updateFormData: (newData: Partial<IPersonProfile>) => void;
-    updateCFWFormData: (newData: Partial<IPersonProfileCfwFamProgramDetails>[]) => void; }) 
+    updateCFWFormData: (newData: Partial<IPersonProfileCfwFamProgramDetails>[]) => void;
+    session: any; })
     {
     //MAPPER
     const [familyMap, setFamilyMap] = useState<Record<string, string>>({});
@@ -269,6 +270,7 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
                 family_composition_id: selectedFamilyMember,
                 program_type_id: selectedProgramTypeId,
                 year_served_id: selectedYearServedId,
+                created_by: session.userData.email
             };
 
             const isExist = cfwFamComposition.some(record =>

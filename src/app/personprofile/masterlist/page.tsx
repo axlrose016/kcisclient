@@ -10,6 +10,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { useEffect, useState } from "react";
 
 export default function PersonProfileMasterlist() {
@@ -26,21 +27,32 @@ export default function PersonProfileMasterlist() {
     useEffect(() => {
         async function loadProfiles() {
             try {
-                const data = await fetchProfiles();
-                setProfiles(data);
+                // const data = await fetchProfiles();
+                // setProfiles(data);
 
-                const review_approve_decline_data = await fetchReviewApproveDecline();
-                setReviewApproveDecline(review_approve_decline_data);
-                debugger;
-                // Create a lookup object: { "record_id": "status" }
-                const statusMap = review_approve_decline_data.reduce((acc: any, item: any) => {
-                    acc[item.record_id] = item.status; // status: Pending, Review, Approve, Decline, For Revision
-                    return acc;
-                }, {});
+                // const review_approve_decline_data = await fetchReviewApproveDecline();
+                // setReviewApproveDecline(review_approve_decline_data);
+                // debugger;
+                // // Create a lookup object: { "record_id": "status" }
+                // const statusMap = review_approve_decline_data.reduce((acc: any, item: any) => {
+                //     acc[item.record_id] = item.status; // status: Pending, Review, Approve, Decline, For Revision
+                //     return acc;
+                // }, {});
 
-                setApprovalStatus(statusMap);
+                // setApprovalStatus(statusMap);
 
-                console.log("RAD ", review_approve_decline_data);
+                // console.log("RAD ", review_approve_decline_data);
+
+                
+                
+
+                
+                if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+                const dexie_person_profile = await dexieDb.person_profile.toArray();
+                const firstNames = dexie_person_profile.map(profile => profile.first_name);
+                console.log("First Names: ", firstNames);
+                // const existingRecords = await dexieDb.attachments.toArray();
+                console.log("😘Existing Records: ", dexie_person_profile);
 
             } catch (error) {
                 console.error(error);

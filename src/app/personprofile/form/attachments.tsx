@@ -27,7 +27,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { IAttachments } from "@/components/interfaces/general/attachments";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
-export default function Attachments({ errors, capturedData, updateFormData }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void }) {
+export default function Attachments({ errors, capturedData, updateFormData, session }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void; session:any }) {
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -35,51 +35,58 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
     const [filesToUploadOptions, setfilesToUploadOptions] = useState<LibraryOption[]>([]);
     const [selectedFileId, setSelectedFileId] = useState();
     const [selectedFile, setSelectedFile] = useState();
-    const [session, setSession] = useState<SessionPayload | null>(null);
 
     const [attachmentsDexie, setAttachmentsDexie] = useState({});
     const [attachments, setAttachments] = useState<IAttachments[]>([]);
     const [attachmentNames, setAttachmentNames] = useState<Record<number, string>>({});
 
+
+    let iflag = false;
+    useEffect(() => {
+
+
+        fetchAttachments();
+    }, []);
     const fetchAttachments = async () => {
+        // debugger;
         if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
 
         try {
-            const allAttachments = await dexieDb.attachments.toArray(); // Get all records
-            setAttachmentsDexie(allAttachments); // Store in state
-            console.log("✅ Fetched Attachments:", allAttachments);
+            const allAttachments = await dexieDb.attachments.toArray();
+
+            // Exclude file_ids 3, 6, and 8
+            const filteredRecords = allAttachments.filter(
+                (record) => ![3, 4, 5, 6, 9, 12].includes(Number(record.file_id))
+            );
+            setAttachments(allAttachments); // No error now
+            // setAttachments(allAttachments); // No error now
+
+            const files_to_upload = await getOfflineLibFilesToUpload();
+            const attachment_map = Object.fromEntries(files_to_upload.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+            setAttachmentNames(attachment_map);
+            updateFormData(allAttachments);
+            setAttachments(allAttachments);
+            // debugger;
+            if (!iflag) {
+                console.log("✅ Attachments fetched:", filteredRecords);
+                iflag = true;
+                return; // Break the iteration
+            }
+
         } catch (error) {
             console.error("❌ Error fetching attachments:", error);
         }
     };
 
+
     useEffect(() => {
-        const fetchAttachments = async () => {
-            if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+        console.log("Attachments updated:", attachments);
+    }, [attachments])
 
-            try {
-                const allAttachments = await dexieDb.attachments.toArray();
 
-                // Exclude file_ids 3, 6, and 8
-                const filteredRecords = allAttachments.filter(
-                    (record) => ![3, 4, 5, 6, 9, 12, 13].includes(Number(record.file_id))
-                );
-                setAttachments(allAttachments); // No error now
-
-                const files_to_upload = await getOfflineLibFilesToUpload();
-                const attachment_map = Object.fromEntries(files_to_upload.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-                setAttachmentNames(attachment_map);
-                updateFormData(allAttachments);
-                console.log("✅ Attachments fetched:", allAttachments);
-            } catch (error) {
-                console.error("❌ Error fetching attachments:", error);
-            }
-        };
-
-        fetchAttachments();
-    }, [attachments]);
 
     const handleUploadFile = async (e: ChangeEvent<HTMLInputElement>, id: number) => {
+    
         const file = e.target.files?.[0]; // Get the first selected file
         // alert(id)
         if (!file) return; // Exit if no file is selected           
@@ -122,8 +129,8 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
                     file_path: fileBlob,
                     created_date: new Date().toISOString(),
                     last_modified_date: null,
-                    user_id: session?.id ?? "",
-                    created_by: session?.id ?? "", //for changing
+                    user_id: session.id ?? "",
+                    created_by: session.userData.email ?? "", //for changing
                     last_modified_by: null,
                     push_status_id: 0,
                     push_date: null,
@@ -136,6 +143,7 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
             }
 
             e.target.value = "";
+            fetchAttachments(); // Refresh the attachments list
         } catch (error) {
             console.error("⚠️ Error handling file upload:", error);
         }
@@ -148,9 +156,6 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
                 // setfilesToUploadOptions(files_upload);
 
                 if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
-
-                const _session = await getSession() as SessionPayload;
-                setSession(_session);
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -322,7 +327,7 @@ export default function Attachments({ errors, capturedData, updateFormData }: { 
                     <div className="flex items-center space-x-2 p-5 bg-white shadow-md rounded-md mb-5">
                         {/* <Info className="w-5 h-5 text-blue-500" /> */}
                         <p className="text-xl text-black-500 flex items-center">
-                            Click the &nbsp; <Upload className="w-5 h-5 text-blue-500 inline-block" /> &nbsp; icon to upload or change a file.
+                            Click the upload icon to upload or change a file.
                         </p>
                     </div>
                 </div>

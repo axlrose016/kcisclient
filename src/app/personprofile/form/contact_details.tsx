@@ -76,7 +76,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
             }
         }
 
-        updateFormData({[field]:value});
+        updateFormData({ [field]: value });
         setContactDetails((prev: any) => {
 
             // console.log(initialContactDetails);
@@ -103,163 +103,30 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
         return {};
 
     });
-
-    // useEffect(() => {
-    //     // localStorage.setItem("common_data", JSON.stringify(commonData));
-    //     const common_data = localStorage.getItem("common_data");
-    //     if (common_data) {
-    //         const parsedCommonData = JSON.parse(common_data);
-    //         setSelectedModalityID(parsedCommonData.modality_id);
-    //     }
-    // }, [commonData]);
-
-    // useEffect(() => {
-    //     console.log("MODALITY ID GLOBAL: ", modality_id_global);
-
-    //     const fetchData = async () => {
-    //         try {
-    //             // const province = await getProvinceLibraryOptions();
-    //             // setProvinceOptions(province);
-    //             // alert("Hello Lord!");
-    //             // const region = await fetchPIMS();
-    //             const region = await fetchPIMS();
-
-    //             // Ensure the response has data and map it to LibraryOption format
-    //             const mappedRegions: LibraryOption[] = region.map((item: any) => ({
-    //                 id: item.Id,         // Assuming 'id' exists in fetched data
-    //                 name: item.Name,     // Assuming 'name' exists in fetched data
-    //             }));
-
-    //             setRegionOptions(mappedRegions); // Update state with mapped data
-
-    //             const province = await fetchPIMSProvince();
-
-    //             const mappedProvince: LibraryOption[] = province.map((item: any) => ({
-    //                 id: item.Id,
-    //                 name: item.Name,
-    //             }));
-
-    //             setProvinceOptions(mappedProvince);
-
-    //             const city = await fetchPIMSCity();
-
-    //             const mappedCity: LibraryOption[] = city.map((item: any) => ({
-    //                 id: item.Id,
-    //                 name: item.Name,
-    //             }));
-
-    //             setCityOptions(mappedCity);
-
-    //             const barangay = await fetchPIMSBrgy();
-
-    //             const mappedBarangay: LibraryOption[] = barangay.map((item: any) => ({
-    //                 id: item.Id,
-    //                 name: item.Name,
-    //             }));
-
-    //             setBarangayOptions(mappedBarangay);
-
-    //             if (typeof window !== "undefined") {
-    //                 const storedContactDetails = localStorage.getItem("contactDetails");
-    //                 if (storedContactDetails) {
-    //                     setContactDetails(JSON.parse(storedContactDetails));
-    //                 }
-    //             }
-
-    //             const common_data = localStorage.getItem("common_data");
-    //             if (common_data) {
-    //                 const parsedCommonData = JSON.parse(common_data);
-    //                 setSelectedModalityID(parsedCommonData.modality_id);
-    //             }
-
-    //         } catch (error) {
-    //             console.error('Error fetching data:', error);
-    //         }
-
-    //     };
-
-    //     fetchData();
-    // }, []);
  
-    const handleRegionChange = (id: string) => {
-        console.log("Selected Region ID:", id);
-        setSelectedRegionId(id);
-        // setLocalData((prevData) => ({
-        //     ...prevData,
-        //     region_code: id,  // Dynamically update the state
-        // }));
-        updateFormData({region_code: id});
-    };
+
+ 
 
     const [selectedRegionIDPresentAddress, setSelectedRegionIDPresentAddress] = useState<string>();
-    const [encodedSitioPermanent, setEncodedSitioPermanent] = useState("");
-    const [encodedSitioPresent, setEncodedSitioPresent] = useState("");
-    const handleRegionPresentAddressChange = (region_code_present_address: string) => {
-        console.log("Selected Region ID:", region_code_present_address);
-        setSelectedRegionIDPresentAddress(region_code_present_address);
-        updatingContactDetails("region_code_present_address", region_code_present_address);
-        updateFormData({region_code_present_address: region_code_present_address});
-    };
-
-    const handleProvinceChange = (id: string) => {
-        console.log("Selected Province ID:", id);
-        // updateCapturedData("common_data", "province_code", id);
-        setSelectedProvinceId(id);
-        // setLocalData((prevData) => ({
-        //     ...prevData,
-        //     province_code: id,  // Dynamically update the state
-        // }));
-        updateFormData({province_code: id});
-    };
+  
 
     const [selectedCityIDPresentAddress, setSelectedCityIDPresentAddress] = useState<string>();
-    const handleCityPresentAddressChange = (city_code_present_address: string) => {
-        console.log("Selected  City ID:", city_code_present_address);
-        setSelectedCityIDPresentAddress(city_code_present_address);
-        updatingContactDetails("city_code_present_address", city_code_present_address);
-        updateFormData({city_code_present_address: city_code_present_address});
-    };
-    const handleCityChange = (id: string) => {
-        console.log("Selected City ID:", id);
-        // updateCapturedData("common_data", "city_code", id);
-        setSelectedCityId(id);
-        // setLocalData((prevData) => ({
-        //     ...prevData,
-        //     city_code: id,  // Dynamically update the state
-        // }));
-        updateFormData({city_code: id});
-    };
+  
     const [selectedProvinceIDPresentAddress, setSelectedProvinceIDPresentAddress] = useState<string>();
     const handleProvincePresentAddressChange = (province_code_present_address: string) => {
         console.log("Selected  Province ID:", province_code_present_address);
         setSelectedProvinceIDPresentAddress(province_code_present_address);
         updatingContactDetails("province_code_present_address", province_code_present_address);
-        updateFormData({province_code_present_address: province_code_present_address});
+        updateFormData({ province_code_present_address: province_code_present_address });
 
     };
-
-    const handleBarangayChange = (id: string) => {
-        console.log("Selected Barangay ID:", id);
-        // updateCapturedData("common_data", "brgy_code", id);
-        setSelectedBarangayId(id);
-        // setLocalData((prevData) => ({
-        //     ...prevData,
-        //     brgy_code: id,  // Dynamically update the state
-        // }));
-        updateFormData({brgy_code: id});
-    };
+ 
 
     const [selectedBarangayIDPresentAddress, setSelectedBarangayIDPresentAddress] = useState<string>();
-    const handleBarangayPresentAddressChange = (brgy_code_present_address: string) => {
-        console.log("Selected  Barangay ID:", brgy_code_present_address);
-        setSelectedBarangayIDPresentAddress(brgy_code_present_address);
-        updatingContactDetails("brgy_code_present_address", brgy_code_present_address);
-        updateFormData({brgy_code_present_address: brgy_code_present_address});
-
-    };
+    
     const [isSameAddress, setIsSameAddress] = useState(false);
     const handleCheckSameAddress = () => {
-        debugger;
+        // debugger;
         console.log(!isSameAddress);
         setIsSameAddress(!isSameAddress);
         capturedData.is_permanent_same_as_current_address = !isSameAddress;
@@ -269,12 +136,12 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
             capturedData.province_code_present_address = capturedData?.province_code;
             capturedData.city_code_present_address = capturedData?.city_code;
             capturedData.brgy_code_present_address = capturedData?.brgy_code;
-            updateFormData({region_code_present_address:capturedData?.region_code});
-            updateFormData({province_code_present_address:capturedData?.province_code});
-            updateFormData({city_code_present_address:capturedData?.city_code});
-            updateFormData({brgy_code_present_address:capturedData?.brgy_code});
+            updateFormData({ region_code_present_address: capturedData?.region_code });
+            updateFormData({ province_code_present_address: capturedData?.province_code });
+            updateFormData({ city_code_present_address: capturedData?.city_code });
+            updateFormData({ brgy_code_present_address: capturedData?.brgy_code });
         }
-        updateFormData({is_permanent_same_as_current_address:!isSameAddress});
+        updateFormData({ is_permanent_same_as_current_address: !isSameAddress });
         updatingContactDetails("is_permanent_same_as_current_address", !isSameAddress);
     }
 
@@ -287,6 +154,10 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
         // Update parent component's state by sending the new data
         updateFormData({ [id]: value });
     };
+
+    useEffect(() => {
+         
+    }, [])
 
     return (
         <>
@@ -318,10 +189,10 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             updatingContactDetails("brgy_code", e.brgy_code || null);
                         }}
                         ids={{
-                            region: "region_contact_details_present_address",
-                            province: "province_contact_details_present_address",
-                            city: "municipality_contact_details_present_address",
-                            barangay: "barangay_contact_details_present_address",
+                            region: "region_contact_details_permanent_address",
+                            province: "province_contact_details_permanent_address",
+                            city: "municipality_contact_details_permanent_address",
+                            barangay: "barangay_contact_details_permanent_address",
                         }}
                         errors={{
                             region_error: errors?.region_contact_details,
@@ -366,8 +237,9 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                         Same as Permanent Address
                     </label>
                 </div>
-                <div className="grid sm:grid-cols-4 sm:grid-rows-2 mb-2">
+                <div className={`grid sm:grid-cols-4 sm:grid-rows-2 mb-2   ${capturedData?.is_permanent_same_as_current_address ? "opacity-50 pointer-events-none" : ""}`}>
                     <LocationAreaSelections
+
                         selectedOption={{
                             region_code: capturedData.region_code_present_address ?? "",
                             province_code: capturedData.province_code_present_address ?? "",
@@ -400,8 +272,10 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                             municipality_error: errors?.municipality_contact_details_present_address,
                             barangay_error: errors?.barangay_contact_details_present_address,
                         }}
-                    /> 
-           
+
+
+                    />
+
                     <div className="p-2 col-span-2">
                         <Label htmlFor="sitio_present_address" className="block text-sm font-medium">House No./ Street/ Purok<span className='text-red-500'> *</span></Label>
                         <Input
@@ -455,7 +329,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                                     cellphone_no: value,
                                 }));
                                 updatingContactDetails('cellphone_no', value)
-                                updateFormData({cellphone_no:value});
+                                updateFormData({ cellphone_no: value });
 
                             }}
                         />
@@ -494,7 +368,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                                     ...prev,
                                     cellphone_no_secondary: value,
                                 }));
-                                updateFormData({cellphone_no_secondary:value});
+                                updateFormData({ cellphone_no_secondary: value });
 
                             }}
                         />
@@ -534,7 +408,7 @@ export default function ContactDetails({ errors, capturedData, updateCapturedDat
                     </div>
                 </div>
 
-            </div >
+            </div>
 
 
         </>

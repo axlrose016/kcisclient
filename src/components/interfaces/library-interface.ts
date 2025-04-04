@@ -343,3 +343,52 @@ export interface ILibProgramTypes{
   is_deleted: boolean,             
   remarks: string | null,  
 }
+
+
+export interface ILibSchoolProfiles {
+  id: number;                          // Unique ID (UUID)
+  school_name: string;                // Full name of the school
+  short_name?: string;                // Abbreviated name (e.g., "MIT", optional)
+  school_code: string;                // Government-issued school ID/code
+  address: string;                    // Full address of the school
+  city_code: string;                       // City or municipality
+  province_code: string;                   // Province or state
+  region_code: string;                     // Region (e.g., Region IV-A)
+  barangay_code?: string;               // ZIP or postal code
+  email: string;                      // Official contact email
+  contact_number: string;             // Phone or landline
+  school_head: string;                // Principal / Head of the school
+  school_head_position: string;       // Position (e.g., Principal, Director)
+  website_url?: string;               // Official school website (optional)
+  established_year?: number;          // Year the school was established (optional)
+  logo_url?: string;                  // URL or path to school logo (optional)
+  type: string;                       // "Public" | "Private"
+  level: string;                      // "Elementary", "Junior High", "Senior High", "College", etc.
+  created_date: string,            
+  created_by: string,              
+  last_modified_date?: string | null, 
+  last_modified_by?: string | null,  
+  push_status_id?: number,     
+  push_date?: string,              
+  deleted_date: string | null,      
+  deleted_by: string | null,        
+  is_deleted: boolean,             
+  remarks?: string | null,  
+}
+
+export interface ILibSchoolPrograms {
+  id: number;                       // Unique ID for the program (UUID)
+  program_name: string;            // Full name of the program (e.g., "Bachelor of Science in Information Technology")
+  program_code: string;            // Program code (e.g., "BSIT")
+  description?: string;            // Description or notes
+  created_date: string,            
+  created_by: string,              
+  last_modified_date?: string | null, 
+  last_modified_by?: string | null,  
+  push_status_id?: number,     
+  push_date?: string,              
+  deleted_date: string | null,      
+  deleted_by: string | null,        
+  is_deleted: boolean,             
+  remarks?: string | null,  
+}

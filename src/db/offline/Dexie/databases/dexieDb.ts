@@ -1,6 +1,7 @@
 import { IAttachments } from '@/components/interfaces/general/attachments';
-import { IUser, IUserAccess } from '@/components/interfaces/iuser';
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
+import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from '@/components/interfaces/iuser';
+// ICity, 
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
 import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
 import { person_profile_disability, person_profile_family_composition } from '@/db/schema/personprofile';
 import Dexie, { Table } from 'dexie';
@@ -14,6 +15,7 @@ class MyDatabase extends Dexie {
     roles!: Table<IRoles, string>;
     modules!: Table<IModules, string>;
     permissions!: Table<IPermissions, string>;
+    // lib_city!: Table<ICity, string>;
     lib_modality!: Table<ILibModality, string>;
     lib_modality_sub_category!: Table<ILibModalitySubCategory, string>;
     lib_sex!: Table<ILibSex, string>;
@@ -30,6 +32,8 @@ class MyDatabase extends Dexie {
     lib_deployment_area!: Table<ILibDeploymentArea, string>;
     lib_type_of_work!: Table<ILibTypeOfWork, string>;
     lib_files_to_upload!: Table<ILibFilesToUpload, string>;
+    lib_school_profiles!: Table<ILibSchoolProfiles, string>;
+    lib_school_programs!: Table<ILibSchoolPrograms, string>;
     person_profile!: Table<IPersonProfile, string>;
     person_profile_sector!: Table<IPersonProfileSector, string>;
     person_profile_disability!: Table<IPersonProfileDisability, string>;
@@ -38,6 +42,8 @@ class MyDatabase extends Dexie {
     attachments!: Table<IAttachments, string>;
     lib_ip_group!: Table<ILibIPGroup, string>;
     lib_year_served!: Table<ILibYearServed, string>;
+    cfwschedules!: Table<ICFWSchedules, string>;
+    cfwtimelogs!: Table<ICFWTimeLogs, string>;
 
     constructor() {
         super('kcisdb');
@@ -66,24 +72,28 @@ class MyDatabase extends Dexie {
             lib_ip_group: `id, name, ${commonFields}`,
             lib_year_served: `id, year_served, ${commonFields}`,
             lib_program_types: `id, program_type_name, ${commonFields}`,
+            lib_school_profiles: `id, school_name,short_name, school_code, address, city_code, province_code, region_code, barangay_code, email, contact_number, school_head, school_head_position, website_url, established_year, logo_url, type, level, ${commonFields}`,
+            lib_school_programs: `id, program_name, program_code, ${commonFields}`,
+            cfwschedules: ` id , record_id, cfw_type_id, shift_type, date_start, date_end, time_in_1, time_out_1, time_in_2, time_out_2, time_in_3, time_out_3, time_in_4, time_out_4, total_hours_required, status_id, ${commonFields}`,
+            cfwtimelogs: `id,  record_id,  log_type,  log_datetime,  work_session,  total_work_hours,  status,  ${commonFields}`,
             attachments: `id, record_id, file_id, file_name, file_path,file_type, module_path, ${commonFields}`,
             person_profile: 'id, modality_id, cwf_category_id, cfwp_id_no, philsys_id_no, first_name, middle_name, last_name, extension_name, sex_id, civil_status_id, birthdate, age,' +
-                            'no_of_children, birthplace, is_pantawid, is_pantawid_leader, is_slp, has_immediate_health_concern, immediate_health_concern, address, sitio, brgy_code, sitio_current, ' + 
-                            'brgy_code_current, cellphone_no, cellphone_no_secondary, email, current_occupation, is_lgu_official, is_mdc, is_bdc, is_bspmc, is_bdrrmc_bdc_twg, ' + 
-                            'is_bdrrmc_expanded_bdrrmc, is_mdrrmc, is_hh_head, academe, business, differently_abled, farmer, fisherfolks, government, ip, ip_group_id, ngo, po, religious, ' + 
-                            'senior_citizen, women, solo_parent, out_of_school_youth, children_and_youth_in_need_of_special_protection, family_heads_in_need_of_assistance, affected_by_disaster, ' + 
-                            'persons_with_disability, others, is_graduate,school_name, campus, school_address, course_id, year_graduated, year_level_id, skills, family_member_name, ' + 
-                            'relationship_to_family_member, sitio_current_address, barangay_code_current, is_permanent_same_as_current_address, id_card, occupation_id_card_number,deployment_area_name, deployment_area_id, deployment_area_address, ' + 
-                            'representative_last_name, representative_first_name, representative_middle_name, representative_extension_name_id, representative_sitio, representative_brgy_code, ' + 
-                            'representative_relationship_to_beneficiary, representative_birthdate, representative_age, representative_occupation, representative_monthly_salary, ' + 
-                            'representative_educational_attainment_id, representative_sex_id, representative_contact_number, representative_id_card_id, representative_id_card_number, ' + 
-                            'representative_address, representative_civil_status_id, representative_has_health_concern, representative_health_concern_details, representative_skills, ' +
-                            `preffered_type_of_work_id, modality_sub_category_id, is_pwd_representative,is_pwd,is_ip, ${commonFields}`,
+                'no_of_children, birthplace, is_pantawid, is_pantawid_leader, is_slp, has_immediate_health_concern, immediate_health_concern, address, sitio, brgy_code, sitio_current, ' +
+                'brgy_code_current, cellphone_no, cellphone_no_secondary, email, current_occupation, is_lgu_official, is_mdc, is_bdc, is_bspmc, is_bdrrmc_bdc_twg, ' +
+                'is_bdrrmc_expanded_bdrrmc, is_mdrrmc, is_hh_head, academe, business, differently_abled, farmer, fisherfolks, government, ip, ip_group_id, ngo, po, religious, ' +
+                'senior_citizen, women, solo_parent, out_of_school_youth, children_and_youth_in_need_of_special_protection, family_heads_in_need_of_assistance, affected_by_disaster, ' +
+                'persons_with_disability, others, is_graduate,school_name, campus, school_address, course_id, year_graduated, year_level_id, skills, family_member_name_id, ' +
+                'relationship_to_family_member_id, sitio_current_address, barangay_code_current, is_permanent_same_as_current_address, id_card, occupation_id_card_number,deployment_area_name, deployment_area_id, deployment_area_address, ' +
+                'representative_last_name, representative_first_name, representative_middle_name, representative_extension_name_id, representative_sitio, representative_brgy_code, ' +
+                'representative_relationship_to_beneficiary, representative_birthdate, representative_age, representative_occupation, representative_monthly_salary, ' +
+                'representative_educational_attainment_id, representative_sex_id, representative_contact_number, representative_id_card_id, representative_id_card_number, ' +
+                'representative_address, representative_civil_status_id, representative_has_health_concern, representative_health_concern_details, representative_skills, ' +
+                `preffered_type_of_work_id, modality_sub_category_id, is_pwd_representative,is_pwd,is_ip, ${commonFields}`,
             person_profile_sector: `id, person_profile_id, sector_id, ${commonFields}`,
             person_profile_disability: `id, person_profile_id, type_of_disability_id, ${commonFields}`,
             person_profile_family_composition: `id, person_profile_id, first_name, middle_name, last_name, extension_name_id, birthdate, age, contact_number, highest_educational_attainment_id, monthly_income, relationship_to_the_beneficiary_id, work, ${commonFields}`,
             person_profile_cfw_fam_program_details: `id, person_profile_id,family_composition_id,program_type_id, year_served_id, ${commonFields}`
-            
+
         });
     }
 }

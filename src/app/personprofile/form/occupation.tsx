@@ -9,7 +9,7 @@ import { getIDCardLibraryOptions } from "@/components/_dal/options";
 import { getOfflineLibIdCard } from "@/components/_dal/offline-options";
 import { IPersonProfile } from "@/components/interfaces/personprofile";
 
-export default function Occupation({ errors, capturedData, updateCapturedData, selectedModalityId, updateFormData }: { errors: any; capturedData: Partial<IPersonProfile>; updateCapturedData: any, selectedModalityId: any, updateFormData: (newData: Partial<IPersonProfile>) => void  }) {
+export default function Occupation({ errors, capturedData, updateCapturedData, selectedModalityId, updateFormData }: { errors: any; capturedData: Partial<IPersonProfile>; updateCapturedData: any, selectedModalityId: any, updateFormData: (newData: Partial<IPersonProfile>) => void }) {
 
     const [hasOccupation, sethasOccupation] = useState(false);
     const [hasIDNumber, sethasIDNumber] = useState(false);
@@ -18,7 +18,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
     const chkHasOccupation = () => {
         sethasOccupation(!hasOccupation); // Toggle `hasOccupation` state
-        updateFormData({hasOccupation:!hasOccupation});
+        updateFormData({ hasOccupation: !hasOccupation });
     }
 
     const [commonData, setCommonData] = useState(() => {
@@ -49,7 +49,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
             ...prev, [field]: value
 
         }));
-        updateFormData({current_occupation: value});
+        updateFormData({ current_occupation: value });
     }
 
 
@@ -84,7 +84,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
     }, []);
 
     const occupationRef = useRef<HTMLInputElement>(null);
-    
+
 
     useEffect(() => {
         if (hasOccupation && occupationRef.current) {
@@ -109,7 +109,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
             sethasIDNumber(true);
         }
 
-        updateFormData({id_card:id});
+        updateFormData({ id_card: id });
 
     };
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,7 +117,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
         updateFormData({ [id]: value });
     };
     const updatingSkills = (value: any) => {
-        updateFormData({skills:value})
+        updateFormData({ skills: value })
     }
     return (
         <>
@@ -125,7 +125,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 mb-2">
 
                     <div className="flex items-center space-x-1 p-2">
-                        <Input 
+                        <Input
                             type='checkbox'
                             className="w-4 h-4 cursor-pointer"
                             checked={capturedData.hasOccupation ?? false}
@@ -134,14 +134,14 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                         />
                         <Label htmlFor="has_occupation" className="block text-md  font-medium">
                             {/* Do you have a current occupation? */}
-                            WITH Current Occupation
+                            With Current Occupation
                         </Label>
                     </div>
 
                     <div className="p-2 col-span-4">
                         <Label htmlFor="current_occupation" className="block text-sm font-medium">Occupation</Label>
                         <Input
-                            value={capturedData.current_occupation?.toUpperCase() ?? ""}
+                            value={capturedData.hasOccupation ? capturedData.current_occupation?.toUpperCase() : capturedData.current_occupation = ""}
                             onChange={handleChange}
                             ref={occupationRef}
                             // value={capturedData.cfw[4].current_occupation}
@@ -152,21 +152,15 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                             placeholder={capturedData.hasOccupation ? "Enter your Occupation" : "No Occupation"}
                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 
                                 ${!capturedData.hasOccupation ? "bg-gray-200 cursor-not-allowed" : ""}`}
-
-                            // className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-
-                        // onChange={(e) => updateCapturedData("cfw", 'current_occupation', e.target.value, 4)}
                         />
-                        {errors?.current_occupation && (
-                            <p className="mt-2 text-sm text-red-500">{errors.current_occupation[0]}</p>
-                        )}
+
                     </div>
                     <div className="p-2 col-span-4 sm:col-span-4">
 
                         <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
                             disabled={!capturedData.hasOccupation}
-                            selectedOption={capturedData.id_card ?? ""}
+                            selectedOption={capturedData.hasOccupation ? capturedData.id_card : capturedData.id_card = 0 }
                             // selectedOption={capturedData.cfw[4].id_card}
                             onChange={(value) => {
                                 if (!capturedData.hasOccupation) {
@@ -176,7 +170,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                                 }
                             }}
                             id="occupation_id_card"
-                            options={iDCardOptions.filter(i=> (capturedData?.age||0) < 60 && i.id !== 9 )}
+                            options={iDCardOptions.filter(i => (capturedData?.age || 0) < 60 && i.id !== 9)}
                             // readOnly={employment.id_card === 11 ? true : false} // Disable if hasOccupation is false
                             readOnly={!capturedData.hasOccupation
                             }
@@ -189,7 +183,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
                         <Input
-                            value={capturedData.occupation_id_card_number ?? ""}
+                            value={capturedData.hasOccupation ? capturedData.occupation_id_card_number : capturedData.occupation_id_card_number = ""}
                             id="occupation_id_card_number"
                             name="occupation_id_card_number"
                             type="text"
@@ -208,7 +202,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                         <Textarea
                             value={capturedData.skills}
                             // value={capturedData.cfw[4].skills}
-                            onChange={(e) => updateFormData({skills:e.target.value})}
+                            onChange={(e) => updateFormData({ skills: e.target.value })}
                             // onChange={(e) => updateCapturedData("cfw", 'skills', e.target.value, 4)}
                             id="skills"
                             name="skills"

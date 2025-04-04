@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useRef, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getCourseLibraryOptions, getYearLevelLibraryOptions } from "@/components/_dal/options";
-import { getOfflineLibCourses, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
+import { getOfflineLibCourses, getOfflineLibSchools, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
 import { IPersonProfile } from "@/components/interfaces/personprofile";
 export default function HighestEducationalAttainment({ errors, capturedData, updateFormData }: { errors: any; capturedData: Partial<IPersonProfile>; updateFormData: (newData: Partial<IPersonProfile>) => void }) {
     const [relationOptions, setRelationOptions] = useState<LibraryOption[]>([]);
@@ -15,6 +15,8 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
     const [courseOptions, setCourseOptions] = useState<LibraryOption[]>([]);
     const [selectedCourse, setSelectedCourse] = useState("");
     const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+
+    const [schoolOptions, setSchoolOptions] = useState<LibraryOption[]>([]);
 
     const [YearLevelOptions, setYearLevelOptions] = useState<LibraryOption[]>([]);
     const [selectedYearLevel, setSelectedYearLevel] = useState("");
@@ -25,6 +27,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
 
     const initialEducation = {
         is_graduate: false,
+        school_id: 0,
         school_name: "",
         campus: "",
         school_address: "",
@@ -37,15 +40,12 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const course = await getOfflineLibCourses(); //await getCourseLibraryOptions();
-                const formattedCourse = course.map(option => ({
+                const course = await getOfflineLibCourses(); //await getCourseLibraryOptions();               
+                setCourseOptions(course);
 
-                    ...option,
-                    name: option.name.toUpperCase(), // Convert label to uppercase
-
-                }));
-
-                setCourseOptions(formattedCourse);
+                const schoolList = await getOfflineLibSchools(); //await getCourseLibraryOptions();               
+                setSchoolOptions(schoolList);
+                // console.log("schoolList", schoolList);
 
                 const year_level = await getOfflineLibYearLevel(); //await getYearLevelLibraryOptions();
                 const formattedYearLevel = year_level.map(option => ({
@@ -139,13 +139,17 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
 
 
                 </div>
-                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
-                    <Label htmlFor="school_name" className="block text-sm font-medium">Name of School (Please do not abbreviate the name of the school)<span className='text-red-500'> *</span></Label>
-                    <Input
+                <div className={`p-2 col-span-4`}>
+                    <Label htmlFor="school_name" className="block text-sm font-medium">Select a School<span className='text-red-500'> *</span></Label>
+                    <FormDropDown                        
+                        id="school_name"
+                        options={schoolOptions}
+                        selectedOption={Number(capturedData.school_id) || 0}
+                        onChange={(value) => inputOnchange("school_id", value)}
+                    />
+                    {/* <Input
                         ref={isGraduateRef}
-                        value={
-                            capturedData?.is_graduate ? capturedData.school_name : capturedData.school_name = ""
-                        }
+                        value={capturedData.school_name}
                         // value={capturedData.school_name ? capturedData.school_name : ""}
                         onChange={(e) => inputOnchange("school_name", e.target.value.toUpperCase())}
                         id="school_name"
@@ -153,42 +157,43 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                         type="text"
                         placeholder="Enter Name of School"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                    />
+                    /> */}
                     {errors?.school_name && (
                         <p className="mt-2 text-sm text-red-500">{errors.school_name}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
+                <div className={`p-2 col-span-4 `}>
                     <Label htmlFor="campus" className="block text-sm font-medium">Campus<span className='text-red-500'> *</span></Label>
                     <Input
-                        value={capturedData?.campus?.toUpperCase() || ''}
+                        ref={isGraduateRef}
+                        value={capturedData?.campus}
                         id="campus"
                         name="campus"
                         type="text"
                         placeholder="Enter Campus"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-                        onChange={(e) => inputOnchange("campus", e.target.value)}
+                        onChange={(e) => inputOnchange("campus", e.target.value.toUpperCase())}
                     />
                     {errors?.campus && (
                         <p className="mt-2 text-sm text-red-500">{errors.campus}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
+                <div className={`p-2 col-span-4 `}>
                     <Label htmlFor="school_address" className="block text-sm font-medium">School Address<span className='text-red-500'> *</span></Label>
                     <Textarea
-                        value={capturedData?.school_address?.toUpperCase() || ''}
+                        value={capturedData?.school_address}
                         id="school_address"
                         name="school_address"
                         placeholder="Enter School Address"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         rows={4}
-                        onChange={(e) => inputOnchange("school_address", e.target.value)}
+                        onChange={(e) => inputOnchange("school_address", e.target.value.toUpperCase())}
                     />
                     {errors?.school_address && (
                         <p className="mt-2 text-sm text-red-500">{errors.school_address}</p>
                     )}
                 </div>
-                <div className={`p-2 col-span-4 ${capturedData.is_graduate ? "" : "hidden"}`}>
+                <div className={`p-2 col-span-4  `}>
                     <Label htmlFor="course_id" className="block text-sm font-medium">Course<span className='text-red-500'> *</span></Label>
                     <FormDropDown
                         id="course_id"
@@ -203,7 +208,7 @@ export default function HighestEducationalAttainment({ errors, capturedData, upd
                 <div className={`p-2 col-span-4 ${!capturedData.is_graduate ? "hidden" : ""}   `}>
                     <Label htmlFor="year_graduated" className="block text-sm font-medium">Year Graduated<span className='text-red-500'> *</span></Label>
                     <Input
-                        value={capturedData.year_graduated}
+                        value={capturedData.is_graduate ? capturedData.year_graduated : capturedData.year_graduated = ""}
                         id="year_graduated"
                         name="year_graduated"
                         type="text"

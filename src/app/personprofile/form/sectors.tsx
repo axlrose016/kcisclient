@@ -16,13 +16,13 @@ import { IPersonProfile, IPersonProfileDisability, IPersonProfileSector } from "
 import { v4 as uuidv4 } from 'uuid';
 import { flushAllTraces } from "next/dist/trace";
 
-export default function SectorDetails({ errors, capturedData, sectorData, disabilitiesData, selectedModality, updateFormData, updateSectorData, updateDisabilityData }: {
+export default function SectorDetails({ errors, capturedData, sectorData, disabilitiesData, selectedModality, updateFormData, updateSectorData, updateDisabilityData, session }: {
     errors: any; capturedData: Partial<IPersonProfile>; sectorData: Partial<IPersonProfileSector>[]; disabilitiesData: Partial<IPersonProfileDisability>[]; selectedModality: any;
     updateFormData: (newData: Partial<IPersonProfile>) => void;
     updateSectorData: (newData: Partial<IPersonProfileSector>[]) => void;
     updateDisabilityData: (newData: Partial<IPersonProfileDisability>[]) => void;
+    session: any;
 }) {
-
     const [selectedPersonsWithDisability, setSelectedPersonsWithDisability] = useState("");
     const [selectedIP, setSelectedIP] = useState(""); //this is for showing and hiding group of IPs
     // const [typeOfDisabilityOptions, setTypeOfDisabilityOptions] = useState<LibraryOption[]>([]);
@@ -70,6 +70,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
             id: uuidv4(),
             type_of_disability_id: Number(id),
             is_deleted: false,
+            created_by: session.userData.email,
         }));
 
         // Combine updated and new data
@@ -100,6 +101,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: false,
+                    created_by: session.userData.email
                 };
                 currentData.push(newSector);
                 console.log("New sector added:", newSector);
@@ -113,6 +115,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: true,
+                    created_by: session.userData.email
                 };
                 currentData.push(newSector);
                 console.log("New sector added as deleted:", newSector);
@@ -138,7 +141,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
     useEffect(() => {
         const fetchData = async () => {
             try {
-                debugger;
+                // debugger;
                 const sectors = await getOfflineLibSectorsLibraryOptions(); //await getSectorsLibraryOptions();
                 setSectorOptions(sectors);
 
@@ -221,12 +224,12 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                         sectorOptions
                             .filter((sector) => sector.id >= 1 && sector.id <= 19)
                             .map((sector) => (
-                                <>
-                                    <div className={`p-2`} key={sector.id}>
+                                <React.Fragment key={sector.id}>
+                                    <div className={`p-2`} >
                                         <Label htmlFor={`sector${sector.id}`} className="block text-sm font-medium">{sector.name}</Label>
-                                        <div className="mt-1 flex items-center gap-4">
+                                        <div className="mt-1 flex items-center gap-4" key={sector.id + 0.01}>
                                             {["Yes", "No"].map((value) => (
-                                                <div key={sector.id+value} className="flex items-center gap-1">
+                                                <div key={sector.id + value} className="flex items-center gap-1">
                                                     <Input
                                                         className="w-4 h-4"
                                                         type="radio"
@@ -244,7 +247,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                                     </div>
 
                                     {sector.id == 6 && capturedData.is_pwd && (
-                                        <div className="p-2">
+                                        <div className="p-2" >
                                             <Label htmlFor="type_of_disabilities" className="block text-sm font-medium">Type of Disability</Label>
                                             <FormMultiDropDown
                                                 options={disabilityOptions}
@@ -257,7 +260,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                                         </div>
                                     )}
 
-                                    {sector.id == ( capturedData.is_pwd ? 6:7) && capturedData.is_ip && (
+                                    {sector.id == (capturedData.is_pwd ? 6 : 7) && capturedData.is_ip && (
                                         <div className="p-2">
                                             <Label htmlFor="ip_group" className="block text-sm font-medium">IP Group</Label>
                                             <FormDropDown
@@ -271,8 +274,8 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                                     )}
 
 
-                                    
-                                </>
+
+                                </React.Fragment>
                             ))}
 
 

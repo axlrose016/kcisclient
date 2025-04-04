@@ -22,8 +22,8 @@ import { IPersonProfileFamilyComposition } from "@/components/interfaces/personp
 import { v4 as uuidv4, validate } from 'uuid';
 import { lib_extension_name } from "@/db/schema/libraries";
 
-export default function FamilyComposition({ errors, familyCompositionData, updatedFamComposition }: { errors: any; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
-    updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[]) => void
+export default function FamilyComposition({ errors, familyCompositionData, updatedFamComposition, session }: { errors: any; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
+    updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[]) => void; session: any;
  }) {
 
 
@@ -342,6 +342,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                 work: familyMemberWork,
                 monthly_income: familyMemberMonthlyIncome,
                 contact_number: familyMemberContactNumber,
+                created_by: session.userData.email
             };
 
             const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
@@ -484,8 +485,8 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                                     id="program_details_first_name"
                                                     placeholder="First Name"
                                                     className="w-full"
-                                                    value={famComFirstName.toUpperCase()}
-                                                    onChange={(e) => setfamComFirstName(e.target.value)}
+                                                    value={famComFirstName}
+                                                    onChange={(e) => setfamComFirstName(e.target.value.toUpperCase())}
                                                 />
                                             </div>
 
@@ -498,8 +499,8 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                                     id="program_details_middle_name"
                                                     placeholder="Middle Name"
                                                     className="w-full"
-                                                    value={famComMiddleName.toUpperCase()}
-                                                    onChange={(e) => setfamComMiddleName(e.target.value)}
+                                                    value={famComMiddleName}
+                                                    onChange={(e) => setfamComMiddleName(e.target.value.toUpperCase())}
                                                 />
                                             </div>
 
@@ -512,8 +513,8 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                                     id="program_details_last_name"
                                                     placeholder="Last Name"
                                                     className="w-full"
-                                                    value={famComLastName.toUpperCase()}
-                                                    onChange={(e) => setfamComLastName(e.target.value)}
+                                                    value={famComLastName}
+                                                    onChange={(e) => setfamComLastName(e.target.value.toUpperCase())}
                                                 />
                                             </div>
 
@@ -531,17 +532,17 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                             </div>
 
                                             <div className="p-2 col-span-4">
-                                                <Label htmlFor="relationship_to_family_member" className="block text-sm font-medium mb-2">Relationship to Family Member<span className='text-red-500'> *</span></Label>
+                                                <Label htmlFor="relationship_to_family_member_id" className="block text-sm font-medium mb-2">Relationship to Family Member<span className='text-red-500'> *</span></Label>
                                                 <FormDropDown
 
-                                                    id="relationship_to_family_member"
+                                                    id="relationship_to_family_member_id"
                                                     options={relationshipToFamilyMemberOptions}
                                                     selectedOption={selectedRelationshipToFamilyMemberId}
                                                     onChange={(value) => handlRelationshipToFamilyMemberChange(value)}
 
                                                 />
                                                 {errors?.relationship_to_family_member && (
-                                                    <p className="mt-2 text-sm text-red-500">{errors.relationship_to_family_member}</p>
+                                                    <p className="mt-2 text-sm text-red-500">{errors.relationship_to_family_member_id}</p>
                                                 )}
                                             </div>
                                             <div className="p-2 col-span-4">
@@ -595,7 +596,7 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                                                     name="family_member_work"
                                                     className="mt-1 block w-full mb-2"
                                                     // readOnly
-                                                    onChange={(e) => setfamilyMemberWork(e.target.value)}
+                                                    onChange={(e) => setfamilyMemberWork(e.target.value.toUpperCase())}
 
                                                 />
                                                 {errors?.family_member_work && (

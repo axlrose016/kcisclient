@@ -36,6 +36,8 @@ import PersonProfileService from './PersonProfileService'
 import { ToastAction } from '@/components/ui/toast'
 import GeneratePDF from './pdf'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { format } from 'path'
+import { is } from 'drizzle-orm'
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 export default function PersonProfileForm() {
 
@@ -143,12 +145,14 @@ export default function PersonProfileForm() {
 
   const philSysIDRef = useRef<HTMLInputElement>(null);
   const [hasPhilsysId, setHasPhilsysId] = useState(true);
+  
 
   useEffect(() => {
     if (hasPhilsysId && philSysIDRef.current) {
       philSysIDRef.current.focus(); // Auto-focus when enabled
     }
   }, [hasPhilsysId]);
+
 
   const [cfwGeneralInfo, setCfwGeneralInfo] = useState(() => {
     if (globalThis.window) {
@@ -257,7 +261,11 @@ export default function PersonProfileForm() {
   }
 
 
-
+  useEffect(() => {
+    if (isMiddleNameEnabled && middleNameRef.current) {
+      middleNameRef.current.focus(); // Auto-focus when enabled
+    }
+  }, [isMiddleNameEnabled]);
 
   const handleSexChange = (id: number) => {
 
@@ -297,6 +305,7 @@ export default function PersonProfileForm() {
   };
 
   const handleErrorClick = (tabValue: any, fieldId: any) => {
+    // debugger;
     // alert(activeTab + ' ' + tabValue)
     console.log('handleErrorClick >', { tabValue, fieldId })
     if (tabValue !== "basic_information") {
@@ -462,6 +471,7 @@ export default function PersonProfileForm() {
             updateFormData={updateFormData}
             updateSectorData={updateFormSectorData}
             updateDisabilityData={updateDisabilitiesData}
+            session={session}
           />
         </div>
       ),
@@ -475,6 +485,7 @@ export default function PersonProfileForm() {
             errors={errors}
             familyCompositionData={formFamilyCompositionData}
             updatedFamComposition={updateFormFamilyCompositionData}
+            session={session}
           />
         </div>
       ),
@@ -491,6 +502,7 @@ export default function PersonProfileForm() {
             cfwFamComposition={formCFWFamDetailsData}
             updateFormData={updateFormData}
             updateCFWFormData={updateCFWFormData}
+            session={session}
           />
         </div>
       ),
@@ -554,6 +566,7 @@ export default function PersonProfileForm() {
             errors={errors}
             capturedData={formAttachmentsData}
             updateFormData={updateFormAttachments}
+            session={session}
           />
         </div>
       ),
@@ -643,7 +656,7 @@ export default function PersonProfileForm() {
               is_permanent_same_as_current_address: formData?.is_permanent_same_as_current_address ?? null,
               has_immediate_health_concern: formData?.has_immediate_health_concern ?? null,
               immediate_health_concern: formData?.immediate_health_concern ?? "",
-              school_name: formData?.school_name ?? "",
+              school_id: formData?.school_id ?? 0,
               is_graduate: formData?.is_graduate ?? false,
               campus: formData?.campus ?? "",
               school_address: formData?.school_address ?? "",
@@ -701,10 +714,10 @@ export default function PersonProfileForm() {
               children_and_youth_in_need_of_special_protection: 0,
               family_heads_in_need_of_assistance: 0,
               affected_by_disaster: 0,
-              persons_with_disability: 0,
+              persons_with_disability: false,
               others: null,
-              family_member_name: null,
-              relationship_to_family_member: null,
+              relationship_to_family_member_id: null,
+              family_member_name_id: null,
               hasProgramDetails: false,
 
               //CFW Representative
@@ -714,7 +727,7 @@ export default function PersonProfileForm() {
               representative_extension_name_id: formData?.representative_extension_name_id ?? null,
               representative_sitio: formData?.representative_sitio ?? null,
               representative_brgy_code: formData?.representative_brgy_code ?? null,
-              representative_relationship_to_beneficiary: formData?.representative_relationship_to_beneficiary ?? null,
+              representative_relationship_to_beneficiary_id: formData?.representative_relationship_to_beneficiary_id ?? null,
               representative_birthdate: formData?.representative_birthdate ?? null,
               representative_age: formData?.representative_age ?? null,
               representative_occupation: formData?.representative_occupation ?? null,
@@ -732,7 +745,7 @@ export default function PersonProfileForm() {
 
 
               user_id: session.id,
-              created_by: session.id,
+              created_by: session.userData.email ?? "",
               created_date: new Date().toISOString(),
               last_modified_by: null,
               last_modified_date: null,
@@ -752,7 +765,7 @@ export default function PersonProfileForm() {
                 person_profile_id: _id,
                 sector_id: sector.sector_id ?? 0,
                 user_id: session.id,
-                created_by: session.id,
+                created_by: session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -773,7 +786,7 @@ export default function PersonProfileForm() {
                 person_profile_id: _id,
                 type_of_disability_id: disability.type_of_disability_id ?? 0,
                 user_id: session.id,
-                created_by: session.id,
+                created_by: session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -783,12 +796,12 @@ export default function PersonProfileForm() {
                 deleted_date: null,
                 is_deleted: false,
                 remarks: "Person Profile Disability Created",
-                }
+              }
             });
-      
+
             formPersonProfileFamilyComposition = formFamilyCompositionData.map((fcd) => {
               const fcd_id = fcd.id ?? uuidv4(); // Declare the variable properly
-            
+
               return {
                 id: fcd_id,
                 person_profile_id: _id,
@@ -804,7 +817,7 @@ export default function PersonProfileForm() {
                 relationship_to_the_beneficiary_id: fcd.relationship_to_the_beneficiary_id ?? 0,
                 work: fcd.work ?? "",
                 user_id: session.id,
-                created_by: session.id,
+                created_by: session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -816,19 +829,19 @@ export default function PersonProfileForm() {
                 remarks: "Person Profile Disability Created",
               };
             });
-            
+
 
             formPersonCFWFamDetails = formCFWFamDetailsData.map((cfwFam) => {
               const cfwFam_id = cfwFam.id ?? uuidv4(); // Declare the variable properly
 
-              return{
+              return {
                 id: cfwFam_id,
                 person_profile_id: _id,
                 family_composition_id: cfwFam.family_composition_id ?? "",
                 program_type_id: cfwFam.program_type_id ?? 0,
                 year_served_id: cfwFam.year_served_id ?? 0,
                 user_id: session.id,
-                created_by: session.id,
+                created_by: session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -853,7 +866,7 @@ export default function PersonProfileForm() {
                 file_type: attachment.file_type ?? "",
                 module_path: attachment.module_path ?? "",
                 user_id: session.id,
-                created_by: session.id,
+                created_by: session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -919,14 +932,16 @@ export default function PersonProfileForm() {
   }
 
   const showToastConfirmation = (confirmSave: ConfirmSave) => {
-    toast({
+    const toastInstance = toast({
       variant: "destructive",
       title: "You are about to save the form, continue?",
       description: "This will save the data. This action cannot be undone.",
       action: (
         <Button
-          onClick={() => setDataPrivacyOpen(true)}  // saving to server
-          // onClick={() => confirmSave()}  // saving to server
+          onClick={() => {
+            setDataPrivacyOpen(true); // Open the data privacy modal
+            toastInstance.dismiss(); // Dismiss the toast
+          }}
           className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
         >
           Confirm
@@ -977,17 +992,17 @@ export default function PersonProfileForm() {
         // setLoading(true);
         console.log("CFW");
         // 2 validation
-        if (!formData?.modality_id) { errorToast("Modality is required!"); return; }
-        if (!formData?.first_name) { errorToast("First name is required!"); return; }
-        if (formData.has_middle_name && !formData?.middle_name) { errorToast("Middle name is required!"); return; }
-        if (!formData?.last_name) { errorToast("Last name is required!"); return; }
-        if (!formData?.birthdate) { errorToast("Birthdate is required!"); return; }
-        if (!formData?.age || formData?.age <= 18) { errorToast("Valid age is required!"); return; }
+        if (!formData?.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
+        if (!formData?.first_name) { errorToast("First name is required!", "basic_information", "first_name"); return; }
+        if (formData.has_middle_name && !formData?.middle_name) { errorToast("Middle name is required!", "basic_information", "middle_name"); return; }
+        if (!formData?.last_name) { errorToast("Last name is required!", "basic_information", "last_name"); return; }
+        if (!formData?.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
+        if (!formData?.age || formData?.age <= 18) { errorToast("Valid age is required!", "basic_information", "birthdate"); return; }
         // if (!parsedCommonData.philsys_id_no) { errorToast("PhilSys ID number is required!"); return; }
-        if (!formData?.birthplace) { errorToast("Birthplace is required!"); return; }
+        if (!formData?.birthplace) { errorToast("Birthplace is required!", "basic_information", "birthplace"); return; }
         // if (!formData?.extension_name_id) { errorToast("Extension name is required!"); return; }
         if (!formData?.sex_id) { errorToast("Sex is required!", "basic_information", "sex_id"); return; }
-        if (!formData?.civil_status_id) { errorToast("Civil status is required!"); return; }
+        if (!formData?.civil_status_id) { errorToast("Civil status is required!", "basic_information", "civil_status_id"); return; }
         const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
         if (!formData?.modality_sub_category_id) { errorToast("Modality Sub category is required!", "basic_information", "modality_sub_category_id"); return; }
         if (!formData?.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
@@ -1009,28 +1024,11 @@ export default function PersonProfileForm() {
         }
         if (!formData?.birthplace) { errorToast("Birthplace is required!", "basic_information", "birthplace"); return; }
 
-        // const storedContactDetails = localStorage.getItem("contactDetails");
-        if (!formData?.sitio || !formData?.region_code || !formData?.province_code || !formData?.city_code || !formData?.brgy_code ||
-          !formData?.cellphone_no || !formData?.cellphone_no_secondary || !formData?.email || !formData?.sitio_present_address ||
-          !formData?.region_code_present_address || !formData?.province_code_present_address || !formData?.city_code_present_address ||
-          !formData?.brgy_code_present_address || !formData?.sitio_present_address || !formData?.region_code_present_address || !formData?.province_code_present_address ||
-          !formData?.city_code_present_address || !formData?.brgy_code_present_address || !formData?.cellphone_no || !formData?.cellphone_no_secondary || !formData?.email) {
-          errorToast("Contact Details required!", "contact", "region_contact_details_present_address"); return;
-        }
-        // const parsedContactDetails = JSON.parse(storedContactDetails);
-        if (!formData?.sitio) { errorToast("Sitio is required!"); return; }
-        if (!formData?.cellphone_no) { errorToast("Primary cellphone number is required!"); return; }
-        if (!formData?.cellphone_no_secondary) { errorToast("Secondary cellphone number is required!"); return; }
-        if (!formData?.email) { errorToast("Email is required!"); return; }
-        if (!formData?.region_code) { errorToast("Region is required!"); return; }
-        if (!formData?.province_code) { errorToast("Province is required!"); return; }
-        if (!formData?.city_code) { errorToast("City/Municipality is required!"); return; }
-        if (!formData?.brgy_code) { errorToast("Barangay is required!"); return; }
 
-        if (!formData?.region_code) { errorToast("Region is required!", "contact", "region_contact_details"); return; }
-        if (!formData?.province_code) { errorToast("Province is required!", "contact", "province_contact_details"); return; }
-        if (!formData?.city_code) { errorToast("City/Municipality is required!", "contact", "municipality_contact_number"); return; }
-        if (!formData?.brgy_code) { errorToast("Barangay is required!", "contact", "barangay_contact_details"); return; }
+        if (!formData?.region_code) { errorToast("Region is required!", "contact", "region_contact_details_permanent_address"); return; }
+        if (!formData?.province_code) { errorToast("Province is required!", "contact", "province_contact_details_permanent_address"); return; }
+        if (!formData?.city_code) { errorToast("City/Municipality is required!", "contact", "municipality_contact_details_permanent_address"); return; }
+        if (!formData?.brgy_code) { errorToast("Barangay is required!", "contact", "barangay_contact_details_permanent_address"); return; }
         if (!formData?.sitio) { errorToast("Sitio is required!", "contact", "sitio"); return; }
         if (!formData?.region_code_present_address) { errorToast("Present Region is required!", "contact", "region_contact_details_present_address"); return; }
         if (!formData?.province_code_present_address) { errorToast("Present Province is required!", "contact", "province_contact_details_present_address"); return; }
@@ -1038,7 +1036,7 @@ export default function PersonProfileForm() {
         if (!formData?.brgy_code_present_address) { errorToast("Present Barangay is required!", "contact", "barangay_contact_details_present_address"); return; }
         if (!formData?.sitio_present_address) { errorToast("Present Sitio is required!", "contact", "sitio_present_address"); return; }
         // alert(parsedContactDetails.cellphone_no.length)
-        if (formData?.cellphone_no.length < 13) { errorToast("Primary cellphone number is required!", "contact", "cellphone_no"); return; }
+        if ((formData?.cellphone_no?.length ?? 0) < 13 || formData?.cellphone_no == null) { errorToast("Primary cellphone number is required!", "contact", "cellphone_no"); return; }
         if (!formData?.email) { errorToast("Email is required!", "contact", "email"); return; }
         // Regular Expression to check valid email format
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1048,11 +1046,11 @@ export default function PersonProfileForm() {
           return;
         }
         // if (!parsedContactDetails.is_same_as_permanent_address) { errorToast("is_same_as_permanent_address is empty!"); return; }
-        if (!formData?.sitio_present_address) { errorToast("Present Sitio is required!"); return; }
-        if (!formData?.region_code_present_address) { errorToast("Present Region is required!"); return; }
-        if (!formData?.province_code_present_address) { errorToast("Present Province is required!"); return; }
-        if (!formData?.city_code_present_address) { errorToast("Present City/Municipality is required!"); return; }
-        if (!formData?.brgy_code_present_address) { errorToast("Present Barangay is required!"); return; }
+        if (!formData?.sitio_present_address) { errorToast("Present Sitio is required!", "contact", "sitio_present_address"); return; }
+        if (!formData?.region_code_present_address) { errorToast("Present Region is required!", "contact", "region_contact_details_present_address"); return; }
+        if (!formData?.province_code_present_address) { errorToast("Present Province is required!", "contact", "province_contact_details_present_address"); return; }
+        if (!formData?.city_code_present_address) { errorToast("Present City/Municipality is required!", "contact", "municipality_contact_details_present_address"); return; }
+        if (!formData?.brgy_code_present_address) { errorToast("Present Barangay is required!", "contact", "barangay_contact_details_present_address"); return; }
 
 
         const storedHealthConcern = localStorage.getItem("healthConcerns");
@@ -1063,7 +1061,7 @@ export default function PersonProfileForm() {
 
 
         //const storedEmployment = localStorage.getItem("employment");
-        if (!formData?.skills) { errorToast("Skills required!", "occupation", "skills"); return; }
+        // if (!formData?.skills) { errorToast("Skills required!", "occupation", "skills"); return; }
         //const parsedEmployments =formData?.skills;
         // if (!storedHealthConcern) { errorToast("Health Concern required!", "details", ""); return; }
         // const parsedHealthConcerns = JSON.parse(storedHealthConcern);
@@ -1084,14 +1082,21 @@ export default function PersonProfileForm() {
 
         const storedEmployment = localStorage.getItem("employment");
 
-        if (!storedEmployment) { errorToast("Skills required!", "occupation", ""); return; }
+        if (!storedEmployment) { errorToast("Skills required!", "occupation", "skills"); return; }
         const parsedEmployments = JSON.parse(storedEmployment);
 
         // alert(parsedEmployments.has_occupation + " " + parsedEmployments.current_occupation)
-        if (parsedEmployments.has_occupation && !parsedEmployments.current_occupation?.trim()) {
-          errorToast("Occupation is required!", "occupation", "current_occupation");
-          return;
-        }
+        // debugger;
+        // if (parsedEmployments.has_occupation && !parsedEmployments.current_occupation?.trim()) {
+        //   errorToast("Occupation is required!", "occupation", "current_occupation");
+        //   return;
+        // }
+        // debugger;
+        if (formData?.hasOccupation && !formData?.current_occupation) { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
+        if (formData?.hasOccupation && formData?.current_occupation === "") { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
+        if (formData?.hasOccupation && formData?.id_card === 0 || formData?.id_card === undefined) { errorToast("Valid ID is requiredx!", "occupation", "occupation_id_card"); return; }
+        // alert(formData?.hasOccupation + ' ' + formData?.occupation_id_card_number);
+        if ((formData?.hasOccupation == true && formData?.occupation_id_card_number === "") || (formData?.hasOccupation == true && formData?.occupation_id_card_number === undefined)) { errorToast("Valid ID number is required!", "occupation", "occupation_id_card_number"); return; }
 
 
 
@@ -1099,7 +1104,8 @@ export default function PersonProfileForm() {
 
 
         const storedSectors = localStorage.getItem("person_sectors");
-        if (!formSectorData) { errorToast("Sectors required!", "sector", ""); return; }
+        if (formSectorData.length == 0 || formSectorData == undefined) { errorToast("Sectors required!", "sector", ""); return; }
+
         // const parsedSectors = JSON.parse(storedSectors) as IPersonProfileSector[];
 
         // Check if there is at least one non-empty "YES" in the sectors
@@ -1134,44 +1140,82 @@ export default function PersonProfileForm() {
 
 
         // debugger;
+        // family composition
+        if (!formFamilyCompositionData || formFamilyCompositionData.length === 0) { errorToast("Family composition is required!", "family_composition", ""); return; }
+
+
+
         const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
         // debugger;
         if (formData?.hasProgramDetails == undefined) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
         // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
         if (formData?.hasProgramDetails) {
-          if (!formCFWFamDetailsData) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+          if (formCFWFamDetailsData.length == 0) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
           //const parsedProgramDetails = JSON.parse(storedProgramDetails);
           //appendData("program_details", parsedProgramDetails);
 
         }
 
-        if (!formFamilyCompositionData) { errorToast("Family composition is required!", "family_composition", ""); return; }
+
         // console.log(parsedFamilyComposition.family_composition.length);
-
-
-
 
 
         const storedEducationalAttainment = localStorage.getItem("educational_attainment");
         if (!storedEducationalAttainment) { errorToast("Educational Attainment data is required!", "education", "school_name"); return; }
         const parsedEducationData = JSON.parse(storedEducationalAttainment);
-        if (!formData?.school_name) { errorToast("Name of school is required!", "education", "school_name"); return; }
-        if (!formData?.campus) { errorToast("Campus is required!"); return; }
-        if (!formData?.school_address) { errorToast("School address is required!"); return; }
-        if (formData?.course_id === 0) { errorToast("Course is required!"); return; }
-        if (formData.is_graduate && !formData?.year_graduated) { errorToast("Year graduated is required!"); return; }
+
+
+        if (!formData?.school_id) { errorToast("Name of school is required!", "education", "school_name"); return; }
+        if (!formData?.campus) { errorToast("Campus is required!", "education", "campus"); return; }
+        if (!formData?.school_address) { errorToast("School address is required!", "education", "school_address"); return; }
+        if (formData?.course_id === 0 || formData?.course_id == undefined) { errorToast("Course is required!", "education", "course_id"); return; }
+        if (formData.is_graduate && !formData?.year_graduated) { errorToast("Year graduated is required!", "education", "year_graduated"); return; }
+
+        if (!formData.is_graduate && !formData?.year_level_id) { errorToast("Year level is required!", "education", "year_level_id"); return; }
 
         // if student to cfw
         // console.log("CFW Sub Cat ID " + parsedcfwGeneralInfo.modality_sub_category_id);
         // if (parsedcfwGeneralInfo.modality_sub_category_id === 1 && parsedEducationData.year_level_id === 0) { errorToast("Year level is required!"); return; }
         // if (parsedEducationData.modality_sub_category_id === 1 && parsedEducationData.year_level_id === 0) { errorToast("Year level is required!", "education", "year_level_id"); return; }
 
-        if (!formData?.deployment_area_name || !formData?.deployment_area_address) { errorToast("Preferred Deployment Area is required!", "deployment", "deployment_area_id"); return; }
+        if (!formData?.deployment_area_name || formData?.deployment_area_name == undefined) { errorToast("Preferred Deployment Area is required!", "deployment", "deployment_area_id"); return; }
+        if (!formData?.deployment_area_address || formData?.deployment_area_address == undefined) { errorToast("Preferred Deployment Area is required!", "deployment", "deployment_area_address"); return; }
         if (formData.preffered_type_of_work_id === 0 || formData.preffered_type_of_work_id == null) { errorToast("Preferred Type of Work is required!", "deployment", "preffered_type_of_work_id"); return; }
 
-
+        // debugger;
         // const storedAttachments = localStorage.getItem("attachments");
-        if (!formAttachmentsData) { errorToast("Attachment is required!"); return; }
+        if (formAttachmentsData.length == 0) { errorToast("Attachment is required!", "attachment", ""); return; }
+        const requiredFileIds = [13, 1, 2, 11]; // Define required file IDs        
+
+
+        // const requiredFile = formAttachmentsData.find(file => file.file_id === requiredFileId);
+        // alert(requiredFile);
+
+
+        if (formAttachmentsData.some(attachment => attachment.file_id === 13 && attachment.file_type === "")) {
+          errorToast("Profile Picture is required!", "attachment", "profile_picture");
+          return;
+        }
+
+
+
+        for (const requiredFileId of requiredFileIds) {
+          const isFilePresent = formAttachmentsData.some(
+            (attachment) => attachment.file_id === requiredFileId && attachment.file_type !== ""
+          );
+          if (!isFilePresent) {
+            errorToast(`Please upload Primary ID (front) and Primary (Back) and Certificate of Indigency!`, "attachment", "");
+            return;
+          }
+        }
+
+
+
+
+
+        console.log(formAttachmentsData);
+        // if (formAttachmentsData.length == 0) { errorToast("Attachment is required!", "attachment", ""); return; }
+
         // const parsedAttachments = JSON.parse(storedAttachments);
         // for fixing pa to using dexie db
         // if (!parsedAttachments[0].file_name) { errorToast("Primary ID is required!"); return; }
@@ -1379,6 +1423,7 @@ export default function PersonProfileForm() {
             }
           })
         );
+        // setDataPrivacyOpen(true);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -1394,67 +1439,78 @@ export default function PersonProfileForm() {
     // debugger;
     const fetchData = async () => {
       try {
-        // debugger;
+        debugger;
         await dexieDb.open();
         await dexieDb.transaction('r', [dexieDb.person_profile,
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
         dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
           if (session != null || session != undefined) {
-
-            // Fetch Profile (LocalStorage first, then Dexie)
-            let profile: IPersonProfile | null = JSON.parse(localStorage.getItem("person_profile") || "null");
-
+  
+            // Fetch Profile (Dexie first, then LocalStorage)
+            let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+            debugger;
             if (!profile) {
-              profile = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+              profile = JSON.parse(localStorage.getItem("person_profile") || "null");
             }
 
-            if (profile) {
+            if (profile && profile.user_id === session.id) {
               setFormData(profile);
             } else {
-              updateFormData({ civil_status_id: 4, id: uuidv4() }); // Default value
+              localStorage.removeItem("person_profile");
+              updateFormData({ civil_status_id: 4, id: uuidv4(), created_by: session.userData.email }); // Default value
             }
-
+  
             // Fetch Sectors (LocalStorage first, then Dexie)
-            let sectors: IPersonProfileSector[] = JSON.parse(localStorage.getItem("person_sectors") || "null") || [];
+            let sectors: IPersonProfileSector[] | [] = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
 
             if (!Array.isArray(sectors) || sectors.length === 0) {
-              sectors = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+              sectors = JSON.parse(localStorage.getItem("person_profile_sector") || "") || [];
             }
-
-            updateFormSectorData(sectors);
-
+            
+            const userSectors = sectors.filter((sector) => sector.person_profile_id === profile?.id);
+            if (userSectors.length > 0) {
+              updateFormSectorData(userSectors); // Update only the sectors created by the current user
+            }
+  
             // Fetch Disabilities (LocalStorage first, then Dexie)
-            let pwd: Partial<IPersonProfileDisability>[] = JSON.parse(localStorage.getItem("person_disabilities") || "null") || [];
-
+            let pwd: IPersonProfileDisability[] | [] = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(pwd) || pwd.length === 0) {
-              pwd = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+              pwd = JSON.parse(localStorage.getItem("person_disabilities") || "[]") || [];
             }
 
-            updateDisabilitiesData(pwd);
-
+            const userPwd = pwd.filter((disability) => disability.person_profile_id === profile?.id);
+            if (userPwd.length > 0) {
+              updateDisabilitiesData(pwd);
+            }
+  
             // Fetch Family Composition (LocalStorage first, then Dexie)
-            let family: Partial<IPersonProfileFamilyComposition>[] = JSON.parse(localStorage.getItem("family_composition") || "null") || [];
-
+            let family: IPersonProfileFamilyComposition[] | [] = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(family) || family.length === 0) {
-              family = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+              family = JSON.parse(localStorage.getItem("person_profile_family_composition") || "[]") || [];
             }
 
-            updateFormFamilyCompositionData(family);
-
+            const userFamily = family.filter((member) => member.person_profile_id === profile?.id);
+            if (userFamily.length > 0) {
+              updateFormFamilyCompositionData(family);
+            }
+            
             // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
             let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
               .where("person_profile_id")
               .equals(profile?.id ?? "")
               .toArray();
-
+  
             if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
               cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
             }
 
-            updateCFWFormData(cfwFamDetails);
+            const userCfwFamDetails = cfwFamDetails.filter((detail) => detail.person_profile_id === profile?.id);
+            if (userCfwFamDetails.length > 0) {
+              updateCFWFormData(cfwFamDetails);
+            }
 
             // debugger;
-            const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();
+            const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').and(x => x.record_id == profile?.id).toArray();
             if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
               setFormAttachmentsData(person_attachments);
             }
@@ -1465,10 +1521,82 @@ export default function PersonProfileForm() {
         console.error("Error fetching Person Profile from IndexedDB", error);
       }
     };
-
     fetchData();
   }, [session]);
+  
+  const fetchData = async () => {
+    try {
+      // debugger;
+      await dexieDb.open();
+      await dexieDb.transaction('r', [dexieDb.person_profile,
+      dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
+      dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
+        if (session != null || session != undefined) {
 
+          // Fetch Profile (LocalStorage first, then Dexie)
+          let profile: IPersonProfile | null = JSON.parse(localStorage.getItem("person_profile") || "null");
+
+          if (!profile) {
+            profile = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+          }
+
+          if (profile) {
+            setFormData(profile);
+          } else {
+            updateFormData({ civil_status_id: 4, id: uuidv4() }); // Default value
+          }
+
+          // Fetch Sectors (LocalStorage first, then Dexie)
+          let sectors: IPersonProfileSector[] = JSON.parse(localStorage.getItem("person_sectors") || "null") || [];
+
+          if (!Array.isArray(sectors) || sectors.length === 0) {
+            sectors = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+          }
+
+          updateFormSectorData(sectors);
+
+          // Fetch Disabilities (LocalStorage first, then Dexie)
+          let pwd: Partial<IPersonProfileDisability>[] = JSON.parse(localStorage.getItem("person_disabilities") || "null") || [];
+
+          if (!Array.isArray(pwd) || pwd.length === 0) {
+            pwd = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+          }
+
+          updateDisabilitiesData(pwd);
+
+          // Fetch Family Composition (LocalStorage first, then Dexie)
+          let family: Partial<IPersonProfileFamilyComposition>[] = JSON.parse(localStorage.getItem("family_composition") || "null") || [];
+
+          if (!Array.isArray(family) || family.length === 0) {
+            family = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
+          }
+
+          updateFormFamilyCompositionData(family);
+
+          // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
+          let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
+            .where("person_profile_id")
+            .equals(profile?.id ?? "")
+            .toArray();
+
+          if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
+            cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
+          }
+
+          updateCFWFormData(cfwFamDetails);
+
+          // debugger;
+          const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();
+          if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
+            setFormAttachmentsData(person_attachments);
+          }
+        }
+      }
+      );
+    } catch (error) {
+      console.error("Error fetching Person Profile from IndexedDB", error);
+    }
+  };
   useEffect(() => {
     console.log("Form Data! ", formData);
   }, [formData])
@@ -1516,7 +1644,7 @@ export default function PersonProfileForm() {
       }
       // Update the state with the blob URL for the avatar
       setDisplayPic(URL.createObjectURL(blob));
-
+      fetchData();
 
     } catch (error) {
 
@@ -1531,46 +1659,54 @@ export default function PersonProfileForm() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className='p-5'>Data Privacy Statement and Beneficiary Agreement</DialogTitle>
-            <DialogDescription className="max-h-[70vh] overflow-y-auto text-left">
-              <span>Terms and Conditions of Engagement</span>
-              This Agreement shall cover the engagement of the Beneficiary with the CFW during the period provided in the table below. The beneficiary shall at all times:
-              <ul>
-                <li>Observe the proper code of conduct and comply with the office's rules and regulations during deployment.</li>
-                <li>Attend and participate in KALAHI-CIDSS CFW Program activities, including orientations, discussions, meetings, and training.</li>
-                <li>Perform assigned tasks efficiently within the timeline set by the work plan.</li>
-                <li>Render a maximum of 8 hours per day based on agreed working hours; compensation is based on actual hours rendered.</li>
-                <li>Students shall not report to work during class periods regardless of early dismissal or remote classes.</li>
-                <li>Inform the immediate supervisor/DSWD/HEI/LGU for leave of absence or other status changes affecting program engagement.</li>
-                <li>Work performed on days of declared suspension shall count as a full day's work.</li>
-                <li>Optionally work on weekends/holidays with supervisor approval and no entitlement to overtime pay.</li>
-                <li>Inform DSWD/HEI/LGU in case of pre-termination due to absence, withdrawal, violation of agreement, or fraud.</li>
-                <li>Replacement beneficiaries will render the remaining program days of the replaced beneficiary.</li>
-                <li>Travel outside the official station requires approval with no additional benefits.</li>
-                <li>DSWD is not liable for any health or medical concerns; the beneficiary is responsible for health insurance.</li>
-                <li>Health-related concerns must be disclosed in the CFW Profile Form.</li>
-              </ul>
-              <span>Release of Financial Assistance</span>
-              <ul>
-                <li>Financial assistance is based on the regional daily wage for non-agricultural workers as per DOLE-NWPC.</li>
-                <li>Financial assistance is computed based on DTR and supported by the Accomplishment Report.</li>
-                <li>Sign documentary requirements consistently with the valid ID submitted during engagement.</li>
-                <li>Submit DTR and AR on time for processing financial assistance.</li>
-                <li>Comply with corrections flagged by the DSWD KALAHI-CIDSS team for documentary requirements.</li>
-                <li>Submit a photocopy of a valid government-issued ID for verification purposes.</li>
-                <li>In case of delayed financial assistance release, the beneficiary may suspend or continue deployment.</li>
-                <li>Certificate of Completion/Participation is based on attendance and job performance assessment.</li>
-                <li>Submit the KALAHI-CIDSS CFWP Evaluation Form for program enhancement.</li>
-              </ul>
-              <span>Other Conditions</span>
-              <ul>
-                <li>No employee-employer relationship is established; only agreed financial assistance applies.</li>
-                <li>Documents are primarily signed by the immediate supervisor; an alternate supervisor may sign if unavailable.</li>
-                <li>Address grievances through proper DSWD KALAHI-CIDSS channels.</li>
-                <li>Maintain confidentiality of records, documents, and sensitive information.</li>
-                <li>Use appropriate channels, not social media, for raising issues and concerns.</li>
-                <li>Maintain confidentiality of non-public information during and after the program.</li>
-              </ul>
+            <DialogDescription className="max-h-[70vh] overflow-y-auto text-left text-black">
+              <label className="font-bold">Terms and Conditions of Engagement</label><br /><br />
+              <span>This Agreement shall cover the engagement of the Beneficiary with the CFW during the period provided in the table below. The beneficiary shall at all times:</span>
+              <br /><br />
+              <span>
+                ▶ Observe the proper code of conduct and comply with the office's rules and regulations during deployment.<br /><br />
+                ▶ Attend and participate in KALAHI-CIDSS CFW Program activities, including orientations, discussions, meetings, and training.<br /><br />
+                ▶ Perform assigned tasks efficiently within the timeline set by the work plan.<br /><br />
+                ▶ Render a maximum of 8 hours per day based on agreed working hours; compensation is based on actual hours rendered.<br /><br />
+                ▶ Students shall not report to work during class periods regardless of early dismissal or remote classes.<br /><br />
+                ▶ Inform the immediate supervisor/DSWD/HEI/LGU for leave of absence or other status changes affecting program engagement.<br /><br />
+                ▶ Work performed on days of declared suspension shall count as a full day's work.<br /><br />
+                ▶ Optionally work on weekends/holidays with supervisor approval and no entitlement to overtime pay.<br /><br />
+                ▶ Inform DSWD/HEI/LGU in case of pre-termination due to absence, withdrawal, violation of agreement, or fraud.<br /><br />
+                ▶ Replacement beneficiaries will render the remaining program days of the replaced beneficiary.<br /><br />
+                ▶ Travel outside the official station requires approval with no additional benefits.<br /><br />
+                ▶ DSWD is not liable for any health or medical concerns; the beneficiary is responsible for health insurance.<br /><br />
+                ▶ Health-related concerns must be disclosed in the CFW Profile Form.<br /><br />
+              </span>
+
+              <span className='font-bold'>Release of Financial Assistance</span><br /><br />
+
+              <span>
+                ▶ Financial assistance is based on the regional daily wage for non-agricultural workers as per DOLE-NWPC.<br /><br />
+                ▶ Financial assistance is computed based on DTR and supported by the Accomplishment Report.<br /><br />
+                ▶ Sign documentary requirements consistently with the valid ID submitted during engagement.<br /><br />
+                ▶ Submit DTR and AR on time for processing financial assistance.<br /><br />
+                ▶ Comply with corrections flagged by the DSWD KALAHI-CIDSS team for documentary requirements.<br /><br />
+                ▶ Submit a photocopy of a valid government-issued ID for verification purposes.<br /><br />
+                ▶ In case of delayed financial assistance release, the beneficiary may suspend or continue deployment.<br /><br />
+                ▶ Certificate of Completion/Participation is based on attendance and job performance assessment.<br /><br />
+                ▶ Submit the KALAHI-CIDSS CFWP Evaluation Form for program enhancement.<br /><br />
+              </span>
+
+              <span className='font-bold'>Other Conditions</span><br /><br />
+
+              <span>
+                ▶ No employee-employer relationship is established; only agreed financial assistance applies.<br /><br />
+                ▶ Documents are primarily signed by the immediate supervisor; an alternate supervisor may sign if unavailable.<br /><br />
+                ▶ Address grievances through proper DSWD KALAHI-CIDSS channels.<br /><br />
+                ▶ Maintain confidentiality of records, documents, and sensitive information.<br /><br />
+                ▶ Use appropriate channels, not social media, for raising issues and concerns.<br /><br />
+                ▶ Maintain confidentiality of non-public information during and after the program.<br /><br />
+              </span>
+
+
             </DialogDescription>
+
           </DialogHeader>
           <DialogFooter className='p-4'>
             <Button onClick={() => { confirmSave(); setDataPrivacyOpen(false); }}>CONFIRM SUBMISSION</Button>
@@ -1622,12 +1758,12 @@ export default function PersonProfileForm() {
             {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
           </CardDescription>
         </CardHeader>
-        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
-        {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
-        {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
-        {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
-        {/* <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre> */}
-        {/* <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre> */}
+        <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre>
+        <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre>
+        <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre>
+        <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre>
+        <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre>
+        <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre>
         <CardContent>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3">
@@ -1650,7 +1786,7 @@ export default function PersonProfileForm() {
               {/* <div className="flex-shrink-0 md:h-full lg:h-full"> */}
               <div className="col-span-1 p-4 flex items-center justify-center">
 
-                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} >
+                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture">
                   {displayPic ? (
                     <AvatarImage src={displayPic} alt="Display Picture" />
                   ) : (
@@ -1737,7 +1873,8 @@ export default function PersonProfileForm() {
                       <Input type='checkbox'
                         className="w-4 h-4 cursor-pointer"
                         id='middle_name_toggle'
-                        checked={formData?.has_middle_name ?? false}
+                        checked={isMiddleNameEnabled}
+                        // checked={formData?.has_middle_name ?? false}
                         onChange={(e) => chkIsMiddleNameEnabled(e.target.checked)}
                       />
                       <Label htmlFor="middle_name" className="block text-md  font-medium">

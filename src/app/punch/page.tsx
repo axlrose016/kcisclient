@@ -207,7 +207,10 @@ export default function ClockInOut() {
 
         // Find the user in the accounts array
         const user = accounts.find(acc => acc.username === worker && acc.password === pw);
-
+        if (!db) {
+            console.error("Database not initialized.");
+            return;
+        }
         if (!user) {
             console.error("Invalid username or password.");
             return;
@@ -216,10 +219,7 @@ export default function ClockInOut() {
             console.log("Access Granted!");
             return;
         }
-        if (!db) {
-            console.error("Database not initialized.");
-            return;
-        }
+
         // debugger;
 
         // const transaction = db.transaction("attendance", "readwrite");
@@ -382,7 +382,7 @@ export default function ClockInOut() {
 
                 </div>
 
- 
+
             </div>
         </div>
     );

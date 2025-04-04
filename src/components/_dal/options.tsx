@@ -22,7 +22,6 @@ const getLibraryOptions = (library: any, descriptionField: string, additionalCon
         }));
     });
 };
-
 export const getSexLibraryOptions = getLibraryOptions(lib_sex, 'sex_description');
 export const getCivilStatusLibraryOptions = getLibraryOptions(lib_civil_status, 'civil_status_description');
 export const getRoleLibraryOptions = getLibraryOptions(roles, "role_description");

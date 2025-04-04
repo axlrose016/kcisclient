@@ -1,7 +1,8 @@
 import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
-import { IUser, IUserAccess } from "@/components/interfaces/iuser";
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from "@/components/interfaces/iuser";
+import { seedCFWSchedules, seedCFWTimeLogs } from "./user-service";
 
 const tblRoles = dexieDb.table('roles') as EntityTable<IRoles, 'id'>;
 const tblModules = dexieDb.table('modules') as EntityTable<IModules, 'id'>;
@@ -25,6 +26,10 @@ const tblLibFilesToUpload = dexieDb.table('lib_files_to_upload') as EntityTable<
 const tblLibIPGroup = dexieDb.table('lib_ip_group') as EntityTable<ILibIPGroup, 'id'>;
 const tblLibYearServed = dexieDb.table('lib_year_served') as EntityTable<ILibYearServed, 'id'>;
 const tblLibProgramTypes = dexieDb.table('lib_program_types') as EntityTable<ILibProgramTypes, 'id'>;
+const tblCFWSchedules = dexieDb.table('cfwschedules') as EntityTable<ICFWSchedules, 'id'>;
+const tblCFWTimeLogs = dexieDb.table('cfwtimelogs') as EntityTable<ICFWTimeLogs, 'id'>;
+const tblLibSchoolProfiles = dexieDb.table('lib_school_profiles') as EntityTable<ILibSchoolProfiles, 'id'>;
+const tblLibSchoolPrograms = dexieDb.table('lib_school_programs') as EntityTable<ILibSchoolPrograms, 'id'>;
 
 //Roles Service
 export async function addRole(role: IRoles) {
@@ -942,7 +947,7 @@ export const seedLibSectors: ILibSectors[] = [
     { "id": 7, "sector_name": "Solo Parent", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 8, "sector_name": "Children (below 14 yrs old)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 9, "sector_name": "Children and Youth in Need of Special Protection", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
-    { "id": 10, "sector_name": "Children (below 14 yrs old)", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
+    { "id": 10, "sector_name": "LGBTQIA+", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 11, "sector_name": "Youth (15-30 yrs old )", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 12, "sector_name": "Family Heads in Need of Assistance", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 13, "sector_name": "Pregnant Women", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
@@ -951,7 +956,6 @@ export const seedLibSectors: ILibSectors[] = [
     { "id": 16, "sector_name": "Urban Poor", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 17, "sector_name": "Laborers", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
     { "id": 18, "sector_name": "Migrant Workers", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
-    { "id": 19, "sector_name": "LGBTQIA+", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded", },
 ]
 export const seedLibIdCard: ILibIdCard[] = [
     {
@@ -1597,6 +1601,73 @@ export const seedProgramTypes: ILibProgramTypes[] = [
 ];
 
 
+
+export const seedLibSchoolProfiles: ILibSchoolProfiles[] = [
+    {
+        id: 1,
+        school_name: "QUEZON CITY UNIVERSITY",
+        short_name: "QCU",
+        school_code: "",
+        address: "",
+        city_code: "",
+        province_code: "",
+        region_code: "",
+        barangay_code: "",
+        email: "",
+        contact_number: "",
+        school_head: "",
+        school_head_position: " ",
+        website_url: " ",
+        established_year: 0,
+        logo_url: "",
+        type: "Public",
+        level: "College", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+    {
+        id: 2,
+        school_name: "PARAÑAQUE CITY COLLEGE",
+        short_name: "PCC",
+        school_code: "",
+        address: "",
+        city_code: "",
+        province_code: "",
+        region_code: "",
+        barangay_code: "",
+        email: "",
+        contact_number: "",
+        school_head: "",
+        school_head_position: " ",
+        website_url: " ",
+        established_year: 0,
+        logo_url: "",
+        type: "Public",
+        level: "College", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
+
+
+]
+
+
+export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [
+    { id: 1, program_name: "BACHELOR OF ARTS IN COMMUNICATION", program_code: "ABCOMM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, program_name: "BACHELOR OF ARTS IN POLITICAL SCIENCE", program_code: "ABPOLSCI", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, program_name: "BACHELOR OF ARTS MAJOR IN PSYCHOLOGY", program_code: "ABPSY", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 4, program_name: "BACHELOR OF EARLY CHILDHOOD EDUCATION", program_code: "BECED", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 5, program_name: "BACHELOR OF ELEMENTARY EDUCATION", program_code: "BEED", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 6, program_name: "BACHELOR OF PHYSICAL EDUCATION", program_code: "BPED", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 7, program_name: "BACHELOR OF SCIENCE IN ACCOUNTANCY", program_code: "BSACCT", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 8, program_name: "BACHELOR OF SCIENCE IN EARLY CHILDHOOD EDUCATION", program_code: "BSECE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 9, program_name: "BACHELOR OF SCIENCE IN ELECTRONICS ENGINEERING", program_code: "BSECEENG", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 10, program_name: "BACHELOR OF SCIENCE IN ENTREPENEURSHIP", program_code: "BSENTREP", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 11, program_name: "BACHELOR OF SCIENCE IN INDUSTRIAL ENGINEERING", program_code: "BSIE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 12, program_name: "BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY", program_code: "BSIT", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 13, program_name: "BACHELOR OF SCIENCE IN MANAGEMENT ACCOUNTING", program_code: "BSMA", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 14, program_name: "BACHELOR OF SCIENCE IN REAL ESTATE MANAGEMENT", program_code: "BSREM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 15, program_name: "BACHELOR OF SCIENCE IN TOURISM MANAGEMENT", program_code: "BSTM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 16, program_name: "HOSPITALITY MANAGEMENT SERVICES", program_code: "HMS", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" }
+];
+
+
 export async function seedData() {
     try {
         await tblRoles.bulkPut(seedRoles);
@@ -1621,6 +1692,10 @@ export async function seedData() {
         await tblLibIPGroup.bulkPut(seedIPGroup);
         await tblLibYearServed.bulkPut(seedYearServed);
         await tblLibProgramTypes.bulkPut(seedProgramTypes);
+        await tblCFWSchedules.bulkPut(seedCFWSchedules);
+        await tblCFWTimeLogs.bulkPut(seedCFWTimeLogs);
+        await tblLibSchoolProfiles.bulkPut(seedLibSchoolProfiles);
+        await tblLibSchoolPrograms.bulkPut(seedLibSchoolPrograms);
         return "Library seeded successfully!!!";
         // try {
         //     await dexieDb.roles.bulkPut(seedRoles);
