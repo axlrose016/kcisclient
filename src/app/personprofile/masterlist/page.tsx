@@ -4,6 +4,7 @@ import { fetchReviewApproveDecline } from "@/components/_dal/review_approve_decl
 import { ButtonDelete } from "@/components/actions/button-delete";
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import { ButtonView } from "@/components/actions/button-view";
+import LoadingScreen from "@/components/general/loading-screen";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,7 +65,17 @@ export default function PersonProfileMasterlist() {
     }, []);
 
     if (loading) {
-        return <>Loading...</>
+        return <>
+             <LoadingScreen
+                  isLoading={loading}
+                  text={"Loading... Please wait."}
+                  style={"dots"}
+                  fullScreen={true}
+                  progress={0}
+                  timeout={0}
+                  onTimeout={() => console.log("Loading timed out")}
+                />
+        </>
     }
     const handleApprove = (id: string) => {
 

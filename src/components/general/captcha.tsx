@@ -87,6 +87,12 @@ export default function Captcha({verified}:{verified: (isValid: boolean) => void
   }
 
   useEffect(() => {
+    if(userInput.length > 0) {
+      verifyCaptcha();
+    }
+  }, [userInput])
+
+  useEffect(() => {
     const text = generateCaptcha()
     drawCaptcha(text)
   }, [])
@@ -120,14 +126,14 @@ export default function Captcha({verified}:{verified: (isValid: boolean) => void
             value={userInput}
             onChange={(e) => setUserInput(e.target.value)}
             placeholder="Enter the captcha text"
-            className="w-full"
+            className="w-full lowercase"
             maxLength={6}
           />
         </div>
-
+{/* 
         <Button onClick={verifyCaptcha} className="w-full">
           Verify
-        </Button>
+        </Button> */}
 
         {isValid !== null && (
           <div

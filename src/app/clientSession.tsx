@@ -6,6 +6,7 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import LoginPage from './login/page';
 import { useRouter } from 'next/navigation';
+import LoadingScreen from '@/components/general/loading-screen';
 
 const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -33,7 +34,17 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   }, []); // Empty dependency array means this only runs once when component mounts
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading state until session is checked
+    return <div>
+      <LoadingScreen
+        isLoading={loading}
+        text={"Loading... Please wait."}
+        style={"dots"}
+        fullScreen={true}
+        progress={0}
+        timeout={0}
+        onTimeout={() => console.log("Loading timed out")}
+      />
+    </div>; // Show loading state until session is checked
   }
 
   console.log('Current isAuthenticated state:', isAuthenticated); // Debugging state changes

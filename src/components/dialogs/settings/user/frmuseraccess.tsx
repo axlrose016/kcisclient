@@ -7,6 +7,7 @@ import { ButtonDialog } from "@/components/actions/button-dialog";
 import { ButtonEdit } from "@/components/actions/button-edit";
 import UserForm from "@/components/dialogs/settings/user/frmuser";
 import { FormDropDown } from "@/components/forms/form-dropdown";
+import LoadingScreen from "@/components/general/loading-screen";
 import { LibraryOption } from "@/components/interfaces/library-interface";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useraccess } from "@/db/schema/users";
@@ -48,7 +49,17 @@ export default function UserAccess({ record_id }: { record_id?: string }) {
 
 
     if(loading){
-        return <>Loading...</>
+        return <div>
+            <LoadingScreen
+                    isLoading={loading}
+                    text={"Loading... Please wait."}
+                    style={"dots"}
+                    fullScreen={true}
+                    progress={0}
+                    timeout={0}
+                    onTimeout={() => console.log("Loading timed out")}
+                  />
+        </div>
     }
     return(
         <Table className="table-fixed w-full text-left">

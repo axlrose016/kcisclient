@@ -2,15 +2,18 @@
 import { PDFDocument, rgb, degrees } from "pdf-lib";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";  // Import your Dexie instance
 import { useEffect, useState } from "react";
-import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
 import { LibraryOption } from "../interfaces/library-interface";
 import { IPersonProfile } from "../interfaces/personprofile";
 import { getCFWTypeLibraryOptions } from "../_dal/options";
 import Attachments from "@/app/personprofile/form/attachments";
-import { array } from "zod";
+import { array, object } from "zod";
+import path from "path";
+import { Button } from "../ui/button";
 
 const GeneratePDF = () => {
   const [extensionNames, setExtensionNames] = useState<Record<number, string>>({});
+  const [schoolNames, setSchoolNames] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [isGenerated, setGenerated] = useState(false);
   const [profile, setProfile] = useState<IPersonProfile | null>(null);
@@ -62,1496 +65,1690 @@ const GeneratePDF = () => {
         console.error(`Error fetching ${key}:`, error);
         return null;
       }
+      
     };
 
-    // const fetchRegion = async () => {
-    //   fetchData("regions", "/api-libs/psgc/regions", (data) => {
-    //         // console.log('LocationAreaSelections > regions', data)
-    //         if (data?.status) {
-    //             // Ensure the response has data and map it to LibraryOption format
-    //             const mappedRegions: LibraryOption[] = data.data.map((item: any) => ({
-    //                 id: item.code,         // Assuming 'id' exists in fetched data
-    //                 name: item.name,     // Assuming 'name' exists in fetched data
-    //             }));
-    //             setOptions((prev) => ({ ...prev, regions: mappedRegions }))
-    //         }
-    //     });
-    // };
-
-    // useEffect(() => {
-    //   fetchRegion();
-    // }, []);
-
-    // useEffect(() => {
-
-    // //   const fetchRegion = async (): Promise<LibraryOption[]> => {
-    // //     return new Promise((resolve, reject) => {
-    // //         fetchData("regions", "/api-libs/psgc/regions", (data) => {
-    // //             if (data?.status) {
-    // //                 const filteredRegions: LibraryOption[] = data.data
-    // //                     .filter((item: any) => item.region_code === profile?.region_code)
-    // //                     .map((item: any) => ({
-    // //                         id: item.code,
-    // //                         name: item.name
-    // //                     }));
-    
-    // //                 setOptions((prev) => ({ ...prev, regions: filteredRegions }));
-    // //                 console.log("Filtered Regions:", filteredRegions);
-    // //                 resolve(filteredRegions);  // ✅ Return the filtered regions
-    // //             } else {
-    // //                 reject("No data found or invalid response.");
-    // //             }
-    // //         });
-    // //     });
-    // // };
-    
-
-    // //   const fetchProvinces = async () => {
-    // //     debugger;
-    // //     if (!profile?.province_code) return; // Ensure province_code exists
-  
-    // //     try {
-    // //       await fetchData(`provinces-${profile.region_code}`, `/api-libs/psgc/provincesByRegion?region=${profile.region_code}`, (data: any) => {
-    // //         // console.log('LocationAreaSelections > provinces', data)
-    // //         if (data?.status) {
-    // //             const mappedProvince: LibraryOption[] = data.data.provinces.map((item: any) => ({
-    // //                 id: item.code,         // Assuming 'id' exists in fetched data
-    // //                 name: item.name,     // Assuming 'name' exists in fetched data
-    // //             }));
-    // //             setOptions((prev) => ({ ...prev, provinces: mappedProvince }))
-    // //         }
-    // //     }
-    // //     );
-    // //     } catch (error) {
-    // //       console.error("Error fetching provinces:", error);
-    // //     }
-    // //   };
-
-    // //   const fetchCity = async () => {
-    // //     debugger;
-    // //     if (!profile?.city_code) return; // Ensure city_code exists
-  
-    // //     try {
-    // //       await fetchData(`muni-${profile.province_code}`, `/api-libs/psgc/municipalityByProvince?province=${profile.province_code}`, (data: any) => {
-           
-    // //         console.log('LocationAreaSelections > provinces', data)
-    // //         if (data?.status) {
-    // //             const mappedCity: LibraryOption[] = data.data.muni.map((item: any) => ({
-    // //                 id: item.code,         // Assuming 'id' exists in fetched data
-    // //                 name: item.name,     // Assuming 'name' exists in fetched data
-    // //             }));
-    // //             setOptions((prev) => ({ ...prev, muni: mappedCity }))
-    // //         }
-    // //     }
-        
-    // //     );
-    // //     } catch (error) {
-    // //       console.error("Error fetching city:", error);
-    // //     }
-    // //   };
-
-    // //   const fetchBrgy = async () => {
-    // //     debugger;
-    // //     if (!profile?.brgy_code) return; // Ensure brgy_code exists
-    
-    // //     try {
-    // //         await fetchData(`barangays-${profile.city_code}`, `/api-libs/psgc/barangayByMunicipality?municipality=${profile.city_code}`, (data: any) => {
-    // //             console.log('LocationAreaSelections > muni', data)
-    // //             if (data?.status) {
-    // //                 const mappedBrgy: LibraryOption[] = data.data.barangays.map((item: any) => ({
-    // //                     id: item.code,         // Assuming 'id' exists in fetched data
-    // //                     name: item.name,       // Assuming 'name' exists in fetched data
-    // //                 }));
-    // //                 setOptions((prev) => ({ ...prev, barangays: mappedBrgy }))
-    
-    // //                 // Extracting brgy_name from mappedBrgy
-    // //                 const brgyNames = mappedBrgy.map(brgy => brgy.name);
-    // //                 console.log('Barangay Names:', brgyNames);
-    // //             }
-    // //         });
-            
-    // //     } catch (error) {
-    // //         console.error("Error fetching barangay:", error);
-    // //     }
-    // // };
-  
-    //   debugger;
-    //   const loadRegions = async () => {
-    //     const regions = await fetchRegion();
-    //     console.log("Region!!!!!!!", regions);  // This will properly log the filtered regions
-    // };
-    
-    // loadRegions();
-    //   // fetchProvinces();
-    //   // fetchCity();
-    //   // fetchBrgy();
-    // }, [profile]);
-
-    const testFetchRegion = async (region_code: string): Promise<LibraryOption[]> => {
-      try {
-          const regions: LibraryOption[] = [];
-  
-          fetchData("regions", "/api-libs/psgc/regions", (data) => {
-              if (data?.status) {
-                  const filteredRegions = data.data
-                      // .filter((item: any) => item.region_code === region_code)
-                      .map((item: any) => ({
-                          id: item.code,
-                          name: item.name
-                      }));
-  
-                  console.log("Filtered Regions:", filteredRegions);
-  
-                  // ✅ Update state with filtered regions
-                  setOptions((prev) => ({ ...prev, regions: filteredRegions }));
-  
-                  // Assign filtered regions for returning
-                  regions.push(...filteredRegions);
-              } else {
-                  console.error("No data found or invalid response.");
-              }
-          });
-  
-          // ✅ Add slight delay to wait for asynchronous callback
-          await new Promise((resolve) => setTimeout(resolve, 100));
-  
-          return regions;
-  
-      } catch (error) {
-          console.error("Error fetching regions:", error);
-          return [];  // Return an empty array on error
-      }
-  };
-  
-  
 
   const generatePdf = async () => {
     setGenerated(true);
     setLoading(true);
     
-    try {
-            // Fetch data from Dexie.js
-            const personProfile = await dexieDb.person_profile.toArray();
-            const firstProfile = personProfile[0]; // Use the first record for this example
-            const firstProfile2 = personProfile[1];
-            const firstProfile3 = personProfile[2];
-            const firstProfile4 = personProfile[3];
-            const firstProfile5 = personProfile[4];
-            const firstProfile6 = personProfile[5];
-            const firstProfile7 = personProfile[6];
-            const firstProfile8 = personProfile[7];
-            const firstProfile9 = personProfile[8];
-            const firstProfile10 = personProfile[9];
+try {
+        // Fetch data from Dexie.js
+        const personProfile = await dexieDb.person_profile.toArray();
+        const firstProfile = personProfile[0]; // Use the first record for this example
+   
 
-
-            // const person_profile_id = await dexieDb.lib_id_card.toArray();
-            // const person_id = person_profile_id[0];
-
-            //Partisipasyon sa CFWF
-            const cfw_fam_program = await dexieDb.person_profile_cfw_fam_program_details.toArray();
-            const cfw_fam = cfw_fam_program[0];
-            
-            //Family member relationship
-            const family_relation = await dexieDb.person_profile_family_composition.toArray();
-            const family_relationProfile1 = family_relation[0];
-            const family_relationProfile2 = family_relation[1];
-            const family_relationProfile3 = family_relation[2];
-            const family_relationProfile4 = family_relation[3];
-            const family_relationProfile5 = family_relation[4];
-            const family_relationProfile6 = family_relation[5];
-            const family_relationProfile7 = family_relation[6];
-            const family_relationProfile8 = family_relation[7];
-            const family_relationProfile9 = family_relation[8];
-            const family_relationProfile710 = family_relation[9];
-
-
-
-            
-  
-            console.log(firstProfile);
-            if (!firstProfile) {
-              alert("No profile data found!");
-              setLoading(false);
-              return;
-            }
-
-           // setProfile(personProfile[0]);
-            //debugger;
-
-
-          /*  //--------------------------------------------------------------------------------------
-            const region_list = await fetchData("region", "/api-libs/psgc/regions", (data) => {
-              if (data?.status) {
-                  const filteredRegions = data.data
-                      .map((item: any) => ({
-                          id: item.code,
-                          name: item.name
-                      }));
-  
-                  console.log("Filtered Regions:", filteredRegions);
-  
-                  // ✅ Update state with filtered regions
-                  setOptions((prev) => ({ ...prev, regions: filteredRegions }));
-  
-                  // Assign filtered regions for returning
-                  return filteredRegions
-              } else {
-                  console.error("No data found or invalid response.");
-              }
-            });
-
-            if (region_list?.data) {
-              const filteredRegion = region_list.data.filter((w: any) => w.code === firstProfile?.region_code);
-              console.log("REGION:", filteredRegion[0].name);
-            } else {
-                console.error("No data found or invalid response.");
-            }
-          
-          //--------------------------------------------------------------------------------------
-
-        //    //--------------------------------------------------------------------------------------
-       var profileProvince;
-         const province_list = await fetchData(`provinces-${firstProfile.region_code}`, `/api-libs/psgc/provincesByRegion?region=${firstProfile.region_code}`, (data) => {
-            if (data?.status) {
-              const filteredProvinces = data.data
-                  .map((item: any) => ({
-                      id: item.code,
-                      name: item.name
-                  }));
-
-              console.log("Filtered Provinces:", filteredProvinces);
-
-              // ✅ Update state with filtered province
-              setOptions((prev) => ({ ...prev, provinces: filteredProvinces }));
-
-              // Assign filtered province for returning
-              return filteredProvinces
-          } else {
-              console.error("No data found or invalid response.");
-          }
-          });
-
-          if (province_list?.data) {
-            const filteredProvince = province_list.data.provinces.filter((w: any) => w.region === firstProfile?.region_code);
-            console.log("Province:", filteredProvince[0].name);
-            profileProvince = filteredProvince[0].name;
-          } else {
-              console.error("No data found or invalid response.");
-          }
-        // //--------------------------------------------------------------------------------------
-
+        //Partisipasyon sa CFWF
+        const cfw_fam_program = await dexieDb.person_profile_cfw_fam_program_details.toArray();
+        const cfw_fam = cfw_fam_program[0];
+        const cfw_fam2 = cfw_fam_program[1];
+        const cfw_fam3 = cfw_fam_program[2];
         
-          //--------------------------------------------------------------------------------------
-           var profileCity;
-            const city_list = await fetchData(`muni-${firstProfile.province_code}`, `/api-libs/psgc/municipalityByProvince?province=${firstProfile.province_code}`, (data) => {
-            if (data?.status) {
-                const filteredCities = data.data
-                    .map((item: any) => ({
-                        id: item.code,
-                        name: item.name
-                    }));
+        //Family member relationship
+        const family_relation = await dexieDb.person_profile_family_composition.toArray();
+        const family_relationProfile1 = family_relation[0];
+        const family_relationProfile2 = family_relation[1];
+        const family_relationProfile3 = family_relation[2];
+        const family_relationProfile4 = family_relation[3];
+        const family_relationProfile5 = family_relation[4];
+        const family_relationProfile6 = family_relation[5];
+        const family_relationProfile7 = family_relation[6];
+        const family_relationProfile8 = family_relation[7];
+        const family_relationProfile9 = family_relation[8];
+        const family_relationProfile10 = family_relation[9];
 
-                console.log("Filtered city:", filteredCities);
+        console.log(firstProfile);
+        if (!firstProfile) {
+          alert("No profile data found!");
+          setLoading(false);
+          return;
+        }
 
-                // ✅ Update state with filtered regions
-                setOptions((prev) => ({ ...prev, municipalities: filteredCities }));
+        // setProfile(personProfile[0]);
+        //debugger;
 
-                // Assign filtered province for returning
-                return filteredCities
-              
-            } else {
-                console.error("No data found or invalid response.");
-            }
-            });
+  //--------------------------------------------------------------------------------------
+  const region_list = await fetchData("region", "/api-libs/psgc/regions", (data) => {
+    if (data?.status) {
+        const filteredRegions = data.data
+            .map((item: any) => ({
+                id: item.code,
+                name: item.name
+            }));
 
-            debugger;
-            if (city_list?.data) {
-              const filteredCity = city_list.data.municipalities.filter((w: any) => w.province === firstProfile?.province_code);
-              console.log("City:", filteredCity[0].name);
-              profileCity = filteredCity[0].name;
-            } else {
-                console.error("No data found or invalid response.");
-            }
-            //--------------------------------------------------------------------------------------
+        console.log("Filtered Regions:", filteredRegions);
 
-              
-           //--------------------------------------------------------------------------------------
-           var profileBrgy;
-           const brgy_list = await fetchData(`barangays-${firstProfile.city_code}`, `/api-libs/psgc/barangayByMunicipality?municipality=${firstProfile.city_code}`, (data) => {
-           if (data?.status) {
-               const filteredBrgys = data.data
-                   .map((item: any) => ({
-                       id: item.code,
-                       name: item.name
-                   }));
+        // ✅ Update state with filtered regions
+        setOptions((prev) => ({ ...prev, regions: filteredRegions }));
 
-               console.log("Filtered city:", filteredBrgys);
+        // Assign filtered regions for returning
+        return filteredRegions
+    } else {
+        console.error("No data found or invalid response.");
+    }
+  });
 
-               // ✅ Update state with filtered regions
-               setOptions((prev) => ({ ...prev, barangays: filteredBrgys }));
-
-               // Assign filtered province for returning
-               return filteredBrgys
-             
-           } else {
-               console.error("No data found or invalid response.");
-           }
-           });
-
-           debugger;
-           if (brgy_list?.data) {
-             const filteredBrgy = brgy_list.data.barangays.filter((w: any) => w.municipality === firstProfile?.city_code);
-             console.log("City:", filteredBrgy[0].name);
-             profileBrgy = filteredBrgy[0].name;
-           } else {
-               console.error("No data found or invalid response.");
-           }
-               */
-           //--------------------------------------------------------------------------------------
-
-            // Create a new PDF document
-            const pdfDoc = await PDFDocument.create();
-            const pages = Array.from({ length: 10 }, () => pdfDoc.addPage([842, 595]));
-            const { width, height } = pages[0].getSize();
-
-            // Embed images
-            const imagePaths = [
-              "/images/Page1.png",
-              "/images/Page2.png",
-              "/images/Page3.png",
-              "/images/Page4.png",
-              "/images/Page5.png",
-              "/images/Page6.png",
-              "/images/Page7.png",
-              "/images/Page8.png",
-              "/images/Page9.png",
-              "/images/Page10.png"
-            ];
-
-            const images = await Promise.all(
-              imagePaths.map(async (path) => {
-                const imageBytes = await fetch(path).then((res) => res.arrayBuffer());
-                return pdfDoc.embedPng(imageBytes);
-              })
-            );
-
-            // Draw images on each page
-            pages.forEach((page, index) => {
-              page.drawImage(images[index], {
-                x: 0,
-                y: height - 595,
-                width,
-                height,
-              });
-            });
-
-            // Draw text from Dexie data on the PDF
-            let full_name = `${firstProfile.first_name}` + ` ` + `${firstProfile.middle_name}` + ` ` + `${firstProfile.last_name}`;
-            let count_full_name_1 = (full_name.length);
-            const date = new Date();
-            const formatted = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
-            const options = { year: "numeric" as const, month: "long" as const, day: "numeric" as const };
-            const dateString = date.toLocaleDateString('en-US', options);  // "March 26, 2025"
-            let civil = firstProfile.civil_status_id;
-            let date_spilt = dateString.split(/,/);
-
-            // PAGE 4 AND 7 OF THE PDF FILE =======================================================================================================
-            const  get_id_card = await getOfflineLibIdCard();
-            const id_map = Object.fromEntries(get_id_card.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
-            setExtensionNames(id_map);
-            const id_ext = id_map[firstProfile.id_card ?? 0] || ""; 
-              
-            //fullname
-            pages[0].drawText(full_name.toUpperCase() , {
-              x: 632.5 - (count_full_name_1 * 3),
-              y: 122,
-              size: 9,
-              color: rgb(0, 0, 0),
-            });
-
-            let cfwp_id = 'KC25-00000001';
-            let cfwp_id_count = (cfwp_id.length * 7) / 2;
-
-            //cfwp_id
-            pages[0].drawText(cfwp_id, {
-              x: 645 - cfwp_id_count,
-              y: 80,
-              size: 9,
-              color: rgb(0, 0, 0),
-            });
-
-            //date 
-            pages[2].drawText(formatted.toString(), {
-              x: 260,
-              y: 540,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[2].drawText(date_spilt[0].toString(), {
-              x: 115,
-              y: 425,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-            const two_digit_year = date_spilt[1].toString().replace('20', ''); 
-            pages[2].drawText(two_digit_year, {
-              x: 173,
-              y: 425,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[2].drawText(`N/A`, {
-              x: 270,
-              y: 509,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-
-            const count_full_name_3 = full_name.length;
-            pages[2].drawText(full_name.toString().toLocaleUpperCase() , {
-              x: 115 - (count_full_name_3 * 1.9),
-              y: 307,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[2].drawText(cfwp_id, {
-              x: 278 - cfwp_id_count,
-              y: 13,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //Page 4 ----------------------------------------------------------------------------------------------------------------------------
-              
-            pages[3].drawText(cfwp_id, {
-              x: 138 - cfwp_id_count,
-              y: 540,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-            
-            pages[3].drawText(formatted.toString(), {
-              x: 224,
-              y: 540,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-            // CFWP FOR HIGHER EDUCATION INSTITUTION
-            pages[3].drawText('X', {
-              x: 32.5,
-              y: 491,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-            // CFWP FOR ECONOMICALLY VULNERABLE COMMUNITIES AND SECTOR
-            pages[3].drawText('', {
-              x: 155,
-              y: 491,
-              size: 7,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[3].drawText(`${firstProfile.last_name.toString().toUpperCase()}`, {
-              x: 29,
-              y: 436,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[3].drawText(`${firstProfile.first_name.toString().toUpperCase()}`, {
-              x: 141,
-              y: 436,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            pages[3].drawText(`${firstProfile.middle_name.toString().toUpperCase()}`, {
-              x: 257,
-              y: 436,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            // NAME EXTENSION
-            const extension_name = await getOfflineExtensionLibraryOptions();
-            const ext_map = Object.fromEntries(extension_name.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-            setExtensionNames(ext_map);
-            const name_ext = ext_map[firstProfile.extension_name_id ?? 0] || ""; 
-            
-
-            pages[3].drawText(`${name_ext}`, {
-              x: 363,
-              y: 436,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            
-
-            //ADDRESS
-            pages[3].drawText(`N?A`, {
-              x: 50,
-              y: 370,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-         //-----------------------------------------------------------Address--------------------------------------------------------------------   
-            //SITIO ADRRESS
-            pages[3].drawText(`${'X'}`, {
-              x: 29,
-              y: 322,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            const str = firstProfile.birthplace;
-            const chunkSize = 21;
-            const result = [];
-
-          for (let i = 0; i < str.length; i += chunkSize) {
-              result.push(str.slice(i, i + chunkSize));
-          }
-          for(let i = 0; i < result.length; i++){
-            pages[3].drawText(result[i].toString().toUpperCase(), {
-              x: 29,
-              y: 242 - (9 * i),
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-          }
+  if (region_list?.data) {
+    const filteredRegion = region_list.data.filter((w: any) => w.code === firstProfile?.region_code);
+    console.log("REGION:", filteredRegion[0].name);
+  } else {
+      console.error("No data found or invalid response.");
+  }
           
-            let occupation = firstProfile.current_occupation.toString().toUpperCase();
-            let occupation_split = occupation.split(" ");
-            //TRABAHO
-            pages[3].drawText(`${occupation_split[0]}`, {
-              x: 116,
-              y: 242,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+//--------------------------------------------------------------------------------------
 
-            pages[3].drawText(`${occupation_split[1]}`, {
-              x: 116,
-              y: 233,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+//--------------------------------------------------------------------------------------
 
-            pages[3].drawText(`${occupation_split[2]}`, {
-              x: 116,
-              y: 224,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+var profileProvince;
+const province_list = await fetchData(`provinces-${firstProfile.province_code}`, `/api-libs/psgc/provincesByRegion?region=${firstProfile.region_code}`, (data) => {
+  if (data?.status) {
+    const filteredProvinces = data.data
+        .map((item: any) => ({
+            id: item.code,
+            name: item.name
+        }));
 
-            pages[3].drawText(`${occupation_split[3]}`, {
-              x: 116,
-              y: 215,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+    console.log("Filtered Provinces:", filteredProvinces);
 
-            //IDENTIFICATION CARD
-            let ID_INFO = id_ext + ' / ' +  firstProfile.occupation_id_card_number;
-            pages[3].drawText(`${ID_INFO.toString().toUpperCase()}`, {
-              x: 175,
-              y: 242,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-            
-            let bdate = `${firstProfile.birthdate}`;
-            let res = bdate.split(/-/);
+    // ✅ Update state with filtered province
+    setOptions((prev) => ({ ...prev, provinces: filteredProvinces }));
 
-            pages[3].drawText(res[1], { 
-              x: 39,
-              y: 290,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+    // Assign filtered province for returning
+    return filteredProvinces
+} else {
+    console.error("No data found or invalid response.");
+}
+});
 
-            pages[3].drawText(res[2], { 
-              x: 74,
-              y: 290,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+if (province_list?.data) {
+  const filteredProvince = province_list.data.provinces.filter((w: any) => w.code === firstProfile?.province_code);
+  console.log("Province:", filteredProvince[0].name);
+  profileProvince = filteredProvince[0].name;
+} else {
+    console.error("No data found or invalid response.");
+}
 
-            pages[3].drawText(res[0], { 
-              x: 105,
-              y: 290,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  var profileCity;
+  const city_list = await fetchData(`muni-${firstProfile.city_code}`, `/api-libs/psgc/municipalityByProvince?province=${firstProfile.province_code}`, (data) => {
+  if (data?.status) {
+      const filteredCities = data.data
+          .map((item: any) => ({
+              id: item.code,
+              name: item.name
+          }));
 
-            //AGE
-            pages[3].drawText(`${firstProfile.age}`, { 
-              x: 144,
-              y: 282,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-            
-            const get_sex = await getOfflineLibSexOptions();
-            const sex_map = Object.fromEntries(get_sex.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-            setExtensionNames(sex_map);
-            const sex_ext = sex_map[firstProfile.sex_id ?? 0] || ""; 
-            const sex_count = sex_ext.length;
+      console.log("Filtered city:", filteredCities);
 
-            pages[3].drawText(sex_ext.toString().toUpperCase(), { 
-              x: 195 - (sex_count * 1.9),
-              y: 282,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+      // ✅ Update state with filtered regions
+      setOptions((prev) => ({ ...prev, municipalities: filteredCities }));
 
-            pages[3].drawText(`${firstProfile.cellphone_no}`, { 
-              x: 231,
-              y: 293,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+      // Assign filtered province for returning
+      return filteredCities
+    
+  } else {
+      console.error("No data found or invalid response.");
+  }
+  });
 
-            let email_a = `${firstProfile.email}`;
-            let email_split = email_a.split("@");
+  if (city_list?.data) {
+    const filteredCity = city_list.data.municipalities.filter((w: any) => w.code === firstProfile?.city_code);
+    console.log("City:", filteredCity[0].name);
+    profileCity = filteredCity[0].name;
+  } else {
+      console.error("No data found or invalid response.");
+  }
 
-            pages[3].drawText(email_split[0], { 
-              x: 316,
-              y: 292,
-              size: 6,
-              color: rgb(0, 0, 0),
+var profileBrgy;
+const brgy_list = await fetchData(`barangays-${firstProfile?.brgy_code}`, `/api-libs/psgc/barangayByMunicipality?municipality=${firstProfile?.city_code}`, (data) => {
+if (data?.status) {
+    const filteredBrgys = data.data
+        .map((item: any) => ({
+            id: item.code,
+            name: item.name
+        }));
+        debugger;
+    console.log("Filtered Brgy:", filteredBrgys);
+
+    // ✅ Update state with filtered regions
+    setOptions((prev) => ({ ...prev, barangays: filteredBrgys }));
+
+    // Assign filtered province for returning
+    return filteredBrgys
+  
+} else {
+    console.error("No data found or invalid response.");
+}
+});
+
+
+if (brgy_list?.data) {
+ const filteredCity = brgy_list.data.barangay.filter((w: any) => w.code === firstProfile.brgy_code);
+ console.log("barangay:", filteredCity[0].name);
+ profileBrgy = filteredCity[0].name;
+} else {
+    console.error("No data found or invalid response.");
+}
+
+// Create a new PDF document
+  const pdfDoc = await PDFDocument.create();
+  const pages = Array.from({ length: 10 }, () => pdfDoc.addPage([842, 595]));
+  const { width, height } = pages[0].getSize();
+
+  // Embed images
+  const imagePaths = [
+    "/images/Page1.png",
+    "/images/Page2.png",
+    "/images/Page3.png",
+    "/images/Page4.png",
+    "/images/Page5.png",
+    "/images/Page6.png",
+    "/images/Page7.png",
+    "/images/Page8.png",
+    "/images/Page9.png",
+    "/images/Page10.png"
+  ];
+
+  const images = await Promise.all(
+    imagePaths.map(async (path) => {
+      const imageBytes = await fetch(path).then((res) => res.arrayBuffer());
+      return pdfDoc.embedPng(imageBytes);
+    })
+  );
+
+  // Draw images on each page
+  pages.forEach((page, index) => {
+    page.drawImage(images[index], {
+      x: 0,
+      y: height - 595,
+      width,
+      height,
+    });
+  });
+
+  // Draw text from Dexie data on the PDF
+  let full_name = `${firstProfile.first_name}` + ` ` + `${firstProfile.middle_name}` + ` ` + `${firstProfile.last_name}`;
+  let count_full_name_1 = (full_name.length);
+  const date = new Date();
+  const formatted = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+  const options = { year: "numeric" as const, month: "long" as const, day: "numeric" as const };
+  const dateString = date.toLocaleDateString('en-US', options);  // "March 26, 2025"
+  let civil = firstProfile.civil_status_id;
+  let date_spilt = dateString.split(/,/);
+
+//------------------------------------------------------------------------------------------------------------------------------------
+//------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+  // PAGE 4 AND 7 OF THE PDF FILE =======================================================================================================
+  const  get_id_card = await getOfflineLibIdCard();
+  const id_map = Object.fromEntries(get_id_card.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(id_map);
+  const id_ext = id_map[firstProfile.id_card ?? 0] || ""; 
+    
+  //fullname
+  pages[0].drawText(full_name.toUpperCase() , {
+    x: 632.5 - (count_full_name_1 * 3),
+    y: 122,
+    size: 9,
+    color: rgb(0, 0, 0),
+  });
+
+  let cfwp_id = 'KC25-00000001';
+  let cfwp_id_count = (cfwp_id.length * 7) / 2;
+
+  //cfwp_id
+  pages[0].drawText(cfwp_id, {
+    x: 645 - cfwp_id_count,
+    y: 80,
+    size: 9,
+    color: rgb(0, 0, 0),
+  });
+
+  //date 
+  pages[2].drawText(formatted.toString(), {
+    x: 260,
+    y: 540,
+    size: 7,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[2].drawText(date_spilt[0].toString(), {
+    x: 115,
+    y: 425,
+    size: 7,
+    color: rgb(0, 0, 0),
+  });
+  const two_digit_year = date_spilt[1].toString().replace('20', ''); 
+  pages[2].drawText(two_digit_year, {
+    x: 173,
+    y: 425,
+    size: 7,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[2].drawText(`N/A`, {
+    x: 270,
+    y: 509,
+    size: 7,
+    color: rgb(0, 0, 0),
+  });
+
+  const count_full_name_3 = full_name.length;
+  pages[2].drawText(full_name.toString().toLocaleUpperCase() , {
+    x: 115 - (count_full_name_3 * 1.9),
+    y: 307,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[2].drawText(cfwp_id, {
+    x: 278 - cfwp_id_count,
+    y: 13,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+
+  //---------------------------------------------------------Page 4-------------------------------------------------------------------
+
+
+  pages[3].drawText(cfwp_id, {
+    x: 138 - cfwp_id_count,
+    y: 540,
+    size: 7,
+    color: rgb(0, 0, 0),
+  });
+  
+  pages[3].drawText(formatted.toString(), {
+    x: 224,
+    y: 540,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  // CFWP FOR HIGHER EDUCATION INSTITUTION
+  pages[3].drawText('X', {
+    x: 33,
+    y: 492.5,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  // CFWP FOR ECONOMICALLY VULNERABLE COMMUNITIES AND SECTOR
+  pages[3].drawText('', {
+    x: 155,
+    y: 491,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(`${firstProfile.last_name.toString().toUpperCase()}`, {
+    x: 29,
+    y: 436,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(`${firstProfile.first_name.toString().toUpperCase()}`, {
+    x: 141,
+    y: 436,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(`${firstProfile.middle_name.toString().toUpperCase()}`, {
+    x: 257,
+    y: 436,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  // NAME EXTENSION
+  const extension_name = await getOfflineExtensionLibraryOptions();
+  const ext_map = Object.fromEntries(extension_name.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(ext_map);
+  const name_ext = ext_map[firstProfile.extension_name_id ?? 0] || ""; 
+  
+  pages[3].drawText(`${name_ext}`, {
+    x: 363,
+    y: 436,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  
+  //ADDRESS
+
+  const str_address =  firstProfile.sitio + ', ' + profileBrgy + ', ' + profileCity + ', ' + profileProvince;
+  const Address_charSize = 121;
+  const address_result = [];
+
+  for (let i = 0; i < str_address.length; i += Address_charSize) {
+      address_result.push(str_address.slice(i, i + Address_charSize));
+  }
+  //SITIO ADRRESS
+  for(let i = 0; i < address_result.length; i++){
+    pages[3].drawText(`${address_result[i].toString().toUpperCase()}`, {
+      x:29,
+      y: 377 - (9 * i),
+      size: 5,
+      color: rgb(0, 0, 0),
+    });
+  }
+  //SITIO ADRRESS
+  for(let i = 0; i < address_result.length; i++){
+    pages[3].drawText(`${address_result[i].toString().toUpperCase()}`, {
+      x:29,
+      y: 329 - (9 * i),
+      size: 5,
+      color: rgb(0, 0, 0),
+    });
+  }
+  
+
+
+  const str = firstProfile.birthplace;
+  const chunkSize = 21;
+  const result = [];
+
+  for (let i = 0; i < str.length; i += chunkSize) {
+      result.push(str.slice(i, i + chunkSize));
+  }
+  for(let i = 0; i < result.length; i++){
+    pages[3].drawText(result[i].toString().toUpperCase(), {
+      x: 29,
+      y: 242 - (9 * i),
+      size: 5,
+      color: rgb(0, 0, 0),
+    });
+  }
+
+  let occupation = firstProfile.current_occupation.toString().toUpperCase();
+  let occupation_split = occupation.split(" ");
+  //TRABAHO
+  if(occupation_split[0] !== undefined){
+  pages[3].drawText(`${occupation_split[0]}`, {
+    x: 116,
+    y: 242,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  }
+  if(occupation_split[1] !== undefined){
+  pages[3].drawText(`${occupation_split[1]}`, {
+    x: 116,
+    y: 233,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+}
+
+  if(occupation_split[2] !== undefined){
+    pages[3].drawText(`${occupation_split[2]}`, {
+      x: 116,
+      y: 224,
+      size: 5,
+      color: rgb(0, 0, 0),
+    });
+    }
+
+    if(occupation_split[3] !== undefined){
+    pages[3].drawText(`${occupation_split[3]}`, {
+      x: 116,
+      y: 215,
+      size: 5,
+      color: rgb(0, 0, 0),
+    });
+}
+  //IDENTIFICATION CARD
+  let ID_INFO = id_ext + ' / ' +  firstProfile.occupation_id_card_number;
+  pages[3].drawText(`${ID_INFO.toString().toUpperCase()}`, {
+    x: 175,
+    y: 242,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  
+  let bdate = `${firstProfile.birthdate}`;
+  let res = bdate.split(/-/);
+
+  pages[3].drawText(res[1], { 
+    x: 39,
+    y: 290,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(res[2], { 
+    x: 74,
+    y: 290,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(res[0], { 
+    x: 105,
+    y: 290,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  //AGE
+  pages[3].drawText(`${firstProfile.age}`, { 
+    x: 144,
+    y: 282,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  
+  const get_sex = await getOfflineLibSexOptions();
+  const sex_map = Object.fromEntries(get_sex.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(sex_map);
+  const sex_ext = sex_map[firstProfile.sex_id ?? 0] || ""; 
+  const sex_count = sex_ext.length;
+
+  pages[3].drawText(sex_ext.toString().toUpperCase(), { 
+    x: 195 - (sex_count * 1.9),
+    y: 282,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  pages[3].drawText(`${firstProfile.cellphone_no}`, { 
+    x: 231,
+    y: 293,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  let email_a = `${firstProfile.email}`;
+  let email_split = email_a.split("@");
+
+  pages[3].drawText(email_split[0], { 
+    x: 316,
+    y: 292,
+    size: 5,
+    color: rgb(0, 0, 0),
+
+  });
+  pages[3].drawText('@' + email_split[1], { 
+    x: 316,
+    y: 285,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  console.log(email_split[0])
+
+  // CIVIL STATUS 
+  const get_civil_status = await getOfflineCivilStatusLibraryOptions();
+  const civil_map = Object.fromEntries(get_civil_status.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(civil_map);
+  const civil_ext = civil_map[firstProfile.civil_status_id ?? 0] || "";
+  pages[3].drawText(civil_ext.toString().toUpperCase(), { 
+    x: 283,
+    y: 242,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  // 4PS BENEFICIARIES
+  pages[3].drawText('', { 
+    x: 35,
+    y: 158,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  //SEKTOR
+    const get_sector_status = await getOfflineLibSectorsLibraryOptions();
+    const sector_map = Object.fromEntries(get_sector_status.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+    setExtensionNames(sector_map);
+    const sector_ext = sector_map[firstProfile.extension_name_id ?? 0] || ""; 
+
+  pages[3].drawText(sector_ext.toString().toUpperCase(), { 
+    x: 32,
+    y: 119,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  
+  //TYPE OF DISABILITY
+    const get_disability_type = await getOfflineLibTypeOfDisability();
+    const disability_map = Object.fromEntries(get_disability_type.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+    setExtensionNames(sector_map);
+    const disability_ext = disability_map[firstProfile.push_status_id ?? 0] || ""; 
+
+  //URI NG KAPANSANAN
+  pages[3].drawText(disability_ext.toString().toUpperCase(), { 
+    x: 232,
+    y: 120.5,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  // LEFT
+  pages[3].drawText(cfwp_id, {
+    x: 278 - cfwp_id_count,
+    y: 13,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  //RIGHT
+  pages[3].drawText(cfwp_id, {
+    x: 699 - cfwp_id_count,
+    y: 13,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });       
+
+//----------------------------------------------------------------------------------------------------------------Page 5-------------------------------------------------------------------------------------------------------------
+//===================================================================================================================================================================================================================================
+// family_relationProfile1
+
+  if(family_relationProfile1 !== undefined){
+    const get_name_extension1 = await getOfflineExtensionLibraryOptions();
+    const get_name_extension_map1 = Object.fromEntries(get_name_extension1.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+    setExtensionNames(get_name_extension_map1);
+    var name_ext_1 = get_name_extension_map1[family_relationProfile1.extension_name_id ?? 0] || "";
+  
+    if(name_ext_1 == "N/A"){
+      name_ext_1 = ""
+    }
+
+
+    //BUONG PANGALAN 1
+    let family_member_name1 = family_relationProfile1.first_name + "  " + family_relationProfile1.middle_name + "  " + family_relationProfile1.last_name + "  " + name_ext_1;
+    pages[4].drawText(family_member_name1.toString().toUpperCase(), {
+      x: 510,
+      y: 26,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    const get_family_relation = await getOfflineLibRelationshipToBeneficiary();
+    const family_relation_map = Object.fromEntries(get_family_relation.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+    setExtensionNames(family_relation_map);
+    const family_relation_ext1 = family_relation_map[family_relationProfile1.relationship_to_the_beneficiary_id ?? 0] || ""; 
+  
+     //RELASYON 1
+     pages[4].drawText(`${family_relation_ext1.toUpperCase()}`, {
+      x: 510,
+      y: 148,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+
+    //KAPANGANAKAN 1
+    pages[4].drawText(`${family_relationProfile1.birthdate.toUpperCase()}`, {
+      x: 510,
+      y: 208,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    //EDAD 1
+    pages[4].drawText(`${family_relationProfile1.age?.toString().toUpperCase()}`, {
+      x: 510,
+      y: 270,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    const  get_educational_attainment = await getOfflineLibEducationalAttainment();
+    const educational_attainment_map = Object.fromEntries(get_educational_attainment.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+    setExtensionNames(educational_attainment_map);
+    const educational_attainment = educational_attainment_map[family_relationProfile1.highest_educational_attainment_id ?? 0] || ""; 
+
+    //ANTAS NG EDUKASYON 1
+    pages[4].drawText(`${educational_attainment.toString().toUpperCase()}`, {
+      x: 510,
+      y: 304,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    //TRABAHO 1
+    const work_cfw1 = `${family_relationProfile1.work?.toString().toUpperCase()}`;
+    const worK_charSize1 = 15;
+    const work_cfw_result1 = [];
+    for (let i = 0; i < work_cfw1.toString().toUpperCase().length; i += worK_charSize1) {
+      work_cfw_result1.push(work_cfw1.slice(i, i + worK_charSize1));
+    }
+    for(let i = 0; i < work_cfw_result1.length; i++){
+    pages[4].drawText(`${work_cfw_result1[i].toString().toUpperCase()}`, {
+      x:510 - (9 * i),
+      y: 374,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+    }
+
+    //BUWANANG KITA 1
+    pages[4].drawText(`${family_relationProfile1.monthly_income?.toUpperCase()}`, {
+      x: 510,
+      y: 438,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    //NUMBER NG TELEPONO 1
+    pages[4].drawText(`${family_relationProfile1.contact_number?.toUpperCase()}`, {
+      x: 510,
+      y: 504,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+  }
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile2
+
+  if(family_relationProfile2 !== undefined){
+    const get_name_extension2 = await getOfflineExtensionLibraryOptions();
+    const get_name_extension_map2 = Object.fromEntries(get_name_extension2.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+    setExtensionNames(get_name_extension_map2);
+    var name_ext_2 = get_name_extension_map2[family_relationProfile2.extension_name_id ?? 0] || "";
+
+    if(name_ext_2 == "N/A"){
+      name_ext_2 = ""
+    }
+    
+    let family_member_name2 = family_relationProfile2.first_name + "  " +  family_relationProfile2.middle_name + "  " + family_relationProfile2.last_name + "  " + name_ext_2;
+    //BUONG PANGALAN 2
+    pages[4].drawText(`${family_member_name2.toString().toUpperCase()}`, {
+      x: 542,
+      y: 26,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    const get_family_relation2 = await getOfflineLibRelationshipToBeneficiary();
+    const family_relation_map2 = Object.fromEntries(get_family_relation2.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+    setExtensionNames(family_relation_map2);
+    const family_relation_ext2 = family_relation_map2[family_relationProfile2.relationship_to_the_beneficiary_id ?? 0] || ""; 
+  
+    //RELASYON 2
+    pages[4].drawText(`${family_relation_ext2.toUpperCase()}`, {
+      x: 542,
+      y: 148,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    //KAPANGANAKAN 2
+    pages[4].drawText(`${family_relationProfile2.birthdate.toUpperCase()}`, {
+      x: 542,
+      y: 208,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+
+    //EDAD 2 
+    pages[4].drawText(`${family_relationProfile2.age?.toString().toUpperCase()}`, {
+      x: 542,
+      y: 270,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+    
+    const  get_educational_attainment2 = await getOfflineLibEducationalAttainment();
+    const educational_attainment_map2 = Object.fromEntries(get_educational_attainment2.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+    setExtensionNames(educational_attainment_map2);
+    const educational_attainment2 = educational_attainment_map2[family_relationProfile2.highest_educational_attainment_id ?? 0] || ""; 
+
           
-            });
-            pages[3].drawText('@' + email_split[1], { 
-              x: 316,
-              y: 285,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-            console.log(email_split[0])
-        
-            // CIVIL STATUS 
-            const get_civil_status = await getOfflineCivilStatusLibraryOptions();
-            const civil_map = Object.fromEntries(get_civil_status.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-            setExtensionNames(civil_map);
-            const civil_ext = civil_map[firstProfile.civil_status_id ?? 0] || "";
-            pages[3].drawText(civil_ext.toString().toUpperCase(), { 
-              x: 283,
-              y: 242,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+    //ANTAS NG EDUKASYON 2
+    pages[4].drawText(`${educational_attainment2.toString().toUpperCase()}`, {
+      x: 542,
+      y: 304,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
 
-            // 4PS BENEFICIARIES
-            pages[3].drawText('', { 
-              x: 35,
-              y: 158,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //SEKTOR
-              const get_sector_status = await getOfflineLibSectorsLibraryOptions();
-              const sector_map = Object.fromEntries(get_sector_status.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-              setExtensionNames(sector_map);
-              const sector_ext = sector_map[firstProfile.extension_name_id ?? 0] || ""; 
-
-            pages[3].drawText(sector_ext.toString().toUpperCase(), { 
-              x: 32,
-              y: 119,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-            
-            //TYPE OF DISABILITY
-              const get_disability_type = await getOfflineLibTypeOfDisability();
-              const disability_map = Object.fromEntries(get_disability_type.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-              setExtensionNames(sector_map);
-              const disability_ext = disability_map[firstProfile.push_status_id ?? 0] || ""; 
-
-            //URI NG KAPANSANAN
-            pages[3].drawText(disability_ext.toString().toUpperCase(), { 
-              x: 232,
-              y: 120.5,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            // LEFT
-            pages[3].drawText(cfwp_id, {
-              x: 278 - cfwp_id_count,
-              y: 13,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-        
-            //RIGHT
-            pages[3].drawText(cfwp_id, {
-              x: 699 - cfwp_id_count,
-              y: 13,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //Page 5
-
-            //----------------------------------------------------------------------------------------------------------------Page 5-----------------------------------------------------------------------------------------------------------
-            //BUONG PANGALAN 1
-
-            let family_member_name1 = family_relationProfile1.first_name.toString().toUpperCase().concat("  ", family_relationProfile1.middle_name.toString().toUpperCase(), "  ", family_relationProfile1.last_name.toString().toUpperCase());
-            //let family_member_name2 = family_relationProfile2.first_name.toString().toUpperCase().concat("  ", family_relationProfile2.middle_name.toString().toUpperCase(), "  ", family_relationProfile2.last_name.toString().toUpperCase());
-            pages[4].drawText(family_member_name1, {
-              x: 510,
-              y: 26,
-              size: 5,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-            //  //BUONG PANGALAN 2
-            // pages[4].drawText(family_member_name2, {
-            //   x: 542,
-            //   y: 26,
-            //   size: 6,
-            //   color: rgb(0, 0, 0),
-            //   rotate: degrees(90)
-            // });
-
-            //BUONG PANGALAN 3
-            pages[4].drawText('', {
-              x: 572,
-              y: 26,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-              //BUONG PANGALAN 4
-              pages[4].drawText('x', {
-                x: 603,
-                y: 26,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-               //BUONG PANGALAN 5
-               pages[4].drawText('x', {
-                x: 636,
-                y: 26,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-                //BUONG PANGALAN 6
-                pages[4].drawText('x', {
-                  x: 668,
-                  y: 26,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                  rotate: degrees(90)
-                });
-
-            //BUONG PANGALAN 7
-            pages[4].drawText('x', {
-              x: 699,
-              y: 26,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-              //BUONG PANGALAN 8
-              pages[4].drawText('x', {
-                x: 731,
-                y: 26,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-              
-              //BUONG PANGALAN 9
-              pages[4].drawText('x', {
-                x: 763,
-                y: 26,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-                  //BUONG PANGALAN 10
-                  pages[4].drawText('x', {
-                    x: 795,
-                    y: 26,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                    rotate: degrees(90)
-                  });
-
-                  const get_family_relation = await getOfflineLibRelationshipToBeneficiary();
-                  const family_relation_map = Object.fromEntries(get_family_relation.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-                  setExtensionNames(family_relation_map);
-                  const family_relation_ext = family_relation_map[family_relationProfile1.relationship_to_the_beneficiary_id ?? 0] || ""; 
-
-          //RELASYON 1
-            pages[4].drawText(`${family_relation_ext}`, {
-              x: 510,
-              y: 148,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-            
-          //RELASYON 2
-          pages[4].drawText('x', {
-            x: 542,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //RELASYON 3
-          pages[4].drawText('x', {
-            x: 572,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //RELASYON 4
-          pages[4].drawText('x', {
-            x: 603,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-             //RELASYON 5
-             pages[4].drawText('x', {
-              x: 636,
-              y: 148,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-               //RELASYON 6
-          pages[4].drawText('x', {
-            x: 668,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-               //RELASYON 7
-               pages[4].drawText('x', {
-                x: 699,
-                y: 148,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-                   //RELASYON 8
-          pages[4].drawText('x', {
-            x: 731,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-            //RELASYON 9
-              pages[4].drawText('x', {
-                x: 763,
-                y: 148,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-            //RELASYON 10
-          pages[4].drawText('x', {
-            x: 795,
-            y: 148,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-  
-
-          //KAPANGANAKAN 1
-          pages[4].drawText(`${family_relationProfile1.birthdate.toString().toUpperCase()}`, {
-            x: 510,
-            y: 208,
-            size: 5,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-                
-           //KAPANGANAKAN 2
-          pages[4].drawText('x', {
-            x: 542,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-             //KAPANGANAKAN 3
-          pages[4].drawText('x', {
-            x: 572,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-             //KAPANGANAKAN 4
-          pages[4].drawText('x', {
-            x: 603,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-              //KAPANGANAKAN 5
-             pages[4].drawText('x', {
-              x: 636,
-              y: 208,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-                //KAPANGANAKAN 6
-          pages[4].drawText('x', {
-            x: 668,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-            //KAPANGANAKAN 7
-            pages[4].drawText('x', {
-            x: 699,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //KAPANGANAKAN 8
-          pages[4].drawText('x', {
-            x: 731,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-           //KAPANGANAKAN 9
-              pages[4].drawText('x', {
-                x: 763,
-                y: 208,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-             //KAPANGANAKAN 10
-          pages[4].drawText('x', {
-            x: 795,
-            y: 208,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
+    //TRABAHO 2
+    const work_cfw2 = `${family_relationProfile2.work?.toString().toUpperCase()}`;
+    const worK_charSize2 = 15;
+    const work_cfw_result2 = [];
+    for (let i = 0; i < work_cfw2.toString().toUpperCase().length; i += worK_charSize2) {
+      work_cfw_result2.push(work_cfw2.slice(i, i + worK_charSize2));
+    }
+    for(let i = 0; i < work_cfw_result2.length; i++){
+    pages[4].drawText(`${work_cfw_result2[i].toString().toUpperCase()}`, {
+      x: 542 - (-9 * i),
+      y: 374,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
+    }
 
 
-          //EDAD 1
-          pages[4].drawText(`${family_relationProfile1.age}`, {
-            x: 510,
-            y: 270,
-            size: 5,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
+    //BUWANANG KITA 2
+    pages[4].drawText(`${family_relationProfile2.monthly_income?.toUpperCase()}`, {
+      x: 542,
+      y: 438,
+      size: 5,
+      color: rgb(0, 0, 0),
+      rotate: degrees(90)
+    });
 
-               //EDAD 2 
-            pages[4].drawText('x', {
-              x: 542,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-                  //EDAD 3
-            pages[4].drawText('x', {
-              x: 572,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-                //EDAD 4
-            pages[4].drawText('x', {
-              x: 603,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-                  //EDAD 5
-               pages[4].drawText('x', {
-                x: 636,
-                y: 270,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-  
-                   //EDAD 6
-            pages[4].drawText('x', {
-              x: 668,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-                //EDAD 7
-              pages[4].drawText('x', {
-              x: 699,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-              //EDAD 8
-            pages[4].drawText('x', {
-              x: 731,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-  
-                //EDAD 9
-                pages[4].drawText('x', {
-                  x: 763,
-                  y: 270,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                  rotate: degrees(90)
-                });
-  
-                  //EDAD 10
-            pages[4].drawText('x', {
-              x: 795,
-              y: 270,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-            const  get_educational_attainment = await getOfflineLibEducationalAttainment();
-            const educational_attainment_map = Object.fromEntries(get_educational_attainment.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
-            setExtensionNames(educational_attainment_map);
-            const educational_attainment = educational_attainment_map[family_relationProfile1.highest_educational_attainment_id ?? 0] || ""; 
-
-            //ANTAS NG EDUKASYON 1
-            pages[4].drawText(`${educational_attainment.toString().toUpperCase()}`, {
-              x: 510,
-              y: 304,
-              size: 5,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-       
-            //ANTAS NG EDUKASYON 2
-            pages[4].drawText('x', {
-            x: 542,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //ANTAS NG EDUKASYON 3
-          pages[4].drawText('x', {
-            x: 572,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //ANTAS NG EDUKASYON 4
-          pages[4].drawText('x', {
-            x: 603,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-              //ANTAS NG EDUKASYON 5
-              pages[4].drawText('x', {
-              x: 636,
-              y: 304,
-              size: 6,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-          //ANTAS NG EDUKASYON 6
-          pages[4].drawText('x', {
-            x: 668,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-           //ANTAS NG EDUKASYON 7
-            pages[4].drawText('x', {
-            x: 699,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-          //ANTAS NG EDUKASYON 8
-          pages[4].drawText('x', {
-            x: 731,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-
-              //ANTAS NG EDUKASYON 9
-              pages[4].drawText('x', {
-                x: 763,
-                y: 304,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-          //ANTAS NG EDUKASYON 10
-          pages[4].drawText('x', {
-            x: 795,
-            y: 304,
-            size: 6,
-            color: rgb(0, 0, 0),
-            rotate: degrees(90)
-          });
-             //TRABAHO 1
-             pages[4].drawText(`${family_relationProfile1.work?.toString().toUpperCase()}`, {
-              x: 510,
-              y: 374,
-              size: 5,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-              //TRABAHO 2
-              pages[4].drawText('x', {
-                x: 542,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-              //TRABAHO 3
-              pages[4].drawText('x', {
-                x: 572,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-              //TRABAHO 4
-              pages[4].drawText('x', {
-                x: 603,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                 //TRABAHO 5
-                  pages[4].drawText('x', {
-                  x: 636,
-                  y: 374,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                  rotate: degrees(90)
-                });
-              //TRABAHO 6
-              pages[4].drawText('x', {
-                x: 668,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-               //TRABAHO 7
-                pages[4].drawText('x', {
-                x: 699,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-              //TRABAHO 8
-              pages[4].drawText('x', {
-                x: 731,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                 //TRABAHO 9
-                  pages[4].drawText('x', {
-                    x: 763,
-                    y: 374,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                    rotate: degrees(90)
-                  });
-    
-              //TRABAHO 10
-              pages[4].drawText('x', {
-                x: 795,
-                y: 374,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-            //BUWANANG KITA 1
-            pages[4].drawText(`${family_relationProfile1.monthly_income}`, {
-              x: 510,
-              y: 438,
-              size: 5,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
-
-                 //BUWANANG KITA 2
-              pages[4].drawText('x', {
-                x: 542,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                 //BUWANANG KITA 3
-              pages[4].drawText('x', {
-                x: 572,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                //BUWANANG KITA 4
-              pages[4].drawText('x', {
-                x: 603,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                   //BUWANANG KITA 5
-                  pages[4].drawText('x', {
-                  x: 636,
-                  y: 438,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                  rotate: degrees(90)
-                });
-                 //BUWANANG KITA 6
-              pages[4].drawText('x', {
-                x: 668,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                 //BUWANANG KITA 7
-                pages[4].drawText('x', {
-                x: 699,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                //BUWANANG KITA 8
-              pages[4].drawText('x', {
-                x: 731,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-    
-                   //BUWANANG KITA 9
-                  pages[4].drawText('x', {
-                    x: 763,
-                    y: 438,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                    rotate: degrees(90)
-                  });
-    
-                 //BUWANANG KITA 10
-              pages[4].drawText('x', {
-                x: 795,
-                y: 438,
-                size: 6,
-                color: rgb(0, 0, 0),
-                rotate: degrees(90)
-              });
-
-             //NUMBER NG TELEPONO 1
-             pages[4].drawText(`${family_relationProfile1.contact_number}`, {
-              x: 510,
-              y: 504,
-              size: 5,
-              color: rgb(0, 0, 0),
-              rotate: degrees(90)
-            });
     //NUMBER NG TELEPONO 2
-    pages[4].drawText('x', {
+    pages[4].drawText(`${family_relationProfile2.contact_number?.toUpperCase()}`, {
       x: 542,
       y: 504,
-      size: 6,
+      size: 5,
       color: rgb(0, 0, 0),
       rotate: degrees(90)
     });
 
-    //NUMBER NG TELEPONO 3
-    pages[4].drawText('x', {
+  }
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile3
+
+  if(family_relationProfile3 !== undefined){
+    const get_name_extension3 = await getOfflineExtensionLibraryOptions();
+    const get_name_extension_map3 = Object.fromEntries(get_name_extension3.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+    setExtensionNames(get_name_extension_map3);
+    var name_ext_3 = get_name_extension_map3[family_relationProfile3.extension_name_id ?? 0] || "";
+
+    if(name_ext_3 == "N/A"){
+      name_ext_3 = ""
+    }
+
+    let family_member_name3 = family_relationProfile3.first_name + "  " +  family_relationProfile3.middle_name + "  " + family_relationProfile3.last_name + "  " + name_ext_3;
+    //BUONG PANGALAN 3
+    pages[4].drawText(`${family_member_name3.toString().toUpperCase()}`, {
       x: 572,
-      y: 504,
-      size: 6,
+      y: 26,
+      size: 5,
       color: rgb(0, 0, 0),
       rotate: degrees(90)
     });
+  
+  const get_family_relation3 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map3 = Object.fromEntries(get_family_relation3.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map3);
+  const family_relation_ext3 = family_relation_map3[family_relationProfile3.relationship_to_the_beneficiary_id ?? 0] || ""; 
 
-   //NUMBER NG TELEPONO 4
-    pages[4].drawText('x', {
-      x: 603,
-      y: 504,
-      size: 6,
+  //RELASYON 3
+  pages[4].drawText(`${family_relation_ext3.toUpperCase()}`, {
+    x: 572,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 3
+  pages[4].drawText(`${family_relationProfile3.birthdate.toUpperCase()}`, {
+    x: 572,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //EDAD 3
+  pages[4].drawText(`${family_relationProfile3.age}`, {
+    x: 572,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  const  get_educational_attainment3 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map3 = Object.fromEntries(get_educational_attainment3.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map3);
+  const educational_attainment3 = educational_attainment_map3[family_relationProfile3.highest_educational_attainment_id ?? 0] || ""; 
+
+  //ANTAS NG EDUKASYON 3
+  pages[4].drawText(`${educational_attainment3.toString().toUpperCase()}`, {
+    x: 572,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //TRABAHO 3
+  const work_cfw3 = `${family_relationProfile3.work?.toString().toUpperCase()}`;
+  const worK_charSize3 = 15;
+  const work_cfw_result3 = [];
+  for (let i = 0; i < work_cfw3.toString().toUpperCase().length; i += worK_charSize3) {
+    work_cfw_result3.push(work_cfw3.slice(i, i + worK_charSize3));
+  }
+  for(let i = 0; i < work_cfw_result3.length; i++){
+  pages[4].drawText(`${work_cfw_result3[i].toString().toUpperCase()}`, {
+    x: 572 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+   
+  //BUWANANG KITA 3
+  pages[4].drawText(`${family_relationProfile3.monthly_income?.toUpperCase()}`, {
+    x: 572,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //NUMBER NG TELEPONO 3
+  pages[4].drawText(`${family_relationProfile3.contact_number?.toUpperCase()}`, {
+    x: 572,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  }
+
+//==================================================================================================================================================================================================
+//==================================================================================================================================================================================================
+// family_relationProfile4
+
+  if(family_relationProfile4 !== undefined){
+  const get_name_extension4 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map4 = Object.fromEntries(get_name_extension4.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map4);
+  var name_ext_4 = get_name_extension_map4[family_relationProfile4.extension_name_id ?? 0] || "";
+
+  if(name_ext_4 == "N/A"){
+    name_ext_4 = ""
+  }
+
+  let family_member_name4 = family_relationProfile4.first_name + "  " +  family_relationProfile4.middle_name + "  " + family_relationProfile4.last_name + "  " + name_ext_4;
+  //BUONG PANGALAN 4
+  pages[4].drawText(`${family_member_name4.toString().toUpperCase()}`, {
+    x: 603,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const get_family_relation4 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map4 = Object.fromEntries(get_family_relation4.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map4);
+  const family_relation_ext4 = family_relation_map4[family_relationProfile4.relationship_to_the_beneficiary_id ?? 0] || ""; 
+  
+  //RELASYON 4
+  pages[4].drawText(`${family_relation_ext4.toUpperCase()}`, {
+    x: 603,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 4
+  pages[4].drawText(`${family_relationProfile4.birthdate.toUpperCase()}`, {
+    x: 603,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //EDAD 4
+  pages[4].drawText(`${family_relationProfile4.age}`, {
+    x: 603,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const  get_educational_attainment4 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map4 = Object.fromEntries(get_educational_attainment4.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map4);
+  const educational_attainment4 = educational_attainment_map4[family_relationProfile4.highest_educational_attainment_id ?? 0] || ""; 
+
+  //ANTAS NG EDUKASYON 4
+  pages[4].drawText(`${educational_attainment4.toString().toUpperCase()}`, {
+    x: 603,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //TRABAHO 4
+  const work_cfw4 = `${family_relationProfile4.work?.toString().toUpperCase()}`;
+  const worK_charSize4 = 15;
+  const work_cfw_result4 = [];
+  for (let i = 0; i < work_cfw4.toString().toUpperCase().length; i += worK_charSize4) {
+    work_cfw_result4.push(work_cfw4.slice(i, i + worK_charSize4));
+  }
+  for(let i = 0; i < work_cfw_result4.length; i++){
+  pages[4].drawText(`${work_cfw_result4[i].toString().toUpperCase()}`, {
+    x: 603 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+
+  //BUWANANG KITA 4
+  pages[4].drawText(`${family_relationProfile4.monthly_income?.toUpperCase()}`, {
+    x: 603,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //NUMBER NG TELEPONO 4
+  pages[4].drawText(`${family_relationProfile4.contact_number?.toUpperCase()}`, {
+    x: 603,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile5
+
+if(family_relationProfile5 !== undefined){
+  const get_name_extension5 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map5 = Object.fromEntries(get_name_extension5.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map5);
+  var name_ext_5 = get_name_extension_map5[family_relationProfile5.extension_name_id ?? 0] || "";
+
+  if(name_ext_5 == "N/A"){
+    name_ext_5 = ""
+  }
+
+
+  let family_member_name5 = family_relationProfile5.first_name + "  " +  family_relationProfile5.middle_name + "  " + family_relationProfile5.last_name + "  " + name_ext_5;
+    //BUONG PANGALAN 5
+    pages[4].drawText(`${family_member_name5.toString().toUpperCase()}`, {
+    x: 636,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const get_family_relation5 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map5 = Object.fromEntries(get_family_relation5.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map5);
+  const family_relation_ext5 = family_relation_map5[family_relationProfile5.relationship_to_the_beneficiary_id ?? 0] || ""; 
+  
+  //RELASYON 5
+  pages[4].drawText(`${family_relation_ext5.toUpperCase()}`, {
+    x: 636,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 5
+  pages[4].drawText(`${family_relationProfile5.birthdate.toUpperCase()}`, {
+    x: 636,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //EDAD 5
+  pages[4].drawText(`${family_relationProfile5.age}`, {
+    x: 636,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const  get_educational_attainment5 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map5 = Object.fromEntries(get_educational_attainment5.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map5);
+  const educational_attainment5 = educational_attainment_map5[family_relationProfile5.highest_educational_attainment_id ?? 0] || ""; 
+
+  //ANTAS NG EDUKASYON 5
+  pages[4].drawText(`${educational_attainment5.toString().toUpperCase()}`, {
+    x: 636,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+    //TRABAHO 5
+    const work_cfw5 = `${family_relationProfile5.work?.toString().toUpperCase()}`;
+    const worK_charSize5 = 15;
+    const work_cfw_result5 = [];
+    for (let i = 0; i < work_cfw5.toString().toUpperCase().length; i += worK_charSize5) {
+      work_cfw_result5.push(work_cfw5.slice(i, i + worK_charSize5));
+    }
+    for(let i = 0; i < work_cfw_result5.length; i++){
+    pages[4].drawText(`${work_cfw_result5[i].toString().toUpperCase()}`, {
+      x: 636 - (-9 * i),
+      y: 374,
+      size: 5,
       color: rgb(0, 0, 0),
       rotate: degrees(90)
     });
+    }
 
-        //NUMBER NG TELEPONO 5
-        pages[4].drawText('x', {
-        x: 636,
-        y: 504,
-        size: 6,
-        color: rgb(0, 0, 0),
-        rotate: degrees(90)
-      });
-    //NUMBER NG TELEPONO 6
-    pages[4].drawText('x', {
-      x: 668,
-      y: 504,
-      size: 6,
-      color: rgb(0, 0, 0),
-      rotate: degrees(90)
-    });
+  //BUWANANG KITA 5
+  pages[4].drawText(`${family_relationProfile5.monthly_income?.toUpperCase()}`, {
+    x: 636,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
 
-      //NUMBER NG TELEPONO 7
-      pages[4].drawText('x', {
-      x: 699,
-      y: 504,
-      size: 6,
-      color: rgb(0, 0, 0),
-      rotate: degrees(90)
-    });
+  //NUMBER NG TELEPONO 5
+  pages[4].drawText(`${family_relationProfile5.contact_number?.toUpperCase()}`, {
+    x: 636,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
 
-    //NUMBER NG TELEPONO 8
-    pages[4].drawText('x', {
-      x: 731,
-      y: 504,
-      size: 6,
-      color: rgb(0, 0, 0),
-      rotate: degrees(90)
-    });
+}
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile6
 
-        //NUMBER NG TELEPONO 9
-        pages[4].drawText('x', {
-          x: 763,
-          y: 504,
-          size: 6,
-          color: rgb(0, 0, 0),
-          rotate: degrees(90)
-        });
+if(family_relationProfile6 !== undefined){
+  const get_name_extension6 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map6 = Object.fromEntries(get_name_extension6.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map6);
+  var name_ext_6 = get_name_extension_map6[family_relationProfile6.extension_name_id ?? 0] || "";
 
-    //NUMBER NG TELEPONO 10
-    pages[4].drawText('x', {
-      x: 795,
-      y: 504,
-      size: 6,
-      color: rgb(0, 0, 0),
-      rotate: degrees(90)
-    });
-        
+  if(name_ext_6 == "N/A"){
+    name_ext_6 = ""
+  }
+
+  //BUONG PANGALAN 6
+  let family_member_name6 = family_relationProfile6.first_name + "  " +  family_relationProfile6.middle_name + "  " + family_relationProfile6.last_name + "  " + name_ext_6;
+  pages[4].drawText(`${family_member_name6.toString().toUpperCase()}`, {
+    x: 668,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const get_family_relation6 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map6 = Object.fromEntries(get_family_relation6.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map6);
+  const family_relation_ext6 = family_relation_map6[family_relationProfile6.relationship_to_the_beneficiary_id ?? 0] || ""; 
+
+  //RELASYON 6
+  pages[4].drawText(`${family_relation_ext6.toUpperCase()}`, {
+    x: 668,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 6
+  pages[4].drawText(`${family_relationProfile6.birthdate.toUpperCase()}`, {
+    x: 668,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
 
     
-          
+  //EDAD 6
+  pages[4].drawText(`${family_relationProfile6.age}`, {
+    x: 668,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+    
+  const  get_educational_attainment6 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map6 = Object.fromEntries(get_educational_attainment6.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map6);
+  const educational_attainment6 = educational_attainment_map6[family_relationProfile6.highest_educational_attainment_id ?? 0] || ""; 
+  
+  //ANTAS NG EDUKASYON 6
+  pages[4].drawText(`${educational_attainment6.toString().toUpperCase()}`, {
+    x: 668,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //TRABAHO 6
+  const work_cfw6 = `${family_relationProfile6.work?.toString().toUpperCase()}`;
+  const worK_charSize6 = 15;
+  const work_cfw_result6 = [];
+  for (let i = 0; i < work_cfw6.toString().toUpperCase().length; i += worK_charSize6) {
+    work_cfw_result6.push(work_cfw6.slice(i, i + worK_charSize6));
+  }
+  for(let i = 0; i < work_cfw_result6.length; i++){
+  pages[4].drawText(`${work_cfw_result6[i].toString().toUpperCase()}`, {
+    x: 668 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
 
-            //left
-            pages[4].drawText(cfwp_id, {
-              x: 275 - cfwp_id_count,
-              y: 11,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+    //BUWANANG KITA 6
+    pages[4].drawText(`${family_relationProfile6.monthly_income?.toUpperCase()}`, {
+    x: 668,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  //NUMBER NG TELEPONO 6
+  pages[4].drawText(`${family_relationProfile6.contact_number?.toUpperCase()}`, {
+    x: 668,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
 
-            //right 
-            pages[4].drawText(cfwp_id, {
-              x: 695 - cfwp_id_count,
-              y: 11,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+}
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile7
+
+if(family_relationProfile7 !== undefined){
+  const get_name_extension7 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map7 = Object.fromEntries(get_name_extension7.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map7);
+  var name_ext_7 = get_name_extension_map7[family_relationProfile7.extension_name_id ?? 0] || "";
+
+  if(name_ext_7 == "N/A"){
+    name_ext_7 = ""
+  }
+
+  let family_member_name7 = family_relationProfile7.first_name + "  " +  family_relationProfile7.middle_name + "  " + family_relationProfile7.last_name + "  " + name_ext_7;
+  //BUONG PANGALAN 7
+  pages[4].drawText(`${family_member_name7.toString().toUpperCase()}`, {
+    x: 699,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const get_family_relation7 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map7 = Object.fromEntries(get_family_relation7.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map7);
+  const family_relation_ext7 = family_relation_map7[family_relationProfile7.relationship_to_the_beneficiary_id ?? 0] || "";
+
+  //RELASYON 7
+  pages[4].drawText(`${family_relation_ext7.toUpperCase()}`, {
+    x: 699,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //KAPANGANAKAN 7
+  pages[4].drawText(`${family_relationProfile7.birthdate.toUpperCase()}`, {
+    x: 699,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  
+ 
+  //EDAD 7
+pages[4].drawText(`${family_relationProfile7.age}`, {
+  x: 699,
+  y: 270,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+const  get_educational_attainment7 = await getOfflineLibEducationalAttainment();
+const educational_attainment_map7 = Object.fromEntries(get_educational_attainment7.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+setExtensionNames(educational_attainment_map7);
+const educational_attainment7 = educational_attainment_map7[family_relationProfile7.highest_educational_attainment_id ?? 0] || ""; 
+
+
+
+//ANTAS NG EDUKASYON 7
+pages[4].drawText(`${educational_attainment7.toString().toUpperCase()}`, {
+  x: 699,
+  y: 304,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+  
+
+
+  //TRABAHO 7
+  const work_cfw7 = `${family_relationProfile7.work?.toString().toUpperCase()}`;
+  const worK_charSize7 = 15;
+  const work_cfw_result7 = [];
+  for (let i = 0; i < work_cfw7.toString().toUpperCase().length; i += worK_charSize7) {
+    work_cfw_result7.push(work_cfw7.slice(i, i + worK_charSize7));
+  }
+  for(let i = 0; i < work_cfw_result7.length; i++){
+  pages[4].drawText(`${work_cfw_result7[i].toString().toUpperCase()}`, {
+    x: 699 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+
+  //BUWANANG KITA 7
+  pages[4].drawText(`${family_relationProfile7.monthly_income?.toUpperCase()}`, {
+    x: 699,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+    
+  //NUMBER NG TELEPONO 7
+  pages[4].drawText(`${family_relationProfile7.contact_number?.toUpperCase()}`, {
+    x: 699,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+}
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile8
+
+
+if(family_relationProfile8 !== undefined){
+  const get_name_extension8 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map8 = Object.fromEntries(get_name_extension8.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map8);
+  var name_ext_8 = get_name_extension_map8[family_relationProfile8.extension_name_id ?? 0] || "";
+
+  if(name_ext_8 == "N/A"){
+    name_ext_8 = ""
+  }
+
+  let family_member_name8 = family_relationProfile8.first_name + "  " +  family_relationProfile8.middle_name + "  " + family_relationProfile8.last_name  + "  " + name_ext_8;
+    //BUONG PANGALAN 8
+  pages[4].drawText(`${family_member_name8.toString().toUpperCase()}`, {
+    x: 731,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  
+  const get_family_relation8 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map8 = Object.fromEntries(get_family_relation8.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map8);
+  const family_relation_ext8 = family_relation_map8[family_relationProfile8.relationship_to_the_beneficiary_id ?? 0] || "";
+
+  //RELASYON 8
+  pages[4].drawText(`${family_relation_ext8.toUpperCase()}`, {
+    x: 731,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 8
+  pages[4].drawText(`${family_relationProfile8.birthdate.toUpperCase()}`, {
+    x: 731,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //EDAD 8
+  pages[4].drawText(`${family_relationProfile8.age}`, {
+    x: 731,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  const  get_educational_attainment8 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map8 = Object.fromEntries(get_educational_attainment8.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map8);
+  const educational_attainment8 = educational_attainment_map8[family_relationProfile8.highest_educational_attainment_id ?? 0] || ""; 
+  
+
+
+  //ANTAS NG EDUKASYON 8
+  pages[4].drawText(`${educational_attainment8.toString().toUpperCase()}`, {
+    x: 731,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //TRABAHO 8
+  const work_cfw8 = `${family_relationProfile8.work?.toString().toUpperCase()}`;
+  const worK_charSize8 = 15;
+  const work_cfw_result8 = [];
+  for (let i = 0; i < work_cfw8.toString().toUpperCase().length; i += worK_charSize8) {
+    work_cfw_result8.push(work_cfw8.slice(i, i + worK_charSize8));
+  }
+  for(let i = 0; i < work_cfw_result8.length; i++){
+  pages[4].drawText(`${work_cfw_result8[i].toString().toUpperCase()}`, {
+    x: 731 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+
+  //BUWANANG KITA 8
+  pages[4].drawText(`${family_relationProfile8.monthly_income?.toUpperCase()}`, {
+    x: 731,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //NUMBER NG TELEPONO 8
+  pages[4].drawText(`${family_relationProfile8.contact_number?.toUpperCase()}`, {
+    x: 731,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+}
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+//family_relationProfile9
+
+
+if(family_relationProfile9 !== undefined){
+
+  const get_name_extension9 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map9 = Object.fromEntries(get_name_extension9.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map9);
+  var name_ext_9 = get_name_extension_map9[family_relationProfile9.extension_name_id ?? 0] || "";
+
+  if(name_ext_9 == "N/A"){
+    name_ext_9 = ""
+  }
+ 
+  let family_member_name9 = family_relationProfile9.first_name + "  " +  family_relationProfile9.middle_name + "  " + family_relationProfile9.last_name + "  " + name_ext_9;
+  //BUONG PANGALAN 9
+  pages[4].drawText(`${family_member_name9.toString().toUpperCase()}`, {
+    x: 763,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+const get_family_relation9 = await getOfflineLibRelationshipToBeneficiary();
+const family_relation_map9 = Object.fromEntries(get_family_relation9.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+setExtensionNames(family_relation_map9);
+const family_relation_ext9 = family_relation_map9[family_relationProfile9.relationship_to_the_beneficiary_id ?? 0] || "";
+
+//RELASYON 9
+pages[4].drawText(`${family_relation_ext9.toUpperCase()}`, {
+  x: 763,
+  y: 148,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+//KAPANGANAKAN 9
+pages[4].drawText(`${family_relationProfile9.birthdate.toUpperCase()}`, {
+  x: 763,
+  y: 208,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+//EDAD 9
+pages[4].drawText(`${family_relationProfile9.age}`, {
+  x: 763,
+  y: 270,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+
+const  get_educational_attainment9 = await getOfflineLibEducationalAttainment();
+const educational_attainment_map9 = Object.fromEntries(get_educational_attainment9.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+setExtensionNames(educational_attainment_map9);
+const educational_attainment9 = educational_attainment_map9[family_relationProfile9.highest_educational_attainment_id ?? 0] || ""; 
+
+
+  //ANTAS NG EDUKASYON 9
+  pages[4].drawText(`${educational_attainment9.toString().toUpperCase()}`, {
+    x: 763,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+//TRABAHO 9
+const work_cfw9 = `${family_relationProfile9.work?.toString().toUpperCase()}`;
+const worK_charSize9 = 15;
+const work_cfw_result9 = [];
+for (let i = 0; i < work_cfw9.toString().toUpperCase().length; i += worK_charSize9) {
+  work_cfw_result9.push(work_cfw9.slice(i, i + worK_charSize9));
+}
+for(let i = 0; i < work_cfw_result9.length; i++){
+pages[4].drawText(`${work_cfw_result9[i].toString().toUpperCase()}`, {
+  x: 763 - (-9 * i),
+  y: 374,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+}
+  //BUWANANG KITA 9
+  pages[4].drawText(`${family_relationProfile9.monthly_income?.toUpperCase()}`, {
+  x: 763,
+  y: 438,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+//NUMBER NG TELEPONO 9
+pages[4].drawText(`${family_relationProfile9.contact_number?.toUpperCase()}`, {
+  x: 763,
+  y: 504,
+  size: 5,
+  color: rgb(0, 0, 0),
+  rotate: degrees(90)
+});
+
+}
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+// family_relationProfile10
+   
+if(family_relationProfile10 !== undefined){
+
+  const get_name_extension10 = await getOfflineExtensionLibraryOptions();
+  const get_name_extension_map10 = Object.fromEntries(get_name_extension10.map((ext: { id: number; name: string }) => [ext.id, ext.name]));     
+  setExtensionNames(get_name_extension_map10);
+  var name_ext_10 = get_name_extension_map10[family_relationProfile10.extension_name_id ?? 0] || "";
+
+  if(name_ext_10 == "N/A"){
+    name_ext_10 = ""
+  }
+  let family_member_name10 = family_relationProfile10.first_name + " " +  family_relationProfile10.middle_name + " " + family_relationProfile10.last_name + "  " + name_ext_10;
+  //BUONG PANGALAN 10
+  pages[4].drawText(`${family_member_name10.toString().toUpperCase()}`, {
+    x: 795,
+    y: 26,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const get_family_relation10 = await getOfflineLibRelationshipToBeneficiary();
+  const family_relation_map10 = Object.fromEntries(get_family_relation10.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+  setExtensionNames(family_relation_map10);
+  const family_relation_ext10 = family_relation_map10[family_relationProfile10.relationship_to_the_beneficiary_id ?? 0] || "";
+
+  //RELASYON 10
+  pages[4].drawText(`${family_relation_ext10.toUpperCase()}`, {
+    x: 795,
+    y: 148,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //KAPANGANAKAN 10
+  pages[4].drawText(`${family_relationProfile10.birthdate.toUpperCase()}`, {
+    x: 795,
+    y: 208,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  
+  //EDAD 10
+  pages[4].drawText(`${family_relationProfile10.age}`, {
+    x: 795,
+    y: 270,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  const  get_educational_attainment10 = await getOfflineLibEducationalAttainment();
+  const educational_attainment_map10 = Object.fromEntries(get_educational_attainment10.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(educational_attainment_map10);
+  const educational_attainment10 = educational_attainment_map10[family_relationProfile10.highest_educational_attainment_id ?? 0] || ""; 
+
+  //ANTAS NG EDUKASYON 10
+  pages[4].drawText(`${educational_attainment10.toString().toUpperCase()}`, {
+    x: 795,
+    y: 304,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+
+  //TRABAHO 10
+  const work_cfw10 = `${family_relationProfile10.work?.toString().toUpperCase()}`;
+  const worK_charSize10 = 15;
+  const work_cfw_result10 = [];
+  for (let i = 0; i < work_cfw10.toString().toUpperCase().length; i += worK_charSize10) {
+    work_cfw_result10.push(work_cfw10.slice(i, i + worK_charSize10));
+  }
+  for(let i = 0; i < work_cfw_result10.length; i++){
+  pages[4].drawText(`${work_cfw_result10[i].toString().toUpperCase()}`, {
+    x: 795 - (-9 * i),
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+  }
+       
+  //BUWANANG KITA 10
+  pages[4].drawText(`${family_relationProfile10.monthly_income?.toUpperCase()}`, {
+    x: 795,
+    y: 438,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+  //NUMBER NG TELEPONO 9
+  pages[4].drawText(`${family_relationProfile9.contact_number?.toUpperCase()}`, {
+    x: 795,
+    y: 504,
+    size: 5,
+    color: rgb(0, 0, 0),
+    rotate: degrees(90)
+  });
+
+}
+
+//===================================================================================================================================================================================================
+//===================================================================================================================================================================================================
+
+  //left
+  pages[4].drawText(cfwp_id, {
+    x: 275 - cfwp_id_count,
+    y: 11,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+
+  //right 
+  pages[4].drawText(cfwp_id, {
+    x: 695 - cfwp_id_count,
+    y: 11,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
           
             let has_health_concern = firstProfile.has_immediate_health_concern;
+            console.log("has_health_concern", has_health_concern);
             if(has_health_concern == true){
                 pages[5].drawText('X', {
                   x: 33.5,
@@ -1573,132 +1770,204 @@ const GeneratePDF = () => {
                   color: rgb(0, 0, 0),
                 });
             }
-            //TYPE OF CFWP 
-
-            const get_cfw_type = await getCFWTypeLibraryOptions();
-            const get_cfw_map = Object.fromEntries(get_cfw_type.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
-            setExtensionNames(get_cfw_map);
-            const cfw_familty_type1 = get_cfw_map[cfw_fam.program_type_id ?? 0] || ""; 
-
-            const str_cfw = cfw_familty_type1;
-            const charSize = 33;
-            const cfw_result = [];
-
-          for (let i = 0; i < str_cfw.length; i += chunkSize) {
-              cfw_result.push(str_cfw.slice(i, i + charSize));
-          }
-          
-          for(let i = 0; i < cfw_result.length; i++){
-            pages[5].drawText(`${cfw_result[i].toString().toUpperCase()}`, {
-              x:29,
-              y: 410 - (9 * i),
-              size: 5,
-              color: rgb(0, 0, 0),
-            });
-          }
-
-            //URI NG CFWP 1
-
-            // pages[5].drawText(``, {
-            //   x:29,
-            //   y: 400,
-            //   size: 5,
-            //   color: rgb(0, 0, 0),
-            // });
-
-            //URI NG CFWP 2
-            pages[5].drawText('N/A', {
-              x:29,
-              y: 392,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //URI NG CFWP 3
-            pages[5].drawText('N/A', {
-              x:29,
-              y: 374,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //MIYEMBRO NG PAMILYA 1
-            pages[5].drawText(`${family_relationProfile1.first_name.concat("  ", family_relationProfile1.middle_name, "  ", family_relationProfile1.last_name).toUpperCase()}`, {
-              x: 133,
-              y: 410,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //MIYEMBRO NG PAMILYA 2
-            pages[5].drawText('N/A', {
-              x: 133,
-              y: 392,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
-
-            //MIYEMBRO NG PAMILYA 3
-            pages[5].drawText('N/A', {
-              x: 133,
-              y: 374,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
 
 
-            const get_year_serverd1 = await getOfflineLibYearServed();
-            const year_served_map1 = Object.fromEntries(get_year_serverd1.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
-            setExtensionNames(year_served_map1);
 
-            const year_server_profiele1 = year_served_map1[cfw_fam.year_served_id ?? 0] || ""; 
-            //TAON 1
-            pages[5].drawText(`${year_server_profiele1}`, {
-              x: 331,
-              y: 410,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
 
-            //TAON 2
-            pages[5].drawText('N/A', {
-              x: 331,
-              y: 392,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
 
-            //TAON 3
-            pages[5].drawText('N/A', {
-              x: 331,
-              y: 374,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
 
-            //PAARALAN
-            pages[5].drawText(`${firstProfile.school_address.toUpperCase()}`, {
-              x: 29,
-              y: 342,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  //CFW TYPE 1
 
-            //MAIN CAMPUS
-            pages[5].drawText('X', {
-              x: 311,
-              y: 338,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+if(cfw_fam !== undefined){
+  const get_cfw_type = await getOfflineLibCFWType();
+  const get_cfw_map = Object.fromEntries(get_cfw_type.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(get_cfw_map);
+  const cfw_familty_type1 = get_cfw_map[cfw_fam.program_type_id ?? 0] || ""; 
 
-            //OTHER CAMPUS
-            pages[5].drawText('X', {
-              x: 311,
-              y: 322,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  const str_cfw = cfw_familty_type1;
+  const charSize = 38;
+  const cfw_result = [];
+
+  for (let i = 0; i < str_cfw.length; i += charSize) {
+      cfw_result.push(str_cfw.slice(i, i + charSize));
+  }
+  
+  for(let i = 0; i < cfw_result.length; i++){
+    if(cfw_result[i] !== undefined){
+    pages[5].drawText(`${cfw_result[i].toString().toUpperCase()}`, {
+      x:29,
+      y: 411 - (5 * i),
+      size: 4,
+      color: rgb(0, 0, 0),
+    });
+    }
+  }
+  
+  // MIYEMBRO NG PAMILYA 1
+  pages[5].drawText(`${family_relationProfile1.first_name.concat("  ", family_relationProfile1.middle_name, "  ", family_relationProfile1.last_name).toUpperCase()}`, {
+    x: 133,
+    y: 410,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  const get_year_serverd1 = await getOfflineLibYearServed();
+  const year_served_map1 = Object.fromEntries(get_year_serverd1.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(year_served_map1);
+  const year_server_profiele1 = year_served_map1[cfw_fam.year_served_id ?? 0] || ""; 
+
+  // TAON 1
+  pages[5].drawText(`${year_server_profiele1}`, {
+    x: 331,
+    y: 410,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  }
+ // CFW TYPE 2-----------------------
+
+ 
+if(cfw_fam2 !== undefined){
+  const get_cfw_type2 = await getOfflineLibCFWType();
+  const get_cfw_map2 = Object.fromEntries(get_cfw_type2.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(get_cfw_map2);
+  const cfw_familty_type2 = get_cfw_map2[cfw_fam2.program_type_id ?? 0] || ""; 
+
+  const str_cfw2 = cfw_familty_type2;
+  const charSize2 = 38;
+  const cfw_result2 = [];
+
+  for (let i = 0; i < str_cfw2.length; i += charSize2) {
+      cfw_result2.push(str_cfw2.slice(i, i + charSize2));
+  }
+  
+  for(let i = 0; i < cfw_result2.length; i++){
+    if(cfw_result2[i] !== undefined){
+    pages[5].drawText(`${cfw_result2[i].toString().toUpperCase()}`, {
+      x:29,
+      y: 393 - (5 * i),
+      size: 4,
+      color: rgb(0, 0, 0),
+    });
+    }
+  }
+
+  //MIYEMBRO NG PAMILYA 2
+    pages[5].drawText(`${family_relationProfile2.first_name.concat("  ", family_relationProfile2.middle_name, "  ", family_relationProfile2.last_name).toUpperCase()}`, {
+    x: 133,
+    y: 392,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  const get_year_serverd2 = await getOfflineLibYearServed();
+  const year_served_map2 = Object.fromEntries(get_year_serverd2.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(year_served_map2);
+  const year_server_profiele2 = year_served_map2[cfw_fam2.year_served_id ?? 0] || ""; 
+      
+  //TAON 2
+  pages[5].drawText(`${year_server_profiele2}`, {
+    x: 331,
+    y: 392,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+  
+
+}
+// CFW TYPE 3
+
+if(cfw_fam3 !== undefined){
+  const get_cfw_type3 = await getOfflineLibCFWType();
+  const get_cfw_map3 = Object.fromEntries(get_cfw_type3.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(get_cfw_map3);
+  const cfw_familty_type3 = get_cfw_map3[cfw_fam3.program_type_id ?? 0] || ""; 
+  const str_cfw3 = cfw_familty_type3;
+  const charSize3 = 38;
+  const cfw_result3 = [];
+
+  for (let i = 0; i < str_cfw3.length; i += charSize3) {
+      cfw_result3.push(str_cfw3.slice(i, i + charSize3));
+  }
+  
+  for(let i = 0; i < cfw_result3.length; i++){
+    if(cfw_result3[i] !== undefined){
+    pages[5].drawText(`${cfw_result3[i].toString().toUpperCase()}`, {
+      x:29,
+      y: 374 - (5 * i),
+      size: 4,
+      color: rgb(0, 0, 0),
+    });
+    }
+  }
+
+  //MIYEMBRO NG PAMILYA 3
+  pages[5].drawText(`${family_relationProfile3.first_name.concat("  ", family_relationProfile3.middle_name, "  ", family_relationProfile3.last_name).toUpperCase()}`, {
+    x: 133,
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+
+  const get_year_serverd3 = await getOfflineLibYearServed();
+  const year_served_map3 = Object.fromEntries(get_year_serverd3.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(year_served_map3);
+  const year_server_profiele3 = year_served_map3[cfw_fam3.year_served_id ?? 0] || ""; 
+
+  //TAON 3
+  pages[5].drawText(`${year_server_profiele3}`, {
+    x: 331,
+    y: 374,
+    size: 5,
+    color: rgb(0, 0, 0),
+  });
+}
+
+  // URI NG CFWP 1
+
+  // pages[5].drawText(``, {
+  //   x:29,
+  //   y: 400,
+  //   size: 5,
+  //   color: rgb(0, 0, 0),
+  // });
+
+  // //URI NG CFWP 2
+  // pages[5].drawText('N/A', {
+  //   x:29,
+  //   y: 392,
+  //   size: 5,
+  //   color: rgb(0, 0, 0),
+  // });
+
+    //PAARALAN
+    const get_school = await getOfflineLibSchools();
+    const school_map = Object.fromEntries(get_school.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+    setSchoolNames(school_map);
+    const schoolName = school_map[firstProfile.school_id ?? 0] || "";
+    pages[5].drawText(`${schoolName.toUpperCase()}`, {
+      x: 29,
+      y: 342,
+      size: 6,
+      color: rgb(0, 0, 0),
+    });
+
+  // //MAIN CAMPUS
+  // pages[5].drawText('X', {
+  //   x: 311,
+  //   y: 338,
+  //   size: 6,
+  //   color: rgb(0, 0, 0),
+  // });
+
+  // //OTHER CAMPUS
+  // pages[5].drawText('X', {
+  //   x: 311,
+  //   y: 322,
+  //   size: 6,
+  //   color: rgb(0, 0, 0),
+  // });
             
               //ADDRESS NG PAARALAN
               pages[5].drawText(`${firstProfile.school_address.toUpperCase()}`, {
@@ -1712,6 +1981,7 @@ const GeneratePDF = () => {
             const get_course = await getOfflineLibCourses();
             const course_map = Object.fromEntries(get_course.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
             setExtensionNames(course_map);
+            console.log("Course", course_map);
             const course_ext = course_map[firstProfile.course_id ?? 0] || ""; 
             pages[5].drawText(`${course_ext.toUpperCase()}`, {
               x: 29,
@@ -1738,65 +2008,64 @@ const GeneratePDF = () => {
 
               //let skills[5];
               let skills = firstProfile.skills.toString().toUpperCase().split(",");
-              //MGA KAKAYAHAN 1
-              
-              pages[5].drawText(`${skills[0].toString()}`, {
-                x: 29,
-                y: 181.5,
-                size: 6,
-                color: rgb(0, 0, 0),
-              });
+  //MGA KAKAYAHAN 1
+  if(skills[0] !== undefined){
+  pages[5].drawText(`${skills[0].toString()}`, {
+    x: 29,
+    y: 181.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+  }
 
-                //MGA KAKAYAHAN 2
-                if(skills[1]){
-                  pages[5].drawText(``, {
-                    x: 29,
-                    y: 161,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                  });
-                }
-                else{
-                  pages[5].drawText(`${skills[1]}`, {
-                    x: 29,
-                    y: 161,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                  });
-                }
+  //MGA KAKAYAHAN 2
+  if(skills[1] !== undefined){
+    pages[5].drawText(``, {
+      x: 29,
+      y: 161,
+      size: 6,
+      color: rgb(0, 0, 0),
+    });
+  }
                
+  //MGA KAKAYAHAN 3
+  if(skills[2] !== undefined){
+    pages[5].drawText(`${skills[2]}`, {
+    x: 29,
+    y: 139.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+  }
 
-                //MGA KAKAYAHAN 3
-                pages[5].drawText(`${skills[2]}`, {
-                x: 29,
-                y: 139.5,
-                size: 6,
-                color: rgb(0, 0, 0),
-              });
+  //MGA KAKAYAHAN 4
+  if(skills[3] !== undefined){
+  pages[5].drawText(`${skills[3]}`, {
+    x: 148,
+    y: 181.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+  }
 
-              //MGA KAKAYAHAN 4
-              pages[5].drawText(`${skills[3]}`, {
-                x: 148,
-                y: 181.5,
-                size: 6,
-                color: rgb(0, 0, 0),
-              });
-
-                  //MGA KAKAYAHAN 5
-                  pages[5].drawText(`${skills[4]}`, {
-                  x: 148,
-                  y: 161,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                });
-
-                  //MGA KAKAYAHAN 6
-                pages[5].drawText(`${skills[5]}`, {
-                  x: 148,
-                  y: 139.5,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                });
+  //MGA KAKAYAHAN 5
+  if(skills[4] !== undefined){
+  pages[5].drawText(`${skills[4]}`, {
+    x: 148,
+    y: 161,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+  }
+  //MGA KAKAYAHAN 6
+  if(skills[5] !== undefined){
+  pages[5].drawText(`${skills[5]}`, {
+    x: 148,
+    y: 139.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
+  }
                 
                 //CERTIFICATE OF ELIGIBILITY
                 pages[5].drawText('', {
@@ -1850,6 +2119,7 @@ const GeneratePDF = () => {
           const get_type_of_work = await getOfflineLibTypeOfWork();
           const type_of_work_map = Object.fromEntries(get_type_of_work.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
           setExtensionNames(type_of_work_map);
+          console.log("Type of Work", type_of_work_map);
           const type_of_work_ext = type_of_work_map[firstProfile.preffered_type_of_work_id ?? 0] || ""; 
           //PREFERRED TYPE OF WORK 
 
@@ -1874,6 +2144,8 @@ const GeneratePDF = () => {
               size: 6,
               color: rgb(0, 0, 0),
             });
+
+            console.log("Page 5 Done");
           /*
 
             // PAGE 6
@@ -2248,7 +2520,7 @@ const GeneratePDF = () => {
               y: 36.5,
               size: 6,
               color: rgb(0, 0, 0),
-            });
+            });*/
 
             pages[6].drawText(cfwp_id, {
               x: 699 - cfwp_id_count,
@@ -2262,7 +2534,7 @@ const GeneratePDF = () => {
               y: 12,
               size: 6,
               color: rgb(0, 0, 0),
-            });*/
+            });
 
             //eligible
             pages[7].drawText('X', {
@@ -2294,6 +2566,8 @@ const GeneratePDF = () => {
               color: rgb(0, 0, 0),
             });
 
+            console.log("Page 7 Done");
+
             let full_name_count_9 = full_name.length;
             pages[8].drawText( full_name.toString().toUpperCase(), {
               
@@ -2317,6 +2591,8 @@ const GeneratePDF = () => {
               size: 6,
               color: rgb(0, 0, 0),
             });
+            
+            console.log("Page 8 Done");
 
             pages[9].drawText(cfwp_id, {
               x: 280 - cfwp_id_count,
@@ -2324,6 +2600,8 @@ const GeneratePDF = () => {
               size: 6,
               color: rgb(0, 0, 0),
             });
+
+            console.log("Page 9 Done");
 
             
           /// Fetch data from Dexie.js
@@ -2333,13 +2611,14 @@ const GeneratePDF = () => {
 
             // Save the document
             const pdfBytes = await pdfDoc.save();
+            console.log("PDF generated successfully");
 
             // Convert to Blob and create a downloadable link
             const blob = new Blob([pdfBytes], { type: "application/pdf" });
-            
+            console.log("Blob created successfully");
             // Create a Blob and open it in a new tab
             const blobUrl = URL.createObjectURL(blob);
-
+            console.log("Blob URL created successfully");
           // Auto-open the PDF
             window.open(blobUrl, '_blank');
             const link = document.createElement("a");
@@ -2350,6 +2629,7 @@ const GeneratePDF = () => {
             document.body.removeChild(link);
     } catch (error) {
       console.error("Error generating PDF:", error);
+      console.log("Error generating PDF:", error);
     } finally {
       setLoading(false);
       setGenerated(false);
@@ -2358,9 +2638,12 @@ const GeneratePDF = () => {
 
     return (
       <div>
-        <button onClick={generatePdf} disabled={loading}>
+        {/* <button onClick={generatePdf} disabled={loading} className="btn btn-primary">
+          {loading ? "Generating Booklet..." : "Download Booklet"}
+        </button> */}
+        <Button variant="outline" onClick={generatePdf} disabled={loading}>
           {loading ? "Generating PDF..." : "Download PDF"}
-        </button>
+        </Button>
       </div>
     )
 };

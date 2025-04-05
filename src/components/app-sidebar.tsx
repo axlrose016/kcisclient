@@ -25,6 +25,8 @@ import { Team } from "./types"
 import { SessionPayload } from "@/types/globals"
 import { IUserData } from "./interfaces/iuser"
 import { getSession } from "@/lib/sessions-client"
+import { usePathname } from "next/navigation"
+import LoadingScreen from "./general/loading-screen"
 
 const data = {
   user: {
@@ -174,6 +176,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [user, setUser] = React.useState(data.user);
   const [userTeam, setUserTeam] = React.useState<IUserData>();
+  const pathname = usePathname();
 
   React.useEffect(() => {
     async function loadUserData() {
@@ -188,12 +191,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const userTeams = _session.userData; 
         // debugger;
         setUserTeam(userTeams);      
+        debugger;
         const navTeam = data.teams.filter((team) =>
           userTeams?.userAccess?.some((mod) => mod.module === team.name)
         );
   
         setFilteredTeam(navTeam);
-        setActiveTeam(navTeam[0])
+        const defaultTeam = navTeam.some(team => pathname?.includes(team.url)) ? navTeam.find(team => pathname?.includes(team.url))! : navTeam[0];
+        setActiveTeam(defaultTeam);
         setIsLoading(false);
         setUser(user);
       }
@@ -206,11 +211,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         // Filter para sa module
         const navMain = data.navMain.filter(
           (nav) =>
-            nav.modules.includes(activeTeam.name) // Filter based on active team
+            nav.modules.includes(activeTeam?.name) // Filter based on active team
         );  
   
         const filteredSubModule = data.navMain.filter(item => 
-          item.modules.includes(activeTeam.name)
+          item.modules.includes(activeTeam?.name)
         );
 
         const filteredChildModule = filteredSubModule
@@ -237,8 +242,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar collapsible="icon" {...props}>
           <SidebarHeader>
             <TeamSwitcher
-              teams={filteredTeam}
-              activeTeam={activeTeam}
+              teams={filteredTeam}  
+              activeTeam={activeTeam ?? data.teams.some(team => pathname?.includes(team.url)) ? data.teams.find(team => pathname?.includes(team.url))! : data.teams[0]}
               onChange={setActiveTeam}
             />
           </SidebarHeader>
@@ -254,9 +259,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </Sidebar>
       ) :
       (
-        <Sidebar collapsible="icon" {...props}>
-          <h1>Loading Please Wait!!</h1>
-        </Sidebar>
+        <LoadingScreen
+          isLoading={isLoading}
+          text={"Loading... Please wait."}
+          style={"dots"}
+          fullScreen={true}
+          progress={0}
+          timeout={0}
+          onTimeout={() => console.log("Loading timed out")}
+        />
       )}
     </>
   )

@@ -19,6 +19,7 @@ import { Controller, useForm } from "react-hook-form";
 import { formDefaultValues, formSchema, FormSchema } from "./userSchema";
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import LoadingScreen from "@/components/general/loading-screen";
 
 export default function UserForm({
     className,
@@ -61,7 +62,17 @@ export default function UserForm({
     }, [formUser]);
     
     if (loading) {
-        return <>Loading...</>
+        return <div>
+            <LoadingScreen
+                    isLoading={loading}
+                    text={"Loading... Please wait."}
+                    style={"dots"}
+                    fullScreen={true}
+                    progress={0}
+                    timeout={0}
+                    onTimeout={() => console.log("Loading timed out")}
+                  />
+        </div>
     }
 
     const handleRoleChange = (id: any) => {

@@ -1464,7 +1464,7 @@ export default function PersonProfileForm() {
             let sectors: IPersonProfileSector[] | [] = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
 
             if (!Array.isArray(sectors) || sectors.length === 0) {
-              sectors = JSON.parse(localStorage.getItem("person_profile_sector") || "") || [];
+              sectors = JSON.parse(localStorage.getItem("person_profile_sector") || "[]") || [];
             }
             
             const userSectors = sectors.filter((sector) => sector.person_profile_id === profile?.id);
@@ -1758,12 +1758,12 @@ export default function PersonProfileForm() {
             {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
           </CardDescription>
         </CardHeader>
-        <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre>
-        <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre>
-        <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre>
-        <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre>
-        <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre>
-        <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre>
+        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
+        {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
+        {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
+        {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
+        {/* <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre> */}
+        {/* <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre> */}
         <CardContent>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3">

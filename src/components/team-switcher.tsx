@@ -47,13 +47,12 @@ export function TeamSwitcher({
             >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 {/* Render the active team's logo correctly */}
-                {/* <activeTeam.logo className="size-4" /> */}
-              </div>
+                {activeTeam ? <activeTeam.logo className="size-4" /> : null}
+                </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">
-                  {/* {activeTeam.name} */}
-                </span>
-                {/* <span className="truncate text-xs">{activeTeam.plan}</span> */}
+                 </span>
+                {activeTeam ? <span className="truncate text-xs">{activeTeam.name}</span> : null}
               </div>
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
