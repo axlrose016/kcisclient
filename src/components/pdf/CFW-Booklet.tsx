@@ -2,13 +2,10 @@
 import { PDFDocument, rgb, degrees } from "pdf-lib";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";  // Import your Dexie instance
 import { useEffect, useState } from "react";
-import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary, getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
-import { LibraryOption } from "../interfaces/library-interface";
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary,getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
 import { IPersonProfile } from "../interfaces/personprofile";
 import { getCFWTypeLibraryOptions } from "../_dal/options";
-import Attachments from "@/app/personprofile/form/attachments";
-import { array, object } from "zod";
-import path from "path";
+
 import { Button } from "../ui/button";
 
 const GeneratePDF = () => {
@@ -77,7 +74,7 @@ try {
         // Fetch data from Dexie.js
         const personProfile = await dexieDb.person_profile.toArray();
         const firstProfile = personProfile[0]; // Use the first record for this example
-   
+      
 
         //Partisipasyon sa CFWF
         const cfw_fam_program = await dexieDb.person_profile_cfw_fam_program_details.toArray();
@@ -232,7 +229,7 @@ if (brgy_list?.data) {
 
 // Create a new PDF document
   const pdfDoc = await PDFDocument.create();
-  const pages = Array.from({ length: 10 }, () => pdfDoc.addPage([842, 595]));
+  const pages = Array.from({ length: 11 }, () => pdfDoc.addPage([842, 595]));
   const { width, height } = pages[0].getSize();
 
   // Embed images
@@ -246,7 +243,8 @@ if (brgy_list?.data) {
     "/images/Page7.png",
     "/images/Page8.png",
     "/images/Page9.png",
-    "/images/Page10.png"
+    "/images/Page10.png",
+    "/images/Page11.png"
   ];
 
   const images = await Promise.all(
@@ -278,9 +276,6 @@ if (brgy_list?.data) {
 
 //------------------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------------------
-
-
-
 
   // PAGE 4 AND 7 OF THE PDF FILE =======================================================================================================
   const  get_id_card = await getOfflineLibIdCard();
@@ -1969,45 +1964,45 @@ if(cfw_fam3 !== undefined){
   //   color: rgb(0, 0, 0),
   // });
             
-              //ADDRESS NG PAARALAN
-              pages[5].drawText(`${firstProfile.school_address.toUpperCase()}`, {
-              x: 29,
-              y: 291,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  //ADDRESS NG PAARALAN
+  pages[5].drawText(`${firstProfile.school_address.toUpperCase()}`, {
+  x: 29,
+  y: 291,
+  size: 6,
+  color: rgb(0, 0, 0),
+});
 
-            //KURSO
-            const get_course = await getOfflineLibCourses();
-            const course_map = Object.fromEntries(get_course.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-            setExtensionNames(course_map);
+//KURSO
+const get_course = await getOfflineLibCourses();
+const course_map = Object.fromEntries(get_course.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+setExtensionNames(course_map);
             console.log("Course", course_map);
-            const course_ext = course_map[firstProfile.course_id ?? 0] || ""; 
-            pages[5].drawText(`${course_ext.toUpperCase()}`, {
-              x: 29,
-              y: 245,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+const course_ext = course_map[firstProfile.course_id ?? 0] || ""; 
+pages[5].drawText(`${course_ext.toUpperCase()}`, {
+  x: 29,
+  y: 245,
+  size: 6,
+  color: rgb(0, 0, 0),
+});
 
-              //YEAR GRADUATED
-              pages[5].drawText(`${firstProfile.year_graduated}`, {
-              x: 219,
-              y: 245,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  //YEAR GRADUATED
+  pages[5].drawText(`${firstProfile.year_graduated}`, {
+  x: 219,
+  y: 245,
+  size: 6,
+  color: rgb(0, 0, 0),
+});
 
-              //YEAR LEVEL
-              pages[5].drawText('N/A', {
-              x: 306,
-              y: 245,
-              size: 6,
-              color: rgb(0, 0, 0),
-            });
+  //YEAR LEVEL
+  pages[5].drawText('N/A', {
+  x: 306,
+  y: 245,
+  size: 6,
+  color: rgb(0, 0, 0),
+});
 
-              //let skills[5];
-              let skills = firstProfile.skills.toString().toUpperCase().split(",");
+  //let skills[5];
+  let skills = firstProfile.skills.toString().toUpperCase().split(",");
   //MGA KAKAYAHAN 1
   if(skills[0] !== undefined){
   pages[5].drawText(`${skills[0].toString()}`, {
@@ -2067,45 +2062,45 @@ if(cfw_fam3 !== undefined){
   });
   }
                 
-                //CERTIFICATE OF ELIGIBILITY
-                pages[5].drawText('', {
-                  x: 386.5,
-                  y: 151.5,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                });
+  //CERTIFICATE OF ELIGIBILITY
+  pages[5].drawText('', {
+    x: 386.5,
+    y: 151.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
 
-                //CERTIFICATE OF INDIGENCY
-                pages[5].drawText('', {
-                  x: 386.5,
-                  y: 123.5,
-                  size: 6,
-                  color: rgb(0, 0, 0),
-                });
+  //CERTIFICATE OF INDIGENCY
+  pages[5].drawText('X', {
+    x: 386.5,
+    y: 123.5,
+    size: 6,
+    color: rgb(0, 0, 0),
+  });
 
-                  //PROOF OF GRADUATION 
-                  pages[5].drawText('', {
-                    x: 386.5,
-                    y: 93.5,
-                    size: 6,
-                    color: rgb(0, 0, 0),
-                  });
+    //PROOF OF GRADUATION 
+    pages[5].drawText('', {
+      x: 386.5,
+      y: 93.5,
+      size: 6,
+      color: rgb(0, 0, 0),
+    });
 
-          //PROOF OF ENROLLMENT
-          pages[5].drawText('', {
-            x: 386.5,
-            y: 65.5,
-            size: 6,
-            color: rgb(0, 0, 0),
-          });
+    //PROOF OF ENROLLMENT
+    pages[5].drawText('', {
+      x: 386.5,
+      y: 65.5,
+      size: 6,
+      color: rgb(0, 0, 0),
+    });
 
-          //VALID OF IDENTIFICATION CARD
-          pages[5].drawText('', {
-            x: 386.5,
-            y: 37.5,
-            size: 6,
-            color: rgb(0, 0, 0),
-          });
+    //VALID OF IDENTIFICATION CARD
+    pages[5].drawText('X', {
+      x: 386.5,
+      y: 37.5,
+      size: 6,
+      color: rgb(0, 0, 0),
+    });
           
           //NAME OF OFFICER AND ADDRESS
           let deployment_name_address = firstProfile.deployment_area_name + ' / ' + firstProfile.deployment_area_address
@@ -2596,18 +2591,48 @@ if(cfw_fam3 !== undefined){
 
             pages[9].drawText(cfwp_id, {
               x: 280 - cfwp_id_count,
-              y: 15,
+              y: 13,
               size: 6,
               color: rgb(0, 0, 0),
             });
+
+              //eligible
+              pages[10].drawText('X', {
+                x: 38.5,
+                y: 532,
+                size: 9,
+                color: rgb(0, 0, 0),
+              });
+  
+              //ineligible
+              pages[10].drawText('', {
+                x: 223,
+                y: 532,
+                size: 9,
+                color: rgb(0, 0, 0),
+              });
+  
+              pages[10].drawText(cfwp_id, {
+                x: 699 - cfwp_id_count,
+                y: 13,
+                size: 6,
+                color: rgb(0, 0, 0),
+              });
+  
+              pages[10].drawText(cfwp_id, {
+                x: 275 - cfwp_id_count,
+                y: 13,
+                size: 6,
+                color: rgb(0, 0, 0),
+              });
 
             console.log("Page 9 Done");
 
             
           /// Fetch data from Dexie.js
-            const lib_card = await dexieDb.lib_relationship_to_beneficiary.toArray();
-            const lcard = lib_card[0]; // Use the first record for this example
-            console.log(lcard);
+            // const lib_card = await dexieDb.lib_relationship_to_beneficiary.toArray();
+            // const lcard = lib_card[0]; // Use the first record for this example
+            // console.log(lcard);
 
             // Save the document
             const pdfBytes = await pdfDoc.save();
