@@ -229,7 +229,7 @@ if (brgy_list?.data) {
 
 // Create a new PDF document
   const pdfDoc = await PDFDocument.create();
-  const pages = Array.from({ length: 10 }, () => pdfDoc.addPage([842, 595]));
+  const pages = Array.from({ length: 11 }, () => pdfDoc.addPage([842, 595]));
   const { width, height } = pages[0].getSize();
 
   // Embed images
@@ -243,7 +243,7 @@ if (brgy_list?.data) {
     "/images/Page7.png",
     "/images/Page8.png",
     "/images/Page9.png",
-    "/images/Page10.png",
+    "/images/Page9.png",
     "/images/Page11.png"
   ];
 
