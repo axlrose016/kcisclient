@@ -483,6 +483,7 @@ export default function PersonProfileForm() {
         <div className="p-3 bg-card rounded-lg">
           <FamilyComposition
             errors={errors}
+            capturedeData={formData}
             familyCompositionData={formFamilyCompositionData}
             updatedFamComposition={updateFormFamilyCompositionData}
             session={session}
@@ -1457,14 +1458,15 @@ export default function PersonProfileForm() {
               setFormData(profile);
             } else {
               localStorage.removeItem("person_profile");
-              updateFormData({ civil_status_id: 4, id: uuidv4(), created_by: session.userData.email }); // Default value
+              updateFormData({ civil_status_id: 4, id: uuidv4(), created_by: session.userData.email, user_id: session.id }); // Default value
             }
   
+            debugger;
             // Fetch Sectors (LocalStorage first, then Dexie)
             let sectors: IPersonProfileSector[] | [] = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
 
             if (!Array.isArray(sectors) || sectors.length === 0) {
-              sectors = JSON.parse(localStorage.getItem("person_profile_sector") || "[]") || [];
+              sectors = JSON.parse(localStorage.getItem("person_sectors") || "[]") || [];
             }
             
             const userSectors = sectors.filter((sector) => sector.person_profile_id === profile?.id);
@@ -1486,7 +1488,7 @@ export default function PersonProfileForm() {
             // Fetch Family Composition (LocalStorage first, then Dexie)
             let family: IPersonProfileFamilyComposition[] | [] = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(family) || family.length === 0) {
-              family = JSON.parse(localStorage.getItem("person_profile_family_composition") || "[]") || [];
+              family = JSON.parse(localStorage.getItem("family_composition") || "[]") || [];
             }
 
             const userFamily = family.filter((member) => member.person_profile_id === profile?.id);

@@ -15,6 +15,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { IPersonProfile, IPersonProfileDisability, IPersonProfileSector } from "@/components/interfaces/personprofile";
 import { v4 as uuidv4 } from 'uuid';
 import { flushAllTraces } from "next/dist/trace";
+import { person_profile } from "@/db/schema/personprofile";
 
 export default function SectorDetails({ errors, capturedData, sectorData, disabilitiesData, selectedModality, updateFormData, updateSectorData, updateDisabilityData, session }: {
     errors: any; capturedData: Partial<IPersonProfile>; sectorData: Partial<IPersonProfileSector>[]; disabilitiesData: Partial<IPersonProfileDisability>[]; selectedModality: any;
@@ -71,6 +72,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
             type_of_disability_id: Number(id),
             is_deleted: false,
             created_by: session.userData.email,
+            person_profile_id: capturedData.id,
         }));
 
         // Combine updated and new data
@@ -101,7 +103,8 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: false,
-                    created_by: session.userData.email
+                    created_by: session.userData.email,
+                    person_profile_id: capturedData.id,
                 };
                 currentData.push(newSector);
                 console.log("New sector added:", newSector);
@@ -115,7 +118,8 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: true,
-                    created_by: session.userData.email
+                    created_by: session.userData.emaill,
+                    person_profile_id: capturedData.id,
                 };
                 currentData.push(newSector);
                 console.log("New sector added as deleted:", newSector);

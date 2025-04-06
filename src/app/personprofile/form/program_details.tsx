@@ -270,7 +270,8 @@ export default function CFWProgramDetails({ errors,capturedData, cfwFamCompositi
                 family_composition_id: selectedFamilyMember,
                 program_type_id: selectedProgramTypeId,
                 year_served_id: selectedYearServedId,
-                created_by: session.userData.email
+                created_by: session.userData.email,
+                person_profile_id: capturedData.id,
             };
 
             const isExist = cfwFamComposition.some(record =>

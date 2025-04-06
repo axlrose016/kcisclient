@@ -18,11 +18,12 @@ import FamilyCompositionForm from "@/components/dialogs/personprofile/frmfamilyc
 import HighestEducationalAttainment from "./highest_educational_attainment";
 import { toast } from "@/hooks/use-toast";
 import { getOfflineExtensionLibraryOptions, getOfflineLibEducationalAttainment, getOfflineLibRelationshipToBeneficiary, getOfflineLibYearLevel } from "@/components/_dal/offline-options";
-import { IPersonProfileFamilyComposition } from "@/components/interfaces/personprofile";
+import { IPersonProfile, IPersonProfileFamilyComposition } from "@/components/interfaces/personprofile";
 import { v4 as uuidv4, validate } from 'uuid';
 import { lib_extension_name } from "@/db/schema/libraries";
+import { person_profile } from "@/db/schema/personprofile";
 
-export default function FamilyComposition({ errors, familyCompositionData, updatedFamComposition, session }: { errors: any; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
+export default function FamilyComposition({ errors, capturedeData, familyCompositionData, updatedFamComposition, session }: { errors: any; capturedeData: Partial<IPersonProfile>; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
     updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[]) => void; session: any;
  }) {
 
@@ -342,7 +343,8 @@ export default function FamilyComposition({ errors, familyCompositionData, updat
                 work: familyMemberWork,
                 monthly_income: familyMemberMonthlyIncome,
                 contact_number: familyMemberContactNumber,
-                created_by: session.userData.email
+                created_by: session.userData.email,
+                person_profile_id: capturedeData.id
             };
 
             const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
