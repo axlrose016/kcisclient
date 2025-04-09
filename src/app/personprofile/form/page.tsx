@@ -56,6 +56,7 @@ export default function PersonProfileForm() {
   const [activeTab, setActiveTab] = useState("contact");
   const [filesToUploadOptions, setfilesToUploadOptions] = useState<IAttachments[]>([]);
   const [displayPic, setDisplayPic] = useState<string | null>(null);
+  const [isSaved, setSaved] = useState(false);
   let isMounted = false;
 
   const updateFormData = (newData: Partial<IPersonProfile>) => {
@@ -899,7 +900,8 @@ export default function PersonProfileForm() {
               localStorage.removeItem("person_cfw_program_details");
               localStorage.removeItem("person_disabilities");
               debugger;
-              await PersonProfileService.syncBulkData(formPersonProfile);
+              //await PersonProfileService.syncBulkData();
+              setSaved(true);
             } catch (error) {
               console.error("Error adding Person Profile to IndexedDB", error);
             }
@@ -920,6 +922,18 @@ export default function PersonProfileForm() {
     saveData();
   }, [confirmed])
 
+  useEffect(() => {
+    const syncData = async () => {
+      if(isSaved){
+        await PersonProfileService.syncBulkData();
+        await PersonProfileService.syncBulkDisabilities();
+        await PersonProfileService.syncBulkFamilyComposition();
+        await PersonProfileService.syncBulkSectors();
+        await PersonProfileService.syncBulkProgramDetails();
+      }
+    }
+    syncData();
+  }, [isSaved]);
 
   const [isAccepted, setIsAccepted] = useState(false);
   const [chkToggle, setChkToggle] = useState(true);

@@ -4,6 +4,8 @@ import { fetchReviewApproveDecline } from "@/components/_dal/review_approve_decl
 import { ButtonDelete } from "@/components/actions/button-delete";
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import { ButtonView } from "@/components/actions/button-view";
+import { AppTable } from "@/components/app-table";
+import { IPersonProfile } from "@/components/interfaces/personprofile";
 import LoadingScreen from "@/components/general/loading-screen";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,16 +14,20 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { useRouter } from "next/navigation";
+// import router, { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-
+const baseUrl = 'personprofile/masterlist'
 export default function PersonProfileMasterlist() {
-    const [profiles, setProfiles] = useState([]);
+    const [profiles, setProfiles] = useState<IPersonProfile[]>([]);
     const [reviewApproveDecline, setReviewApproveDecline] = useState([]);
     const [approvalStatuses, setApprovalStatus] = useState<{ [key: string]: string }>({})
     const [loading, setLoading] = useState(true);
     const [forReviewApprove, setForReviewApprove] = useState(false);
     const [selectedCFWID, setSetSelectedCFWID] = useState("");
 
+    const router = useRouter();
+    // const [data, setData] = useState([]);
     const handleEligible = (id: string) => {
 
     }
@@ -44,12 +50,15 @@ export default function PersonProfileMasterlist() {
 
                 // console.log("RAD ", review_approve_decline_data);
 
-                
-                
 
-                
+
+
+
                 if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
                 const dexie_person_profile = await dexieDb.person_profile.toArray();
+                setProfiles(dexie_person_profile);
+
+
                 const firstNames = dexie_person_profile.map(profile => profile.first_name);
                 console.log("First Names: ", firstNames);
                 // const existingRecords = await dexieDb.attachments.toArray();
@@ -90,6 +99,24 @@ export default function PersonProfileMasterlist() {
     const handleDecline = (id: string) => {
         alert(id);
     }
+
+
+    const handleEdit = (row: any) => {
+        console.log('Edit:', row);
+    };
+
+    const handleDelete = (row: any) => {
+        console.log('Delete:', row);
+    };
+
+    const handleRowClick = (row: any) => {
+        console.log('Row clicked:', row);
+        router.push(`/${baseUrl}/${row.id}`);
+    };
+
+    const handleAddNewRecord = (newRecord: any) => {
+        console.log('handleAddNewRecord', newRecord)
+    };
     return (
         <div className="p-2">
             <Dialog open={forReviewApprove} onOpenChange={setForReviewApprove}>
@@ -125,83 +152,34 @@ export default function PersonProfileMasterlist() {
                         </CardFooter>
                     </Card>
                 )
+                        columns={profiles[0] ? Object.keys(profiles[0])
+                            .filter(key => !['id', 'modality'].includes(key)) // Simplified hiding logic
+                            .map(key => ({
 
                 : null
             } */}
 
-            <Table className="table-fixed w-full text-left">
-                <TableCaption>A list of all Users.</TableCaption>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-[200px]">First Name</TableHead>
-                        <TableHead className="w-[200px]">Middle Name</TableHead>
-                        <TableHead className="w-[200px]">Last Name</TableHead>
-                        <TableHead className="w-[110px]">Push Status</TableHead>
-                        <TableHead className="w-[150px]">Status</TableHead>
-                        <TableHead className="text-right w-[350px]">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {profiles.map((profile: any) => {
-                        const status = approvalStatuses[profile.id] || "Pending"; // Default to "Pending" if not found
 
-                        return (
-                            <TableRow key={profile.id}>
-                                <TableCell className="font-medium">{profile.first_name}</TableCell>
-                                <TableCell className="font-medium">{profile.middle_name}</TableCell>
-                                <TableCell className="font-medium">{profile.last_name}</TableCell>
-                                <TableCell className="font-medium">{profile.push_status_id}</TableCell>
-
-                                {/* Badge Based on Status */}
-                                <TableCell className="font-medium">
-                                    {status === "Approved" ? (
-                                        <Badge variant="green">Approved</Badge>
-                                    ) : null}
-                                    {status === "Declined" ? (
-                                        <Badge variant="destructive">Declined</Badge>
-                                    ) : null}
-                                    {status === "for Review" || status === "Pending" || status === "for Compliance" ? (
-                                        <Badge variant="warning">for Review</Badge>
-                                    ) : null}
+            <div className="min-h-screen">
+                <div className="min-h-screen">
+                    <AppTable
+                        data={profiles}
+                        columns={profiles[0] ? Object.keys(profiles[0]).map((key, idx) => ({
+                            id: key,
+                            header: key,
+                            accessorKey: key,
+                            filterType: 'text',
+                            sortable: true,
+                        })) : []}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                        onRowClick={handleRowClick}
+                        onAddNewRecord={handleAddNewRecord}
+                    />
+                </div>
+            </div>
 
 
-
-                                </TableCell>
-
-                                {/* Action Buttons */}
-                                <TableCell className="text-right">
-                                    {/* <ButtonView path={`/personprofile/form?id=${profile.id}`} label="View" /> */}
-
-                                    {status === "Approved" ? (
-                                        <Button className="mx-2" variant="destructive" onClick={() => handleDisapprove(profile.id)}>
-                                            Disapprove
-                                        </Button>
-                                    ) : null}
-                                    {status === "Declined" ? (
-                                        <Button className="mx-2" onClick={() => handleApprove(profile.id)}>
-                                            Approve
-                                        </Button>
-                                    ) : null}
-                                    {status === "for Review" || status === "Pending" || status === "for Compliance" ? (
-                                        <Button className="mx-2" onClick={() => handleForReview(profile.id)}>
-                                            For Review
-                                        </Button>
-                                    ) : null}
-                                    {/* {status === "Pending" ? (
-                                    <Badge variant="secondary">Pending</Badge>
-                                ) : null} */}
-                                    {/* <Button className="mx-2" onClick={() => handleApprove(profile.id)}>
-                                    Approve
-                                </Button>
-
-                                <Button variant="destructive" onClick={() => handleDecline(profile.id)}>Decline</Button> */}
-                                </TableCell>
-                            </TableRow>
-                        );
-                    })}
-
-                </TableBody>
-            </Table>
 
 
 

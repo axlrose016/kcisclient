@@ -10,6 +10,7 @@ import { v4 as uuidv4, validate } from 'uuid';
 import { Loader2, Pause } from "lucide-react";
 import { set } from "date-fns";
 import clsx from "clsx";
+import PersonProfileService from "./form/PersonProfileService";
 import GeneratePDF from "@/components/pdf/CFW-Booklet";
 
 
@@ -19,7 +20,9 @@ export default function PersonProfileDashboard() {
     const [session, setSession] = useState<SessionPayload | null>(null);
     const [encodingPercentage, setEncodingPercentage] = useState(0);
     const [encodingStatus, setEncodingStatus] = useState("");
+    const [uploadingPercentage, setUploadingPercentage] = useState(0);
     const [profile, setProfile] = useState<IPersonProfile | null>(null);
+    const [personSynching, setPersonSynching] = useState(false);
     useEffect(() => {
         setEncodingPercentage(0);
         const fetchUser = async () => {
@@ -28,6 +31,20 @@ export default function PersonProfileDashboard() {
         }
         fetchUser();
     }, [])
+
+    useEffect(() => {
+        const syncData = async () => {
+          if(personSynching){
+            const syncStatus = await PersonProfileService.syncBulkData();
+            await PersonProfileService.syncBulkDisabilities();
+            await PersonProfileService.syncBulkFamilyComposition();
+            await PersonProfileService.syncBulkSectors();
+            await PersonProfileService.syncBulkProgramDetails();
+            setPersonSynching(false);
+          }
+        }
+        syncData();
+    },[personSynching]);
 
     useEffect((() => {
         const fetchData = async () => {
@@ -50,6 +67,9 @@ export default function PersonProfileDashboard() {
                     setEncodingPercentage(prev => prev + 25); // this would increase by 10 each time
                     setEncodingStatus("Saved as Draft");
                     setProfile(profile);
+                    if(profile.push_status_id == 1){
+                      setUploadingPercentage(25);
+                    }
                   } else {
                     setEncodingStatus("No Profile Found");
                   }
@@ -63,7 +83,13 @@ export default function PersonProfileDashboard() {
                   
                   const userSectors = sectors.filter((sector) => sector.person_profile_id === profile?.id);
                   if (userSectors.length > 0) {
+                    const perc = Math.floor(25 / userSectors.length);
                     setEncodingPercentage(prev => prev + 25); // this would increase by 10 each time
+                    for(let i = 0; i < userSectors.length; i++){
+                      if(userSectors[i].push_status_id == 1){
+                        setUploadingPercentage(prev => prev + perc); // this would increase by 10 each time
+                      }
+                    }
                   }
 
                 //   // Fetch Family Composition (LocalStorage first, then Dexie)
@@ -74,13 +100,25 @@ export default function PersonProfileDashboard() {
       
                   const userFamily = family.filter((member) => member.person_profile_id === profile?.id);
                   if (userFamily.length > 0) {
+                    const perc = Math.floor(25 / userFamily.length);
                     setEncodingPercentage(prev => prev + 25); // this would increase by 10 each time
+                    for(let i = 0; i < userFamily.length; i++){
+                      if(userFamily[i].push_status_id == 1){
+                        setUploadingPercentage(prev => prev + perc); // this would increase by 10 each time
+                      }
+                    }
                   }
                   
                   // debugger;
                   const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').and(x => x.record_id == profile?.id).toArray();
                   if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
+                    const perc = Math.floor(25 / person_attachments.length);
                     setEncodingPercentage(prev => prev + 25); // this would increase by 10 each time
+                    for(let i = 0; i < person_attachments.length; i++){
+                      if(person_attachments[i].push_status_id == 1){
+                        setUploadingPercentage(prev => prev + perc); // this would increase by 10 each time
+                      }
+                    }
                   }
                 }
               }
@@ -131,8 +169,13 @@ export default function PersonProfileDashboard() {
             <Card
                 className={clsx(
                     "rounded-xl shadow-md transition-all",
-                    profile?.push_status_id == 2 ? "bg-red-400" : profile?.push_status_id == 1 ? "bg-green-400" : "bg-red-600"
+                    uploadingPercentage < 100 ? "bg-red-400" : uploadingPercentage == 100 ? "bg-green-400" : "bg-red-600", !personSynching ? "cursor-pointer hover:shadow-lg" : "cursor-not-allowed"
                 )}
+                onClick={() => {
+                    if(!personSynching){
+                      setPersonSynching(true);
+                    }
+                }}
                 >
             <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -143,11 +186,30 @@ export default function PersonProfileDashboard() {
                 </div>
                 <div className="flex items-center gap-2">
                 <Badge variant={isPaused ? "outline" : "secondary"} className="px-3">
-                    {profile?.push_status_id == 2 ? "For Upload" : profile?.push_status_id == 1 ? "Uploaded" : "Not Uploaded"}
+                  {personSynching ? (
+                    <Loader2 className="animate-spin" />
+                  ) : uploadingPercentage === 100 ? (
+                    <>
+                      <Pause className="animate-pulse" />
+                      <span>Uploaded</span>
+                    </>
+                  ) : (
+                    "For Upload"
+                  )}
+                    
                 </Badge>
                 </div>
             </div>
             </CardHeader>
+            <CardContent>
+            <span className="font-medium">{uploadingPercentage}%</span>
+            <div className="w-full bg-green-200 rounded-full h-3 mt-2">
+                <div
+                    className="bg-green-700 h-3 rounded-full transition-all duration-500"
+                    style={{ width: `${uploadingPercentage}%` }}
+                />
+            </div>
+            </CardContent>
             </Card>
         </div>
     );

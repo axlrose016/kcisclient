@@ -1,5 +1,6 @@
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
+import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
@@ -8,110 +9,277 @@ const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
   private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
-  private apiUrlDisabilities = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/'; 
-  private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/'; 
-  private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/'; 
-  private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/'; 
-  private apiUrlAttachments = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/'; 
+  private apiUrlDisabilities = 'https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/'
+  private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/'
+  private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
+  private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
   // Method to sync data in bulk
-  async syncBulkData(dataArray: IPersonProfile): Promise<any> {
-    debugger;
+  async syncBulkData(): Promise<{ success: number; failed: number }> {
     try {
-      console.log(dataArray);
-      console.log(this.apiUrl);
-      const response = await axios.post(this.apiUrl, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
+      const unsyncedData = await dexieDb.person_profile
+        .where("push_status_id")
+        .equals(2)
+        .toArray();
+  
+      if (unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+      
+      const results = await Promise.allSettled(
+        unsyncedData.map((record) => {
+
+          const formattedDate = new Date(record.created_date).toISOString().split("T")[0];
+
+          const formattedRecord = {
+            ...record,
+            created_date: formattedDate,
+          };
+
+          console.log("Record", JSON.stringify(formattedRecord));
+  
+          console.log("Syncing record:", formattedRecord);
+  
+          return axios.post(this.apiUrl, formattedRecord, {
+            headers: {
+              Authorization: `bearer ${_session.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        })
+      );
+  
+      let success = 0;
+      let failed = 0;
+  
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+        const record = unsyncedData[i];
+  
+        if (result.status === "fulfilled") {
+          success++;
+          // mark as synced
+          await dexieDb.person_profile.update(record.id, { push_status_id: 1 });
+        } else {
+          failed++;
+          console.error("Failed to sync record:", record.id, result.reason);
+        }
+      }
+  
+      return { success, failed };
+    } catch (error) {
+      console.error("Error syncing bulk data:", error);
+      throw error;
+    }
+  }
+  
+  async syncBulkDisabilities(): Promise<{ success: number; failed: number }> {
+    try {
+      const unsyncedData = await dexieDb.person_profile_disability
+        .where("push_status_id")
+        .equals(2)
+        .toArray();
+
+      if( unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+
+      const results = await Promise.allSettled(
+        unsyncedData.map((record) => {
+          const formattedDate = new Date(record.created_date).toISOString().split("T")[0];
+          const formattedRecord = {
+            ...record,
+            created_date: formattedDate,
+          };
+          console.log("Record", JSON.stringify(formattedRecord));
+          console.log("Syncing record:", formattedRecord);
+          return axios.post(this.apiUrlDisabilities, formattedRecord, {
+            headers: {
+              Authorization: `bearer ${_session.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        })
+      );      
+
+      let success = 0;
+      let failed = 0;
+
+      for(let i=0; i<results.length; i++){
+        const result = results[i];
+        const record = unsyncedData[i];
+
+        if(result.status === "fulfilled"){
+          success++;
+          // mark as synced
+          await dexieDb.person_profile_disability.update(record.id, { push_status_id: 1 });
+        } else {
+          failed++;
+          console.error("Failed to sync record:", record.id, result.reason);
+        }
+      }
+      return { success, failed };
     } catch (error) {
       console.error('Error syncing bulk data:', error);
       throw error;
     }
   }
-  async syncBulkDisabilities(dataArray: IPersonProfileDisability): Promise<any> {
-    debugger;
-    try {
-      console.log(dataArray);
-      console.log(this.apiUrlDisabilities);
-      const response = await axios.post(this.apiUrlDisabilities, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error) {
+  async syncBulkSectors(): Promise<{success: number; failed: number}> {
+    try{
+      const unsyncedData = await dexieDb.person_profile_sector
+        .where("push_status_id")
+        .equals(2)
+        .toArray();
+
+      if( unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+
+      const results = await Promise.allSettled(
+        unsyncedData.map((record) => {
+          const formattedDate = new Date(record.created_date).toISOString().split("T")[0];
+          const formattedRecord = {
+            ...record,
+            created_date: formattedDate,
+          };
+          console.log("Record", JSON.stringify(formattedRecord));
+          console.log("Syncing record:", formattedRecord);
+          return axios.post(this.apiUrlSectors, formattedRecord, {
+            headers: {
+              Authorization: `bearer ${_session.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        })
+      );      
+
+      let success = 0;
+      let failed = 0;
+
+      for(let i=0; i<results.length; i++){
+        const result = results[i];
+        const record = unsyncedData[i];
+
+        if(result.status === "fulfilled"){
+          success++;
+          // mark as synced
+          await dexieDb.person_profile_sector.update(record.id, { push_status_id: 1 });
+        } else {
+          failed++;
+          console.error("Failed to sync record:", record.id, result.reason);
+        }
+      }
+      return { success, failed };
+    }
+    catch (error) {
       console.error('Error syncing bulk data:', error);
       throw error;
     }
   }
-  async syncBulkSectors(dataArray: IPersonProfileSector): Promise<any> {
-    debugger;
-    try {
-      console.log(dataArray);
-      console.log(this.apiUrlSectors);
-      const response = await axios.post(this.apiUrlSectors, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error) {
+  async syncBulkFamilyComposition(): Promise<{success: number; failed: number}> {
+    try{
+      const unsyncedData = await dexieDb.person_profile_family_composition
+        .where("push_status_id")
+        .equals(2)
+        .toArray();
+
+      if( unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+
+      const results = await Promise.allSettled(
+        unsyncedData.map((record) => {
+          const formattedDate = new Date(record.created_date).toISOString().split("T")[0];
+          const formattedRecord = {
+            ...record,
+            created_date: formattedDate,
+          };
+          console.log("Record", JSON.stringify(formattedRecord));
+          console.log("Syncing record:", formattedRecord);
+          return axios.post(this.apiUrlFamilyComposition, formattedRecord, {
+            headers: {
+              Authorization: `bearer ${_session.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        })
+      );      
+
+      let success = 0;
+      let failed = 0;
+
+      for(let i=0; i<results.length; i++){
+        const result = results[i];
+        const record = unsyncedData[i];
+
+        if(result.status === "fulfilled"){
+          success++;
+          // mark as synced
+          await dexieDb.person_profile_family_composition.update(record.id, { push_status_id: 1 });
+        } else {
+          failed++;
+          console.error("Failed to sync record:", record.id, result.reason);
+        }
+      }
+      return { success, failed };
+    }
+    catch (error) {
       console.error('Error syncing bulk data:', error);
       throw error;
     }
   }
-  async syncBulkFamilyComposition(dataArray: IPersonProfileFamilyComposition): Promise<any> {
-    debugger;
-    try {
-      console.log(dataArray);
-      console.log(this.apiUrlFamilyComposition);
-      const response = await axios.post(this.apiUrlFamilyComposition, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error syncing bulk data:', error);
-      throw error;
+  async syncBulkProgramDetails(): Promise<{success: number; failed: number}> {
+    try{
+      const unsyncedData = await dexieDb.person_profile_cfw_fam_program_details
+        .where("push_status_id")
+        .equals(2)
+        .toArray();
+
+      if( unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+
+      const results = await Promise.allSettled(
+        unsyncedData.map((record) => {
+          const formattedDate = new Date(record.created_date).toISOString().split("T")[0];
+          const formattedRecord = {
+            ...record,
+            created_date: formattedDate,
+          };
+          console.log("Record", JSON.stringify(formattedRecord));
+          console.log("Syncing record:", formattedRecord);
+          return axios.post(this.apiUrlProgramDetails, formattedRecord, {
+            headers: {
+              Authorization: `bearer ${_session.token}`,
+              "Content-Type": "application/json",
+            },
+          });
+        })
+      );      
+
+      let success = 0;
+      let failed = 0;
+
+      for(let i=0; i<results.length; i++){
+        const result = results[i];
+        const record = unsyncedData[i];
+
+        if(result.status === "fulfilled"){
+          success++;
+          // mark as synced
+          await dexieDb.person_profile_cfw_fam_program_details.update(record.id, { push_status_id: 1 });
+        } else {
+          failed++;
+          console.error("Failed to sync record:", record.id, result.reason);
+        }
+      }
+      return { success, failed };
     }
-  }
-  async syncBulkProgramDetails(dataArray: IPersonProfileCfwFamProgramDetails): Promise<any> {
-    debugger;
-    try {
-      console.log(dataArray);
-      console.log(this.apiUrlProgramDetails);
-      const response = await axios.post(this.apiUrlProgramDetails, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error syncing bulk data:', error);
-      throw error;
-    }
-  }
-  async syncBulkAttachments(dataArray: IAttachments): Promise<any> {
-    debugger;
-    try {
-      console.log(dataArray);
-      console.log(this.apiUrlAttachments);
-      const response = await axios.post(this.apiUrlAttachments, dataArray, {
-        headers: {
-          Authorization: `bearer ${_session.token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    } catch (error) {
+    catch (error) {
       console.error('Error syncing bulk data:', error);
       throw error;
     }
