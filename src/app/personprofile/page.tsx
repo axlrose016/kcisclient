@@ -11,7 +11,7 @@ import { Loader2, Pause } from "lucide-react";
 import { set } from "date-fns";
 import clsx from "clsx";
 import PersonProfileService from "./form/PersonProfileService";
-import GeneratePDF from "@/components/pdf/CFW-Booklet";
+import GeneratePDF from "@/components/PDF/CFW-Booklet";
 
 
 //import pdfviewer from "../../components/PDF/pdfviewer";
