@@ -76,6 +76,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 interface DynamicTableProps {
   data: any[];
   columns?: any[];
+  
   onEdit?: (row: any) => void;
   onDelete?: (row: any) => void;
   onRowClick?: (row: any) => void;

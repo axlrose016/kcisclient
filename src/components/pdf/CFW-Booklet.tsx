@@ -726,7 +726,7 @@ if (brgy_list?.data) {
     }
 
     //BUWANANG KITA 1
-    pages[4].drawText(`${family_relationProfile1.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile1.monthly_income?.toString().toUpperCase()}`, {
       x: 510,
       y: 438,
       size: 5,
@@ -835,7 +835,7 @@ if (brgy_list?.data) {
 
 
     //BUWANANG KITA 2
-    pages[4].drawText(`${family_relationProfile2.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile2.monthly_income?.toString().toUpperCase()}`, {
       x: 542,
       y: 438,
       size: 5,
@@ -942,7 +942,7 @@ if (brgy_list?.data) {
   }
    
   //BUWANANG KITA 3
-  pages[4].drawText(`${family_relationProfile3.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile3.monthly_income?.toString().toUpperCase()}`, {
     x: 572,
     y: 438,
     size: 5,
@@ -1049,7 +1049,7 @@ if (brgy_list?.data) {
   }
 
   //BUWANANG KITA 4
-  pages[4].drawText(`${family_relationProfile4.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile4.monthly_income?.toString().toUpperCase()}`, {
     x: 603,
     y: 438,
     size: 5,
@@ -1157,7 +1157,7 @@ if(family_relationProfile5 !== undefined){
     }
 
   //BUWANANG KITA 5
-  pages[4].drawText(`${family_relationProfile5.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile5.monthly_income?.toString().toUpperCase()}`, {
     x: 636,
     y: 438,
     size: 5,
@@ -1264,7 +1264,7 @@ if(family_relationProfile6 !== undefined){
   }
 
     //BUWANANG KITA 6
-    pages[4].drawText(`${family_relationProfile6.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile6.monthly_income?.toString().toUpperCase()}`, {
     x: 668,
     y: 438,
     size: 5,
@@ -1376,7 +1376,7 @@ pages[4].drawText(`${educational_attainment7.toString().toUpperCase()}`, {
   }
 
   //BUWANANG KITA 7
-  pages[4].drawText(`${family_relationProfile7.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile7.monthly_income?.toString().toUpperCase()}`, {
     x: 699,
     y: 438,
     size: 5,
@@ -1487,7 +1487,7 @@ if(family_relationProfile8 !== undefined){
   }
 
   //BUWANANG KITA 8
-  pages[4].drawText(`${family_relationProfile8.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile8.monthly_income?.toString().toUpperCase()}`, {
     x: 731,
     y: 438,
     size: 5,
@@ -1596,7 +1596,7 @@ pages[4].drawText(`${work_cfw_result9[i].toString().toUpperCase()}`, {
 });
 }
   //BUWANANG KITA 9
-  pages[4].drawText(`${family_relationProfile9.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile9.monthly_income?.toString().toUpperCase()}`, {
   x: 763,
   y: 438,
   size: 5,
@@ -1704,7 +1704,7 @@ if(family_relationProfile10 !== undefined){
   }
        
   //BUWANANG KITA 10
-  pages[4].drawText(`${family_relationProfile10.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile10.monthly_income?.toString().toUpperCase()}`, {
     x: 795,
     y: 438,
     size: 5,

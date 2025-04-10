@@ -39,8 +39,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { format } from 'path'
 import { is } from 'drizzle-orm'
 // import pdfFonts from "pdfmake/build/vfs_fonts";
-export default function PersonProfileForm() {
-
+export default function PersonProfileForm({ forViewing }: any) {
+  const forViewingMode = forViewing ?? false;
   const module = "personprofile";
   const [combinedData, setCombinedData] = useState({});
   const [confirmed, setConfirmed] = useState(false);
@@ -146,7 +146,7 @@ export default function PersonProfileForm() {
 
   const philSysIDRef = useRef<HTMLInputElement>(null);
   const [hasPhilsysId, setHasPhilsysId] = useState(true);
-  
+
 
   useEffect(() => {
     if (hasPhilsysId && philSysIDRef.current) {
@@ -1460,7 +1460,7 @@ export default function PersonProfileForm() {
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
         dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
           if (session != null || session != undefined) {
-  
+
             // Fetch Profile (Dexie first, then LocalStorage)
             let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
             debugger;
@@ -1474,7 +1474,7 @@ export default function PersonProfileForm() {
               localStorage.removeItem("person_profile");
               updateFormData({ civil_status_id: 4, id: uuidv4(), created_by: session.userData.email, user_id: session.id }); // Default value
             }
-  
+
             debugger;
             // Fetch Sectors (LocalStorage first, then Dexie)
             let sectors: IPersonProfileSector[] | [] = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
@@ -1482,12 +1482,12 @@ export default function PersonProfileForm() {
             if (!Array.isArray(sectors) || sectors.length === 0) {
               sectors = JSON.parse(localStorage.getItem("person_sectors") || "[]") || [];
             }
-            
+
             const userSectors = sectors.filter((sector) => sector.person_profile_id === profile?.id);
             if (userSectors.length > 0) {
               updateFormSectorData(userSectors); // Update only the sectors created by the current user
             }
-  
+
             // Fetch Disabilities (LocalStorage first, then Dexie)
             let pwd: IPersonProfileDisability[] | [] = (await dexieDb.person_profile_disability.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(pwd) || pwd.length === 0) {
@@ -1498,7 +1498,7 @@ export default function PersonProfileForm() {
             if (userPwd.length > 0) {
               updateDisabilitiesData(pwd);
             }
-  
+
             // Fetch Family Composition (LocalStorage first, then Dexie)
             let family: IPersonProfileFamilyComposition[] | [] = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(family) || family.length === 0) {
@@ -1509,13 +1509,13 @@ export default function PersonProfileForm() {
             if (userFamily.length > 0) {
               updateFormFamilyCompositionData(family);
             }
-            
+
             // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
             let cfwFamDetails: Partial<IPersonProfileFamilyComposition>[] = await dexieDb.person_profile_cfw_fam_program_details
               .where("person_profile_id")
               .equals(profile?.id ?? "")
               .toArray();
-  
+
             if (!Array.isArray(cfwFamDetails) || cfwFamDetails.length === 0) {
               cfwFamDetails = JSON.parse(localStorage.getItem("person_cfw_program_details") || "null") || [];
             }
@@ -1539,7 +1539,7 @@ export default function PersonProfileForm() {
     };
     fetchData();
   }, [session]);
-  
+
   const fetchData = async () => {
     try {
       // debugger;
@@ -1746,7 +1746,7 @@ export default function PersonProfileForm() {
 
 
           <CardDescription>
-            <div className="p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm">
+            <div className={`p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm ${forViewing ? "hidden" : ""}`}>
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Important Instructions</h2>
               <p className="text-gray-700 mb-4">
                 Please read and understand the following before proceeding:

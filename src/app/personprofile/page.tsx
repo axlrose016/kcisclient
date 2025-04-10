@@ -36,10 +36,15 @@ export default function PersonProfileDashboard() {
         const syncData = async () => {
           if(personSynching){
             const syncStatus = await PersonProfileService.syncBulkData();
-            await PersonProfileService.syncBulkDisabilities();
-            await PersonProfileService.syncBulkFamilyComposition();
-            await PersonProfileService.syncBulkSectors();
-            await PersonProfileService.syncBulkProgramDetails();
+            console.log("Person Profile", syncStatus);
+            const syncDisabilitiesStatus = await PersonProfileService.syncBulkDisabilities();
+            console.log("Person Disabilities", syncDisabilitiesStatus);
+            const syncFamilyComStatus = await PersonProfileService.syncBulkFamilyComposition();
+            console.log("Person Profile Family Composition", syncFamilyComStatus);
+            const syncSectorsStatus = await PersonProfileService.syncBulkSectors();
+            console.log("Person Profile Sector", syncSectorsStatus);
+            const syncProgramDetailsStatus = await PersonProfileService.syncBulkProgramDetails();
+            console.log("Person Profile Program Details", syncProgramDetailsStatus);
             setPersonSynching(false);
           }
         }
