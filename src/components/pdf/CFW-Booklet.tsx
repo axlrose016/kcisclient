@@ -243,7 +243,7 @@ if (brgy_list?.data) {
     "/images/Page7.png",
     "/images/Page8.png",
     "/images/Page9.png",
-    "/images/Page9.png",
+    "/images/Page10.png",
     "/images/Page11.png"
   ];
 
