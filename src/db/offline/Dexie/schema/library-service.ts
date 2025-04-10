@@ -1643,6 +1643,26 @@ export const seedLibSchoolProfiles: ILibSchoolProfiles[] = [
         type: "Public",
         level: "College", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     },
+    {
+        id: 3,
+        school_name: "COLEGIO DE MUNTINLUPA",
+        short_name: "CDM",
+        school_code: "",
+        address: "",
+        city_code: "",
+        province_code: "",
+        region_code: "",
+        barangay_code: "",
+        email: "",
+        contact_number: "",
+        school_head: "",
+        school_head_position: " ",
+        website_url: " ",
+        established_year: 0,
+        logo_url: "",
+        type: "Public",
+        level: "College", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    },
 
 
 ]
@@ -1664,7 +1684,13 @@ export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [
     { id: 13, program_name: "BACHELOR OF SCIENCE IN MANAGEMENT ACCOUNTING", program_code: "BSMA", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 14, program_name: "BACHELOR OF SCIENCE IN REAL ESTATE MANAGEMENT", program_code: "BSREM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 15, program_name: "BACHELOR OF SCIENCE IN TOURISM MANAGEMENT", program_code: "BSTM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    { id: 16, program_name: "HOSPITALITY MANAGEMENT SERVICES", program_code: "HMS", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" }
+    { id: 16, program_name: "HOSPITALITY MANAGEMENT SERVICES", program_code: "HMS", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 17, program_name: "BACHELOR OF SCIENCE IN ARCHITECTURE", program_code: "BSA", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 18, program_name: "BACHELOR OF SCIENCE IN CIVIL ENGINEERING", program_code: "BSCE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 19, program_name: "BACHELOR OF SCIENCE IN COMPUTER ENGINEERING", program_code: "BSCE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 20, program_name: "BACHELOR OF SCIENCE IN ELECTRICAL ENGINEERING", program_code: "BSEE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 21, program_name: "BACHELOR OF SCIENCE IN ENVIRONMENT AND SANITARY ENGINEERING", program_code: "BSESE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 23, program_name: "BACHELOR OF SCIENCE IN MECHANICAL ENGINEERING", program_code: "BSME", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
 ];
 
 

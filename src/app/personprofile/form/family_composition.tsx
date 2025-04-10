@@ -341,7 +341,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 highest_educational_attainment: selectedTextHighestEducationalAttainment,
                 highest_educational_attainment_id: selectedEducationalAttainmentId,
                 work: familyMemberWork,
-                monthly_income: familyMemberMonthlyIncome,
+                monthly_income: parseFloat(familyMemberMonthlyIncome.replace(/,/g, '')),
                 contact_number: familyMemberContactNumber,
                 created_by: session.userData.email,
                 person_profile_id: capturedeData.id

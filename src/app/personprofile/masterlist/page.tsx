@@ -162,6 +162,7 @@ export default function PersonProfileMasterlist() {
 
             <div className="min-h-screen">
                 <div className="min-h-screen">
+                    
                     <AppTable
                         data={profiles}
                         columns={profiles[0] ? Object.keys(profiles[0]).map((key, idx) => ({
