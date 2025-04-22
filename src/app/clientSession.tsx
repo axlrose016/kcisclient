@@ -3,10 +3,10 @@
 import { useEffect, useState } from 'react';
 import { getSession } from '@/lib/sessions-client';
 import { AppSidebar } from '@/components/app-sidebar';
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import LoginPage from './login/page';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'; 
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/general/loading-screen';
+import LoginPage from './login/page';
 
 const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);

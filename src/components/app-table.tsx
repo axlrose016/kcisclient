@@ -72,11 +72,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useForm } from "react-hook-form";
 
 interface DynamicTableProps {
   data: any[];
   columns?: any[];
-  
   onEdit?: (row: any) => void;
   onDelete?: (row: any) => void;
   onRowClick?: (row: any) => void;
@@ -89,6 +89,8 @@ interface DynamicTableProps {
   }[];
   enableRowSelection?: boolean;
   simpleView?: boolean;
+  initialFilters?: Filter[];
+  onFilterChange?: (filters: Filter[]) => void;
 }
 
 interface Filter {
@@ -112,6 +114,8 @@ export function AppTable({
   customActions,
   enableRowSelection = false,
   simpleView = false,
+  initialFilters = [],
+  onFilterChange,
 }: DynamicTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -119,9 +123,22 @@ export function AppTable({
 
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(() => {
+    const initialVisibility: VisibilityState = {};
+    if (providedColumns) {
+      providedColumns.forEach(col => {
+        initialVisibility[col.id] = true;
+      });
+    } else if (data.length > 0) {
+      Object.keys(data[0]).forEach(key => {
+        initialVisibility[key] = true;
+      });
+    }
+    return initialVisibility;
+  });
+
   const [globalFilter, setGlobalFilter] = useState('');
-  const [activeFilters, setActiveFilters] = useState<Filter[]>([]);
+  const [activeFilters, setActiveFilters] = useState<Filter[]>(initialFilters);
   const [showFilterDialog, setShowFilterDialog] = useState(false);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -137,6 +154,8 @@ export function AppTable({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
 
   const createQueryString = useCallback(
     (params: Record<string, string | null>) => {
@@ -167,13 +186,13 @@ export function AppTable({
 
   const columns = useMemo(() => {
     if (providedColumns) return providedColumns;
-    
+
     if (data.length === 0) return [];
 
     const sampleRow = data[0];
     return Object.keys(sampleRow).map(key => ({
       id: key,
-      header: key.split('_').map(word => 
+      header: key.split('_').map(word =>
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(' '),
       accessorKey: key,
@@ -194,10 +213,20 @@ export function AppTable({
 
     setGlobalFilter(search);
     if (sort) setSorting(JSON.parse(sort));
-    if (filters) setActiveFilters(JSON.parse(filters));
+    if (filters) setActiveFilters(JSON.parse(filters))  
     if (currentPage) setPage(parseInt(currentPage));
     if (size) setPageSize(parseInt(size));
-    if (visibility) setColumnVisibility(JSON.parse(visibility));
+    if (visibility) {
+      try {
+        const parsedVisibility = JSON.parse(visibility);
+        setColumnVisibility(prev => ({
+          ...prev,
+          ...parsedVisibility
+        }));
+      } catch (error) {
+        console.error('Error parsing column visibility:', error);
+      }
+    }
     if (view) setViewMode(view);
   }, [searchParams]);
 
@@ -230,28 +259,31 @@ export function AppTable({
     } else {
       setSelectedRows(new Set());
     }
-  };
+  }; 
 
   const handleAddFilter = () => {
     if (selectedColumn) {
       const column = columns.find(col => col.id === selectedColumn);
       const value = column?.filterType === 'select' ? selectedValue : filterInputValue;
-      
+
       if (value) {
         const newFilters = editingFilter
-          ? activeFilters.map(f => 
-              f.column === editingFilter.column ? { column: selectedColumn, value } : f
-            )
+          ? activeFilters.map(f =>
+            f.column === editingFilter.column ? { column: selectedColumn, value } : f
+          )
           : [...activeFilters, { column: selectedColumn, value }];
-        
+
         setActiveFilters(newFilters);
-        updateUrl({ filters: JSON.stringify(newFilters) });
         
+        if(onFilterChange) onFilterChange(newFilters)
+       
+        updateUrl({ filters: JSON.stringify(newFilters) });
+
         const tableColumn = table.getColumn(selectedColumn);
         if (tableColumn) {
           tableColumn.setFilterValue(value);
         }
-        
+
         setShowFilterDialog(false);
         setSelectedColumn('');
         setSelectedValue('');
@@ -265,7 +297,7 @@ export function AppTable({
     const newFilters = activeFilters.filter(f => f.column !== filter.column);
     setActiveFilters(newFilters);
     updateUrl({ filters: JSON.stringify(newFilters) });
-    
+
     const column = table.getColumn(filter.column);
     if (column) {
       column.setFilterValue('');
@@ -288,6 +320,7 @@ export function AppTable({
     setEditingRow(row);
     setNewRecord(row);
     setShowAddDialog(true);
+    Object.entries(row).forEach(([key, value]) => setValue(key, value));
   };
 
   const handleDelete = (row: any) => {
@@ -303,27 +336,28 @@ export function AppTable({
     }
   };
 
-  const handleSubmitNewRecord = () => {
+  const handleSubmitNewRecord = (values: any) => {
     if (editingRow) {
       if (onEdit) {
-        onEdit({ ...editingRow, ...newRecord });
+        onEdit({ ...editingRow, ...values });
       }
       setEditingRow(null);
     } else if (onAddNewRecord) {
-      onAddNewRecord(newRecord);
+      onAddNewRecord(values);
     }
     setNewRecord({});
     setShowAddDialog(false);
+    reset();
   };
 
   const handleDownloadCSV = () => {
     const visibleColumns = columns.filter(col => columnVisibility[col.id] !== false);
     const headers = visibleColumns.map(col => col.header).join(',');
-    const rows = data.map(row => 
+    const rows = data.map(row =>
       visibleColumns.map(col => `"${row[col.accessorKey]}"`).join(',')
     ).join('\n');
     const csv = `${headers}\n${rows}`;
-    
+
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
@@ -344,7 +378,7 @@ export function AppTable({
   const tableColumns: ColumnDef<any>[] = [
     ...(enableRowSelection ? [{
       id: 'select',
-      header: ({ table }:any) => (
+      header: ({ table }: any) => (
         <Checkbox
           checked={table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => toggleAllRows(!!value)}
@@ -352,7 +386,7 @@ export function AppTable({
           className="translate-y-[2px]"
         />
       ),
-      cell: ({ row }:any) => (
+      cell: ({ row }: any) => (
         <Checkbox
           checked={selectedRows.has(row.original.id)}
           onCheckedChange={() => toggleRowSelection(row.original.id)}
@@ -371,27 +405,29 @@ export function AppTable({
           <Button
             variant="ghost"
             onClick={() => {
-              const newSorting = column.getIsSorted() === 'asc' 
-                ? [{ id: col.id, desc: true }] 
+              const newSorting = column.getIsSorted() === 'asc'
+                ? [{ id: col.id, desc: true }]
                 : [{ id: col.id, desc: false }];
               setSorting(newSorting);
               updateUrl({ sort: JSON.stringify(newSorting) });
             }}
-            className="w-full flex items-center justify-between"
+            className="w-full flex items-center justify-between bg-[#101828] -ml-[10px]"
           >
             {col.header}
             {col.sortable && <ArrowUpDown className="ml-2 h-4 w-4" />}
           </Button>
         );
-      },
-      enableSorting: col.sortable,
-      cell: ({ row }:any) => {
+      },      
+      enableSorting: col.sortable,      
+      cell: ({ row }: any) => {
         const value = row.getValue(col.id);
+        const alignClass = col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left';
         return (
           <div className={cn(
+            alignClass,
             "transition-opacity duration-200",
             isRefreshing && "opacity-50"
-          )}>
+          )}>            
             {col.cell ? col.cell(value) : value}
           </div>
         );
@@ -399,7 +435,12 @@ export function AppTable({
     })),
     {
       id: 'actions',
-      header: 'Actions',
+      header: ({ column }: any) => {
+        return (
+          <>
+          </>
+        );
+      },  
       cell: ({ row }) => {
         const rowData = row.original;
 
@@ -492,7 +533,7 @@ export function AppTable({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: (visibility) => {
       setColumnVisibility(visibility);
-      updateUrl({ columnVisibility: JSON.stringify(visibility) });
+      updateUrl({ columnVisibility: JSON.stringify(Object.fromEntries(Object.entries(visibility).filter(([, value]) => value !== undefined))) });
     },
     state: {
       sorting,
@@ -574,7 +615,7 @@ export function AppTable({
                 <DropdownMenuContent align="end" className="w-[200px]">
                   <DropdownMenuLabel>Table Settings</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  
+
                   <DropdownMenuGroup>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
@@ -605,7 +646,7 @@ export function AppTable({
                   </DropdownMenuGroup>
 
                   <DropdownMenuSeparator />
-                  
+
                   <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
                     Toggle Columns
                   </DropdownMenuLabel>
@@ -668,6 +709,7 @@ export function AppTable({
                         onClick={() => {
                           setEditingRow(null);
                           setNewRecord({});
+                          reset();
                           setShowAddDialog(true);
                         }}
                         disabled={isRefreshing}
@@ -725,25 +767,19 @@ export function AppTable({
                     headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className={`${
-                          header.id === headerGroup.headers[0].id ||
-                          header.id === 'actions'
-                            ? 'sticky z-10'
-                            : ''
-                        } ${
-                          header.id === headerGroup.headers[0].id
-                            ? 'left-0'
-                            : header.id === 'actions'
-                            ? 'right-0'
-                            : ''
-                        } text-primary-foreground border-[0.5px] border-primary-foreground/10`}
+                        className={`
+                          text-primary-foreground border-[0.5px] border-primary-foreground/10
+                          @media (max-width: 768px) {
+                            ${header.id === headerGroup.headers[0].id || header.id === 'actions' ? 'sticky z-10' : ''}
+                            ${header.id === headerGroup.headers[0].id ? 'left-0' : header.id === 'actions' ? 'right-0' : ''}
+                          } `}
                       >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                       </TableHead>
                     ))
                   )}
@@ -751,11 +787,11 @@ export function AppTable({
               </TableHeader>
               <TableBody>
                 {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
+                  table.getRowModel().rows.map((row, rowIndex) => (
                     <TableRow
                       key={row.id}
                       className={cn(
-                        "hover:bg-muted/50",
+                        "hover:bg-muted/50 cursor-pointer",
                         selectedRows.has(row.original.id) && "bg-muted",
                         isRefreshing && "opacity-50"
                       )}
@@ -763,19 +799,8 @@ export function AppTable({
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
-                          key={cell.id}
-                          className={`${
-                            cell.column.id === row.getVisibleCells()[0].column.id ||
-                            cell.column.id === 'actions'
-                              ? 'sticky z-10 bg-background'
-                              : ''
-                          } ${
-                            cell.column.id === row.getVisibleCells()[0].column.id
-                              ? 'left-0'
-                              : cell.column.id === 'actions'
-                              ? 'right-0'
-                              : ''
-                          }`}
+                          key={cell.id} 
+                          className={`  @apply border-b;   @media (max-width: 768px) {     ${cell.column.id === row.getVisibleCells()[0].column.id || cell.column.id === 'actions' ? 'sticky z-10 bg-background' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0 border-r' : cell.column.id === 'actions' ? 'right-0 border-l' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0' : cell.column.id === 'actions' ? 'right-0' : ''}   } `}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -787,6 +812,7 @@ export function AppTable({
                   ))
                 ) : (
                   <TableRow>
+                
                     <TableCell
                       colSpan={columns.length + 1}
                       className="h-24 text-center"
@@ -808,7 +834,7 @@ export function AppTable({
             <div
               key={row.id}
               className={cn(
-                "p-4 rounded-lg border cursor-pointer hover:bg-muted/50",
+                "p-4 rounded-lg border cursor-pointer hover:bg-muted/50  grid grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2",
                 selectedRows.has(row.original.id) && "bg-muted"
               )}
               onClick={() => !isRefreshing && onRowClick?.(row.original)}
@@ -851,7 +877,7 @@ export function AppTable({
                 const newSize = parseInt(value);
                 setPageSize(newSize);
                 setPage(1);
-                updateUrl({ 
+                updateUrl({
                   pageSize: newSize.toString(),
                   page: '1'
                 });
@@ -887,7 +913,7 @@ export function AppTable({
                     disabled={!table.getCanPreviousPage() || isRefreshing}
                   >
                     <ChevronFirst className="h-4 w-4" />
-                  </Button> 
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>First Page</TooltipContent>
               </Tooltip>
@@ -948,8 +974,8 @@ export function AppTable({
           <DialogHeader>
             <DialogTitle>{editingFilter ? 'Edit Filter' : 'Add Filter'}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid gap-1 py-4">
+            <div className="grid grid-cols-1 items-center gap-4">
               <Select
                 value={selectedColumn}
                 onValueChange={setSelectedColumn}
@@ -977,7 +1003,7 @@ export function AppTable({
                     <SelectContent>
                       {columns
                         .find(col => col.id === selectedColumn)
-                        ?.filterOptions?.map((option:any) => (
+                        ?.filterOptions?.map((option: any) => (
                           <SelectItem key={option} value={option}>
                             {option}
                           </SelectItem>
@@ -1006,40 +1032,36 @@ export function AppTable({
       </Dialog>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {columns
-              .filter(column => column.id !== 'actions')
-              .map((column) => (
-                <div key={column.id} className="grid grid-cols-4 items-center gap-4">
-                  <label htmlFor={column.id} className="text-right">
-                    {column.header}:
-                  </label>
-                  <Input
-                    id={column.id}
-                    value={newRecord[column.id] || ''}
-                    onChange={(e) =>
-                      setNewRecord((prev) => ({
-                        ...prev,
-                        [column.id]: e.target.value,
-                      }))
-                    }
-                    className="col-span-3"
-                  />
-                </div>
-              ))}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSubmitNewRecord}>
-              {editingRow ? 'Update' : 'Add'} Record
-            </Button>
-          </DialogFooter>
+        <DialogContent >
+          <form onSubmit={handleSubmit(handleSubmitNewRecord)}>
+            <DialogHeader>
+              <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4 max-h-[600px] overflow-scroll">
+              {columns
+                .filter(column => column.id !== 'actions')
+                .map((column) => (
+                  <div key={column.id} className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor={column.accessorKey} className="text-right">
+                      {column.header}:
+                    </label>
+                    <Input
+                      id={column.id}
+                      {...register(column.accessorKey, { required: true })}
+                      className={`col-span-3 ${errors?.[column.id] ? "border-destructive" : ""}`}
+                    />
+                  </div>
+                ))}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit">
+                {editingRow ? 'Update' : 'Add'} Record
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

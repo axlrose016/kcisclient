@@ -5,11 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { toast } from "@/hooks/use-toast";
+import { v4 as uuidv4, validate } from 'uuid';
 
 import { uuid } from "drizzle-orm/pg-core";
 import { useState, useEffect, useRef } from "react";
 import { v4 } from "uuid";
+import LoginService from "../login/LoginService";
+import { log } from "console";
+import { ICFWTimeLogs } from "@/components/interfaces/iuser"; 
+import { endOfDay, startOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 
 export default function ClockInOut() {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -23,10 +30,26 @@ export default function ClockInOut() {
     const [isOpen, setIsOpen] = useState(false); // Controls dialog visibility
     const [username, setUsername] = useState(""); // Username state
     const [password, setPassword] = useState(""); // Password state
+    const [user, setUser] = useState<any>(null); // Password state
+    const [activeLog, setActiveLog] = useState<any>(null); // Password state
+    const [isloading, setLoading] = useState<boolean>(false); // Password state
 
     const [isTimeBtnDisabled, setIsTimeBtnDisabled] = useState(false); // Button time in/ out
     const [isConfirmBtnDisabled, setIsConfirmBtnDisabled] = useState(true); // Button confirm
     const usernameRef = useRef<HTMLInputElement>(null); // Reference for username input
+
+    useEffect(() => {
+        (async () => {
+            try {
+                if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+                const timne_logs = await dexieDb.cfwtimelogs.toArray();
+                console.log('timne_logs', timne_logs)
+            } catch (e) {
+                console.log('timne_logs > e', e)
+            }
+        })();
+    }, [])
+
 
     // Success Toast
     function successToast(msg: string) {
@@ -58,22 +81,121 @@ export default function ClockInOut() {
         });
     }
 
+
+    const getTodayLatestLog = async (user: any) => {
+        const now = new Date();
+        const timeZone = 'Asia/Manila';
+    
+        // Get start and end of the current day in PH time, then convert to UTC
+        const startPH = startOfDay(now); // e.g. 2025-04-21T00:00:00+08:00
+        const endPH = endOfDay(now);     // e.g. 2025-04-21T23:59:59+08:00
+    
+        const startUtc = toZonedTime(startPH, timeZone).toISOString();
+        const endUtc = toZonedTime(endPH, timeZone).toISOString();
+    
+        const results = await dexieDb.cfwtimelogs
+            .where('created_date')
+            .between(startUtc, endUtc, true, true)
+            .and(e => e.created_by === user.user.userData.email)
+            .sortBy('created_date'); 
+        //console.log('results',results)
+        return results.length > 0 ? results[results.length - 1] : null;
+    };
     // Time In/Out Handler
     const handleTimeClick = () => {
-        if (username === "" || password === "") {
-            errorToast("Username and/or Password required!");
-            return;
-        }
 
-        setIsOpen(true); // Open dialog
-        setIsTimeBtnDisabled(true); // Disable Time button
-        setIsConfirmBtnDisabled(false); // Enable Confirm button
+        // console.log('handleTimeClick',{username,password})
+        (async () => {
+
+
+            setLoading(true)
+
+            if (username === "" || password === "") {
+                errorToast("Username and/or Password required!");
+                return;
+            }
+            const user = await LoginService.onlineLogin(username, password);
+
+            if (user) {
+                const userlog = await getTodayLatestLog(user)
+                setActiveLog(userlog)
+                console.log('last_log_today', userlog)
+                setUser(user.user)
+                setIsOpen(true); // Open dialog
+                setIsTimeBtnDisabled(true); // Disable Time button
+                setIsConfirmBtnDisabled(false); // Enable Confirm button  
+            } else {
+                toast({
+                    variant: "destructive",
+                    title: "Sorry Login Failed",
+                    description: "Please check your credentials",
+                });
+            }
+            setLoading(false)
+            console.log('user', user)
+        })()
     };
 
-    // Confirm Handler
-    const handleTimeInOut = () => {
+
+    const createLogs = async (type: string) => {
         setIsConfirmBtnDisabled(true); // Disable Confirm button after clicking
+        setLoading(true)
+        const logs = type == "in" ? {
+            id: uuidv4(),                               // Unique log entry ID
+            record_id: user.id,                         // Employee ID (links to schedules)
+            log_type: type,                               // "IN" log type
+            log_in: new Date().toISOString(),         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+            log_out: "",         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+            work_session: 1,                              // First session of the day (1st IN/OUT)
+            status: "Pending",
+            total_work_hours: 0,
+            "created_date": new Date().toISOString(),
+            "created_by": user.userData.email,
+            "last_modified_by": "",
+            "last_modified_date": "",
+            "push_status_id": 2,
+            "push_date": "",
+            "deleted_by": "",
+            "deleted_date": "",
+            "is_deleted": false,
+            "remarks": ""
+        } : {
+            ...activeLog,
+            log_type: type,
+            log_out: new Date().toISOString()
+        } as ICFWTimeLogs as ICFWTimeLogs
+
+        const result = await dexieDb.cfwtimelogs.put(logs)
+        console.log('handleTimeInOut', { logs, result })
         successToast("Time in/out has been recorded!");
+        setLoading(false)
+    }
+
+    // Confirm Handler
+    const handleTimeInOut = (type: string) => {
+
+        (async () => {
+            if (!activeLog || activeLog && activeLog.log_in == "" || activeLog?.log_out == "") {
+                createLogs(type)
+            } else {
+                toast({
+                    variant: "default",
+                    title: "Time-in",
+                    description: "Are you sure you want to Time-in again?",
+                    action: (
+                        <button
+                            onClick={() => {
+                                createLogs(type)
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+                        >
+                            Yes
+                        </button>
+                    ),
+                });
+            }
+        })();
+
     };
 
     const accounts = [
@@ -148,10 +270,7 @@ export default function ClockInOut() {
         }
     ];
 
-
-    console.log(accounts);
-
-
+    // console.log(accounts);
 
     useEffect(() => {
         const request = indexedDB.open("clock", 2);
@@ -317,6 +436,15 @@ export default function ClockInOut() {
                     </div>
                 </div>
 
+                <Button
+                    loading={isloading}
+                    onClick={() => handleTimeClick()}
+                    className={`bg-cfw_bg_color hover:bg-green-700 cursor-pointer px-1 py-3 rounded-lg text-white font-semibold w-1/2 text-2xl text-center 
+                    ${isTimeBtnDisabled ? "pointer-events-none opacity-50" : ""}`}
+                >
+                    TIME
+                </Button>
+
                 {/* Clock In/Out Buttons */}
                 <div className="mt-6 flex justify-center items-center pb-5 w-full">
 
@@ -332,7 +460,7 @@ export default function ClockInOut() {
                         }
                     }}>
                         {/* TIME Button */}
-                        <DialogTrigger asChild>
+                        {/* <DialogTrigger asChild>
                             <p
                                 onClick={handleTimeClick}
                                 className={`bg-cfw_bg_color hover:bg-green-700 cursor-pointer px-1 py-3 rounded-lg text-white font-semibold w-1/2 text-2xl text-center 
@@ -340,7 +468,7 @@ export default function ClockInOut() {
                             >
                                 TIME
                             </p>
-                        </DialogTrigger>
+                        </DialogTrigger> */}
 
                         {/* Dialog Content */}
                         <DialogContent className="sm:max-w-[425px]">
@@ -357,24 +485,38 @@ export default function ClockInOut() {
                                 </DialogDescription>
                             </DialogHeader>
 
+
+
                             {/* Centered Avatar, Name, and CFW ID */}
                             <div className="flex flex-col items-center justify-center gap-1 mt-4">
                                 <Avatar className="h-[200px] w-[200px]">
-                                    <AvatarImage src="/images/sample_picture.jpg" alt="Display Picture" />
+                                    <AvatarImage className="uppercase" alt={user?.userData.name} />
+                                    <AvatarFallback className="uppercase text-2xl">{user?.userData.name.charAt(0) || ""}</AvatarFallback>
                                 </Avatar>
-                                <p className="text-lg font-semibold text-center">ANGEL LOCSIN</p>
-                                <p className="text-sm text-gray-600 text-center">CFW ID: 123456789</p>
+                                <p className="text-lg font-semibold text-center">{user?.userData.name}</p>
+                                <p className="text-sm text-gray-600 text-center">CFW ID: {user?.id}</p>
                             </div>
 
                             {/* Confirm Button */}
                             <DialogFooter className="flex justify-center mt-4">
                                 <Button
-                                    onClick={handleTimeInOut}
-                                    disabled={isConfirmBtnDisabled}
+                                    loading={isloading}
+                                    onClick={() => handleTimeInOut("in")}
+                                    disabled={activeLog ? activeLog.log_in != "" && activeLog.log_out == "" : isConfirmBtnDisabled}
                                     className={`w-full text-white font-bold text-xl py-3 rounded-lg shadow-lg transition-all duration-200
                         ${isConfirmBtnDisabled ? "bg-gray-400 text-gray-200 cursor-not-allowed" : "bg-orange-600 hover:bg-green-700"}`}
                                 >
-                                    CONFIRM
+                                    TIME-IN
+                                </Button>
+
+                                <Button
+                                    loading={isloading}
+                                    onClick={() => handleTimeInOut("out")}
+                                    disabled={activeLog ? activeLog.log_in != "" && activeLog.log_out != "" : true}
+                                    className={`w-full text-white font-bold text-xl py-3 rounded-lg shadow-lg transition-all duration-200
+                        ${isConfirmBtnDisabled ? "bg-gray-400 text-gray-200 cursor-not-allowed" : "bg-orange-600 hover:bg-green-700"}`}
+                                >
+                                    TIME-OUT
                                 </Button>
                             </DialogFooter>
                         </DialogContent>

@@ -90,6 +90,7 @@ export default function LoginPage() {
         console.log(userData)
         console.log(user.id)
         await createSession(user.id, userData, "ABC123");
+        // await createSession(user.id, userData, "ABC123");
     
         toast({
           variant: "green",

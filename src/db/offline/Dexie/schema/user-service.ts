@@ -173,6 +173,60 @@ export const seedUser: IUser[] = [
         "deleted_by": "",
         "is_deleted": false,
         "remarks": ""
+    },
+    {
+        "id": "ebaea47e-df5e-463a-b9f8-aa3636db5fff",
+        "username": "kccfwadmin",
+        "email": "kccfwadmin@gmail.com",
+        "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
+        "salt": Array.from(saltArray),
+        "role_id": "d4003a01-36c6-47af-aae5-13d3f04e110f",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
+        "last_modified_date": "",
+        "last_modified_by": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_date": "",
+        "deleted_by": "",
+        "is_deleted": false,
+        "remarks": ""
+    },
+    {
+        "id": "23db4fc3-038d-4ebc-8688-f35a1cf5f24a",
+        "username": "Juan Dela Cruz",
+        "email": "immediatesupervisor@gmail.com",
+        "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
+        "salt": Array.from(saltArray),
+        "role_id": "3d735b9c-f169-46e0-abd1-59f66db1943c",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
+        "last_modified_date": "",
+        "last_modified_by": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_date": "",
+        "deleted_by": "",
+        "is_deleted": false,
+        "remarks": ""
+    },
+    {
+        "id": "35c1f7f3-03be-4277-99cd-3b78dad9722a",
+        "username": "Uncle Sam",
+        "email": "alternatesupervisor@gmail.com",
+        "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
+        "salt": Array.from(saltArray),
+        "role_id": "eed84e85-cd50-49eb-ab19-a9d9a2f3e374",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
+        "last_modified_date": "",
+        "last_modified_by": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_date": "",
+        "deleted_by": "",
+        "is_deleted": false,
+        "remarks": ""
     }
 ];
 
@@ -292,75 +346,75 @@ export const seedCFWSchedules: ICFWSchedules[] = [
 ];
 
 export const seedCFWTimeLogs: ICFWTimeLogs[] = [
-    {
-        id: "log_001",                               // Unique log entry ID
-        record_id: "emp_123",                         // Employee ID (links to schedules)
-        log_type: "IN",                               // "IN" log type
-        log_datetime: "2025-04-03 08:00:00",         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
-        work_session: 1,                              // First session of the day (1st IN/OUT)
-        status: "Pending"                             // Status can be "Pending" or "Completed"
-        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_002",
-        record_id: "emp_123",
-        log_type: "OUT",
-        log_datetime: "2025-04-03 12:00:00",
-        work_session: 1,
-        total_work_hours: 4,                         // Optional total work hours after OUT log
-        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_003",
-        record_id: "emp_123",
-        log_type: "IN",
-        log_datetime: "2025-04-03 13:00:00",
-        work_session: 2,                              // Second session of the day (2nd IN/OUT)
-        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_004",
-        record_id: "emp_123",
-        log_type: "OUT",
-        log_datetime: "2025-04-03 17:00:00",
-        work_session: 2,
-        total_work_hours: 4,                         // Optional total work hours after OUT log
-        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_005",
-        record_id: "emp_124",
-        log_type: "IN",
-        log_datetime: "2025-04-03 09:00:00",
-        work_session: 1,
-        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_006",
-        record_id: "emp_124",
-        log_type: "OUT",
-        log_datetime: "2025-04-03 12:00:00",
-        work_session: 1,
-        total_work_hours: 3,                         // Optional total work hours after OUT log
-        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_007",
-        record_id: "emp_124",
-        log_type: "IN",
-        log_datetime: "2025-04-03 13:00:00",
-        work_session: 2,
-        status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    },
-    {
-        id: "log_008",
-        record_id: "emp_124",
-        log_type: "OUT",
-        log_datetime: "2025-04-03 16:00:00",
-        work_session: 2,
-        total_work_hours: 3,                         // Optional total work hours after OUT log
-        status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
-    }
+    // {
+    //     id: "log_001",                               // Unique log entry ID
+    //     record_id: "emp_123",                         // Employee ID (links to schedules)
+    //     log_type: "IN",                               // "IN" log type
+    //     log_datetime: "2025-04-03 08:00:00",         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+    //     work_session: 1,                              // First session of the day (1st IN/OUT)
+    //     status: "Pending"                             // Status can be "Pending" or "Completed"
+    //     , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_002",
+    //     record_id: "emp_123",
+    //     log_type: "OUT",
+    //     log_datetime: "2025-04-03 12:00:00",
+    //     work_session: 1,
+    //     total_work_hours: 4,                         // Optional total work hours after OUT log
+    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_003",
+    //     record_id: "emp_123",
+    //     log_type: "IN",
+    //     log_datetime: "2025-04-03 13:00:00",
+    //     work_session: 2,                              // Second session of the day (2nd IN/OUT)
+    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_004",
+    //     record_id: "emp_123",
+    //     log_type: "OUT",
+    //     log_datetime: "2025-04-03 17:00:00",
+    //     work_session: 2,
+    //     total_work_hours: 4,                         // Optional total work hours after OUT log
+    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_005",
+    //     record_id: "emp_124",
+    //     log_type: "IN",
+    //     log_datetime: "2025-04-03 09:00:00",
+    //     work_session: 1,
+    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_006",
+    //     record_id: "emp_124",
+    //     log_type: "OUT",
+    //     log_datetime: "2025-04-03 12:00:00",
+    //     work_session: 1,
+    //     total_work_hours: 3,                         // Optional total work hours after OUT log
+    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_007",
+    //     record_id: "emp_124",
+    //     log_type: "IN",
+    //     log_datetime: "2025-04-03 13:00:00",
+    //     work_session: 2,
+    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // },
+    // {
+    //     id: "log_008",
+    //     record_id: "emp_124",
+    //     log_type: "OUT",
+    //     log_datetime: "2025-04-03 16:00:00",
+    //     work_session: 2,
+    //     total_work_hours: 3,                         // Optional total work hours after OUT log
+    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    // }
 ];
 
 

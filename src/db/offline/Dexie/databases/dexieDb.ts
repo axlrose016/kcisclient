@@ -1,8 +1,8 @@
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from '@/components/interfaces/iuser';
 // ICity, 
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
-import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
+import { ICFWAssessment, IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
 import { person_profile_disability, person_profile_family_composition } from '@/db/schema/personprofile';
 import Dexie, { Table } from 'dexie';
 
@@ -34,6 +34,7 @@ class MyDatabase extends Dexie {
     lib_files_to_upload!: Table<ILibFilesToUpload, string>;
     lib_school_profiles!: Table<ILibSchoolProfiles, string>;
     lib_school_programs!: Table<ILibSchoolPrograms, string>;
+    lib_statuses!: Table<ILibStatuses, string>;
     person_profile!: Table<IPersonProfile, string>;
     person_profile_sector!: Table<IPersonProfileSector, string>;
     person_profile_disability!: Table<IPersonProfileDisability, string>;
@@ -44,6 +45,7 @@ class MyDatabase extends Dexie {
     lib_year_served!: Table<ILibYearServed, string>;
     cfwschedules!: Table<ICFWSchedules, string>;
     cfwtimelogs!: Table<ICFWTimeLogs, string>;
+    cfwassessment!:Table<ICFWAssessment, string>;
 
     constructor() {
         super('kcisdb');
@@ -74,8 +76,9 @@ class MyDatabase extends Dexie {
             lib_program_types: `id, program_type_name, ${commonFields}`,
             lib_school_profiles: `id, school_name,short_name, school_code, address, city_code, province_code, region_code, barangay_code, email, contact_number, school_head, school_head_position, website_url, established_year, logo_url, type, level, ${commonFields}`,
             lib_school_programs: `id, program_name, program_code, ${commonFields}`,
+            lib_statuses: `id, status_name, ${commonFields}`,
             cfwschedules: ` id , record_id, cfw_type_id, shift_type, date_start, date_end, time_in_1, time_out_1, time_in_2, time_out_2, time_in_3, time_out_3, time_in_4, time_out_4, total_hours_required, status_id, ${commonFields}`,
-            cfwtimelogs: `id,  record_id,  log_type,  log_datetime,  work_session,  total_work_hours,  status,  ${commonFields}`,
+            cfwtimelogs: `id,  record_id,  log_type,  log_in, log_out,  work_session,  total_work_hours,  status,  ${commonFields}`,
             attachments: `id, record_id, file_id, file_name, file_path,file_type, module_path, ${commonFields}`,
             person_profile: 'id, modality_id, cwf_category_id, cfwp_id_no, philsys_id_no, first_name, middle_name, last_name, extension_name, sex_id, civil_status_id, birthdate, age,' +
                 'no_of_children, birthplace, is_pantawid, is_pantawid_leader, is_slp, has_immediate_health_concern, immediate_health_concern, address, sitio, brgy_code, sitio_current, ' +
@@ -92,7 +95,8 @@ class MyDatabase extends Dexie {
             person_profile_sector: `id, person_profile_id, sector_id, ${commonFields}`,
             person_profile_disability: `id, person_profile_id, type_of_disability_id, ${commonFields}`,
             person_profile_family_composition: `id, person_profile_id, first_name, middle_name, last_name, extension_name_id, birthdate, age, contact_number, highest_educational_attainment_id, monthly_income, relationship_to_the_beneficiary_id, work, ${commonFields}`,
-            person_profile_cfw_fam_program_details: `id, person_profile_id,family_composition_id,program_type_id, year_served_id, ${commonFields}`
+            person_profile_cfw_fam_program_details: `id, person_profile_id,family_composition_id,program_type_id, year_served_id, ${commonFields}`,
+            cfwassessment: `id, person_profile_id,deployment_area_id,assessment, status_id,supervisor_id,cfw_category_id, ${commonFields}`,
 
         });
     }

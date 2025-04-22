@@ -86,7 +86,8 @@ export interface ICFWTimeLogs {
   id: string;                // Unique log entry ID
   record_id: string;         // Employee ID (links to schedules)
   log_type: string; //"IN" | "OUT";    // Defines if it's a Time In or Time Out
-  log_datetime: string;      // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+  log_in: string;      // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
+  log_out: string;      // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
   work_session: number;      // Identifies session (1st IN/OUT, 2nd IN/OUT, etc.)
   total_work_hours?: number; // Optional: Computed total hours (updated after OUT)
   status: string;// "Pending" | "Completed"; // Tracks if session is complete
@@ -101,3 +102,4 @@ export interface ICFWTimeLogs {
   is_deleted: boolean;
   remarks: string | null; // if ever there is a reason for incomplete log entry
 }
+

@@ -1,11 +1,9 @@
 "use client"; // Needed for Next.js App Router (Client Component)
 import { PDFDocument, rgb, degrees } from "pdf-lib";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";  // Import your Dexie instance
-import { useEffect, useState } from "react";
-import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibRelationshipToBeneficiary,getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
+import { use, useState } from "react";
+import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibProgramTypes, getOfflineLibRelationshipToBeneficiary,getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
 import { IPersonProfile } from "../interfaces/personprofile";
-import { getCFWTypeLibraryOptions } from "../_dal/options";
-
 import { Button } from "../ui/button";
 
 const GeneratePDF = () => {
@@ -74,11 +72,16 @@ try {
         // Fetch data from Dexie.js
         const personProfile = await dexieDb.person_profile.toArray();
         const firstProfile = personProfile[0]; // Use the first record for this example
-      
+        // person profile sector
+        const person_profile_sectors = await dexieDb.person_profile_sector.toArray();
+        const person_prosect = [];
+        for (let i = 0; i < person_profile_sectors.length; i++){
+          person_prosect[i] = person_profile_sectors[i];
+        }
 
         //Partisipasyon sa CFWF
         const cfw_fam_program = await dexieDb.person_profile_cfw_fam_program_details.toArray();
-        const cfw_fam = cfw_fam_program[0];
+        const cfw_fam1 = cfw_fam_program[0];
         const cfw_fam2 = cfw_fam_program[1];
         const cfw_fam3 = cfw_fam_program[2];
         
@@ -95,6 +98,22 @@ try {
         const family_relationProfile9 = family_relation[8];
         const family_relationProfile10 = family_relation[9];
 
+
+        //with disability
+        const pwd_person_profile = await dexieDb.person_profile_disability.toArray();
+        const pwd = [];
+        for (let i = 0; i < pwd_person_profile.length; i++){
+          pwd[i] = pwd_person_profile[i]
+        }
+
+        // const pwd_profile1 = pwd__person_profile[0];
+        // const pwd_profile2 = pwd__person_profile[0];
+        // const pwd_profile3 = pwd__person_profile[0];
+        // const pwd_profile4 = pwd__person_profile[0];
+
+
+    
+
         console.log(firstProfile);
         if (!firstProfile) {
           alert("No profile data found!");
@@ -105,6 +124,9 @@ try {
         // setProfile(personProfile[0]);
         //debugger;
 
+
+
+  //--------------------------------------------------------------------------------------
   //--------------------------------------------------------------------------------------
   const region_list = await fetchData("region", "/api-libs/psgc/regions", (data) => {
     if (data?.status) {
@@ -114,7 +136,7 @@ try {
                 name: item.name
             }));
 
-        console.log("Filtered Regions:", filteredRegions);
+        //console.log("Filtered Regions:", filteredRegions);
 
         // ✅ Update state with filtered regions
         setOptions((prev) => ({ ...prev, regions: filteredRegions }));
@@ -128,7 +150,7 @@ try {
 
   if (region_list?.data) {
     const filteredRegion = region_list.data.filter((w: any) => w.code === firstProfile?.region_code);
-    console.log("REGION:", filteredRegion[0].name);
+    // console.log("REGION:", filteredRegion[0].name);
   } else {
       console.error("No data found or invalid response.");
   }
@@ -146,7 +168,7 @@ const province_list = await fetchData(`provinces-${firstProfile.province_code}`,
             name: item.name
         }));
 
-    console.log("Filtered Provinces:", filteredProvinces);
+    //console.log("Filtered Provinces:", filteredProvinces);
 
     // ✅ Update state with filtered province
     setOptions((prev) => ({ ...prev, provinces: filteredProvinces }));
@@ -160,7 +182,7 @@ const province_list = await fetchData(`provinces-${firstProfile.province_code}`,
 
 if (province_list?.data) {
   const filteredProvince = province_list.data.provinces.filter((w: any) => w.code === firstProfile?.province_code);
-  console.log("Province:", filteredProvince[0].name);
+ // console.log("Province:", filteredProvince[0].name);
   profileProvince = filteredProvince[0].name;
 } else {
     console.error("No data found or invalid response.");
@@ -175,7 +197,7 @@ if (province_list?.data) {
               name: item.name
           }));
 
-      console.log("Filtered city:", filteredCities);
+      //console.log("Filtered city:", filteredCities);
 
       // ✅ Update state with filtered regions
       setOptions((prev) => ({ ...prev, municipalities: filteredCities }));
@@ -190,7 +212,7 @@ if (province_list?.data) {
 
   if (city_list?.data) {
     const filteredCity = city_list.data.municipalities.filter((w: any) => w.code === firstProfile?.city_code);
-    console.log("City:", filteredCity[0].name);
+   // console.log("City:", filteredCity[0].name);
     profileCity = filteredCity[0].name;
   } else {
       console.error("No data found or invalid response.");
@@ -205,7 +227,7 @@ if (data?.status) {
             name: item.name
         }));
         debugger;
-    console.log("Filtered Brgy:", filteredBrgys);
+    //console.log("Filtered Brgy:", filteredBrgys);
 
     // ✅ Update state with filtered regions
     setOptions((prev) => ({ ...prev, barangays: filteredBrgys }));
@@ -221,7 +243,7 @@ if (data?.status) {
 
 if (brgy_list?.data) {
  const filteredCity = brgy_list.data.barangay.filter((w: any) => w.code === firstProfile.brgy_code);
- console.log("barangay:", filteredCity[0].name);
+ //console.log("barangay:", filteredCity[0].name);
  profileBrgy = filteredCity[0].name;
 } else {
     console.error("No data found or invalid response.");
@@ -475,7 +497,7 @@ if (brgy_list?.data) {
     size: 5,
     color: rgb(0, 0, 0),
   });
-}
+  }
 
   if(occupation_split[2] !== undefined){
     pages[3].drawText(`${occupation_split[2]}`, {
@@ -493,7 +515,9 @@ if (brgy_list?.data) {
       size: 5,
       color: rgb(0, 0, 0),
     });
-}
+    }
+
+
   //IDENTIFICATION CARD
   let ID_INFO = id_ext + ' / ' +  firstProfile.occupation_id_card_number;
   pages[3].drawText(`${ID_INFO.toString().toUpperCase()}`, {
@@ -540,6 +564,8 @@ if (brgy_list?.data) {
   setExtensionNames(sex_map);
   const sex_ext = sex_map[firstProfile.sex_id ?? 0] || ""; 
   const sex_count = sex_ext.length;
+
+  use
 
   pages[3].drawText(sex_ext.toString().toUpperCase(), { 
     x: 195 - (sex_count * 1.9),
@@ -594,31 +620,43 @@ if (brgy_list?.data) {
   });
 
   //SEKTOR
-    const get_sector_status = await getOfflineLibSectorsLibraryOptions();
-    const sector_map = Object.fromEntries(get_sector_status.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-    setExtensionNames(sector_map);
-    const sector_ext = sector_map[firstProfile.extension_name_id ?? 0] || ""; 
+    let get_sector_status = [];
+    let sector_map = [];
+    let sector_ext = [];
 
-  pages[3].drawText(sector_ext.toString().toUpperCase(), { 
-    x: 32,
-    y: 119,
-    size: 5,
-    color: rgb(0, 0, 0),
-  });
+    for(let i = 0; i < person_prosect.length; i ++ ){
+      get_sector_status[i] = await getOfflineLibSectorsLibraryOptions();
+      sector_map[i] = Object.fromEntries(get_sector_status[i].map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+      setExtensionNames(sector_map[i]);
+      sector_ext[i] = sector_map[i][person_prosect[i].sector_id ?? 0] || "";
+        pages[3].drawText(sector_ext[i].toString().toUpperCase(), { 
+          x: 32,
+          y: 119 - (10 * i),
+          size: 5,
+          color: rgb(0, 0, 0),
+        });
+        if(i == 7)break; 
+    }
   
   //TYPE OF DISABILITY
-    const get_disability_type = await getOfflineLibTypeOfDisability();
-    const disability_map = Object.fromEntries(get_disability_type.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
-    setExtensionNames(sector_map);
-    const disability_ext = disability_map[firstProfile.push_status_id ?? 0] || ""; 
-
   //URI NG KAPANSANAN
-  pages[3].drawText(disability_ext.toString().toUpperCase(), { 
-    x: 232,
-    y: 120.5,
-    size: 5,
-    color: rgb(0, 0, 0),
-  });
+    const get_disability_type = [];
+    const disability_map = [];
+    const disability_ext = [];
+
+    for(let i = 0; i < pwd_person_profile.length; i++){
+      get_disability_type[i] = await getOfflineLibTypeOfDisability();
+      disability_map[i] = Object.fromEntries(get_disability_type[i].map((ext: { id: number; name: string }) => [ext.id, ext.name]));
+      setExtensionNames(disability_map[1]);
+      disability_ext[i] = disability_map[i][pwd[i].type_of_disability_id ?? 0] || ""; 
+      pages[3].drawText(`${disability_ext[i]}`, { 
+        x: 232,
+        y: 120.5 - (10 * i),
+        size: 5, 
+        color: rgb(0, 0, 0),
+      });
+      if(i == 5)break
+    }
 
   // LEFT
   pages[3].drawText(cfwp_id, {
@@ -726,7 +764,7 @@ if (brgy_list?.data) {
     }
 
     //BUWANANG KITA 1
-    pages[4].drawText(`${family_relationProfile1.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile1.monthly_income}`, {
       x: 510,
       y: 438,
       size: 5,
@@ -835,7 +873,7 @@ if (brgy_list?.data) {
 
 
     //BUWANANG KITA 2
-    pages[4].drawText(`${family_relationProfile2.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile2.monthly_income}`, {
       x: 542,
       y: 438,
       size: 5,
@@ -942,7 +980,7 @@ if (brgy_list?.data) {
   }
    
   //BUWANANG KITA 3
-  pages[4].drawText(`${family_relationProfile3.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile3.monthly_income}`, {
     x: 572,
     y: 438,
     size: 5,
@@ -1049,7 +1087,7 @@ if (brgy_list?.data) {
   }
 
   //BUWANANG KITA 4
-  pages[4].drawText(`${family_relationProfile4.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile4.monthly_income}`, {
     x: 603,
     y: 438,
     size: 5,
@@ -1157,7 +1195,7 @@ if(family_relationProfile5 !== undefined){
     }
 
   //BUWANANG KITA 5
-  pages[4].drawText(`${family_relationProfile5.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile5.monthly_income}`, {
     x: 636,
     y: 438,
     size: 5,
@@ -1264,7 +1302,7 @@ if(family_relationProfile6 !== undefined){
   }
 
     //BUWANANG KITA 6
-    pages[4].drawText(`${family_relationProfile6.monthly_income?.toUpperCase()}`, {
+    pages[4].drawText(`${family_relationProfile6.monthly_income}`, {
     x: 668,
     y: 438,
     size: 5,
@@ -1376,7 +1414,7 @@ pages[4].drawText(`${educational_attainment7.toString().toUpperCase()}`, {
   }
 
   //BUWANANG KITA 7
-  pages[4].drawText(`${family_relationProfile7.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile7.monthly_income}`, {
     x: 699,
     y: 438,
     size: 5,
@@ -1487,7 +1525,7 @@ if(family_relationProfile8 !== undefined){
   }
 
   //BUWANANG KITA 8
-  pages[4].drawText(`${family_relationProfile8.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile8.monthly_income}`, {
     x: 731,
     y: 438,
     size: 5,
@@ -1596,7 +1634,7 @@ pages[4].drawText(`${work_cfw_result9[i].toString().toUpperCase()}`, {
 });
 }
   //BUWANANG KITA 9
-  pages[4].drawText(`${family_relationProfile9.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile9.monthly_income}`, {
   x: 763,
   y: 438,
   size: 5,
@@ -1704,7 +1742,7 @@ if(family_relationProfile10 !== undefined){
   }
        
   //BUWANANG KITA 10
-  pages[4].drawText(`${family_relationProfile10.monthly_income?.toUpperCase()}`, {
+  pages[4].drawText(`${family_relationProfile10.monthly_income}`, {
     x: 795,
     y: 438,
     size: 5,
@@ -1766,30 +1804,27 @@ if(family_relationProfile10 !== undefined){
                 });
             }
 
-
-
-
-
-
   //CFW TYPE 1
+if(cfw_fam1 !== undefined){
+  const get_cfw_type1 = await getOfflineLibProgramTypes();
+  const get_cfw_map1 = Object.fromEntries(get_cfw_type1.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
+  setExtensionNames(get_cfw_map1);
+  const cfw_familty_type1 = get_cfw_map1[cfw_fam1.program_type_id ?? 0] || ""; 
+  
+  console.log('CFWP:',  get_cfw_type1);
 
-if(cfw_fam !== undefined){
-  const get_cfw_type = await getOfflineLibCFWType();
-  const get_cfw_map = Object.fromEntries(get_cfw_type.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
-  setExtensionNames(get_cfw_map);
-  const cfw_familty_type1 = get_cfw_map[cfw_fam.program_type_id ?? 0] || ""; 
+  const str_cfw1 = cfw_familty_type1;
+  const charSize1 = 38;
+  const cfw_result1 = [];
+ 
 
-  const str_cfw = cfw_familty_type1;
-  const charSize = 38;
-  const cfw_result = [];
-
-  for (let i = 0; i < str_cfw.length; i += charSize) {
-      cfw_result.push(str_cfw.slice(i, i + charSize));
+  for (let i = 0; i < str_cfw1.length; i += charSize1) {
+      cfw_result1.push(str_cfw1.slice(i, i + charSize1));
   }
   
-  for(let i = 0; i < cfw_result.length; i++){
-    if(cfw_result[i] !== undefined){
-    pages[5].drawText(`${cfw_result[i].toString().toUpperCase()}`, {
+  for(let i = 0; i < cfw_result1.length; i++){
+    if(cfw_result1[i] !== undefined){
+    pages[5].drawText(`${cfw_result1[i].toString().toUpperCase()}`, {
       x:29,
       y: 411 - (5 * i),
       size: 4,
@@ -1797,6 +1832,7 @@ if(cfw_fam !== undefined){
     });
     }
   }
+
   
   // MIYEMBRO NG PAMILYA 1
   pages[5].drawText(`${family_relationProfile1.first_name.concat("  ", family_relationProfile1.middle_name, "  ", family_relationProfile1.last_name).toUpperCase()}`, {
@@ -1809,7 +1845,7 @@ if(cfw_fam !== undefined){
   const get_year_serverd1 = await getOfflineLibYearServed();
   const year_served_map1 = Object.fromEntries(get_year_serverd1.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
   setExtensionNames(year_served_map1);
-  const year_server_profiele1 = year_served_map1[cfw_fam.year_served_id ?? 0] || ""; 
+  const year_server_profiele1 = year_served_map1[cfw_fam1.year_served_id ?? 0] || ""; 
 
   // TAON 1
   pages[5].drawText(`${year_server_profiele1}`, {
@@ -1824,7 +1860,7 @@ if(cfw_fam !== undefined){
 
  
 if(cfw_fam2 !== undefined){
-  const get_cfw_type2 = await getOfflineLibCFWType();
+  const get_cfw_type2 = await getOfflineLibProgramTypes();
   const get_cfw_map2 = Object.fromEntries(get_cfw_type2.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
   setExtensionNames(get_cfw_map2);
   const cfw_familty_type2 = get_cfw_map2[cfw_fam2.program_type_id ?? 0] || ""; 
@@ -1874,7 +1910,7 @@ if(cfw_fam2 !== undefined){
 // CFW TYPE 3
 
 if(cfw_fam3 !== undefined){
-  const get_cfw_type3 = await getOfflineLibCFWType();
+  const get_cfw_type3 = await getOfflineLibProgramTypes();
   const get_cfw_map3 = Object.fromEntries(get_cfw_type3.map((Pid: { id: number; name: string }) => [Pid.id, Pid.name]));
   setExtensionNames(get_cfw_map3);
   const cfw_familty_type3 = get_cfw_map3[cfw_fam3.program_type_id ?? 0] || ""; 
@@ -2015,7 +2051,7 @@ pages[5].drawText(`${course_ext.toUpperCase()}`, {
 
   //MGA KAKAYAHAN 2
   if(skills[1] !== undefined){
-    pages[5].drawText(``, {
+    pages[5].drawText(`${skills[1].toString()}`, {
       x: 29,
       y: 161,
       size: 6,

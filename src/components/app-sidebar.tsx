@@ -136,6 +136,11 @@ const data = {
           permission:["Can View","Can Delete"]
         },
         {
+          title: "User Masterlist",
+          url:"/personprofile/user-masterlist",
+          permission:["Can View","Can Delete"]
+        },
+        {
           title: "Daily Time Record",
           url:"/personprofile/daily-time-record",
           permission:["Can Add","Can View","Can Delete"]

@@ -1,6 +1,6 @@
 export interface IPersonProfile {
   id: string;
-  modality_id: number; 
+  modality_id: number;
   cwf_category_id: number | null;
   cfwp_id_no: string | null;
   has_philsys_id: boolean | null;
@@ -205,4 +205,26 @@ export interface IPersonProfileCfwFamProgramDetails {
   deleted_by: string | null;
   is_deleted: boolean;
   remarks: string;
+}
+
+
+export interface ICFWAssessment {
+  id: string;
+  person_profile_id: string;
+  deployment_area_id: number;
+  assessment: string;
+  status_id: number;
+  immediate_supervisor_id: string;
+  alternate_supervisor_id: string;
+  cfw_category_id: boolean; //true=graduate,false=student
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
 }

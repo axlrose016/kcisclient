@@ -5,18 +5,8 @@ import { Toaster } from "@/components/ui/toaster";
 import ServiceWorker from "@/components/service-workers";
 import ClientSessionCheck from "./clientSession";
 import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
-
-// Load custom fonts
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 
 // Constants for the app metadata
 const APP_NAME = "KALAHI-CIDSS Information System";
@@ -105,15 +95,11 @@ export default async function RootLayout({
         <meta property="og:url" content="https://yourdomain.com" />
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`} cz-shortcut-listen="true">
-        <ClientSessionCheck>
-
-          {children}
-
-        </ClientSessionCheck>
+      <body className={`${GeistSans.className} ${GeistMono.className} antialiased`} cz-shortcut-listen="true">
+        {children}
         <ServiceWorker />
         <Toaster />
-        <FloatingPWAStatusAvatar/>
+        <FloatingPWAStatusAvatar />
       </body>
     </html>
   );
