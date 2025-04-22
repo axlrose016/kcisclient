@@ -1,1 +1,0 @@
-ALTER TABLE `useraccess` RENAME COLUMN "text" TO "created_by";
