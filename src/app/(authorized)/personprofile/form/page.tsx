@@ -1096,7 +1096,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         if (!formData?.sex_id) { errorToast("Sex field is required!", "basic_information", "sex_id"); return; }
         if (!formData?.civil_status_id) { errorToast("Civil status is required!", "basic_information", "civil_status_id"); return; }
         if (!formData?.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
-        if (!formData?.age || formData?.age <= 18 || formData?.age >= 71) {
+        if (!formData?.age || formData?.age < 18 || formData?.age > 71) {
           errorToast("Invalid age! Please enter a valid age between 18 and 70 years old.", "basic_information", "birthdate"); return;
         }
         if (!formData?.philsys_id_no && hasPhilsysId) { errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no"); return; }
