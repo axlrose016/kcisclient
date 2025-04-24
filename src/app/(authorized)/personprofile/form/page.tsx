@@ -1683,16 +1683,20 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         await dexieDb.transaction('r', [dexieDb.person_profile,
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
         dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
-          const searchByUserId = userIdViewing ? userIdViewing : session?.id;
+           const searchByUserId = userIdViewing ? userIdViewing : session?.id;
           if (searchByUserId != null || searchByUserId != undefined) {
             debugger;
             // Fetch Profile (Dexie first, then LocalStorage)
             // alert("search id is : " + searchByUserId);
-            let profile: IPersonProfile | null = (await dexieDb.person_profile.where("id").equals(searchByUserId).first()) || null;
-            // let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(searchByUserId).first()) || null;
-            // let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
-            // alert(typeof profile)
+            let profile: IPersonProfile | null = null;
+            if (userIdViewing) {
 
+              profile = (await dexieDb.person_profile.where("id").equals(searchByUserId).first()) || null;
+            } else {
+
+              profile = (await dexieDb.person_profile.where("user_id").equals(searchByUserId).first()) || null;
+            }
+            
             if (!profile) {
               profile = JSON.parse(localStorage.getItem("person_profile") || "null");
               // alert(profile)
