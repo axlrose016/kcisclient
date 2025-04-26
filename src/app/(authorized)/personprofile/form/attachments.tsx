@@ -27,6 +27,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { IAttachments } from "@/components/interfaces/general/attachments";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
+ 
 export default function Attachments({ errors, capturedData, updateFormData, session, user_id_viewing }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void; session: any, user_id_viewing: string }) {
     const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
     const [file, setFile] = useState<File | null>(null)

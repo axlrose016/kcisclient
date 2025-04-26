@@ -9,7 +9,7 @@ export default function EmailForm() {
 
   const sendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    let first_name = "Dwight";
+    let first_name = "Juan";
     const res = await fetch('/api/send-email', {
       method: 'POST',
       body: JSON.stringify({ first_name, email }),

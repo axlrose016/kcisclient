@@ -114,7 +114,7 @@ export const seedRoles: IRoles[] = [
     },
     {
         "id": "37544f59-f3ba-45df-ae0b-c8fa4e4ce446",
-        "role_description": "CFW",
+        "role_description": "CFW Beneficiary",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",
@@ -128,7 +128,7 @@ export const seedRoles: IRoles[] = [
     },
     {
         "id": "3d735b9c-f169-46e0-abd1-59f66db1943c",
-        "role_description": "Immediate Supervisor",
+        "role_description": "CFW Immediate Supervisor",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",
@@ -142,7 +142,37 @@ export const seedRoles: IRoles[] = [
     },
     {
         "id": "eed84e85-cd50-49eb-ab19-a9d9a2f3e374",
-        "role_description": "Alternate Supervisor",
+        "role_description": "CFW Alternate Supervisor",
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "created_date": new Date().toISOString(),
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    
+    },
+    {
+        "id": "e2ebba79-7134-4ddb-838f-9350a89c2a0e",
+        "role_description": "CFW HEI Focal Person",
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "created_date": new Date().toISOString(),
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    }
+    ,
+    {
+        "id": "cf05023f-b2dc-46be-ab08-d82dfc8d8cd5",
+        "role_description": "CFW Administrator",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",
@@ -1971,7 +2001,8 @@ export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [
     { id: 257, program_name: "DIPLOMA IN TECHNOLOGY MAJOR IN ELECTRICAL AND MECHANICAL", program_code: "DTE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
     { id: 258, program_name: "DIPLOMA IN TECHNOLOGY MAJOR IN ELECTRONICS", program_code: "DTE-ELC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
     { id: 259, program_name: "ONE-YEAR SEAFARER’S RATING CERTIFICATE – STEWARDING (SRC)", program_code: "SRC-STW", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
-    { id: 260, program_name: "TEACHER CERTIFICATE PROGRAM", program_code: "TCP", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" }
+    { id: 260, program_name: "TEACHER CERTIFICATE PROGRAM", program_code: "TCP", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 261, program_name: "Bachelor of Technical-Vocational Teacher Education MAJOR IN Computer Hardware Servicing", program_code: "TEC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" }
 
 
 ];

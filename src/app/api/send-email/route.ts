@@ -17,16 +17,16 @@ export async function POST(request: Request) {
     debugger;
     await transporter.sendMail({
       from: `"KC IS CFW Module" <${process.env.EMAIL_USERNAME}>`,
-      to: email,
+      to: email, 
+      cc: process.env.EMAIL_CC, // Add CC recipients from environment variable
       subject: email_subject,
-      // subject: 'CFW Profiling Registration',
       html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
-          <p>Dear ${first_name.toUpperCase()},</p>
-          <p>${email_body}</p>        
-          <p>Best regards,</p>
-          <p>The CFW NPMO Team</p>
-        </div>
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
+        <p>Dear ${first_name.toUpperCase()},</p>
+        <p>${email_body}</p>        
+        <p>Best regards,</p>
+        <p>The CFW NPMO Team</p>
+      </div>
       `,
     });
 

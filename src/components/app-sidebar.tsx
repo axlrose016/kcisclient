@@ -157,7 +157,22 @@ const data = {
         }
       ],
       modules: ["Person Profile"],
-    }
+    },
+    {
+      title: "CFW Management",
+      url: "#",
+      icon: User2Icon,
+      isActive: false,
+      items:[
+        {
+          title: "Work Plan",
+          url:"/personprofile/work-plan",
+          permission:["Can Add","Can View","Can Delete"]
+        },
+       
+      ],
+      modules: ["Person Profile"],
+    },
   ],
   projects: [
     {
@@ -196,7 +211,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         const userTeams = _session.userData; 
         // debugger;
         setUserTeam(userTeams);      
-        debugger;
+        // debugger;
         const navTeam = data.teams.filter((team) =>
           userTeams?.userAccess?.some((mod) => mod.module === team.name)
         );

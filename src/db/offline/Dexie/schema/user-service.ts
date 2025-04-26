@@ -180,7 +180,7 @@ export const seedUser: IUser[] = [
         "email": "kccfwadmin@gmail.com",
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
-        "role_id": "d4003a01-36c6-47af-aae5-13d3f04e110f",
+        "role_id": "cf05023f-b2dc-46be-ab08-d82dfc8d8cd5",
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
@@ -231,6 +231,7 @@ export const seedUser: IUser[] = [
 ];
 
 export const seedUserAccess: IUserAccess[] = [
+    // person profile
     {
         "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
         "created_date": "2025-03-11T06:18:58.077Z",
@@ -278,7 +279,25 @@ export const seedUserAccess: IUserAccess[] = [
         "push_status_id": 2,
         "remarks": "",
         "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
-    }
+    },
+    
+    {
+        "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "deleted_by": "",
+        "deleted_date": "",
+        "id": "3f7fd931-6c08-4706-9847-f5c7bf663807",
+        "is_deleted": false,
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "module_id": "4e658b02-705a-43eb-a051-681d54e22e2a",
+        "permission_id": "5568ea7d-6f12-4ce9-b1e9-adb256e5b057",
+        "push_date": "",
+        "push_status_id": 2,
+        "remarks": "",
+        "user_id": "ebaea47e-df5e-463a-b9f8-aa3636db5fff"
+    },
+    
 
 ];
 

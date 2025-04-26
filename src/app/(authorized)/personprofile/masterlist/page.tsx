@@ -5,7 +5,7 @@ import { ButtonDelete } from "@/components/actions/button-delete";
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import { ButtonView } from "@/components/actions/button-view";
 import { AppTable } from "@/components/app-table";
-import { IPersonProfile } from "@/components/interfaces/personprofile";
+import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
 import LoadingScreen from "@/components/general/loading-screen";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,36 +28,50 @@ import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/app/login/LoginService";
+import { IAttachments } from "@/components/interfaces/general/attachments";
 
 const _session = await getSession() as SessionPayload;
-export default function PersonProfileMasterlist() {
+export default function PersonProfileMasterlist({ page }: { page: number }) {
     const [profiles, setProfiles] = useState<IPersonProfile[]>([]);
+    const [selectedProfiles, setSelectedProfiles] = useState<IPersonProfile[]>([]);
+    const [profilesSector, setProfilesSector] = useState<IPersonProfileSector[]>([]);
+    const [profilesFamCom, setProfilesFamCom] = useState<IPersonProfileFamilyComposition[]>([]);
+    const [profilesAttachments, setProfilesAttachments] = useState<IAttachments[]>([]);
+    const [profilesCfwFamProgramDetails, setProfileCfwFamProgramDetails] = useState<IPersonProfileCfwFamProgramDetails[]>([]);
+    const [profilesDisabilities, setProfileCfwDisabilities] = useState<IPersonProfileDisability[]>([]);
+
     const [reviewApproveDecline, setReviewApproveDecline] = useState([]);
     const [approvalStatuses, setApprovalStatus] = useState<{ [key: string]: string }>({})
     const [loading, setLoading] = useState(true);
     const [forReviewApprove, setForReviewApprove] = useState(false);
     const [selectedCFWID, setSetSelectedCFWID] = useState("");
-
+    const [pageNo, setPageNo] = useState(1);
     const router = useRouter();
     // const [data, setData] = useState([]);
     const handleEligible = (id: string) => {
 
     }
+
+
+
     useEffect(() => {
+
         async function loadProfiles() {
             try {
                 const fetchData = async (endpoint: string) => {
-                    // if (cache[key]) {
-                    //     updateOptions(cache[key]);
-                    //     return;
-                    // }
+                    const cacheKey = `${endpoint}_page_${page}`;
+                    if (cache[cacheKey]) {
+                        console.log("Using cached data for:", cacheKey);
+                        setProfiles(cache[cacheKey]);
+                        return;
+                    }
 
                     const signal = newAbortSignal(5000);
                     try {
+                        debugger;
                         const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
                         const response = await fetch(endpoint, {
-
                             method: "POST",
                             headers: {
                                 Authorization: `bearer ${onlinePayload.token}`,
@@ -67,26 +81,16 @@ export default function PersonProfileMasterlist() {
                                 "page_number": 1,
                                 "page_size": 1000
                             })
-
                         });
-                        // alert(onlinePayload.token)
+
                         if (!response.ok) {
                             console.log(response);
-
                         } else {
                             const data = await response.json();
-                            console.log(data)
+                            console.log("🗣️Person Profile masterlist from api ", data.data);
+                            cache[cacheKey] = data.data; // Cache the data
                             setProfiles(data.data);
                         }
-                        // if (!response.ok) throw new Error("Network response was not ok");
-
-                        // const data = await response.json();
-                        // if (data?.status) {
-                        //     cache[key] = data;
-                        //     updateOptions(data);
-                        // }
-
-
                     } catch (error: any) {
                         if (error.name === "AbortError") {
                             console.log("Request canceled", error.message);
@@ -98,39 +102,7 @@ export default function PersonProfileMasterlist() {
                     }
                 };
 
-                // fetchData( );
-                // fetchData("http://10.10.10.162:9000/api/person_profiles/view/pages/");
                 fetchData("https://kcnfms.dswd.gov.ph/api/person_profile/view/pages/");
-                // const data = await fetchProfiles();
-                // setProfiles(data);
-
-                // const review_approve_decline_data = await fetchReviewApproveDecline();
-                // setReviewApproveDecline(review_approve_decline_data);
-                // debugger;
-                // // Create a lookup object: { "record_id": "status" }
-                // const statusMap = review_approve_decline_data.reduce((acc: any, item: any) => {
-                //     acc[item.record_id] = item.status; // status: Pending, Review, Approve, Decline, For Revision
-                //     return acc;
-                // }, {});
-
-                // setApprovalStatus(statusMap);
-
-                // console.log("RAD ", review_approve_decline_data);
-
-
-
-
-
-                // if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
-                // const dexie_person_profile = await dexieDb.person_profile.toArray();
-                // setProfiles(dexie_person_profile);
-
-
-                // const firstNames = dexie_person_profile.map(profile => profile.first_name);
-                // console.log("First Names: ", firstNames);
-                // // const existingRecords = await dexieDb.attachments.toArray();
-                // console.log("😘Existing Records: ", dexie_person_profile);
-
             } catch (error) {
                 console.error(error);
             } finally {
@@ -181,8 +153,8 @@ export default function PersonProfileMasterlist() {
 
         // dexieD
         try {
-            debugger;
-            const fetchData = async (endpoint: string) => {
+
+            const fetchSelectedData = async (endpoint: string) => {
                 const signal = newAbortSignal(5000);
                 try {
                     debugger;
@@ -200,28 +172,82 @@ export default function PersonProfileMasterlist() {
                         console.log("Person profile > view > error ", response);
 
                     } else {
+                        const lsUserIdViewOnly = localStorage.getItem("userIdViewOnly");
+                        if (lsUserIdViewOnly) {
+                            const parsedUserIdViewOnly = JSON.parse(lsUserIdViewOnly);
+                        }
+                        localStorage.setItem("userIdViewOnly", JSON.stringify(row.id));
                         debugger;
                         const data = await response.json();
                         console.log("Person profile > view > success ", data)
-                        setProfiles(data);
+                        setSelectedProfiles(data);
+                        setProfilesSector(data.person_profile_sector);
+                        setProfileCfwDisabilities(data.person_profile_disability ?? []);
+                        setProfilesFamCom(data.person_profile_family_composition);
+                        setProfilesAttachments(data.attachments);
+                        setProfileCfwFamProgramDetails(data.person_profile_cfw_fam_program_details);
+                        console.log("😘Person Profile Family Composition: ", data.person_profile_family_composition);
+                        console.log("😊Person Profile Attachments: ", data.attachments);
+                        console.log("😂Person Profile CFW Family Program Details: ", data.person_profile_cfw_fam_program_details);
+                        console.log("❤️Person Profile ID: ", data.id);
+
+
+                        console.log("✅✅Person Profile Sector: ", data.person_profile_sector);
                         console.log("Last Name: ", data.last_name)
+
 
                         // save to dexiedb
                         dexieDb.open();
-                        dexieDb.transaction('rw', [dexieDb.person_profile], async () => {
-                            try {
-                                const existingRecord = await dexieDb.person_profile.get(data.id);
-                                if (existingRecord) {
-                                    await dexieDb.person_profile.update(data.id, data);
-                                    console.log("Record updated in DexieDB:", data.id);
-                                } else {
-                                    await dexieDb.person_profile.add(data);
-                                    console.log("New record added to DexieDB:", data.id);
+                        dexieDb.transaction('rw', [
+                            dexieDb.person_profile,
+                            dexieDb.person_profile_sector,
+                            dexieDb.person_profile_disability,
+                            dexieDb.person_profile_family_composition,
+                            dexieDb.attachments,
+                            dexieDb.person_profile_cfw_fam_program_details], async () => {
+                                try {
+                                    const existingRecord = await dexieDb.person_profile.get(data.id);
+                                    if (existingRecord) {
+                                        await dexieDb.person_profile.update(data.id, data);
+                                        await dexieDb.person_profile_sector.update(data.id, data.person_profile_sector);
+                                        await dexieDb.person_profile_disability.update(data.id, data.person_profile_disability ?? []);
+                                        await dexieDb.person_profile_family_composition.update(data.id, data.person_profile_family_composition ?? []);
+                                        await dexieDb.attachments.update(data.id, data.attachments ?? []);
+                                        await dexieDb.person_profile_cfw_fam_program_details.update(data.id, data.person_profile_cfw_fam_program_details ?? []);
+                                        console.log("Record updated in DexieDB:", data.id);
+                                    } else {
+                                        await dexieDb.person_profile.add(data);
+                                        if (data.person_profile_disability.length !== 0) {
+                                            await dexieDb.person_profile_disability.bulkAdd(data.person_profile_disability);
+                                        }
+                                        if (data.person_profile_family_composition.length !== 0) {
+                                            for (let i = 0; i < data.person_profile_family_composition.length; i++) {
+                                                const family = data.person_profile_family_composition[i];
+                                                await dexieDb.person_profile_family_composition.add(family); // Save the object without raw_id
+                                            }
+                                        }
+                                        if (data.person_profile_sector.length !== 0) {
+                                            for (let i = 0; i < data.person_profile_sector.length; i++) {
+                                                await dexieDb.person_profile_sector.bulkAdd(data.person_profile_sector);
+                                            }
+                                        }
+                                        if (data.attachments.length !== 0) {
+                                            for (let i = 0; i < data.attachments.length; i++) {
+                                                await dexieDb.attachments.bulkAdd(data.attachments);
+                                            }
+
+                                        }
+                                        if (data.person_profile_cfw_fam_program_details) {
+                                            for (let i = 0; i < data.person_profile_cfw_fam_program_details.length; i++) {
+                                                await dexieDb.person_profile_cfw_fam_program_details.bulkAdd(data.person_profile_cfw_fam_program_details);
+                                            }
+                                        }
+                                        console.log("➕New record added to DexieDB:", data.id);
+                                    }
+                                } catch (error) {
+                                    console.log("Error saving to DexieDB:", error);
                                 }
-                            } catch (error) {
-                                console.log("Error saving to DexieDB:", error);
-                            }
-                        });
+                            });
 
                     }
 
@@ -237,7 +263,7 @@ export default function PersonProfileMasterlist() {
                     }
                 }
             }
-            fetchData("https://kcnfms.dswd.gov.ph/api/person_profile/view/" + row.id);
+            fetchSelectedData("https://kcnfms.dswd.gov.ph/api/person_profile/view/" + row.id);
         }
         catch (error) {
             console.log("Error fetching data:", error);

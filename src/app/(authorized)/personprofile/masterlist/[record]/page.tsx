@@ -16,12 +16,21 @@ import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/app/login/LoginService";
-import { IPersonProfile } from "@/components/interfaces/personprofile";
+import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
 
 import { ILibSectors } from "@/components/interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { IAttachments } from "@/components/interfaces/general/attachments";
+import SectorDetails from "../../form/sectors";
+import FamilyComposition from "../../form/family_composition";
+import Attachments from "../../form/attachments";
 export default function person_profile() {
     const [profiles, setProfiles] = useState<IPersonProfile[]>([]);
+    const [profilesSector, setProfilesSector] = useState<IPersonProfileSector[]>([]);
+    const [profilesFamCom, setProfilesFamCom] = useState<IPersonProfileFamilyComposition[]>([]);
+    const [profilesAttachments, setProfilesAttachments] = useState<IAttachments[]>([]);
+    const [profilesCfwFamProgramDetails, setProfileCfwFamProgramDetails] = useState<IPersonProfileCfwFamProgramDetails[]>([]);
+    
     // const [sectors, setSectors] = useState<ILibSectors[]>([]);
     const [activeTab, setActiveTab] = React.useState("person_profile");
     const pathname = usePathname(); // e.g. "/personprofile/masterlist/8a892894-9570-43db-8edd-6008761318a2"
@@ -109,8 +118,11 @@ export default function person_profile() {
             {/* <p>ID From URL: http://10.10.10.162:9000/api/person_profiles/view/{id}</p> */}
             {/* <p>ID: {id}</p> */}
             {/* alert(`ID: ${id}`) */}
-            <p>Viewing of person profile by id {id}</p>
+            {/* <p>Viewing of person profile by id {id}</p> */}
             <PersonProfileForm user_id_viewing={id} />
+            {/* <SectorDetails errors={null} capturedData={null} user_id_viewing={id} />
+            <FamilyComposition user_id_viewing={id} />
+            <Attachments user_id_viewing={id} /> */}
 
             {/* <div className="flex items-center space-x-4 p-4 bg-card rounded-lg">
                 <div className="w-24 h-24 rounded-full bg-gray-200 flex-shrink-0">

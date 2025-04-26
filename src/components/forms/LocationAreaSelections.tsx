@@ -92,13 +92,13 @@ export default function LocationAreaSelections({
     };
 
     useEffect(() => {
-        console.log('LocationAreaSelections > selectedOption', {
-            selectedOption,
-            selectedRegion,
-            selectedProvince,
-            selectedMunicipality,
-            selectedBarangay
-        })
+        // console.log('LocationAreaSelections > selectedOption', {
+        //     selectedOption,
+        //     selectedRegion,
+        //     selectedProvince,
+        //     selectedMunicipality,
+        //     selectedBarangay
+        // })
         setSelectedRegion(selectedOption.region_code);
         setSelectedProvince(selectedOption.province_code)
         setSelectedMunicipality(selectedOption.city_code);

@@ -29,10 +29,10 @@ interface FormDropDownProps {
   menuPortalTarget?: string;
   readOnly?: boolean;
   disabled?: boolean;
-
+  name?: string;
 }
 
-export function FormDropDown({ options, selectedOption, label, onChange, id, menuPortalTarget, readOnly, disabled }: FormDropDownProps) {
+export function FormDropDown({ options, selectedOption, label, onChange, id, menuPortalTarget, readOnly, disabled, name }: FormDropDownProps) {
   const [open, setOpen] = React.useState(false);
   // const [selected, setSelected] = React.useState<number>(Number(selectedOption));
   const [selectedId, setSelectedId] = React.useState<any | null>(selectedOption);
@@ -76,7 +76,7 @@ export function FormDropDown({ options, selectedOption, label, onChange, id, men
             role="combobox"
             aria-expanded={open}
             className={`w-full justify-between text-ellipsis overflow-hidden ${readOnly ? "truncate pointer-events-none cursor-not-allowed" : ""}`}
-
+            name={name}
             // className="w-full justify-between overflow-hidden truncate pointer-events-none"
             onClick={(e) => e.stopPropagation()}
 

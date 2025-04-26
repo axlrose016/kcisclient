@@ -215,6 +215,7 @@ class PersonProfileService {
   }
 
   async syncBulkProgramDetails(): Promise<{success: number; failed: number}> {
+    debugger;
     const unsyncedData = await dexieDb.person_profile_cfw_fam_program_details
     .where("push_status_id")
     .equals(2)

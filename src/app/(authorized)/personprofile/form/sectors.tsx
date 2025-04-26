@@ -23,7 +23,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
     updateSectorData: (newData: Partial<IPersonProfileSector>[]) => void;
     updateDisabilityData: (newData: Partial<IPersonProfileDisability>[]) => void;
     session: any;
-    user_id_viewing: string;
+    user_id_viewing: any;
 }) {
 
     const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);

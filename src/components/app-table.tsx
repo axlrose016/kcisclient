@@ -60,6 +60,7 @@ import {
   Edit,
   Filter,
   LayoutGrid,
+  Loader2,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -73,6 +74,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from "react-hook-form";
+import PersonProfileMasterlist from '@/app/(authorized)/personprofile/masterlist/page';
 
 interface DynamicTableProps {
   data: any[];
@@ -213,7 +215,7 @@ export function AppTable({
 
     setGlobalFilter(search);
     if (sort) setSorting(JSON.parse(sort));
-    if (filters) setActiveFilters(JSON.parse(filters))  
+    if (filters) setActiveFilters(JSON.parse(filters))
     if (currentPage) setPage(parseInt(currentPage));
     if (size) setPageSize(parseInt(size));
     if (visibility) {
@@ -259,7 +261,7 @@ export function AppTable({
     } else {
       setSelectedRows(new Set());
     }
-  }; 
+  };
 
   const handleAddFilter = () => {
     if (selectedColumn) {
@@ -274,9 +276,9 @@ export function AppTable({
           : [...activeFilters, { column: selectedColumn, value }];
 
         setActiveFilters(newFilters);
-        
-        if(onFilterChange) onFilterChange(newFilters)
-       
+
+        if (onFilterChange) onFilterChange(newFilters)
+
         updateUrl({ filters: JSON.stringify(newFilters) });
 
         const tableColumn = table.getColumn(selectedColumn);
@@ -417,8 +419,8 @@ export function AppTable({
             {col.sortable && <ArrowUpDown className="ml-2 h-4 w-4" />}
           </Button>
         );
-      },      
-      enableSorting: col.sortable,      
+      },
+      enableSorting: col.sortable,
       cell: ({ row }: any) => {
         const value = row.getValue(col.id);
         const alignClass = col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left';
@@ -427,7 +429,7 @@ export function AppTable({
             alignClass,
             "transition-opacity duration-200",
             isRefreshing && "opacity-50"
-          )}>            
+          )}>
             {col.cell ? col.cell(value) : value}
           </div>
         );
@@ -440,7 +442,7 @@ export function AppTable({
           <>
           </>
         );
-      },  
+      },
       cell: ({ row }) => {
         const rowData = row.original;
 
@@ -799,7 +801,7 @@ export function AppTable({
                     >
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
-                          key={cell.id} 
+                          key={cell.id}
                           className={`  @apply border-b;   @media (max-width: 768px) {     ${cell.column.id === row.getVisibleCells()[0].column.id || cell.column.id === 'actions' ? 'sticky z-10 bg-background' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0 border-r' : cell.column.id === 'actions' ? 'right-0 border-l' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0' : cell.column.id === 'actions' ? 'right-0' : ''}   } `}
                         >
                           {flexRender(
@@ -812,12 +814,12 @@ export function AppTable({
                   ))
                 ) : (
                   <TableRow>
-                
+
                     <TableCell
                       colSpan={columns.length + 1}
-                      className="h-24 text-center"
+                      className="h-24 text-center flex justify-center items-center gap-2"
                     >
-                      No results.
+                      <Loader2 className="animate-spin" /> <span>Populating...</span>
                     </TableCell>
                   </TableRow>
                 )}
@@ -938,6 +940,7 @@ export function AppTable({
                 const newPage = page + 1;
                 setPage(newPage);
                 updateUrl({ page: newPage.toString() });
+                // PersonProfileMasterlist({ page: newPage });
                 table.nextPage();
               }}
               disabled={!table.getCanNextPage() || isRefreshing}

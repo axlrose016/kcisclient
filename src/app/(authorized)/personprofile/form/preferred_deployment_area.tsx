@@ -155,18 +155,7 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
     };
 
 
-    // readonly when admin viewing 
-    useEffect(() => {
-        if (userIdViewing) {
-            const form = document.getElementById("preferred_deployment_info_form");
-            if (form) {
-                form.querySelectorAll("input, select, textarea, button, label").forEach((el) => {
-                    el.setAttribute("disabled", "true");
-                });
-            }
-        }
-    }, [userIdViewing]);
-
+   
     const updateAssignedDeploymentArea = (deploymentAreaId: number) => {
         const lsAssignedDeploymentArea = localStorage.getItem("assigned_deployment_area");
         const parsedlsAssignedDeploymentArea = lsAssignedDeploymentArea
@@ -196,6 +185,19 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         localStorage.setItem("assigned_deployment_area", JSON.stringify(parsedlsAssignedDeploymentArea));
         setSelectedAlternateSupervisorId(alternateSupervisorId);
     }
+
+     // readonly when admin viewing 
+     useEffect(() => {
+        if (userIdViewing) {
+            const form = document.getElementById("preferred_deployment_info_form");
+            if (form) {
+                form.querySelectorAll("input, select, textarea, button, label").forEach((el) => {
+                    el.setAttribute("disabled", "true");
+                });
+            }
+        }
+    }, [userIdViewing]);
+
     return (
         <div >
             <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}>
@@ -204,7 +206,7 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                     <FormDropDown
                         id="assigned_deployment_area_id"
                         options={deploymentAreaOptions}
-                        selectedOption={selectedAssignedDeploymentAreaId}
+                        selectedOption={selectedAssignedDeploymentAreaId ?? null}
                         onChange={(e) => updateAssignedDeploymentArea(e)}
                     // selectedOption={Number(capturedData.assigned_deployment_area_id) || 0}
                     // onChange={(value) => updateFormData({ assigned_deployment_area_id: value.target.value })}

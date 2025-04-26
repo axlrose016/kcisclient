@@ -162,7 +162,7 @@ export interface IPersonProfileDisability {
 }
 
 export interface IPersonProfileFamilyComposition {
-  id: string;
+  id: string; //❌
   person_profile_id: string | null;
   first_name: string;
   middle_name: string;
@@ -175,9 +175,9 @@ export interface IPersonProfileFamilyComposition {
   monthly_income: number | null;
   relationship_to_the_beneficiary_id: number | null;
   work: string | null;
-  user_id: string;
-  created_by: string;
-  created_date: string;
+  user_id: string; //❌
+  created_by: string; 
+  created_date: string;//❌
   last_modified_by: string | null;
   last_modified_date: string | null;
   push_status_id: number;
@@ -212,11 +212,111 @@ export interface ICFWAssessment {
   id: string;
   person_profile_id: string;
   deployment_area_id: number;
+  division_office_name: string; //✨office name or division office name
   assessment: string;
-  status_id: number;
+  number_of_days_program_engagement: number; //✨
+  area_focal_person_id: string; //✨main focal person of the company i.e HEI Focal Person  
   immediate_supervisor_id: string;
   alternate_supervisor_id: string;
   cfw_category_id: boolean; //true=graduate,false=student
+  status_id: number;
+  user_id: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface IWorkPlan {
+  id: string;  
+  immediate_supervisor_id: string;
+  alternate_supervisor_id: string;
+  objectives: string;
+  area_focal_person_id: string; //main focal person of the company i.e HEI Focal Person
+  no_of_days_program_engagement: number;
+  approved_work_schedule: string;
+  status_id: number;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+  // cfw_category_id?: string; //graduate or student
+}
+
+export interface IWorkPlanTasks {
+  id: string;  
+  category: string; //General, Specific, or Other
+  work_plan_id: string;
+  activities_tasks: string;
+  expected_output: string;
+  timeline_from: Date;
+  timeline_to: Date;
+  assigned_person_id: string;
+  status_id: number;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+export interface IWorkPlanCfw {
+  id: string;  
+  work_plan_id: string;
+  cfw_id: string;
+  status_id: number;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+export interface IAccomplishmentReport {
+  id: string;  
+  person_id: string;
+  period_cover_from: Date;
+  period_cover_to: Date;
+  work_plan_id: string;
+  accomplishment_actual_task: string;
+  status_id: number;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+export interface IAccomplishmentActualTask {
+  id: string;  
+  accomplishment_report_id: string;
+  accomplishment: string;
+  mov: string;
+  status_id: number;
   created_date: string,
   created_by: string,
   last_modified_date?: string | null,

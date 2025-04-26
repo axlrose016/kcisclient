@@ -1,7 +1,7 @@
 'use client'
 import nodemailer from 'nodemailer';
 import { NextResponse } from 'next/server';
-import { useEffect, useRef, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -38,14 +38,14 @@ import { ToastAction } from '@/components/ui/toast'
 import GeneratePDF from './pdf'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { format } from 'path'
-import { is } from 'drizzle-orm'
+import { and, is } from 'drizzle-orm'
 import Assessment from '../masterlist/[record]/assessment'
 import WorkshiftAssignment from '../masterlist/[record]/workshift_assignment'
 import WorkPlan from '../masterlist/[record]/work_plan'
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 export default function PersonProfileForm({ user_id_viewing }: any) {
   const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
-
+  const [hasProfilePicture, setHasProfilePicture] = useState(false);
   // alert(userIdViewing)
   // const userIdForViewing = user_id_viewing;
   const module = "personprofile";
@@ -909,7 +909,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 deleted_by: null,
                 deleted_date: null,
                 is_deleted: false,
-                remarks: "Person Profile Disability Created",
+                remarks: "Person Profile Family Composition Created",
               };
             });
 
@@ -1395,6 +1395,9 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
       if (parsedlsAssessment.assessment === "") {
         errorToast("Assessment is required!", "assessment", "assessment"); return;
       }
+      if (parsedlsAssessment.number_of_days_program_engagement <= 0 && parsedlsAssessment.status_id == 1) {
+        errorToast("number_of_days_program_engagement is required!", "assessment", "number_of_days_program_engagement"); return;
+      }
 
       const lsAssignedDeploymentArea = localStorage.getItem("assigned_deployment_area");
       if (lsAssignedDeploymentArea) {
@@ -1408,7 +1411,10 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           id: uuidv4(),
           person_profile_id: userIdViewing,
           deployment_area_id: parsedLsAssignedDeploymentArea.assigned_deployment_area_id,
+          division_office_name: "",
           assessment: parsedlsAssessment.assessment,
+          number_of_days_program_engagement: parsedlsAssessment.number_of_days_program_engagement,
+          area_focal_person_id: "",
           status_id: parsedlsAssessment.status_id,
           immediate_supervisor_id: "",
           alternate_supervisor_id: "",
@@ -1423,6 +1429,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           deleted_date: null,
           is_deleted: false,
           remarks: "Assessment Created",
+          user_id: session?.id ?? "0",
         }
         // assessment
         dexieDb.open();
@@ -1431,10 +1438,40 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             if (userIdViewing) {
               await dexieDb.cfwassessment.update(userIdViewing, formAssessment);
               console.log("Assessment Updated");
-            } else {  
+            } else {
               await dexieDb.cfwassessment.put(formAssessment);
               console.log("Assessment Created");
             }
+
+            // email the assessment
+            if (parsedlsAssessment.status_id == 1) { //meaning eligible
+
+              sendEmail(
+                formData.first_name,
+                "dwightentico@gmail.com",
+                // formData.email,
+                "CFW Beneficiary Eligibility Assessment",
+                "Congratulations! You have been selected as a Cash-for-Work Beneficiary and are now eligible to work with us. We look forward to your participation in the program."
+
+              );
+            } else if (parsedlsAssessment.status_id == 20) {//meaning eligible
+              sendEmail(
+                formData.first_name,
+                "dwightentico@gmail.com",
+                // formData.email,
+                "CFW Beneficiary Eligibility Assessment",
+                "We regret to inform you that you have not been selected as a Cash-for-Work Beneficiary at this time. Thank you for your interest and participation in the program."
+              );
+            } else if (parsedlsAssessment.status_id == 10) {//meaning for compliance
+                sendEmail(
+                formData.first_name,
+                "dwightentico@gmail.com",
+                // formData.email,
+                "CFW Beneficiary Eligibility Assessment",
+                `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process. Assessment Notes: ${parsedlsAssessment.assessment}`
+                );
+            }
+
             // await dexieDb.cfwassessment.put(formAssessment);
             // console.log("Assessment Created");
             toast({
@@ -1610,16 +1647,42 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
         updateFormData({ "modality_id": 25, "modality_sub_category_id": 1 })
 
+
+        // ready the list of attachments to be uploaded
         if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
         const existingRecords = await dexieDb.attachments.toArray();
         const existingRecord = await dexieDb.attachments
           .where("file_id")
           .equals(13) //profile picture
           .first();
+        // debugger;
         if (existingRecord?.file_path instanceof Blob) {
+          // alert("Session ID " + _session.id + " Record ID " + existingRecord.record_id);
+          // if (userIdViewing) {
+          //   if (existingRecord.user_id == userIdViewing) {
+          //     setHasProfilePicture(false);
+          //     // alert("user id " +existingRecord.user_id + " user id viewing " + userIdViewing); ;
+          //   } else {
+          //     // alert("user id " +existingRecord.user_id + " user id viewing " + userIdViewing);
+          //     setHasProfilePicture(false);
+          //     // alert("0");
+          //   }
+          // } else {
+          //   if (existingRecord.user_id == _session.id) {
+          //     setHasProfilePicture(false);
+          //     // alert("1");
+          //   } else {
+          //     setHasProfilePicture(false);
+          //     // alert("0");
+          //   }
+          // }
+
           const blobUrl = URL.createObjectURL(existingRecord.file_path);
           console.log("✅ Blob URL:", blobUrl);
           setDisplayPic(blobUrl);
+        } else {
+          setHasProfilePicture(false);
+          // alert("0");
         }
         await Promise.all(
           files_upload.map(async (file) => {
@@ -1674,11 +1737,15 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
   }, []);
 
+  // useEffect(() => {
+  //   // window.location.reload();
+  //   console.log("User ID Viewing: ", userIdViewing);
+  // },[userIdViewing])
   useEffect(() => {
     // debugger;
     const fetchData = async () => {
       try {
-        // debugger;
+        debugger;
         await dexieDb.open();
         await dexieDb.transaction('r', [dexieDb.person_profile,
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
@@ -1688,8 +1755,14 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             debugger;
             // Fetch Profile (Dexie first, then LocalStorage)
             // alert("search id is : " + searchByUserId);
-            let profile: IPersonProfile | null = (await dexieDb.person_profile.where("id").equals(searchByUserId).first()) || null;
-            // let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(searchByUserId).first()) || null;
+            let profile: IPersonProfile | null = null;
+            if (userIdViewing) {
+              // setUserIdViewing(userIdViewing);
+              profile = (await dexieDb.person_profile.where("id").equals(searchByUserId).first()) || null;
+            } else {
+
+              profile = (await dexieDb.person_profile.where("user_id").equals(searchByUserId).first()) || null;
+            }
             // let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
             // alert(typeof profile)
 
@@ -1729,6 +1802,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               updateDisabilitiesData(pwd);
             }
 
+            debugger;
             // Fetch Family Composition (LocalStorage first, then Dexie)
             let family: IPersonProfileFamilyComposition[] | [] = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(family) || family.length === 0) {
@@ -1760,6 +1834,16 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
               setFormAttachmentsData(person_attachments);
             }
+
+            // get the userid for viewing of admin
+            const lsuserIdForViewing = localStorage.getItem("userIdViewOnly");
+            if (lsuserIdForViewing) {
+              const parsedUserIdForViewing = JSON.parse(lsuserIdForViewing);
+              if (parsedUserIdForViewing) {
+                setUserIdViewing(parsedUserIdForViewing);
+                console.log("User ID for viewing: ", parsedUserIdForViewing);
+              }
+            }
           }
         }
         );
@@ -1768,7 +1852,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
       }
     };
     fetchData();
-  }, [session]);
+
+  }, [session, userIdViewing]);
 
   const fetchData = async () => {
     try {
@@ -1971,7 +2056,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
             {/* Title Section */}
             <div className="text-lg font-semibold mt-2 md:mt-0">
-              Beneficiary Profile Form <span className={` ${userIdViewing ? "" : "hidden"} text-blue-800`}> [ Reviewing ]</span>
+              Beneficiary Profile Form <span className="text-blue-800"> [  {userIdViewing ? "Reviewing" : "Registration"}  ]</span>
             </div>
           </CardTitle>
 
@@ -2020,7 +2105,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                   } p-3 bg-black text-white mt-3`}
               >
                 <span className="flex items-center gap-1">
-                  General Information
+                  General Information  
                   {/* <CheckCircle className="h-6 w-6 text-white-500 " /> */}
                 </span>
               </div>
@@ -2033,8 +2118,9 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               {/* <div className="flex-shrink-0 md:h-full lg:h-full"> */}
               <div className="col-span-1 p-4 flex items-center justify-center">
 
-                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture">
-                  {displayPic ? (
+
+                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture"> 
+                  {displayPic && (hasProfilePicture || hasProfilePicture != undefined)  ? (
                     <AvatarImage src={displayPic} alt="Display Picture" />
                   ) : (
                     <AvatarFallback className="bg-white border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 font-bold rounded-full w-full h-full">
