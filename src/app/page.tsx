@@ -14,6 +14,7 @@ import PersonProfileService from "./(authorized)/personprofile/form/PersonProfil
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
 import GenerateCFWBooklet from "@/components/PDF/CFW-Booklet";
+import CFWBooklet from "@/components/PDF/CFW-Booklet";
 
 
 function page() {
@@ -258,7 +259,7 @@ function page() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {encodingPercentage === 100 ? <GenerateCFWBooklet /> : null}
+                  {encodingPercentage === 100 ? <CFWBooklet /> : null}
                 </CardFooter>
               </Card>
               <Card
