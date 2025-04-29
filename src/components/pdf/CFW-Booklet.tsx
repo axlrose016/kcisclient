@@ -6,7 +6,7 @@ import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions,
 import { IPersonProfile } from "../interfaces/personprofile";
 import { Button } from "../ui/button";
 
-const GeneratePDF = () => {
+const GenerateCFWBooklet = () => {
   const [extensionNames, setExtensionNames] = useState<Record<number, string>>({});
   const [schoolNames, setSchoolNames] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
@@ -2708,4 +2708,4 @@ pages[5].drawText(`${course_ext.toUpperCase()}`, {
       </div>
     )
 };
-export default GeneratePDF;
+export default GenerateCFWBooklet;
