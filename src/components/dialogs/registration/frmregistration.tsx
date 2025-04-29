@@ -145,6 +145,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       }
     }
 
+    
     //ONLINE
     //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
     toast({

@@ -55,7 +55,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   // cfw
   const [formData, setFormData] = useState<Partial<IPersonProfile>>({});
   const [formSectorData, setFormSectorData] = useState<Partial<IPersonProfileSector>[]>([]);
-  const [formDisabilitiesData, setFormDisabilitesData] = useState<Partial<IPersonProfileDisability>[]>([]);
+  const [formDisabilitiesData, setFormDisabilitiesData] = useState<Partial<IPersonProfileDisability>[]>([]);
   const [formFamilyCompositionData, setFormFamilyCompositionData] = useState<Partial<IPersonProfileFamilyComposition>[]>([]);
   const [formAttachmentsData, setFormAttachmentsData] = useState<Partial<IAttachments>[]>([]);
   const [formCFWFamDetailsData, setFormCFWFamDetailsData] = useState<Partial<IPersonProfileCfwFamProgramDetails>[]>([]);
@@ -64,6 +64,11 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   const [filesToUploadOptions, setfilesToUploadOptions] = useState<IAttachments[]>([]);
   const [displayPic, setDisplayPic] = useState<string | null>(null);
   let isMounted = false;
+  const cleanInputAndToLowercase = (name: string): string => {
+    return name.trim().replace(/\s+/g, ' ').toLowerCase();
+  };
+
+  
 
   // readonly when admin viewing 
   useEffect(() => {
@@ -78,6 +83,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   }, [userIdViewing]);
 
   const updateFormData = (newData: Partial<IPersonProfile>) => {
+    
+    
     setFormData((prevData) => {
       const updatedData = { ...prevData, ...newData };
 
@@ -104,7 +111,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
   const updateDisabilitiesData = (newData: Partial<IPersonProfileDisability>[]) => {
-    setFormDisabilitesData(() => {
+    setFormDisabilitiesData(() => {
       const validNewData = Array.isArray(newData) ? newData : [];
 
       const disabilityMap = new Map(
@@ -185,11 +192,6 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
     localStorage.setItem("cfwGeneralInfo", JSON.stringify(cfwGeneralInfo));
   }, [cfwGeneralInfo]);
 
-  const updatingCfwGeneralInfo = (field: any, value: any) => {
-    setCfwGeneralInfo((prev: any) => ({
-      ...prev, [field]: value
-    }));
-  }
 
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const { toast } = useToast()
@@ -324,7 +326,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   };
 
   const handleErrorClick = (tabValue: any, fieldId: any) => {
-    // debugger;
+
     // alert(activeTab + ' ' + tabValue)
     console.log('handleErrorClick >', { tabValue, fieldId })
     if (tabValue !== "basic_information") {
@@ -712,9 +714,9 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               extension_name_id: formData?.extension_name_id ?? 0,
               birthplace: formData?.birthplace ?? "",
               sex_id: formData?.sex_id ?? 0,
-              first_name: formData?.first_name ?? "",
-              last_name: formData?.last_name ?? "",
-              middle_name: formData?.middle_name ?? "",
+              first_name: formData?.first_name?.toLowerCase().trim() ?? "",
+              last_name: formData?.last_name?.toLowerCase().trim() ?? "",
+              middle_name: formData?.middle_name?.toLowerCase().trim() ?? "",
               has_middle_name: formData?.has_middle_name ?? false,
               civil_status_id: formData?.civil_status_id ?? 0,
               birthdate: formData?.birthdate ?? "",
@@ -724,7 +726,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               sitio: formData?.sitio ?? null,
               cellphone_no: formData?.cellphone_no ?? null,
               cellphone_no_secondary: formData?.cellphone_no_secondary ?? null,
-              email: formData?.email ?? "",
+              email: formData?.email?.toLowerCase().trim() ?? "",
               sitio_present_address: formData?.sitio_present_address ?? null,
               region_code_present_address: formData?.region_code_present_address ?? null,
               province_code_present_address: formData?.province_code_present_address ?? null,
@@ -746,7 +748,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               course_id: formData?.course_id ?? 0,
               year_graduated: formData?.year_graduated ?? "",
               year_level_id: formData?.year_level_id ?? 0,
-              hasOccupation: formData?.hasOccupation ?? false,
+              hasoccupation: formData?.hasoccupation ?? false,
               current_occupation: formData?.current_occupation ?? "",
               id_card: formData?.id_card ?? 0,
               occupation_id_card_number: formData?.occupation_id_card_number ?? "",
@@ -801,7 +803,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               others: null,
               relationship_to_family_member_id: null,
               family_member_name_id: null,
-              hasProgramDetails: false,
+              hasprogramdetails: false,
 
               //CFW Representative
               representative_last_name: formData?.representative_last_name ?? null,
@@ -962,7 +964,6 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               }
             });
           }
-          sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
 
           dexieDb.open();
           dexieDb.transaction('rw', [dexieDb.person_profile,
@@ -981,8 +982,18 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               localStorage.removeItem("family_composition");
               localStorage.removeItem("person_cfw_program_details");
               localStorage.removeItem("person_disabilities");
-              debugger;
-              await PersonProfileService.syncBulkData(formPersonProfile);
+
+              const response = await PersonProfileService.syncBulkData(formPersonProfile);
+              if (response.success) {
+
+                sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
+              } else {
+                toast({
+                  variant: "destructive",
+                  title: "Error",
+                  description: "The record has been saved, but the data could not be synchronized at this time.",
+                });
+              }
             } catch (error) {
               console.error("Error adding Person Profile to IndexedDB", error);
             }
@@ -1010,7 +1021,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
   const confirmSave = async () => {
-    // debugger;
+
     setConfirmed(true);
   }
 
@@ -1074,40 +1085,67 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
         // setLoading(true);
         console.log("CFW");
+
+        const cleanData = (data: any) => {
+          const cleanedData: any = {};
+
+          for (const key in data) {
+            if (typeof data[key] === "string") {
+              cleanedData[key] = data[key].trim().replace(/\s+/g, " ").toLowerCase();
+            } else if (Array.isArray(data[key])) {
+              cleanedData[key] = data[key].map((item: any) =>
+                typeof item === "string" ? item.trim().replace(/\s+/g, " ").toLowerCase() : item
+              );
+            } else if (typeof data[key] === "object" && data[key] !== null) {
+              cleanedData[key] = cleanData(data[key]);
+            } else {
+              cleanedData[key] = data[key];
+            }
+          }
+
+          return cleanedData;
+        };
+
+        const cleanedFormData = cleanData(formData);
+        const cleanedFormSectorData = cleanData(formSectorData);
+        const cleanedFormDisabilitiesData = cleanData(formDisabilitiesData);
+        const cleanedFormFamilyCompositionData = cleanData(formFamilyCompositionData);
+        const cleanedFormCFWFamDetailsData = cleanData(formCFWFamDetailsData);
+        const cleanedFormAttachmentsData = cleanData(formAttachmentsData);
+
+        setFormData(cleanedFormData);
+        setFormSectorData(cleanedFormSectorData);
+        setFormDisabilitiesData(cleanedFormDisabilitiesData);
+        setFormFamilyCompositionData(cleanedFormFamilyCompositionData);
+        setFormCFWFamDetailsData(cleanedFormCFWFamDetailsData);
+        setFormAttachmentsData(cleanedFormAttachmentsData);
+        console.log("Cleaned Data:", {
+          cleanedFormData,
+          cleanedFormSectorData,
+          cleanedFormDisabilitiesData,
+          cleanedFormFamilyCompositionData,
+          cleanedFormCFWFamDetailsData,
+          cleanedFormAttachmentsData,
+        });
+// return;
+
         // 2 validation
         if (!formData?.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
         if (!formData?.first_name) { errorToast("First name is required!", "basic_information", "first_name"); return; }
         if (formData.has_middle_name && !formData?.middle_name) { errorToast("Middle name is required!", "basic_information", "middle_name"); return; }
         if (!formData?.last_name) { errorToast("Last name is required!", "basic_information", "last_name"); return; }
-        if (!formData?.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
-        if (!formData?.age || formData?.age < 18) { errorToast("Valid age is required!", "basic_information", "birthdate"); return; }
-        // if (!parsedCommonData.philsys_id_no) { errorToast("PhilSys ID number is required!"); return; }
         if (!formData?.birthplace) { errorToast("Birthplace is required!", "basic_information", "birthplace"); return; }
-        // if (!formData?.extension_name_id) { errorToast("Extension name is required!"); return; }
-        if (!formData?.sex_id) { errorToast("Sex is required!", "basic_information", "sex_id"); return; }
         if (!formData?.civil_status_id) { errorToast("Civil status is required!", "basic_information", "civil_status_id"); return; }
         const storedcfwGeneralInfo = localStorage.getItem("cfwGeneralInfo");
         if (!formData?.modality_sub_category_id) { errorToast("Modality Sub category is required!", "basic_information", "modality_sub_category_id"); return; }
         if (!formData?.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
-        if (!formData?.first_name) { errorToast("First name is required!", "basic_information", "first_name"); return; }
         if (!formData?.middle_name && isMiddleNameEnabled) { errorToast("Middle name is required!", "basic_information", "middle_name"); return; }
-        if (!formData?.last_name) { errorToast("Last name is required!", "basic_information", "last_name"); return; }
-        // if (!parsedCommonData.extension_name_id) { errorToast("Extension  name is required!", "basic_information", "extension_name"); return; }
         if (!formData?.sex_id) { errorToast("Sex field is required!", "basic_information", "sex_id"); return; }
-        if (!formData?.civil_status_id) { errorToast("Civil status is required!", "basic_information", "civil_status_id"); return; }
         if (!formData?.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
         if (!formData?.age || formData?.age <= 18 || formData?.age >= 71) {
           errorToast("Invalid age! Please enter a valid age between 18 and 70 years old.", "basic_information", "birthdate"); return;
         }
         if (!formData?.philsys_id_no && hasPhilsysId) { errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no"); return; }
-        // alert(parsedCommonData.philsys_id_no.length)
-        if (hasPhilsysId && (!formData?.philsys_id_no || formData?.philsys_id_no.length < 19)) {
-          errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no");
-          return;
-        }
-        if (!formData?.birthplace) { errorToast("Birthplace is required!", "basic_information", "birthplace"); return; }
-
-
         if (!formData?.region_code) { errorToast("Region is required!", "contact", "region_contact_details_permanent_address"); return; }
         if (!formData?.province_code) { errorToast("Province is required!", "contact", "province_contact_details_permanent_address"); return; }
         if (!formData?.city_code) { errorToast("City/Municipality is required!", "contact", "municipality_contact_details_permanent_address"); return; }
@@ -1118,10 +1156,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         if (!formData?.city_code_present_address) { errorToast("Present City/Municipality is required!", "contact", "municipality_contact_details_present_address"); return; }
         if (!formData?.brgy_code_present_address) { errorToast("Present Barangay is required!", "contact", "barangay_contact_details_present_address"); return; }
         if (!formData?.sitio_present_address) { errorToast("Present Sitio is required!", "contact", "sitio_present_address"); return; }
-        // alert(parsedContactDetails.cellphone_no.length)
         if ((formData?.cellphone_no?.length ?? 0) < 13 || formData?.cellphone_no == null) { errorToast("Primary cellphone number is required!", "contact", "cellphone_no"); return; }
         if (!formData?.email) { errorToast("Email is required!", "contact", "email"); return; }
-        // Regular Expression to check valid email format
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         if (!emailPattern.test(formData?.email)) {
@@ -1169,17 +1205,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         const parsedEmployments = JSON.parse(storedEmployment);
 
         // alert(parsedEmployments.has_occupation + " " + parsedEmployments.current_occupation)
-        // debugger;
+
         // if (parsedEmployments.has_occupation && !parsedEmployments.current_occupation?.trim()) {
         //   errorToast("Occupation is required!", "occupation", "current_occupation");
         //   return;
         // }
-        // debugger;
-        if (formData?.hasOccupation && !formData?.current_occupation) { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
-        if (formData?.hasOccupation && formData?.current_occupation === "") { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
-        if (formData?.hasOccupation && formData?.id_card === 0 || formData?.id_card === undefined) { errorToast("Valid ID is requiredx!", "occupation", "occupation_id_card"); return; }
+
+        if (formData?.hasoccupation && !formData?.current_occupation) { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
+        if (formData?.hasoccupation && formData?.current_occupation === "") { errorToast("Occupation is required!", "occupation", "current_occupation"); return; }
+        if (formData?.hasoccupation && (formData?.id_card === 0 || formData?.id_card === undefined)) { errorToast("Valid ID is requiredx!", "occupation", "occupation_id_card"); return; }
         // alert(formData?.hasOccupation + ' ' + formData?.occupation_id_card_number);
-        if ((formData?.hasOccupation == true && formData?.occupation_id_card_number === "") || (formData?.hasOccupation == true && formData?.occupation_id_card_number === undefined)) { errorToast("Valid ID number is required!", "occupation", "occupation_id_card_number"); return; }
+        if ((formData?.hasoccupation == true && formData?.occupation_id_card_number === "") || (formData?.hasoccupation == true && formData?.occupation_id_card_number === undefined)) { errorToast("Valid ID number is required!", "occupation", "occupation_id_card_number"); return; }
 
 
 
@@ -1222,17 +1258,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         }
 
 
-        // debugger;
+
         // family composition
         if (!formFamilyCompositionData || formFamilyCompositionData.length === 0) { errorToast("Family composition is required!", "family_composition", ""); return; }
 
 
 
         const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
-        // debugger;
-        if (formData?.hasProgramDetails == undefined) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+
+        if (formData?.hasprogramdetails == undefined) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
         // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
-        if (formData?.hasProgramDetails) {
+        if (formData?.hasprogramdetails) {
           if (formCFWFamDetailsData.length == 0) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
           //const parsedProgramDetails = JSON.parse(storedProgramDetails);
           //appendData("program_details", parsedProgramDetails);
@@ -1265,7 +1301,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         if (!formData?.deployment_area_address || formData?.deployment_area_address == undefined) { errorToast("Preferred Deployment Area is required!", "deployment", "deployment_area_address"); return; }
         if (formData.preffered_type_of_work_id === 0 || formData.preffered_type_of_work_id == null) { errorToast("Preferred Type of Work is required!", "deployment", "preffered_type_of_work_id"); return; }
 
-        // debugger;
+
         // const storedAttachments = localStorage.getItem("attachments");
         if (formAttachmentsData.length == 0) { errorToast("Attachment is required!", "attachment", ""); return; }
         const requiredFileIds = [13, 1, 2, 11]; // Define required file IDs        
@@ -1411,6 +1447,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           id: uuidv4(),
           person_profile_id: userIdViewing,
           deployment_area_id: parsedLsAssignedDeploymentArea.assigned_deployment_area_id,
+          deployment_area_category_id: parsedLsAssignedDeploymentArea.assigned_deployment_area_category_id,
           division_office_name: "",
           assessment: parsedlsAssessment.assessment,
           number_of_days_program_engagement: parsedlsAssessment.number_of_days_program_engagement,
@@ -1431,6 +1468,10 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           remarks: "Assessment Created",
           user_id: session?.id ?? "0",
         }
+
+
+
+
         // assessment
         dexieDb.open();
         dexieDb.transaction('rw', [dexieDb.cfwassessment], async () => {
@@ -1443,6 +1484,18 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               console.log("Assessment Created");
             }
 
+            // synch to server the assessment
+            // working nato, for testing
+            const response = await PersonProfileService.syncBulkCFWAssessment();
+            if (!response.success) {
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Error in synchronizing the assessment data.",
+              });
+              return;
+            }
+
             // email the assessment
             if (parsedlsAssessment.status_id == 1) { //meaning eligible
 
@@ -1451,7 +1504,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 "dwightentico@gmail.com",
                 // formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                "Congratulations! You have been selected as a Cash-for-Work Beneficiary and are now eligible to work with us. We look forward to your participation in the program."
+                "Congratulations! You have been assessed" + <span className='font-bold'>ELIGIBLE</span> + " under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program."
 
               );
             } else if (parsedlsAssessment.status_id == 20) {//meaning eligible
@@ -1460,19 +1513,20 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 "dwightentico@gmail.com",
                 // formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                "We regret to inform you that you have not been selected as a Cash-for-Work Beneficiary at this time. Thank you for your interest and participation in the program."
+                `We regret to inform you that you have not been selected as a Cash-for-Work Beneficiary at this time due to ${parsedlsAssessment.assessment}. Thank you for your interest and participation in the program.`
               );
             } else if (parsedlsAssessment.status_id == 10) {//meaning for compliance
-                sendEmail(
+              sendEmail(
                 formData.first_name,
                 "dwightentico@gmail.com",
                 // formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process. Assessment Notes: ${parsedlsAssessment.assessment}`
-                );
+                `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process.<br/><br/>Assessment Notes: ${parsedlsAssessment.assessment}`
+              );
             }
 
             // await dexieDb.cfwassessment.put(formAssessment);
+
             // console.log("Assessment Created");
             toast({
               variant: "green",
@@ -1589,7 +1643,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
     }
   };
   // useEffect(() => {
-  //   // debugger;
+  //   
   //   const storedDisplayPic = localStorage.getItem("attachments");
   //   if (storedDisplayPic) {
   //     const parsedDP = JSON.parse(storedDisplayPic); // Convert JSON string to object/array
@@ -1655,7 +1709,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           .where("file_id")
           .equals(13) //profile picture
           .first();
-        // debugger;
+
         if (existingRecord?.file_path instanceof Blob) {
           // alert("Session ID " + _session.id + " Record ID " + existingRecord.record_id);
           // if (userIdViewing) {
@@ -1742,17 +1796,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   //   console.log("User ID Viewing: ", userIdViewing);
   // },[userIdViewing])
   useEffect(() => {
-    // debugger;
+
     const fetchData = async () => {
       try {
-        debugger;
+
         await dexieDb.open();
         await dexieDb.transaction('r', [dexieDb.person_profile,
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
         dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
           const searchByUserId = userIdViewing ? userIdViewing : session?.id;
           if (searchByUserId != null || searchByUserId != undefined) {
-            debugger;
+
             // Fetch Profile (Dexie first, then LocalStorage)
             // alert("search id is : " + searchByUserId);
             let profile: IPersonProfile | null = null;
@@ -1778,7 +1832,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               updateFormData({ civil_status_id: 4, id: uuidv4(), created_by: session?.userData.email, user_id: session?.id }); // Default value
             }
 
-            // debugger;
+
             // Fetch Sectors (LocalStorage first, then Dexie)
             let sectors: IPersonProfileSector[] | [] = (await dexieDb.person_profile_sector.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
 
@@ -1802,7 +1856,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               updateDisabilitiesData(pwd);
             }
 
-            debugger;
+
             // Fetch Family Composition (LocalStorage first, then Dexie)
             let family: IPersonProfileFamilyComposition[] | [] = (await dexieDb.person_profile_family_composition.where("person_profile_id").equals(profile?.id ?? "").toArray()) || [];
             if (!Array.isArray(family) || family.length === 0) {
@@ -1829,7 +1883,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               updateCFWFormData(cfwFamDetails);
             }
 
-            // debugger;
+
             const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').and(x => x.record_id == profile?.id).toArray();
             if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
               setFormAttachmentsData(person_attachments);
@@ -1857,7 +1911,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
   const fetchData = async () => {
     try {
-      // debugger;
+
       await dexieDb.open();
       await dexieDb.transaction('r', [dexieDb.person_profile,
       dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
@@ -1916,7 +1970,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
           updateCFWFormData(cfwFamDetails);
 
-          // debugger;
+
           const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();
           if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
             setFormAttachmentsData(person_attachments);
@@ -2105,7 +2159,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                   } p-3 bg-black text-white mt-3`}
               >
                 <span className="flex items-center gap-1">
-                  General Information  
+                  General Information
                   {/* <CheckCircle className="h-6 w-6 text-white-500 " /> */}
                 </span>
               </div>
@@ -2119,8 +2173,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               <div className="col-span-1 p-4 flex items-center justify-center">
 
 
-                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture"> 
-                  {displayPic && (hasProfilePicture || hasProfilePicture != undefined)  ? (
+                <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture">
+                  {displayPic && (hasProfilePicture || hasProfilePicture != undefined) ? (
                     <AvatarImage src={displayPic} alt="Display Picture" />
                   ) : (
                     <AvatarFallback className="bg-white border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 font-bold rounded-full w-full h-full">

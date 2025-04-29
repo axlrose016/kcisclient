@@ -156,7 +156,7 @@ export default function DailyTimeRecordPage() {
                         <AppTable
                             data={data}
                             columns={columns}
-                            onEdit={handleEdit}
+                            onEditRecord={handleEdit}
                             onDelete={handleDelete}
                             onRowClick={handleRowClick}
                             onAddNewRecord={handleAddNewRecord}

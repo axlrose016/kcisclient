@@ -1,6 +1,6 @@
 import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from "@/components/interfaces/iuser";
 import { seedCFWSchedules, seedCFWTimeLogs } from "./user-service";
 
@@ -31,6 +31,7 @@ const tblCFWTimeLogs = dexieDb.table('cfwtimelogs') as EntityTable<ICFWTimeLogs,
 const tblLibSchoolProfiles = dexieDb.table('lib_school_profiles') as EntityTable<ILibSchoolProfiles, 'id'>;
 const tblLibSchoolPrograms = dexieDb.table('lib_school_programs') as EntityTable<ILibSchoolPrograms, 'id'>;
 const tblLibStatuses = dexieDb.table('lib_statuses') as EntityTable<ILibStatuses, 'id'>;
+const tblLibDeploymentAreaCategories = dexieDb.table('lib_deployment_area_categories') as EntityTable<ILibDeploymentAreaCategories, 'id'>;
 
 //Roles Service
 export async function addRole(role: IRoles) {
@@ -153,7 +154,7 @@ export const seedRoles: IRoles[] = [
         "deleted_date": "",
         "is_deleted": false,
         "remarks": "Seeded"
-    
+
     },
     {
         "id": "e2ebba79-7134-4ddb-838f-9350a89c2a0e",
@@ -1591,6 +1592,7 @@ export const seedLibDeploymentArea: ILibDeploymentArea[] = [
     { "id": 43, "deployment_name": "SENATE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 44, "deployment_name": "SENIOR HIGH SCHOOL", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 45, "deployment_name": "SOCIAL SECURITY SYSTEM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    
 
 ];
 export const seedLibTypeOfWork: ILibTypeOfWork[] = [
@@ -2007,7 +2009,12 @@ export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [
 
 ];
 
- 
+export const seedLibDeploymentAreaCategories: ILibDeploymentAreaCategories[] = [
+    { id: 1, category_name: "Company/ LGU", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, category_name: "School", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, category_name: "N/A", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
 
 export async function seedData() {
     try {
@@ -2038,6 +2045,7 @@ export async function seedData() {
         await tblLibSchoolProfiles.bulkPut(seedLibSchoolProfiles);
         await tblLibSchoolPrograms.bulkPut(seedLibSchoolPrograms);
         await tblLibStatuses.bulkPut(seedLibStatuses);
+        await tblLibDeploymentAreaCategories.bulkPut(seedLibDeploymentAreaCategories);
         return "Library seeded successfully!!!";
         // try {
         //     await dexieDb.roles.bulkPut(seedRoles);

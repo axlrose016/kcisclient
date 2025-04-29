@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 // import { Toaster } from "@/components/ui/toaster"
 import { useToast } from '@/hooks/use-toast'
 import { Toast } from "@/components/ui/toast"
+import { Label } from "@/components/ui/label"
 // Define the task type
 interface Task {
   id: string
@@ -21,8 +22,51 @@ interface Task {
   assignedPerson: string
 }
 
-export default function TaskManagement() {
+interface TaskManagementProps {
+  companyName: string;
+  officeName: string;
+  noOfDays: number;
+  approvedScheduleFrom: string;
+  approvedScheduleTo: string;
+  generalObjective: string;
 
+
+}
+export default function TaskManagement() {
+  const [taskManagement, setTaskManagement] = useState<TaskManagementProps>({
+    companyName: "",
+    officeName: "",
+    noOfDays: 0,
+    approvedScheduleFrom: "",
+    approvedScheduleTo: "",
+    generalObjective: "",
+  })
+
+  const handleInputChangeTaskManagement = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setTaskManagement((prev) => ({ ...prev, [name]: value }))
+    const lsTM = localStorage.getItem("taskManagement")
+    if (lsTM) {
+      const parsedTM = JSON.parse(lsTM) as TaskManagementProps
+      localStorage.setItem("taskManagement", JSON.stringify({ ...parsedTM, [name]: value }))
+    }
+    else {
+      localStorage.setItem("taskManagement", JSON.stringify({ ...taskManagement, [name]: value }))
+    }
+  }
+  const { toast } = useToast()
+
+  useEffect(() => {
+    // Fetch task management data from local storage or server if needed
+    const lsTM = localStorage.getItem("taskManagement")
+    if (lsTM) {
+      const parsedTM = JSON.parse(lsTM) as TaskManagementProps
+      setTaskManagement(parsedTM)
+    } else {
+      localStorage.setItem("taskManagement", JSON.stringify(taskManagement))
+    }
+
+  }, [])
   useEffect(() => {
     // Fetch tasks from the server or local storage if needed
     // For now, we are using an empty array as initial state
@@ -124,6 +168,79 @@ export default function TaskManagement() {
           <CardTitle className="text-2xl font-bold">Task Management</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-6">
+            <div className="mb-4">
+              <Label className="block text-sm font-medium text-gray-700">Name of Company</Label>
+              <Input
+                type="text"
+                placeholder="Enter company name"
+                className="mt-1"
+                name="companyName"
+                value={taskManagement.companyName}
+                onChange={handleInputChangeTaskManagement}
+              />
+            </div>
+            <div className="mb-4">
+              <Label className="block text-sm font-medium text-gray-700">Name of Office</Label>
+              <Input
+                type="text"
+                placeholder="Enter office name"
+                className="mt-1"
+                name="officeName"
+                value={taskManagement.officeName}
+                onChange={handleInputChangeTaskManagement}
+              />
+            </div>
+            <div className="mb-4">
+              <Label className="block text-sm font-medium text-gray-700">Number of Days of Program Engagement</Label>
+              <Input
+                type="number"
+                placeholder="Enter number of days"
+                className="mt-1"
+                min={1}
+                name="noOfDays"
+                value={taskManagement.noOfDays}
+                onChange={handleInputChangeTaskManagement}
+              />
+            </div>
+            <div className="mb-4">
+              <Label className="block text-sm font-medium text-gray-700">Approved Schedule (Include Lunch Break)</Label>
+              <div className="flex items-center gap-2">
+                <div className="flex flex-col">
+                  <Input
+                    type="date"
+                    placeholder="Start date"
+                    className="mt-1"
+                    name="approvedScheduleFrom"
+                    value={taskManagement.approvedScheduleFrom}
+                    onChange={handleInputChangeTaskManagement}
+                  />
+                </div>
+                <span className="text-muted-foreground">-</span>
+                <div className="flex flex-col">
+                  <Input
+                    type="date"
+                    placeholder="End date"
+                    className="mt-1"
+                    name="approvedScheduleTo"
+                    value={taskManagement.approvedScheduleTo}
+                    onChange={handleInputChangeTaskManagement}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mb-4">
+              <Label className="block text-sm font-medium text-gray-700">General Objective</Label>
+              <Textarea
+                rows={3}
+                placeholder="Enter general objective"
+                className="mt-1"
+                name="generalObjective"
+                value={taskManagement.generalObjective}
+                onChange={handleInputChangeTaskManagement}
+              />
+            </div>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full border-collapse border">
               <thead>
@@ -145,11 +262,8 @@ export default function TaskManagement() {
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="development">Development</SelectItem>
-                        <SelectItem value="design">Design</SelectItem>
-                        <SelectItem value="research">Research</SelectItem>
-                        <SelectItem value="testing">Testing</SelectItem>
-                        <SelectItem value="documentation">Documentation</SelectItem>
+                        <SelectItem value="General">General</SelectItem>
+                        <SelectItem value="Specific">Specific</SelectItem>
                       </SelectContent>
                     </Select>
                   </td>

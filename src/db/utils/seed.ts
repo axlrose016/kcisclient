@@ -1,4 +1,4 @@
-import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_ip_group, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
+import { lib_cfw_category, lib_cfw_type, lib_civil_status, lib_course, lib_cycle, lib_deployment_area, lib_deployment_area_categories, lib_educational_attainment, lib_extension_name, lib_files_to_upload, lib_fund_source, lib_id_card, lib_ip_group, lib_modality, lib_modality_sub_category, lib_mode, lib_province, lib_relationship_to_beneficiary, lib_sectors, lib_sex, lib_type_of_disability, lib_type_of_work, lib_volunteer_committee, lib_volunteer_committee_position, lib_year_level, modules, permissions, roles } from "../schema/libraries";
 import { upsertData } from "./offline_crud";
 
 export async function seed(db: any) {
@@ -384,6 +384,13 @@ export async function seed(db: any) {
                 "created_by": "00000000-0000-0000-0000-000000000000"
             }
         ];
+        const _deployment_area_categories = [
+            {
+                "id": 1,
+                "category_name": "Company/ LGU",
+                "created_by": "00000000-0000-0000-0000-000000000000"
+            },
+        ]
         const _type_of_work = [
             {
                 "id": 1,
@@ -580,6 +587,7 @@ export async function seed(db: any) {
             await upsertData(trx, lib_sectors, _sectors);
             await upsertData(trx, lib_files_to_upload, _files_to_upload);
             await upsertData(trx, lib_ip_group, _ip_groups);
+            await upsertData(trx, lib_deployment_area_categories, _deployment_area_categories);
             // await upsertData(trx, lib_province, _province);
 
         })

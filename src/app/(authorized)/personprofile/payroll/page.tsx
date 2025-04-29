@@ -91,14 +91,14 @@ const columns = [
 
 const customActions = [
     {
-      label: 'View Profile',
-      icon: Users,
-      onClick: (row: any) => console.log('View Profile:', row),
+        label: 'View Profile',
+        icon: Users,
+        onClick: (row: any) => console.log('View Profile:', row),
     },
     {
-      label: 'View Department',
-      icon: Building2,
-      onClick: (row: any) => console.log('View Department:', row),
+        label: 'View Department',
+        icon: Building2,
+        onClick: (row: any) => console.log('View Department:', row),
     },
 ];
 
@@ -129,8 +129,16 @@ export default function PayrollPage() {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         setData(initialData);
-      };
-    
+    };
+
+    const handleClickAddNew = () => {
+        console.log('handleClickAddNew')
+    };
+
+    const handleClickEdit = () => {
+        console.log('handleClickEdit')
+    };
+
 
     return (
 
@@ -150,18 +158,19 @@ export default function PayrollPage() {
             </CardHeader>
             <CardContent>
 
-                <div className="min-h-screen"> 
-                   
-                        <AppTable
-                            data={data}
-                            columns={columns}
-                            onEdit={handleEdit}
-                            onDelete={handleDelete}
-                            onRowClick={handleRowClick}
-                            onRefresh={handleRefresh}
-                            onAddNewRecord={handleAddNewRecord}
-                            customActions={customActions}
-                        /> 
+                <div className="min-h-screen">
+
+                    <AppTable
+                        data={data}
+                        columns={columns} 
+                        onDelete={handleDelete}
+                        onRowClick={handleRowClick}
+                        onRefresh={handleRefresh}
+                        onAddNewRecord={handleAddNewRecord}
+                        onClickAddNew={handleClickAddNew}
+                        onClickEdit={handleClickEdit}
+                        customActions={customActions}
+                    />
                 </div>
 
             </CardContent>

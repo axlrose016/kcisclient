@@ -13,7 +13,7 @@ import { getSession } from "@/lib/sessions-client";
 import PersonProfileService from "./(authorized)/personprofile/form/PersonProfileService";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-import GeneratePDF from "./(authorized)/personprofile/form/pdf";
+import GeneratePDF from "@/components/PDF/CFW-Booklet";
 
 
 function page() {
@@ -21,23 +21,23 @@ function page() {
   const [summary, setSummary] = useState<ISummary>()
   useEffect(() => {
     (async () => {
-      BulkService.setTasks([{
+      BulkService.setTasks([
+        {
         tag: "CFW attendance log",
         url: `http://10.10.10.162:9000/api/cfwtimelogs/create/`,
         module: await dexieDb.cfwtimelogs,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, status, total_work_hours, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
+          const { id, ...cleaned } = record;
           return { ...cleaned, status_id: 0, log_out: (cleaned.log_out == "" || cleaned.log_out == "-") ? null : cleaned.log_out };
         }
-      }, 
-
+      },
       {
         tag: "Person Profile",
         url: `https://kcnfms.dswd.gov.ph/api/person_profile/create/`,
         module: await dexieDb.person_profile,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
-          return { ...cleaned, status_id: 0, log_out: (cleaned.log_out == "" || cleaned.log_out == "-") ? null : cleaned.log_out };
+          const { id, ...cleaned } = record;
+          return { ...cleaned };
         }
       },
       {
@@ -45,8 +45,8 @@ function page() {
         url: `https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/`,
         module: await dexieDb.person_profile_disability,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
-          return cleaned;
+          const { id, ...cleaned } = record;
+          return { ...cleaned };
         }
       },
       {
@@ -54,8 +54,8 @@ function page() {
         url: `https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/`,
         module: await dexieDb.person_profile_family_composition,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
-          return cleaned;
+          const { id, ...cleaned } = record;
+          return { ...cleaned };
         }
       },
       {
@@ -63,8 +63,8 @@ function page() {
         url: `https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/`,
         module: await dexieDb.person_profile_sector,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
-          return cleaned;
+          const { id, ...cleaned } = record;
+          return { ...cleaned };
         }
       },
       {
@@ -72,12 +72,12 @@ function page() {
         url: `https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/`,
         module: await dexieDb.person_profile_cfw_fam_program_details,
         cleanup: (record: any) => {
-          const { id, push_status_id, created_date, last_modified_by, last_modified_date, log_datetime, push_date, deleted_by, deleted_date, is_deleted, ...cleaned } = record;
-          return cleaned;
+          const { id, ...cleaned } = record;
+          return { ...cleaned };
         }
       },
 
-    ])
+      ])
       const r = await BulkService.status()
       console.log('summary', r)
       setSummary(r)
@@ -212,7 +212,7 @@ function page() {
           <div className="flex flex-col gap-4 py-2 md:gap-6 md:py-2">
 
             <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-2">
-              <Card className="@container/card">
+              <Card className="@container/card bg-[hsl(var(--sidebar-background))]">
                 <CardHeader className="relative">
                   <CardDescription>Total Sync Status</CardDescription>
                   <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">{summary?.overallPercentage}%</CardTitle>
@@ -229,87 +229,87 @@ function page() {
               </Card>
 
               <Card
-              className={clsx(
-                "rounded-xl shadow-md transition-all",
-                encodingPercentage === 100 ? "bg-green-400" : "bg-red-400"
-              )}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl">Encoding Status</CardTitle>
-                    <CardDescription>Person Profile Information</CardDescription>
-                    {/* <CardDescription>3 of 5 files completed</CardDescription> */}
+                className={clsx(
+                  "rounded-xl shadow-md transition-all",
+                  encodingPercentage === 100 ? "bg-green-400" : "bg-red-400"
+                )}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl">Encoding Status</CardTitle>
+                      <CardDescription>Person Profile Information</CardDescription>
+                      {/* <CardDescription>3 of 5 files completed</CardDescription> */}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={isPaused ? "outline" : "secondary"} className="px-3">
+                        {encodingStatus}
+                      </Badge>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={isPaused ? "outline" : "secondary"} className="px-3">
-                      {encodingStatus}
-                    </Badge>
+                </CardHeader>
+                <CardContent>
+                  <span className="font-medium">{encodingPercentage}%</span>
+                  <div className="w-full bg-green-200 rounded-full h-3 mt-2">
+                    <div
+                      className="bg-green-700 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${encodingPercentage}%` }}
+                    />
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="font-medium">{encodingPercentage}%</span>
-                <div className="w-full bg-green-200 rounded-full h-3 mt-2">
-                  <div
-                    className="bg-green-700 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${encodingPercentage}%` }}
-                  />
-                </div>
-              </CardContent>
-              <CardFooter>
-                {encodingPercentage === 100 ? <GeneratePDF /> : null}
-              </CardFooter>
-            </Card>
-            <Card
-              className={clsx(
-                "rounded-xl shadow-md transition-all",
-                uploadingPercentage < 100 ? "bg-red-400" : uploadingPercentage == 100 ? "bg-green-400" : "bg-red-600", !personSynching ? "cursor-pointer hover:shadow-lg" : "cursor-not-allowed"
-              )}
-              onClick={() => {
-                if (!personSynching) {
-                  setPersonSynching(true);
-                }
-              }}
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl">Uploading Status</CardTitle>
-                    <CardDescription>Person Profile</CardDescription>
-                    {/* <CardDescription>3 of 5 files completed</CardDescription> */}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={isPaused ? "outline" : "secondary"} className="px-3">
-                      {personSynching ? (
-                        <Loader2 className="animate-spin" />
-                      ) : uploadingPercentage === 100 ? (
-                        <>
-                          <Pause className="animate-pulse" />
-                          <span>Uploaded</span>
-                        </>
-                      ) : (
-                        "For Upload"
-                      )}
+                </CardContent>
+                <CardFooter>
+                  {encodingPercentage === 100 ? <GeneratePDF /> : null}
+                </CardFooter>
+              </Card>
+              <Card
+                className={clsx(
+                  "rounded-xl shadow-md transition-all",
+                  uploadingPercentage < 100 ? "bg-red-400" : uploadingPercentage == 100 ? "bg-green-400" : "bg-red-600", !personSynching ? "cursor-pointer hover:shadow-lg" : "cursor-not-allowed"
+                )}
+                onClick={() => {
+                  if (!personSynching) {
+                    setPersonSynching(true);
+                  }
+                }}
+              >
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-xl">Uploading Status</CardTitle>
+                      <CardDescription>Person Profile</CardDescription>
+                      {/* <CardDescription>3 of 5 files completed</CardDescription> */}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={isPaused ? "outline" : "secondary"} className="px-3">
+                        {personSynching ? (
+                          <Loader2 className="animate-spin" />
+                        ) : uploadingPercentage === 100 ? (
+                          <>
+                            <Pause className="animate-pulse" />
+                            <span>Uploaded</span>
+                          </>
+                        ) : (
+                          "For Upload"
+                        )}
 
-                    </Badge>
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <span className="font-medium">{uploadingPercentage}%</span>
-                <div className="w-full bg-green-200 rounded-full h-3 mt-2">
-                  <div
-                    className="bg-green-700 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${uploadingPercentage}%` }}
-                  />
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent>
+                  <span className="font-medium">{uploadingPercentage}%</span>
+                  <div className="w-full bg-green-200 rounded-full h-3 mt-2">
+                    <div
+                      className="bg-green-700 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${uploadingPercentage}%` }}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
 
-            
+
 
           </div>
         </div>

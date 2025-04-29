@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import DOMPurify from 'dompurify';
 
 const encode = new TextEncoder();
 
@@ -26,3 +27,42 @@ export async function hashPassword(password: string, salt: Uint8Array): Promise<
 
   return base64Hash;
 }
+
+export function sanitizeHTML(content: string): string {
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'em', 'strong'],
+    ALLOWED_ATTR: []
+  });
+}
+
+export const insertItemAtIndex = <T>(
+  arr: T[],
+  index: number,
+  newItem: T
+): T[] => {
+  return [...arr.slice(0, index), newItem, ...arr.slice(index)];
+};
+
+export const replaceItemAtIndex = <T>(
+  arr: T[],
+  index: number,
+  newValue: T
+): T[] => {
+  return [...arr.slice(0, index), newValue, ...arr.slice(index + 1)];
+};
+
+export const removeItemAtIndex = <T>(arr: T[], index: number): T[] => {
+  return [...arr.slice(0, index), ...arr.slice(index + 1)];
+};
+
+export const moveArrayAtIndex = <T>(
+  arr: T[] = [],
+  index: number,
+  toIndex: number
+): T[] => {
+  let array = [...arr];
+  const element = array[index];
+  array.splice(index, 1);
+  array.splice(toIndex, 0, element);
+  return array;
+};

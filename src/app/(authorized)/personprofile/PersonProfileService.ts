@@ -13,6 +13,7 @@ class PersonProfileService {
   private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/'
   private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
   private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
+  private apiUrlCFWAssessment = 'https://kcnfms.dswd.gov.ph/api/cfw_assessment/create/'
   // Method to sync data in bulk
   async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {
@@ -245,6 +246,51 @@ class PersonProfileService {
       if(response.status === 200 || response.status === 201){
           const updatePromises = unsyncedData.map((record) => 
           dexieDb.person_profile_cfw_fam_program_details.update(record.id, {push_status_id: 1})
+        );
+        await Promise.all(updatePromises);
+
+        return {success: unsyncedData.length, failed: 0};
+      }else{
+        console.error("Unexpected response:", response.status, response.data);
+        return {success: 0, failed:unsyncedData.length};
+      }
+    }
+    catch (error) {
+      console.error("Error syncing bulk data:", error);
+      return { success: 0, failed: unsyncedData.length };
+    }
+  }
+  async syncBulkCFWAssessment(): Promise<{success: number; failed: number}> {
+    const unsyncedData = await dexieDb.cfwassessment
+    .where("push_status_id")
+    .equals(2)
+    .toArray();
+
+    try{
+      if( unsyncedData.length === 0) {
+        console.log("No data to sync.");
+        return { success: 0, failed: 0 };
+      }
+      
+       // Format all records
+      // Temporarily removed the time from created_date to be accepted from API
+      const formattedData = unsyncedData.map((record) => ({
+        ...record,
+        created_date: new Date(record.created_date).toISOString().split("T")[0],
+      }));
+  
+      console.log("Bulk Syncing Records CFW Assessment:", JSON.stringify(formattedData));
+
+      const response = await axios.post(this.apiUrlCFWAssessment, formattedData, {
+        headers: {
+          Authorization: `bearer ${_session.token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if(response.status === 200 || response.status === 201){
+          const updatePromises = unsyncedData.map((record) => 
+          dexieDb.cfwassessment.update(record.id, {push_status_id: 1})
         );
         await Promise.all(updatePromises);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { CalendarIcon, Download, Edit, Plus, Printer, Trash2 } from 'lucide-react';
@@ -9,71 +9,123 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { AppTable } from '@/components/app-table';
+import { SessionPayload } from '@/types/globals';
+import { getSession } from '@/lib/sessions-client';
+import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 
- 
 
-const initialReports  = [
-    {
-        id: 'SF-123678',
-        name: 'Jane Cooper',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-        school: 'Quezon City University',
-        contact_number: '09090909',
-        status: 'Active'
-    },
-    {
-        id: 'SA-464737',
-        name: 'Jenny Wilson',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9',
-        school: 'University Of the Philipines',
-        contact_number: '09090909',
-        status: 'Active'
-    },
-    {
-        id: 'BD-112458',
-        name: 'Albert Flores',
-        avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12',
-        school: 'Polytechnic University of the Philipines',
-        contact_number: '09090909',
-        status: 'Incoming'
-    },
-    {
-        id: 'PM-589046',
-        name: 'Cody Fisher',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-        school: 'San Bartolome National High School',
-        contact_number: '09090909',
-        status: 'Hold'
-    },
-    {
-        id: 'PM-589046',
-        name: 'Cody Fisher',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-        school: 'Batasan National High School',
-        contact_number: '09090909',
-        status: 'Cancelled'
-    }
-];
+
+const _session = await getSession() as SessionPayload;
 
 const baseUrl = 'personprofile/accomplishment-report'
+
+const columns = [
+    {
+        id: 'cfwp_id_no',
+        header: 'CFW ID NO.',
+        accessorKey: 'cfwp_id_no',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'first_name',
+        header: 'First Name',
+        accessorKey: 'first_name',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'last_name',
+        header: 'Last Name',
+        accessorKey: 'last_name',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'middle_name',
+        header: 'Middle Name',
+        accessorKey: 'middle_name',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'email',
+        header: 'Email',
+        accessorKey: 'email',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'school_name',
+        header: 'School Name',
+        accessorKey: 'school_name',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'campus',
+        header: 'CAMPUS',
+        accessorKey: 'campus',
+        filterType: 'text',
+        sortable: true,
+    },
+]
+
 
 export default function AccomplishmentReport() {
 
     const router = useRouter();
-    const [data, setReports] = useState(initialReports);
     const [date, setDate] = React.useState<Date>(new Date())
 
-    const handleEdit = (row: any) => {
-        console.log('Edit:', row);
+    const [data, setData] = useState<any[]>([]);
+
+    const getUsers = async () => {
+        const results = await dexieDb.person_profile.where('modality_id')
+            .equals(25).toArray()
+        console.log('getUsers > results', results)
+        const merged = await Promise.all(
+            results.map(async (a) => {
+                const b = await dexieDb.lib_school_profiles.where("id").equals(a.school_id!).first()
+                if (b) {
+                    return {
+                        ...b,    // fields from tableB (same `id`)
+                        ...a   // fields from tableA
+                    };
+                }
+                return null;
+            })
+        );
+        return merged
     };
 
+
+    useEffect(() => {
+        if (_session.userData.role != "Administrator") {
+            router.push(`/${baseUrl}/${_session.id}`);
+        } else {
+            (async () => {
+                const _session = await getSession() as SessionPayload;
+                console.log('_session', _session)
+
+                try {
+                    if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+                const user = await getUsers()
+                setData(user)
+                console.log('getUsers', user)
+            })();
+        }
+    }, [])
+ 
     const handleDelete = (row: any) => {
         console.log('Delete:', row);
     };
 
     const handleRowClick = (row: any) => {
         console.log('Row clicked:', row);
-        router.push(`/${baseUrl}/${row.id}`);
+        router.push(`/${baseUrl}/${row.user_id}`);
     };
 
     const handleAddNewRecord = (newRecord: any) => {
@@ -103,17 +155,9 @@ export default function AccomplishmentReport() {
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
-                            columns={data[0] ? Object.keys(data[0]).map((key, idx) => ({
-                                id: key,
-                                header: key,
-                                accessorKey: key,
-                                filterType: 'text',
-                                sortable: true,
-                            })) : []}
-                            onEdit={handleEdit}
+                            columns={columns} 
                             onDelete={handleDelete}
                             onRowClick={handleRowClick}
-                            onAddNewRecord={handleAddNewRecord}
                         />
                     </div>
                 </div>

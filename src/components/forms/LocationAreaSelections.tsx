@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +42,23 @@ function newAbortSignal(timeoutMs: number) {
     return abortController.signal;
 }
 
+// Custom debounce hook
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
+
 export default function LocationAreaSelections({
     selectedOption = { region_code: "", province_code: "", city_code: "", brgy_code: "" },
     onChange,
@@ -54,9 +71,12 @@ export default function LocationAreaSelections({
     const [selectedMunicipality, setSelectedMunicipality] = useState<string>(selectedOption.city_code);
     const [selectedBarangay, setSelectedBarangay] = useState<string>(selectedOption.brgy_code);
 
+    // Debounced values
+    const debouncedRegion = useDebounce(selectedRegion, 500);
+    const debouncedProvince = useDebounce(selectedProvince, 500);
+    const debouncedMunicipality = useDebounce(selectedMunicipality, 500);
 
-
-    const fetchData = async (key: string, endpoint: string, updateOptions: (data: any) => void) => {
+    const fetchData = useCallback(async (key: string, endpoint: string, updateOptions: (data: any) => void) => {
         if (cache[key]) {
             updateOptions(cache[key]);
             return;
@@ -72,7 +92,6 @@ export default function LocationAreaSelections({
                 }
             });
 
-
             if (!response.ok) throw new Error("Network response was not ok");
 
             const data = await response.json();
@@ -81,7 +100,6 @@ export default function LocationAreaSelections({
                 updateOptions(data);
             }
 
-
         } catch (error: any) {
             if (error.name === "AbortError") {
                 console.log("Request canceled", error.message);
@@ -89,7 +107,7 @@ export default function LocationAreaSelections({
                 console.error("Error fetching data:", error);
             }
         }
-    };
+    }, []);
 
     useEffect(() => {
         // console.log('LocationAreaSelections > selectedOption', {
@@ -106,70 +124,58 @@ export default function LocationAreaSelections({
     }, [selectedOption])
 
     useEffect(() => {
-
         fetchData("regions", "/api-libs/psgc/regions", (data) => {
-            // console.log('LocationAreaSelections > regions', data)
             if (data?.status) {
-                // Ensure the response has data and map it to LibraryOption format
                 const mappedRegions: LibraryOption[] = data.data.map((item: any) => ({
-                    id: item.code,         // Assuming 'id' exists in fetched data
-                    name: item.name,     // Assuming 'name' exists in fetched data
+                    id: item.code,
+                    name: item.name,
                 }));
                 setOptions((prev) => ({ ...prev, regions: mappedRegions }))
             }
         });
-    }, []);
+    }, [fetchData]);
 
     useEffect(() => {
-        if (selectedRegion) {
-            fetchData(`provinces-${selectedRegion}`, `/api-libs/psgc/provincesByRegion?region=${selectedRegion}`, (data) => {
-                // console.log('LocationAreaSelections > provinces', data)
+        if (debouncedRegion) {
+            fetchData(`provinces-${debouncedRegion}`, `/api-libs/psgc/provincesByRegion?region=${debouncedRegion}`, (data) => {
                 if (data?.status) {
                     const mappedProvince: LibraryOption[] = data.data.provinces.map((item: any) => ({
-                        id: item.code,         // Assuming 'id' exists in fetched data
-                        name: item.name,     // Assuming 'name' exists in fetched data
+                        id: item.code,
+                        name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, provinces: mappedProvince }))
                 }
-            }
-            );
+            });
         }
-    }, [selectedRegion]);
-
-
+    }, [debouncedRegion, fetchData]);
 
     useEffect(() => {
-        if (selectedProvince) {
-            fetchData(`muni-${selectedProvince}`, `/api-libs/psgc/municipalityByProvince?province=${selectedProvince}`, (data) => {
-                // console.log('LocationAreaSelections > municipalities', data)
+        if (debouncedProvince) {
+            fetchData(`muni-${debouncedProvince}`, `/api-libs/psgc/municipalityByProvince?province=${debouncedProvince}`, (data) => {
                 if (data?.status) {
                     const mappedCity: LibraryOption[] = data.data.municipalities.map((item: any) => ({
-                        id: item.code,         // Assuming 'id' exists in fetched data
-                        name: item.name,     // Assuming 'name' exists in fetched data
+                        id: item.code,
+                        name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, municipalities: mappedCity }))
                 }
-            }
-            );
+            });
         }
-    }, [selectedProvince]);
+    }, [debouncedProvince, fetchData]);
 
     useEffect(() => {
-        if (selectedMunicipality) {
-            fetchData(`barangays-${selectedMunicipality}`, `/api-libs/psgc/barangayByMunicipality?municipality=${selectedMunicipality}`, (data) => {
-                // console.log('LocationAreaSelections > barangays', data)
+        if (debouncedMunicipality) {
+            fetchData(`barangays-${debouncedMunicipality}`, `/api-libs/psgc/barangayByMunicipality?municipality=${debouncedMunicipality}`, (data) => {
                 if (data?.status) {
                     const mappedBarangay: LibraryOption[] = data.data.barangay.map((item: any) => ({
-                        id: item.code,         // Assuming 'id' exists in fetched data
-                        name: item.name,     // Assuming 'name' exists in fetched data
+                        id: item.code,
+                        name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, barangays: mappedBarangay }))
                 }
-            }
-            );
+            });
         }
-    }, [selectedMunicipality]);
-
+    }, [debouncedMunicipality, fetchData]);
 
     const handleRegionChange = (id: string) => {
         // console.log("Selected Region ID:", id);
@@ -185,7 +191,6 @@ export default function LocationAreaSelections({
             brgy_code: ""
         });
     };
-
 
     const handleProvinceChange = (id: string) => {
         // console.log("Selected Province ID:", id);

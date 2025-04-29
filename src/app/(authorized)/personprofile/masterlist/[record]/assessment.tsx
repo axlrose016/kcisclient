@@ -19,7 +19,7 @@ export default function Assessment() {
             try {
 
                 const statuses = await getOfflineLibStatuses();
-                const filteredStatuses = statuses.filter(status => [1, 16, 10, 20].includes(status.id));
+                const filteredStatuses = statuses.filter(status => [1, 10, 20].includes(status.id));
                 setStatusesOptions(filteredStatuses);
 
                 const lsAssessment = localStorage.getItem("assessment");

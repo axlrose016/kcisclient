@@ -178,7 +178,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
 
 
     const handleIsCFWFamBene = (event: React.ChangeEvent<HTMLInputElement>) => {
-        updateFormData({ hasProgramDetails: JSON.parse(event.target.value) }); // Proper boolean conversion
+        updateFormData({ hasprogramdetails: JSON.parse(event.target.value) }); // Proper boolean conversion
     };
 
     useEffect(() => {
@@ -362,7 +362,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                     {radioOptions.map((option) => (
                         <div key={option.id} className="flex items-center">
                             <input
-                                checked={capturedData.hasProgramDetails === option.value}
+                                checked={capturedData.hasprogramdetails === option.value}
                                 onChange={handleIsCFWFamBene}
                                 id={option.id}
                                 name="cfw_program_details"
@@ -383,7 +383,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                     <p className="mt-2 text-sm text-red-500">{errors.cfw_program_details[0]}</p>
                 )}
             </div>
-            {capturedData.hasProgramDetails && (
+            {capturedData.hasprogramdetails && (
                 <div className="mt-4">
 
                     <div className="flex justify-start mt-5 overflow-y-auto">

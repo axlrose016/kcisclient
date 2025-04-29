@@ -76,6 +76,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
             is_deleted: false,
             created_by: session.userData.email,
             person_profile_id: capturedData.id,
+            
         }));
 
         // Combine updated and new data
@@ -102,12 +103,24 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     console.log("Sector already exists");
                 }
             } else {
+                const date = new Date();
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
                 const newSector: Partial<IPersonProfileSector> = {
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: false,
                     created_by: session.userData.email,
                     person_profile_id: capturedData.id,
+                    created_date: formattedDate,
+                    
+                    user_id: session.id,                    
+                    last_modified_by: null,
+                    last_modified_date: null,
+                    push_date: null,
+                    push_status_id: 2,
+                    deleted_by: null,
+                    deleted_date: null,                    
+                    remarks: "Person Profile Sector Created"
                 };
                 currentData.push(newSector);
                 console.log("New sector added:", newSector);
@@ -117,12 +130,24 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                 existingSector.is_deleted = true;
                 console.log("Sector marked as deleted:", sectorId);
             } else {
+                const date = new Date();
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
                 const newSector: Partial<IPersonProfileSector> = {
                     id: uuidv4(),
                     sector_id: sectorId,
                     is_deleted: true,
                     created_by: session.userData.emaill,
                     person_profile_id: capturedData.id,
+                    created_date: formattedDate,
+
+                    user_id: session.id,                    
+                    last_modified_by: null,
+                    last_modified_date: null,
+                    push_date: null,
+                    push_status_id: 2,
+                    deleted_by: null,
+                    deleted_date: null,                    
+                    remarks: "Person Profile Sector Created"
                 };
                 currentData.push(newSector);
                 console.log("New sector added as deleted:", newSector);
@@ -236,7 +261,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
     return (
         <div>
             <div className="space-y-12">
-                <div className="grid sm:grid-cols-4 sm:grid-rows-2 gap-y-5 gap-x-[50px] mb-2 " id="sectors_info_form">                    
+                <div className="grid sm:grid-cols-4 sm:grid-rows-2 gap-y-5 gap-x-[50px] mb-2 " id="sectors_info_form">
                     {selectedModality === 25 && Array.isArray(sectorOptions) &&
                         sectorOptions
                             .filter((sector) => sector.id >= 1 && sector.id <= 19)
@@ -255,7 +280,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                                                         value={value}
                                                         checked={value === "Yes" ? isSectorSelected(sector.id) : isSectorUnselected(sector.id)}
                                                         onChange={() => handleSectorChange(sector.id, value === "Yes")}
-                                                        disabled={userIdViewing ? true : false } // Disable if userIdViewing is set
+                                                        disabled={userIdViewing ? true : false} // Disable if userIdViewing is set
                                                     />
                                                     <Label htmlFor={`sector${sector.id}${value}`}>{value}</Label>
                                                 </div>

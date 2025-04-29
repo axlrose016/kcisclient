@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -54,11 +54,14 @@ import {
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowUpDown,
+  Calendar,
   ChevronFirst,
   ChevronLast,
   Download,
   Edit,
+  ExternalLink,
   Filter,
+  Link2,
   LayoutGrid,
   Loader2,
   MoreHorizontal,
@@ -73,15 +76,17 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from "react-hook-form";
-import PersonProfileMasterlist from '@/app/(authorized)/personprofile/masterlist/page';
-
-interface DynamicTableProps {
+import { useForm } from "react-hook-form"; 
+import { AppTableDialogForm } from './app-table-dialog';
+interface DataTableProps {
   data: any[];
   columns?: any[];
-  onEdit?: (row: any) => void;
+  onEditRecord?: (row: any) => void;
   onDelete?: (row: any) => void;
   onRowClick?: (row: any) => void;
+  onClick?: () => void;
+  onClickAddNew?: () => void;
+  onClickEdit?: () => void;
   onAddNewRecord?: (record: any) => void;
   onRefresh?: () => void;
   customActions?: {
@@ -105,12 +110,23 @@ const DEFAULT_PAGE_SIZE = 10;
 
 type ViewMode = 'table' | 'grid';
 
+const isValidUrl = (string: string) => {
+  try {
+    new URL(string);
+    return true;
+  } catch (_) {
+    return false;
+  }
+};
+
 export function AppTable({
   data,
   columns: providedColumns,
-  onEdit,
+  onEditRecord,
   onDelete,
   onRowClick,
+  onClickAddNew,
+  onClickEdit,
   onAddNewRecord,
   onRefresh,
   customActions,
@@ -118,7 +134,7 @@ export function AppTable({
   simpleView = false,
   initialFilters = [],
   onFilterChange,
-}: DynamicTableProps) {
+}: DataTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -147,7 +163,7 @@ export function AppTable({
   const [selectedColumn, setSelectedColumn] = useState('');
   const [selectedValue, setSelectedValue] = useState('');
   const [filterInputValue, setFilterInputValue] = useState('');
-  const [newRecord, setNewRecord] = useState<Record<string, string>>({});
+  const [newRecord, setNewRecord] = useState<Record<string, any>>({});
   const [editingFilter, setEditingFilter] = useState<Filter | null>(null);
   const [rowToDelete, setRowToDelete] = useState<any>(null);
   const [editingRow, setEditingRow] = useState<any>(null);
@@ -156,8 +172,6 @@ export function AppTable({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
-
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm();
 
   const createQueryString = useCallback(
     (params: Record<string, string | null>) => {
@@ -198,6 +212,7 @@ export function AppTable({
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(' '),
       accessorKey: key,
+      dataType: typeof sampleRow[key] === 'number' ? 'number' : 'text',
       filterType: typeof sampleRow[key] === 'boolean' ? 'select' : 'text',
       filterOptions: typeof sampleRow[key] === 'boolean' ? ['true', 'false'] : undefined,
       sortable: true
@@ -322,7 +337,6 @@ export function AppTable({
     setEditingRow(row);
     setNewRecord(row);
     setShowAddDialog(true);
-    Object.entries(row).forEach(([key, value]) => setValue(key, value));
   };
 
   const handleDelete = (row: any) => {
@@ -340,8 +354,8 @@ export function AppTable({
 
   const handleSubmitNewRecord = (values: any) => {
     if (editingRow) {
-      if (onEdit) {
-        onEdit({ ...editingRow, ...values });
+      if (onEditRecord) {
+        onEditRecord({ ...editingRow, ...values });
       }
       setEditingRow(null);
     } else if (onAddNewRecord) {
@@ -349,7 +363,6 @@ export function AppTable({
     }
     setNewRecord({});
     setShowAddDialog(false);
-    reset();
   };
 
   const handleDownloadCSV = () => {
@@ -413,7 +426,7 @@ export function AppTable({
               setSorting(newSorting);
               updateUrl({ sort: JSON.stringify(newSorting) });
             }}
-            className="w-full flex items-center justify-between bg-[#101828] -ml-[10px]"
+            className="w-full flex items-center justify-between"
           >
             {col.header}
             {col.sortable && <ArrowUpDown className="ml-2 h-4 w-4" />}
@@ -451,21 +464,26 @@ export function AppTable({
             "flex items-center gap-0.5 transition-opacity duration-200",
             isRefreshing && "opacity-50"
           )}>
-            {onEdit && (
+            {(onEditRecord || onClickEdit) && (
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-8 w-8"
                       onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(rowData);
+                        e.stopPropagation(); 
+                        if (onClickEdit) {
+                          onClickEdit()
+                        } 
+                        if (onEditRecord) {
+                          handleEdit(rowData);
+                        } 
                       }}
                       disabled={isRefreshing}
                     >
-                      <Edit className="h-3 w-3" />
+                      <Edit className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Edit</TooltipContent>
@@ -479,14 +497,14 @@ export function AppTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6"
+                      className="h-8 w-8"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDelete(rowData);
                       }}
                       disabled={isRefreshing}
                     >
-                      <Trash className="h-3 w-3" />
+                      <Trash className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>Delete</TooltipContent>
@@ -496,8 +514,8 @@ export function AppTable({
             {customActions && customActions.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                  <Button variant="ghost" size="icon" className="h-6 w-6" disabled={isRefreshing}>
-                    <MoreHorizontal className="h-3 w-3" />
+                  <Button variant="ghost" size="icon" className="h-8 w-8" disabled={isRefreshing}>
+                    <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -703,20 +721,27 @@ export function AppTable({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {onAddNewRecord && (
+
+              {(onAddNewRecord || onClickAddNew) && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         onClick={() => {
-                          setEditingRow(null);
-                          setNewRecord({});
-                          reset();
-                          setShowAddDialog(true);
+                          if (onClickAddNew) {
+                            onClickAddNew()
+                          }
+
+                          if (onAddNewRecord) {
+                            setEditingRow(null);
+                            setNewRecord({});
+                            setShowAddDialog(true);
+                          }
                         }}
                         disabled={isRefreshing}
+                        className="gap-2"
                       >
-                        <Plus className="mr-2 h-4 w-4" />
+                        <Plus className="h-4 w-4" />
                         Add New
                       </Button>
                     </TooltipTrigger>
@@ -764,17 +789,19 @@ export function AppTable({
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="bg-primary hover:bg-primary">
+                <TableRow>
                   {table.getHeaderGroups().map((headerGroup) =>
                     headerGroup.headers.map((header) => (
                       <TableHead
                         key={header.id}
-                        className={`
-                          text-primary-foreground border-[0.5px] border-primary-foreground/10
-                          @media (max-width: 768px) {
-                            ${header.id === headerGroup.headers[0].id || header.id === 'actions' ? 'sticky z-10' : ''}
-                            ${header.id === headerGroup.headers[0].id ? 'left-0' : header.id === 'actions' ? 'right-0' : ''}
-                          } `}
+                        className={cn(
+                          "bg-primary text-primary-foreground h-12",
+                          "border-[0.5px] border-primary-foreground/10",
+                          "@media (max-width: 768px) {",
+                          header.id === headerGroup.headers[0].id || header.id === 'actions' ? 'sticky z-10' : '',
+                          header.id === headerGroup.headers[0].id ? 'left-0' : header.id === 'actions' ? 'right-0' : '',
+                          "}"
+                        )}
                       >
                         {header.isPlaceholder
                           ? null
@@ -814,7 +841,6 @@ export function AppTable({
                   ))
                 ) : (
                   <TableRow>
-
                     <TableCell
                       colSpan={columns.length + 1}
                       className="h-24 text-center flex justify-center items-center gap-2"
@@ -829,22 +855,32 @@ export function AppTable({
         </div>
       ) : (
         <div className={cn(
-          "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
+          "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4",
           isRefreshing && "opacity-50"
         )}>
           {table.getRowModel().rows.map((row) => (
             <div
               key={row.id}
               className={cn(
-                "p-4 rounded-lg border cursor-pointer hover:bg-muted/50  grid grid-cols-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2",
+                "p-4 rounded-lg border cursor-pointer hover:bg-muted/50 transition-colors duration-200",
                 selectedRows.has(row.original.id) && "bg-muted"
               )}
               onClick={() => !isRefreshing && onRowClick?.(row.original)}
             >
+              {enableRowSelection && (
+                <div className="flex justify-end mb-2">
+                  <Checkbox
+                    checked={selectedRows.has(row.original.id)}
+                    onCheckedChange={() => toggleRowSelection(row.original.id)}
+                    aria-label="Select row"
+                    className="translate-y-[2px]"
+                  />
+                </div>
+              )}
               {row.getVisibleCells().map((cell) => (
-                cell.column.id !== 'actions' && (
-                  <div key={cell.id} className="mb-2">
-                    <div className="text-sm font-medium text-muted-foreground">
+                cell.column.id !== 'select' && cell.column.id !== 'actions' && (
+                  <div key={cell.id} className="mb-3">
+                    <div className="text-sm font-medium text-muted-foreground mb-1">
                       {columns.find(col => col.id === cell.column.id)?.header}
                     </div>
                     <div>
@@ -856,7 +892,7 @@ export function AppTable({
                   </div>
                 )
               ))}
-              <div className="mt-4 flex justify-end">
+              <div className="mt-4 flex justify-end gap-1">
                 {flexRender(
                   tableColumns[tableColumns.length - 1].cell,
                   { row } as any
@@ -1035,36 +1071,16 @@ export function AppTable({
       </Dialog>
 
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent >
-          <form onSubmit={handleSubmit(handleSubmitNewRecord)}>
-            <DialogHeader>
-              <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4 max-h-[600px] overflow-scroll">
-              {columns
-                .filter(column => column.id !== 'actions')
-                .map((column) => (
-                  <div key={column.id} className="grid grid-cols-4 items-center gap-4">
-                    <label htmlFor={column.accessorKey} className="text-right">
-                      {column.header}:
-                    </label>
-                    <Input
-                      id={column.id}
-                      {...register(column.accessorKey, { required: true })}
-                      className={`col-span-3 ${errors?.[column.id] ? "border-destructive" : ""}`}
-                    />
-                  </div>
-                ))}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingRow ? 'Update' : 'Add'} Record
-              </Button>
-            </DialogFooter>
-          </form>
+        <DialogContent className="md:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
+          </DialogHeader>
+          <AppTableDialogForm
+            columns={columns}
+            initialData={editingRow}
+            onSubmit={handleSubmitNewRecord}
+            onCancel={() => setShowAddDialog(false)}
+          />
         </DialogContent>
       </Dialog>
 

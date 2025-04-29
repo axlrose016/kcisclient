@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         <p>Dear ${first_name.toUpperCase()},</p>
         <p>${email_body}</p>        
         <p>Best regards,</p>
-        <p>The CFW NPMO Team</p>
+        <p>KALAHI-CIDSS-CFWP </p>
       </div>
       `,
     });

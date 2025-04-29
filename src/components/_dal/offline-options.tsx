@@ -46,5 +46,6 @@ export const getOfflineLibYearServed = getOfflineLibraryOptions('lib_year_served
 export const getOfflineLibProgramTypes = getOfflineLibraryOptions('lib_program_types', 'program_type_name');
 export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_ip_group', 'name');
 export const getOfflineLibStatuses = getOfflineLibraryOptions('lib_statuses', 'status_name');
+export const getOfflineLibDeploymentAreaCategories = getOfflineLibraryOptions('lib_deployment_area_categories', 'category_name');
 
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

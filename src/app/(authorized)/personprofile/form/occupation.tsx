@@ -18,7 +18,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
     const chkHasOccupation = () => {
         sethasOccupation(!hasOccupation); // Toggle `hasOccupation` state
-        updateFormData({ hasOccupation: !hasOccupation });
+        updateFormData({ hasoccupation: !hasOccupation });
     }
 
     const [commonData, setCommonData] = useState(() => {
@@ -140,9 +140,9 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                         <Input
                             type='checkbox'
                             className="w-4 h-4 cursor-pointer"
-                            checked={capturedData.hasOccupation ?? false}
+                            checked={capturedData.hasoccupation ?? false}
                             id='has_occupation_toggle'
-                            onChange={(e) => updateFormData({ hasOccupation: e.target.checked })}
+                            onChange={(e) => updateFormData({ hasoccupation: e.target.checked })}
                         />
                         <Label htmlFor="has_occupation" className="block text-md  font-medium">
                             {/* Do you have a current occupation? */}
@@ -153,17 +153,17 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                     <div className="p-2 col-span-4">
                         <Label htmlFor="current_occupation" className="block text-sm font-medium">Occupation</Label>
                         <Input
-                            value={capturedData.hasOccupation ? capturedData.current_occupation?.toUpperCase() : capturedData.current_occupation = ""}
+                            value={capturedData.hasoccupation ? capturedData.current_occupation?.toUpperCase() : capturedData.current_occupation = ""}
                             onChange={handleChange}
                             ref={occupationRef}
                             // value={capturedData.cfw[4].current_occupation}
                             id="current_occupation"
                             name="current_occupation"
                             type="text"
-                            disabled={!capturedData.hasOccupation}
-                            placeholder={capturedData.hasOccupation ? "Enter your Occupation" : "No Occupation"}
+                            disabled={!capturedData.hasoccupation}
+                            placeholder={capturedData.hasoccupation ? "Enter your Occupation" : "No Occupation"}
                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 
-                                ${!capturedData.hasOccupation ? "bg-gray-200 cursor-not-allowed" : ""}`}
+                                ${!capturedData.hasoccupation ? "bg-gray-200 cursor-not-allowed" : ""}`}
                         />
 
                     </div>
@@ -171,11 +171,11 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card" className="block text-sm font-medium mb-[5px]">Valid ID</Label>
                         <FormDropDown
-                            disabled={!capturedData.hasOccupation}
-                            selectedOption={capturedData.hasOccupation ? capturedData.id_card : capturedData.id_card = 0}
+                            disabled={!capturedData.hasoccupation}
+                            selectedOption={capturedData.hasoccupation ? capturedData.id_card : capturedData.id_card = 0}
                             // selectedOption={capturedData.cfw[4].id_card}
                             onChange={(value) => {
-                                if (!capturedData.hasOccupation) {
+                                if (!capturedData.hasoccupation) {
                                     handleIDCardChange(11); // Set default value if no occupation
                                 } else {
                                     handleIDCardChange(value); // Handle normally if occupation exists
@@ -184,7 +184,7 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
                             id="occupation_id_card"
                             options={iDCardOptions.filter(i => (capturedData?.age || 0) < 60 && i.id !== 9)}
                             // readOnly={employment.id_card === 11 ? true : false} // Disable if hasOccupation is false
-                            readOnly={!capturedData.hasOccupation
+                            readOnly={!capturedData.hasoccupation
                             }
                         />
                         {errors?.occupation_id_card && (
@@ -195,15 +195,15 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
                         <Label htmlFor="occupation_id_card_number" className="block text-sm font-medium mb-[5px]">ID Number</Label>
                         <Input
-                            value={capturedData.hasOccupation ? capturedData.occupation_id_card_number : capturedData.occupation_id_card_number = ""}
+                            value={capturedData.hasoccupation ? capturedData.occupation_id_card_number : capturedData.occupation_id_card_number = ""}
                             id="occupation_id_card_number"
                             name="occupation_id_card_number"
                             type="text"
-                            disabled={!capturedData.hasOccupation}
+                            disabled={!capturedData.hasoccupation}
                             onChange={handleChange}
-                            placeholder={!capturedData.hasOccupation && !capturedData.occupation_id_card_number === true ? "Enter your ID Number" : "ID Number not applicable"}
+                            placeholder={!capturedData.hasoccupation && !capturedData.occupation_id_card_number === true ? "Enter your ID Number" : "ID Number not applicable"}
                             className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 
-                                ${!capturedData.hasOccupation || capturedData.occupation_id_card_number ? "bg-gray-200 cursor-not-allowed" : ""}`}
+                                ${!capturedData.hasoccupation || capturedData.occupation_id_card_number ? "bg-gray-200 cursor-not-allowed" : ""}`}
                         />
                         {errors?.occupation_id_card_number && (
                             <p className="mt-2 text-sm text-red-500">{errors.occupation_id_card_number[0]}</p>

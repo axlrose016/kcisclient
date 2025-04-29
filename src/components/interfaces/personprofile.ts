@@ -36,7 +36,7 @@ export interface IPersonProfile {
   cellphone_no: string | null;
   cellphone_no_secondary: string | null;
   email: string;
-  hasOccupation: boolean | false,
+  hasoccupation: boolean | false,
   current_occupation: string;
   is_lgu_official: boolean;
   is_mdc: boolean;
@@ -88,7 +88,7 @@ export interface IPersonProfile {
   is_pwd: boolean | false;
   is_pwd_representative: boolean | null;
   profile_picture: string;
-  hasProgramDetails: boolean | false;
+  hasprogramdetails: boolean | false;
 
   //CFW Representative
   representative_last_name: string | null;
@@ -211,14 +211,16 @@ export interface IPersonProfileCfwFamProgramDetails {
 export interface ICFWAssessment {
   id: string;
   person_profile_id: string;
+  deployment_area_category_id: number;  //✨Bago to master
   deployment_area_id: number;
-  division_office_name: string; //✨office name or division office name
+  division_office_name: string;  
   assessment: string;
-  number_of_days_program_engagement: number; //✨
-  area_focal_person_id: string; //✨main focal person of the company i.e HEI Focal Person  
+  number_of_days_program_engagement: number;
+  area_focal_person_id: string; 
   immediate_supervisor_id: string;
   alternate_supervisor_id: string;
-  cfw_category_id: boolean; //true=graduate,false=student
+  cfw_category_id: boolean;  
+  
   status_id: number;
   user_id: string;
   created_date: string,

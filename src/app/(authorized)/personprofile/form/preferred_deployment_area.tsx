@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { getDeploymentAreaLibraryOptions, getTypeOfWorkLibraryOptions } from "@/components/_dal/options";
-import { getOfflineLibDeploymentArea, getOfflineLibTypeOfWork } from "@/components/_dal/offline-options";
+import { getOfflineLibDeploymentArea, getOfflineLibDeploymentAreaCategories, getOfflineLibSchools, getOfflineLibTypeOfWork } from "@/components/_dal/offline-options";
 import { IPersonProfile } from "@/components/interfaces/personprofile";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 export default function PrefferedDeploymentArea({ errors, capturedData, updateFormData, user_id_viewing }: { errors: any; capturedData: Partial<IPersonProfile>; updateFormData: (newData: Partial<IPersonProfile>) => void, user_id_viewing: string }) {
@@ -15,12 +15,14 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
     const [selectedRelation, setSelectedRelation] = useState("");
 
     const [deploymentAreaOptions, setDeploymentAreaOptions] = useState<LibraryOption[]>([]);
+    const [deploymentAreaCategoriesOptions, setDeploymentAreaCategoriesOptions] = useState<LibraryOption[]>([]);
     const [selectedDeploymentArea, setSelectedDeploymentArea] = useState("");
     const [selectedDeploymentAreaId, setSelectedDeploymentAreaId] = useState<number | null>(null);
     const [typeOfWorkOptions, setTypeOfWorkOptions] = useState<LibraryOption[]>([]);
     const [selectedTypeOfWork, setSelectedTypeOfWork] = useState("");
     const [selectedTypeOfWorkId, setSelectedTypeOfWorkId] = useState<number | null>(null);
     const [selectedAssignedDeploymentAreaId, setSelectedAssignedDeploymentAreaId] = useState(0);
+    const [selectedAssignedDeploymentAreaCategoryId, setSelectedAssignedDeploymentAreaCategoryId] = useState(0);
 
     const [immediateSupervisorOptions, setImmediateSupervisorOptions] = useState<LibraryOption[]>([]);
     const [selectedImmediateSupervisorName, setSelectedImmediateSupervisorName] = useState("");
@@ -28,14 +30,28 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
     const [alternateSupervisorOptions, setAlternateSupervisorOptions] = useState<LibraryOption[]>([]);
     const [selectedAlternateSupervisorName, setSelectedAlternateSupervisorName] = useState("");
     const [selectedAlternateSupervisorId, setSelectedAlternateSupervisorId] = useState("");
-
+    const [schoolOptions, setSchoolOptions] = useState<LibraryOption[]>([]);
+    const initialEducation = {
+        is_graduate: false,
+        school_id: 0,
+        school_name: "",
+        short_name: "",
+        campus: "",
+        school_address: "",
+        course_id: 0,
+        year_graduated: "",
+        year_level_id: 0
+    };
+    const [educationalAttainment, setEducationalAttainment] = useState(initialEducation);
 
     const initialPreferredDeployment = {
         deployment_area_id: 0,
+
         deployment_area_name: "",
         deployment_area_address: "",
         preffered_type_of_work_id: 0,
         assigned_deployment_area_id: 0,
+        assigned_deployment_area_category_id: 0,
         assigned_deployment_area_name: "",
         immediate_supervisor_id: 0,
         immediate_supervisor_name: "",
@@ -58,11 +74,31 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
 
     }
 
+    const [isSchoolAsDeploymentArea, setIsSchoolAsDeploymentArea] = useState(false); //trigger to filter the deployment area select
+    // useEffect(() => {
+    //     setSelectedDeploymentAreaId(0);
+    //     const  lsAssignedDeploymentAreaFields = {
+    //         assigned_deployment_area_id: 0,
+    //         assigned_deployment_area_category_id: 0,
+    //         immediate_supervisor_id: "",
+    //         alternate_supervisor_id: "",
+    //     }
+    //     localStorage.setItem("assigned_deployment_area", JSON.stringify(lsAssignedDeploymentAreaFields));
+    // }, [selectedAssignedDeploymentAreaCategoryId])
+
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const deployment_area = await getOfflineLibDeploymentArea(); //await getDeploymentAreaLibraryOptions();
                 setDeploymentAreaOptions(deployment_area);
+
+                const deployment_area_categories = await getOfflineLibDeploymentAreaCategories(); //await getDeploymentAreaLibraryOptions();
+                setDeploymentAreaCategoriesOptions(deployment_area_categories);
+                // alert(deployment_area_categories.length)
+
+                const schoolList = await getOfflineLibSchools();  //await getCourseLibraryOptions();               
+                console.log("School Array", schoolList);
+                setSchoolOptions(schoolList);
 
                 const type_of_work = await getOfflineLibTypeOfWork(); //await getTypeOfWorkLibraryOptions();
                 setTypeOfWorkOptions(type_of_work);
@@ -73,12 +109,13 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                     }
                 }
 
-
+                debugger;
                 // create an admin localstorage that will be used for assessment and eligibility, assigned deployment area, 
                 const lsAssignedDeploymentArea = localStorage.getItem("assigned_deployment_area");
                 if (!lsAssignedDeploymentArea) {
                     const lsAssignedDeploymentAreaFields = {
                         assigned_deployment_area_id: 0,
+                        assigned_deployment_area_category_id: 0,
                         immediate_supervisor_id: "",
                         alternate_supervisor_id: "",
                     }
@@ -87,11 +124,19 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                 if (lsAssignedDeploymentArea) {
                     const parsedLsAssignedDeploymentArea = JSON.parse(lsAssignedDeploymentArea);
                     setSelectedAssignedDeploymentAreaId(parsedLsAssignedDeploymentArea.assigned_deployment_area_id);
+                    setSelectedAssignedDeploymentAreaCategoryId(parsedLsAssignedDeploymentArea.assigned_deployment_area_category_id);
                     setSelectedImmediateSupervisorId(parsedLsAssignedDeploymentArea.immediate_supervisor_id);
                     setSelectedAlternateSupervisorId(parsedLsAssignedDeploymentArea.alternate_supervisor_id);
+                    if (parsedLsAssignedDeploymentArea.assigned_deployment_area_category_id == 1) {
+                        setIsSchoolAsDeploymentArea(false)
+                    } else {
+                        setIsSchoolAsDeploymentArea(true)
+                    }
                 }
 
-                debugger;
+
+
+                // debugger;
                 try {
 
 
@@ -140,12 +185,12 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         fetchData();
     }, []);
 
-    const handleDeploymentAreaChange = (id: number) => {
-        console.log("Selected Deployment Area ID:", id);
-        setSelectedDeploymentAreaId(id);
-        updatingData("deployment_area_id", id);
-        updateFormData({ deployment_area_id: id });
-    };
+    // const handleDeploymentAreaChange = (id: number) => {
+    //     console.log("Selected Deployment Area ID:", id);
+    //     setSelectedDeploymentAreaId(id);
+    //     updatingData("deployment_area_id", id);
+    //     updateFormData({ deployment_area_id: id });
+    // };
     const handleTypeOfWorkChange = (id: number) => {
         console.log("Selected Type of Work ID:", id);
         // updateCapturedData("cfw", "preffered_type_of_work_id", id, 4);
@@ -155,7 +200,7 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
     };
 
 
-   
+
     const updateAssignedDeploymentArea = (deploymentAreaId: number) => {
         const lsAssignedDeploymentArea = localStorage.getItem("assigned_deployment_area");
         const parsedlsAssignedDeploymentArea = lsAssignedDeploymentArea
@@ -164,8 +209,41 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         parsedlsAssignedDeploymentArea.assigned_deployment_area_id = deploymentAreaId;
         localStorage.setItem("assigned_deployment_area", JSON.stringify(parsedlsAssignedDeploymentArea));
         setSelectedAssignedDeploymentAreaId(deploymentAreaId);
+        if (deploymentAreaId == 1) {
+            setIsSchoolAsDeploymentArea(false)
+        } else {
+            setIsSchoolAsDeploymentArea(true)
+        }
 
     }
+    const updateAssignedDeploymentAreaCategoryId = (deploymentAreaCategoryId: number) => {
+        debugger;
+        setSelectedDeploymentAreaId(0);
+        console.log(selectedDeploymentAreaId)
+        const storedData = localStorage.getItem("assigned_deployment_area");
+
+        // Parse the existing data or create a default object
+        const parsedData = storedData
+            ? JSON.parse(storedData)
+            : { assigned_deployment_area_category_id: 0 };
+
+        // Update the value
+        parsedData.assigned_deployment_area_category_id = deploymentAreaCategoryId;
+        parsedData.assigned_deployment_area_id = 0;
+
+        // Save back to localStorage
+        localStorage.setItem("assigned_deployment_area", JSON.stringify(parsedData));
+
+        // Update your React state (if needed)
+        setSelectedAssignedDeploymentAreaCategoryId(deploymentAreaCategoryId);
+        if (deploymentAreaCategoryId == 1) {
+            setIsSchoolAsDeploymentArea(false)
+        }
+        else {
+            setIsSchoolAsDeploymentArea(true)
+        }
+    };
+
     const updateImmediateSupervisor = (immediateSupervisorId: string) => {
         const lsAssignedDeploymentArea = localStorage.getItem("assigned_deployment_area");
         const parsedlsAssignedDeploymentArea = lsAssignedDeploymentArea
@@ -186,8 +264,8 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         setSelectedAlternateSupervisorId(alternateSupervisorId);
     }
 
-     // readonly when admin viewing 
-     useEffect(() => {
+    // readonly when admin viewing 
+    useEffect(() => {
         if (userIdViewing) {
             const form = document.getElementById("preferred_deployment_info_form");
             if (form) {
@@ -202,19 +280,36 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         <div >
             <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}>
                 <div className="p-2 col-span-4">
-                    <Label htmlFor="assigned_deployment_area_id" className="block text-sm font-medium mb-1">Assigned Deployment Area <span className='text-red-500'> *</span></Label>
+                    <Label htmlFor="assigned_deployment_area_category_id" className="block text-sm font-medium mb-1">Deployment Area Category <span className='text-red-500'> *</span></Label>
+                    {/* <p>selected area cat id: {selectedAssignedDeploymentAreaCategoryId}</p>
+                    <p>selected area  id: {selectedAssignedDeploymentAreaId}</p> */}
                     <FormDropDown
-                        id="assigned_deployment_area_id"
-                        options={deploymentAreaOptions}
-                        selectedOption={selectedAssignedDeploymentAreaId ?? null}
-                        onChange={(e) => updateAssignedDeploymentArea(e)}
+                        id="assigned_deployment_area_category_id"
+                        options={deploymentAreaCategoriesOptions}
+                        selectedOption={selectedAssignedDeploymentAreaCategoryId ?? null}
+                        onChange={(e) => updateAssignedDeploymentAreaCategoryId(e)}
                     // selectedOption={Number(capturedData.assigned_deployment_area_id) || 0}
                     // onChange={(value) => updateFormData({ assigned_deployment_area_id: value.target.value })}
                     />
                 </div>
             </div>
+            <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}>
+                <div className={`p-2 col-span-4 ${selectedAssignedDeploymentAreaCategoryId == 0 || selectedAssignedDeploymentAreaCategoryId === 3 ? "hidden" : ""}`}>
+                    {/* <p>Is School Selected?: {isSchoolAsDeploymentArea} Why</p> */}
+                    {/* <p>{selectedAssignedDeploymentAreaCategoryId}</p> */}
+                    <Label htmlFor="assigned_deployment_area_id" className="block text-sm font-medium mb-1">Assigned Deployment Area <span className='text-red-500'> *</span></Label>
+                    <FormDropDown
+                        id="assigned_deployment_area_id"
+                        options={isSchoolAsDeploymentArea ? schoolOptions : deploymentAreaOptions}
+                        selectedOption={selectedAssignedDeploymentAreaId ?? null}
+                        onChange={(e) => updateAssignedDeploymentArea(e)}
+                    // disabled={true}
+                    // disabled={selectedAssignedDeploymentAreaCategoryId == 0}
+                    />
+                </div>
+            </div>
             <div className={`flex grid sm:col-span-3 sm:grid-cols-3 hidden`}>
-            {/* <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}> */}
+                {/* <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}> */}
                 <div className="p-2 col-span-4">
                     <Label htmlFor="immediate_supervisor" className="block text-sm font-medium mb-1">Immediate Supervisor <span className='text-red-500'> *</span></Label>
                     <FormDropDown
@@ -228,7 +323,7 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                 </div>
             </div>
             <div className={`flex grid sm:col-span-3 sm:grid-cols-3 hidden`}>
-            {/* <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}> */}
+                {/* <div className={`flex grid sm:col-span-3 sm:grid-cols-3 ${userIdViewing ? "" : "hidden"}`}> */}
                 <div className="p-2 col-span-4">
                     <Label htmlFor="alternate_supervisor" className="block text-sm font-medium mb-1">Alternate Supervisor <span className='text-red-500'> *</span></Label>
                     <FormDropDown
