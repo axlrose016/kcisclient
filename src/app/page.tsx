@@ -13,7 +13,7 @@ import { getSession } from "@/lib/sessions-client";
 import PersonProfileService from "./(authorized)/personprofile/form/PersonProfileService";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-import GenerateCFWBooklet from "@/components/PDF/cfw-booklet";
+import GenerateCFWBooklet from "@/components/PDF/CFW-Booklet";
 
 
 function page() {
