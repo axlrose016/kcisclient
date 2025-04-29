@@ -13,7 +13,7 @@ import { getSession } from "@/lib/sessions-client";
 import PersonProfileService from "./(authorized)/personprofile/form/PersonProfileService";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-import GeneratePDF from "@/components/PDF/cfw-booklet";
+import GenerateCFWBooklet from "@/components/PDF/cfw-booklet";
 
 
 function page() {
@@ -258,7 +258,7 @@ function page() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {encodingPercentage === 100 ? <GeneratePDF /> : null}
+                  {encodingPercentage === 100 ? <GenerateCFWBooklet /> : null}
                 </CardFooter>
               </Card>
               <Card
