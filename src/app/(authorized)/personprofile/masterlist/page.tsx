@@ -5,7 +5,7 @@ import { ButtonDelete } from "@/components/actions/button-delete";
 import { ButtonDialog } from "@/components/actions/button-dialog";
 import { ButtonView } from "@/components/actions/button-view";
 import { AppTable } from "@/components/app-table";
-import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
+import { ICFWAssessment, IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
 import LoadingScreen from "@/components/general/loading-screen";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
     const [profilesAttachments, setProfilesAttachments] = useState<IAttachments[]>([]);
     const [profilesCfwFamProgramDetails, setProfileCfwFamProgramDetails] = useState<IPersonProfileCfwFamProgramDetails[]>([]);
     const [profilesDisabilities, setProfileCfwDisabilities] = useState<IPersonProfileDisability[]>([]);
+    const [assessmentDetails, setAssessmentDetials] = useState<ICFWAssessment[]>([]);
 
     const [reviewApproveDecline, setReviewApproveDecline] = useState([]);
     const [approvalStatuses, setApprovalStatus] = useState<{ [key: string]: string }>({})
@@ -185,6 +186,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         setProfileCfwDisabilities(data.person_profile_disability ?? []);
                         setProfilesFamCom(data.person_profile_family_composition);
                         setProfilesAttachments(data.attachments);
+                        setAssessmentDetials(data.cfw_assessment);
                         setProfileCfwFamProgramDetails(data.person_profile_cfw_fam_program_details);
                         console.log("😘Person Profile Family Composition: ", data.person_profile_family_composition);
                         console.log("😊Person Profile Attachments: ", data.attachments);
@@ -204,6 +206,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                             dexieDb.person_profile_disability,
                             dexieDb.person_profile_family_composition,
                             dexieDb.attachments,
+                            dexieDb.cfwassessment,
                             dexieDb.person_profile_cfw_fam_program_details], async () => {
                                 try {
                                     const existingRecord = await dexieDb.person_profile.get(data.id);
@@ -213,10 +216,12 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                                         await dexieDb.person_profile_disability.update(data.id, data.person_profile_disability ?? []);
                                         await dexieDb.person_profile_family_composition.update(data.id, data.person_profile_family_composition ?? []);
                                         await dexieDb.attachments.update(data.id, data.attachments ?? []);
+                                        await dexieDb.cfwassessment.update(data.id, data.cfw_assessment ?? []);
                                         await dexieDb.person_profile_cfw_fam_program_details.update(data.id, data.person_profile_cfw_fam_program_details ?? []);
                                         console.log("Record updated in DexieDB:", data.id);
                                     } else {
                                         await dexieDb.person_profile.add(data);
+                                        await dexieDb.cfwassessment.add(data.cfw_assessment);
                                         if (data.person_profile_disability.length !== 0) {
                                             await dexieDb.person_profile_disability.bulkAdd(data.person_profile_disability);
                                         }
@@ -249,6 +254,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                                 }
                             });
 
+                            router.push(`/${baseUrl}/${row.id}`);
                     }
 
 
@@ -268,7 +274,6 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
         catch (error) {
             console.log("Error fetching data:", error);
         }
-        router.push(`/${baseUrl}/${row.id}`);
         // router.push(`/${baseUrl}/${row.user_id}`);
         // router.push(`/${baseUrl}/${row.id}`);
     };

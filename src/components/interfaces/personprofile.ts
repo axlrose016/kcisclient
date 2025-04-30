@@ -216,9 +216,9 @@ export interface ICFWAssessment {
   division_office_name: string;  
   assessment: string;
   number_of_days_program_engagement: number;
-  area_focal_person_id: string; 
-  immediate_supervisor_id: string;
-  alternate_supervisor_id: string;
+  area_focal_person_id: string | null; 
+  immediate_supervisor_id: string | null;
+  alternate_supervisor_id: string | null;
   cfw_category_id: boolean;  
   
   status_id: number;
@@ -228,7 +228,7 @@ export interface ICFWAssessment {
   last_modified_date?: string | null,
   last_modified_by?: string | null,
   push_status_id?: number,
-  push_date?: string,
+  push_date?: string | null,
   deleted_date: string | null,
   deleted_by: string | null,
   is_deleted: boolean,

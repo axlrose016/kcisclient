@@ -30,20 +30,24 @@ import { ICFWAssessment, IPersonProfile, IPersonProfileCfwFamProgramDetails, IPe
 import { v4 as uuidv4, validate } from 'uuid';
 import { fstat } from 'fs'
 import { IAttachments } from '@/components/interfaces/general/attachments'
-import { ConfirmSave, SessionPayload } from '@/types/globals'
+import { ConfirmSave } from '@/types/globals'
 import { getSession } from '@/lib/sessions-client'
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb'
 import PersonProfileService from '../PersonProfileService'
 import { ToastAction } from '@/components/ui/toast'
-import GeneratePDF from './pdf'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { format } from 'path'
 import { and, is } from 'drizzle-orm'
 import Assessment from '../masterlist/[record]/assessment'
 import WorkshiftAssignment from '../masterlist/[record]/workshift_assignment'
 import WorkPlan from '../masterlist/[record]/work_plan'
+import { SessionPayload } from '@/types/globals';
+import axios from 'axios';
+import LoginService from "@/app/login/LoginService";
 // import pdfFonts from "pdfmake/build/vfs_fonts";
+const _session = await getSession() as SessionPayload;
 export default function PersonProfileForm({ user_id_viewing }: any) {
+
   const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
   const [hasProfilePicture, setHasProfilePicture] = useState(false);
   // alert(userIdViewing)
@@ -54,6 +58,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   const [session, setSession] = useState<SessionPayload | null>(null);
   // cfw
   const [formData, setFormData] = useState<Partial<IPersonProfile>>({});
+  const [assessmentData, setAssessmentData] = useState<Partial<ICFWAssessment>>({});
   const [formSectorData, setFormSectorData] = useState<Partial<IPersonProfileSector>[]>([]);
   const [formDisabilitiesData, setFormDisabilitiesData] = useState<Partial<IPersonProfileDisability>[]>([]);
   const [formFamilyCompositionData, setFormFamilyCompositionData] = useState<Partial<IPersonProfileFamilyComposition>[]>([]);
@@ -68,7 +73,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
     return name.trim().replace(/\s+/g, ' ').toLowerCase();
   };
 
-  
+
 
   // readonly when admin viewing 
   useEffect(() => {
@@ -83,8 +88,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   }, [userIdViewing]);
 
   const updateFormData = (newData: Partial<IPersonProfile>) => {
-    
-    
+
+
     setFormData((prevData) => {
       const updatedData = { ...prevData, ...newData };
 
@@ -1127,7 +1132,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           cleanedFormCFWFamDetailsData,
           cleanedFormAttachmentsData,
         });
-// return;
+        // return;
 
         // 2 validation
         if (!formData?.modality_id) { errorToast("Modality is required!", "basic_information", "modality_id"); return; }
@@ -1451,16 +1456,16 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           division_office_name: "",
           assessment: parsedlsAssessment.assessment,
           number_of_days_program_engagement: parsedlsAssessment.number_of_days_program_engagement,
-          area_focal_person_id: "",
+          area_focal_person_id: null,
           status_id: parsedlsAssessment.status_id,
-          immediate_supervisor_id: "",
-          alternate_supervisor_id: "",
+          immediate_supervisor_id: null,
+          alternate_supervisor_id: null,
           cfw_category_id: formData.is_graduate ?? false,
           created_by: session?.userData.email ?? "",
           created_date: new Date().toISOString(),
           last_modified_by: null,
           last_modified_date: null,
-          push_date: "",
+          push_date: null,
           push_status_id: 2,
           deleted_by: null,
           deleted_date: null,
@@ -1473,40 +1478,76 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
         // assessment
+        // debugger;
         dexieDb.open();
         dexieDb.transaction('rw', [dexieDb.cfwassessment], async () => {
           try {
             if (userIdViewing) {
-              await dexieDb.cfwassessment.update(userIdViewing, formAssessment);
-              console.log("Assessment Updated");
-            } else {
               await dexieDb.cfwassessment.put(formAssessment);
-              console.log("Assessment Created");
+              console.log("Assessment Updated");
             }
+            // else {
+            //   await dexieDb.cfwassessment.put(formAssessment);
+            //   console.log("Assessment Created");
+            // }
 
             // synch to server the assessment
             // working nato, for testing
-            const response = await PersonProfileService.syncBulkCFWAssessment();
-            if (!response.success) {
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Error in synchronizing the assessment data.",
+            // const response = await PersonProfileService.syncBulkCFWAssessment();
+            // if (!response.success) {
+            //   toast({
+            //     variant: "destructive",
+            //     title: "Error",
+            //     description: "Error in synchronizing the assessment data.",
+            //   });
+            //   return;
+            // }
+
+
+
+            const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
+            debugger;
+            try {
+              const res = await fetch("https://kcnfms.dswd.gov.ph/api/cfw_assessment/status/patch/", {
+                method: "POST",
+                headers: {
+                  Authorization: `bearer ${onlinePayload.token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  status_id: parsedlsAssessment.status_id,
+                  person_profile_id: userIdViewing,
+                  deployment_area_id: parsedLsAssignedDeploymentArea.assigned_deployment_area_id,
+                  deployment_area_category_id: parsedLsAssignedDeploymentArea.assigned_deployment_area_category_id
+                })
               });
-              return;
+              if (!res.ok) {
+                console.log("CFW Assessment response: ", res);
+              } else {
+                const data = await res.json();
+                console.log("CFW Assessment has been patched ", data);
+                // cache[cacheKey] = data.data; // Cache the data
+                // setProfiles(data.data);
+              }
+              const data = await res.json();
+              console.log(data);
+            } catch (err) {
+              console.error("Fetch error:", err);
             }
+
+
+
 
             // email the assessment
             if (parsedlsAssessment.status_id == 1) { //meaning eligible
 
-              sendEmail(
+                sendEmail(
                 formData.first_name,
                 "dwightentico@gmail.com",
                 // formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                "Congratulations! You have been assessed" + <span className='font-bold'>ELIGIBLE</span> + " under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program."
-
-              );
+                 `Congratulations! You have been assessed as <strong>ELIGIBLE</strong> under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program.`
+                );
             } else if (parsedlsAssessment.status_id == 20) {//meaning eligible
               sendEmail(
                 formData.first_name,
@@ -1521,7 +1562,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 "dwightentico@gmail.com",
                 // formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process.<br/><br/>Assessment Notes: ${parsedlsAssessment.assessment}`
+                `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process.<br/><br/>Assessment Notes:<br/><br/> ${parsedlsAssessment.assessment}`
               );
             }
 
@@ -1616,7 +1657,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
       school_short_name = parsedHEA.short_name;
     }
     // alert(region_nick);
-    cfw_id_number = region_nick + "-CGS-" + school_short_name + "-" + currentYear;
+    cfw_id_number = region_nick + "-CGS-" + school_short_name + "-" + currentYear; //1M-RN
     // alert(cfw_id_number);
     return cfw_id_number;
 
@@ -1915,7 +1956,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
       await dexieDb.open();
       await dexieDb.transaction('r', [dexieDb.person_profile,
       dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
-      dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details], async () => {
+      dexieDb.attachments, dexieDb.person_profile_cfw_fam_program_details, dexieDb.cfwassessment], async () => {
         if (session != null || session != undefined) {
 
           // Fetch Profile (LocalStorage first, then Dexie)
@@ -1974,6 +2015,15 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           const person_attachments = await dexieDb.attachments.where('file_type').notEqual('').toArray();
           if (person_attachments !== null && person_attachments !== undefined && person_attachments.length > 0) {
             setFormAttachmentsData(person_attachments);
+          }
+
+          // for assessment
+          if (profile) {
+            const profile_for_assessment = (await dexieDb.cfwassessment.where("user_id").equals(session.id).first()) || null;
+            if (profile_for_assessment) {
+
+              setAssessmentData(profile_for_assessment);
+            }
           }
         }
       }

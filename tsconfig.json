@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.tsx","src/components/PDF/*.tsx", "src/components/client-api/session.js", "next.config.mjs", "next.config.js", "src/hooks/useFetchAndSyncProfile.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.tsx", "src/components/client-api/session.js", "next.config.mjs", "next.config.js", "src/hooks/useFetchAndSyncProfile.ts"],
   "exclude": ["node_modules"]
 }
