@@ -11,7 +11,7 @@ import { CalendarDays, HandCoins, Loader2, Pause, TrendingUpIcon, UserX2 } from 
 import { set } from "date-fns";
 import clsx from "clsx";
 import PersonProfileService from "./form/PersonProfileService";
-import GeneratePDF from "@/components/PDF/CFW-Booklet";
+import CFWBooklet from "@/components/PDF/cfw-booklet";
 
 
 //import pdfviewer from "../../components/PDF/pdfviewer";
@@ -174,7 +174,7 @@ export default function PersonProfileDashboard() {
                 </div>
               </CardContent>
               <CardFooter>
-                {encodingPercentage === 100 ? <GeneratePDF /> : null}
+                {encodingPercentage === 100 ? <CFWBooklet /> : null}
               </CardFooter>
             </Card>
 
