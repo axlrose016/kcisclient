@@ -5,8 +5,8 @@ import { use, useState } from "react";
 import { getOfflineCivilStatusLibraryOptions, getOfflineExtensionLibraryOptions, getOfflineLibCFWType, getOfflineLibCourses, getOfflineLibEducationalAttainment, getOfflineLibIdCard, getOfflineLibProgramTypes, getOfflineLibRelationshipToBeneficiary,getOfflineLibSchools, getOfflineLibSectorsLibraryOptions, getOfflineLibSexOptions, getOfflineLibTypeOfDisability, getOfflineLibTypeOfWork, getOfflineLibYearServed } from "../_dal/offline-options";
 import { IPersonProfile } from "../interfaces/personprofile";
 import { Button } from "../ui/button";
-
-const CFWBooklet = () => {
+import person_profile from "@/app/personprofile/masterlist/[record]/page";
+const GeneratePDF = () => {
   const [extensionNames, setExtensionNames] = useState<Record<number, string>>({});
   const [schoolNames, setSchoolNames] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
@@ -2708,4 +2708,4 @@ pages[5].drawText(`${course_ext.toUpperCase()}`, {
       </div>
     )
 };
-export default CFWBooklet;
+export default GeneratePDF;

@@ -35,6 +35,7 @@ import { getSession } from '@/lib/sessions-client'
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb'
 import PersonProfileService from '../PersonProfileService'
 import { ToastAction } from '@/components/ui/toast'
+import GeneratePDF from './pdf'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { format } from 'path'
 import { and, is } from 'drizzle-orm'
@@ -44,6 +45,7 @@ import WorkPlan from '../masterlist/[record]/work_plan'
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/app/login/LoginService";
+import { Toaster } from '@/components/ui/toaster';
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 const _session = await getSession() as SessionPayload;
 export default function PersonProfileForm({ user_id_viewing }: any) {
@@ -549,24 +551,24 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         </div>
       ),
     },
-    ...(cfwGeneralInfo.modality_sub_category_id === 2 ?
-      [{
-        value: "pwdrepresentative",
-        label: "CFW PWD Representative",
-        content: (
-          <div className="bg-card rounded-lg">
-            <PWDRepresentative
-              errors={errors}
-              capturedData={formData}
-            // updateCapturedData={updateCapturedData}
-            // selectedModalityID={selectedModalityID}
-            />
-          </div>
-        ),
-      }
-      ] : []
-    )
-    ,
+    // ...(cfwGeneralInfo.modality_sub_category_id === 2 ?
+    //   [{
+    //     value: "pwdrepresentative",
+    //     label: "CFW PWD Representative",
+    //     content: (
+    //       <div className="bg-card rounded-lg">
+    //         <PWDRepresentative
+    //           errors={errors}
+    //           capturedData={formData}
+    //         // updateCapturedData={updateCapturedData}
+    //         // selectedModalityID={selectedModalityID}
+    //         />
+    //       </div>
+    //     ),
+    //   }
+    //   ] : []
+    // )
+    // ,
     {
       value: "deployment",
       label: "Deployment Area",
@@ -682,6 +684,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
     const res = await fetch('/api/send-email', {
       method: 'POST',
+      // body: JSON.stringify({ first_name, email, email_subject, email_body }),
       body: JSON.stringify({ first_name, email, email_subject, email_body }),
       headers: {
         'Content-Type': 'application/json',
@@ -1147,7 +1150,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         if (!formData?.middle_name && isMiddleNameEnabled) { errorToast("Middle name is required!", "basic_information", "middle_name"); return; }
         if (!formData?.sex_id) { errorToast("Sex field is required!", "basic_information", "sex_id"); return; }
         if (!formData?.birthdate) { errorToast("Birthdate is required!", "basic_information", "birthdate"); return; }
-        if (!formData?.age || formData?.age <= 18 || formData?.age >= 71) {
+        if (!formData?.age || formData?.age < 18 || formData?.age >= 71) {
           errorToast("Invalid age! Please enter a valid age between 18 and 70 years old.", "basic_information", "birthdate"); return;
         }
         if (!formData?.philsys_id_no && hasPhilsysId) { errorToast("16-digit PhilSys ID number is required!", "basic_information", "philsys_id_no"); return; }
@@ -1526,6 +1529,43 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               } else {
                 const data = await res.json();
                 console.log("CFW Assessment has been patched ", data);
+
+                // change the role to CFW Beneficiary
+                const lsPP = localStorage.getItem("person_profile");
+                debugger;
+                if (lsPP) {
+                  const parsedPP = JSON.parse(lsPP);
+
+                  const resUserRole = await fetch("https://kcnfms.dswd.gov.ph/api/auth_users/update", {
+                    method: "POST",
+                    headers: {
+                      Authorization: `bearer ${onlinePayload.token}`,
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      id: parsedPP.user_id,
+                      last_modified_by: session?.userData.email,
+                      remarks: "Role has been changed",
+                      synced_date: new Date().toISOString(),
+                      role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446",
+                      push_status_id: 2,
+
+                    })
+                  });
+                  // role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446", //cfw beneficiary
+
+                  if (!resUserRole.ok) {
+                    Toaster("Error in changing the CFW Beneficiary Role")
+                  } else {
+                    const dataUserRole = await resUserRole.json();
+                    Toaster("Role has been changed to CFW Beneficiary");
+                    console.log("CFW Bene Role has been changed", dataUserRole);
+
+                  }
+                }
+
+
+
                 // cache[cacheKey] = data.data; // Cache the data
                 // setProfiles(data.data);
               }
@@ -1541,26 +1581,26 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             // email the assessment
             if (parsedlsAssessment.status_id == 1) { //meaning eligible
 
-                sendEmail(
+              sendEmail(
                 formData.first_name,
-                "dwightentico@gmail.com",
-                // formData.email,
+                // "dwightentico@gmail.com",
+                formData.email,
                 "CFW Beneficiary Eligibility Assessment",
-                 `Congratulations! You have been assessed as <strong>ELIGIBLE</strong> under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program.`
-                );
+                `Congratulations! You have been assessed as <strong>ELIGIBLE</strong> under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program.`
+              );
             } else if (parsedlsAssessment.status_id == 20) {//meaning eligible
               sendEmail(
                 formData.first_name,
-                "dwightentico@gmail.com",
-                // formData.email,
+                // "dwightentico@gmail.com",
+                formData.email,
                 "CFW Beneficiary Eligibility Assessment",
                 `We regret to inform you that you have not been selected as a Cash-for-Work Beneficiary at this time due to ${parsedlsAssessment.assessment}. Thank you for your interest and participation in the program.`
               );
             } else if (parsedlsAssessment.status_id == 10) {//meaning for compliance
               sendEmail(
                 formData.first_name,
-                "dwightentico@gmail.com",
-                // formData.email,
+                // "dwightentico@gmail.com",
+                formData.email,
                 "CFW Beneficiary Eligibility Assessment",
                 `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process.<br/><br/>Assessment Notes:<br/><br/> ${parsedlsAssessment.assessment}`
               );
@@ -1752,25 +1792,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           .first();
 
         if (existingRecord?.file_path instanceof Blob) {
-          // alert("Session ID " + _session.id + " Record ID " + existingRecord.record_id);
-          // if (userIdViewing) {
-          //   if (existingRecord.user_id == userIdViewing) {
-          //     setHasProfilePicture(false);
-          //     // alert("user id " +existingRecord.user_id + " user id viewing " + userIdViewing); ;
-          //   } else {
-          //     // alert("user id " +existingRecord.user_id + " user id viewing " + userIdViewing);
-          //     setHasProfilePicture(false);
-          //     // alert("0");
-          //   }
-          // } else {
-          //   if (existingRecord.user_id == _session.id) {
-          //     setHasProfilePicture(false);
-          //     // alert("1");
-          //   } else {
-          //     setHasProfilePicture(false);
-          //     // alert("0");
-          //   }
-          // }
+
 
           const blobUrl = URL.createObjectURL(existingRecord.file_path);
           console.log("✅ Blob URL:", blobUrl);
@@ -1837,7 +1859,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   //   console.log("User ID Viewing: ", userIdViewing);
   // },[userIdViewing])
   useEffect(() => {
-
+    debugger;
     const fetchData = async () => {
       try {
 
@@ -1850,6 +1872,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
             // Fetch Profile (Dexie first, then LocalStorage)
             // alert("search id is : " + searchByUserId);
+            debugger;
             let profile: IPersonProfile | null = null;
             if (userIdViewing) {
               // setUserIdViewing(userIdViewing);
@@ -1862,7 +1885,10 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             // alert(typeof profile)
 
             if (!profile) {
-              profile = JSON.parse(localStorage.getItem("person_profile") || "null");
+              const storedProfile = JSON.parse(localStorage.getItem("person_profile") || "null");
+              if (storedProfile && storedProfile.user_id === searchByUserId) {
+                profile = storedProfile;
+              }
               // alert(profile)
             }
 
@@ -2262,6 +2288,25 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                       <p className="mt-2 text-md  text-red-500">{errors.modality_id}</p>
                     )}
                   </div>
+                  <div className="sm:py-1 md:p-1 hidden">
+                    {/* <GeneratePDF  /> */}
+
+                    <Label htmlFor="role_id" className="block text-md font-medium mb-1">Select Role<span className='text-red-500'> *</span> </Label>
+                    <FormDropDown
+
+                      id="role_id"
+                      name='role_id'
+                      options={modalityOptions}
+                      selectedOption={formData.modality_id || 25}
+                      onChange={handlModalityChange}
+
+                    // onChange={(e) => updatingCommonData("modality_id", e.target.id)}
+
+                    />
+                    {errors?.modality_id && (
+                      <p className="mt-2 text-md  text-red-500">{errors.modality_id}</p>
+                    )}
+                  </div>
                   <div className={`sm:py-1 md:p-1  ${formData.modality_id !== undefined && formData.modality_id === 25 ? "" : "hidden"}`}>
                     <Label htmlFor="modality_sub_category_id" className="block text-md  font-medium mb-1">CFW Category<span className='text-red-500'> *</span></Label>
                     <FormDropDown
@@ -2537,6 +2582,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         </CardFooter>
         {/* </form> */}
       </Card >
+
     </div>
   )
 }

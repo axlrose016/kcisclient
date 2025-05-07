@@ -7,11 +7,10 @@ import { ButtonEdit } from "@/components/actions/button-edit";
 import { AppTable } from "@/components/app-table";
 import LoadingScreen from "@/components/general/loading-screen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
 import React from "react";
 
-export default function Modules(){
+export default function Module(){
     const [modules, setModules] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
@@ -45,21 +44,13 @@ export default function Modules(){
         </div>
     }
 
-    const handleEdit = (row: any) => {
-      console.log('Edit:', row);
-  };
-
   const handleDelete = (row: any) => {
       console.log('Delete:', row);
   };
 
   const handleRowClick = (row: any) => {
       console.log('Row clicked:', row);
-      router.push(`/${baseUrl}/${row.id}`);
-  };
-
-  const handleAddNewRecord = (newRecord: any) => {
-      console.log('handleAddNewRecord', newRecord)
+      router.push(`/${baseUrl}/form/${row.id}`);
   };
 
     return (
@@ -73,7 +64,7 @@ export default function Modules(){
 
               {/* Title Section */}
               <div className="text-lg font-semibold mt-2 md:mt-0">
-                  Users
+                  Library: Modules
               </div>
           </CardTitle>
 
@@ -90,11 +81,10 @@ export default function Modules(){
                           filterType: 'text',
                           sortable: true,
                       })) : []}
-                      onEdit={handleEdit}
                       onDelete={handleDelete}
                       onRowClick={handleRowClick}
-                      onAddNewRecord={handleAddNewRecord}
-                  />
+                      onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}
+                    />
               </div>
           </div>
 

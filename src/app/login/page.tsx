@@ -43,6 +43,7 @@ export default function LoginPage() {
   const [verified, setVerified] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log("API: ", process.env.NEXT_PUBLIC_API_BASE_URL_KCIS)
     seedData();
     seedUserData();
   }, []);

@@ -242,7 +242,8 @@ export interface IWorkPlan {
   objectives: string;
   area_focal_person_id: string; //main focal person of the company i.e HEI Focal Person
   no_of_days_program_engagement: number;
-  approved_work_schedule: string;
+  approved_work_schedule_from: string;
+  approved_work_schedule_date: string;
   status_id: number;
   created_date: string,
   created_by: string,
@@ -254,13 +255,14 @@ export interface IWorkPlan {
   deleted_by: string | null,
   is_deleted: boolean,
   remarks?: string | null,
-  // cfw_category_id?: string; //graduate or student
+  
 }
+
 
 export interface IWorkPlanTasks {
   id: string;  
-  category: string; //General, Specific, or Other
   work_plan_id: string;
+  category_id: number; //General, Specific, or Other
   activities_tasks: string;
   expected_output: string;
   timeline_from: Date;

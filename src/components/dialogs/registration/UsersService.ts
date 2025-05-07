@@ -5,7 +5,7 @@ import axios from 'axios';
 
 
 class UsersService {
-  private userApi = 'https://kcnfms.dswd.gov.ph/api/auth_users/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+  private userApi = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'auth_users/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
 
   async syncUserData(userData: IUser,userAccess: IUserAccess[]): Promise<any> {
     const payload = {

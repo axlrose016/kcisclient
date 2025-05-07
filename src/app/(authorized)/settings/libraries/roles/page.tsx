@@ -55,20 +55,20 @@ export default function Roles() {
 
   const handleEdit = (row: any) => {
     console.log('Edit:', row);
-};
+  };
 
-const handleDelete = (row: any) => {
-    console.log('Delete:', row);
-};
+  const handleDelete = (row: any) => {
+      console.log('Delete:', row);
+  };
 
-const handleRowClick = (row: any) => {
+  const handleRowClick = (row: any) => {
     console.log('Row clicked:', row);
-    router.push(`/${baseUrl}/${row.id}`);
-};
+    router.push(`/${baseUrl}/form/${row.id}`);
+  };
 
-const handleAddNewRecord = (newRecord: any) => {
-    console.log('handleAddNewRecord', newRecord)
-};
+  const handleAddNewRecord = (newRecord: any) => {
+      console.log('handleAddNewRecord', newRecord)
+  };
 return(
     <Card>
     <CardHeader>
@@ -80,7 +80,7 @@ return(
 
             {/* Title Section */}
             <div className="text-lg font-semibold mt-2 md:mt-0">
-                Users
+                Library: Role
             </div>
         </CardTitle>
 
@@ -98,14 +98,12 @@ return(
                         filterType: 'text',
                         sortable: true,
                     })) : []}
-                    onEdit={handleEdit}
                     onDelete={handleDelete}
                     onRowClick={handleRowClick}
-                    onAddNewRecord={handleAddNewRecord}
+                    onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}
                 />
             </div>
         </div>
-
     </CardContent>
     </Card>
 )

@@ -338,7 +338,6 @@ export default function ClockInOut() {
             console.log("Access Granted!");
             return;
         }
-
         // debugger;
 
         // const transaction = db.transaction("attendance", "readwrite");
@@ -523,7 +522,6 @@ export default function ClockInOut() {
                     </Dialog>
 
                 </div>
-
 
             </div>
         </div>

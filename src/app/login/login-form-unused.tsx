@@ -66,7 +66,7 @@ export default function LoginForm({className,...props}: React.ComponentProps<"di
           })
           return;
         }
-        await createSession(user.id, userData);
+        await createSession(user.id, userData, 'abc123');
         redirect("/")
       }
       else{

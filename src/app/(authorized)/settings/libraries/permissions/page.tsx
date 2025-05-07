@@ -56,7 +56,7 @@ export default function Permissions() {
 
   const handleRowClick = (row: any) => {
       console.log('Row clicked:', row);
-      router.push(`/${baseUrl}/${row.id}`);
+      router.push(`/${baseUrl}/form/${row.id}`);
   };
 
   const handleAddNewRecord = (newRecord: any) => {
@@ -73,7 +73,7 @@ export default function Permissions() {
 
               {/* Title Section */}
               <div className="text-lg font-semibold mt-2 md:mt-0">
-                  Users
+                  Library: Permissions
               </div>
           </CardTitle>
 
@@ -91,10 +91,9 @@ export default function Permissions() {
                           filterType: 'text',
                           sortable: true,
                       })) : []}
-                      onEdit={handleEdit}
                       onDelete={handleDelete}
                       onRowClick={handleRowClick}
-                      onAddNewRecord={handleAddNewRecord}
+                      onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}
                   />
               </div>
           </div>

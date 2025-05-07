@@ -27,6 +27,9 @@ import { IUserData } from "./interfaces/iuser"
 import { getSession } from "@/lib/sessions-client"
 import { usePathname } from "next/navigation"
 import LoadingScreen from "./general/loading-screen"
+import { roles } from "@/db/schema/libraries"
+import { permission } from "process"
+import path from "path"
 
 const data = {
   user: {
@@ -53,6 +56,12 @@ const data = {
       logo: Command,
       plan: "Configuration",
       url: "/settings",
+    },
+    {
+      name: "Human Resource and Development",
+      logo: User2Icon,
+      plan: "Configuration",
+      url: "/hr-development",
     }
   ],
   navMain: [
@@ -69,6 +78,7 @@ const data = {
         }
       ],
       modules: ["Sub-Project"],
+      roles:["Administrator"]
     },
     {
       title:"Tasks",
@@ -82,6 +92,8 @@ const data = {
         }
       ],
       modules: ["Sub-Project"],
+      roles:["Administrator"]
+
     },
     {
       title:"Libraries",
@@ -105,6 +117,8 @@ const data = {
         }
       ],
       modules:["Settings"],
+      roles:["Administrator"]
+
     },
     {
       title:"Users",
@@ -118,6 +132,8 @@ const data = {
         }
       ],
       modules:["Settings"],
+      roles:["Administrator"]
+
     },
     {
       title: "Profile",
@@ -157,6 +173,7 @@ const data = {
         }
       ],
       modules: ["Person Profile"],
+      roles:["*"]
     },
     {
       title: "CFW Management",
@@ -165,27 +182,71 @@ const data = {
       isActive: false,
       items:[
         {
-          title: "Work Plan",
+          title: "Work Plans",
           url:"/personprofile/work-plan",
-          permission:["Can Add","Can View","Can Delete"]
+          permission:["Can Add","Can View","Can Delete"],
         },
        
       ],
+      roles: ["CFW Administrator","Administrator"],
       modules: ["Person Profile"],
     },
+    {
+      title: "Position: Item Created",
+      url: "",
+      icon: User2Icon,
+      isActive: false,
+      items:[
+        {
+          title:"Masterlist",
+          url:"/hr-development/item-created",
+          permission:["Can View","Can Delete"]
+        }
+      ],
+      modules: ["Human Resource and Development"],
+      roles:["Administrator"]
+    },
+    {
+      title: "Position: Item Distribution",
+      url:"#",
+      icon: User2Icon,
+      isActive: false,
+      items:[
+        {
+          title:"Hiring Procedures and Status",
+          url:"#",
+          permission:["Can View","Can Delete"]
+        },
+        {
+          title:"Application Status",
+          url:"#",
+          permission:["Can View","Can Delete"]
+        },
+        {
+          title:"Employee Personal Data Sheet",
+          url:"#",
+          permission:["Can View","Can Delete"]
+        }
+      ],
+      modules: ["Human Resource and Development"],
+      roles:["Administrator"]
+    }
   ],
   projects: [
     {
       name: "Update Library",
       url: "/library",
       icon: Frame,
+      pathname: ["*"],
+      roles:["*"]
     },
     {
       name: "Attendance",
       url: "/punch",
       icon: Frame,
+      pathname: ["personprofile"],
+      roles:["CFW Administrator","Administrator"]
     },
-
   ],
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -233,9 +294,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           (nav) =>
             nav.modules.includes(activeTeam?.name) // Filter based on active team
         );  
-  
+
+        debugger;
         const filteredSubModule = data.navMain.filter(item => 
-          item.modules.includes(activeTeam?.name)
+          item.modules.includes(activeTeam?.name) &&
+          (
+            item.roles?.includes("*") || // Allow all roles
+            item.roles?.some(role => userTeam?.role?.includes(role))
+          )
         );
 
         const filteredChildModule = filteredSubModule
@@ -256,6 +322,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     loadNavMain();
   }, [activeTeam])
 
+  const matchedProjects = data.projects.filter(project => {
+    const matchesPath = project.pathname.includes("*") ||
+      project.pathname.some(path => pathname?.toLowerCase().includes(path.toLowerCase()));
+  
+    const matchesRole = project.roles.includes("*") ||
+      project.roles.some(role => user.role.includes(role));
+  
+    return matchesPath && matchesRole;
+  });
+  
+
   return (
     <>
       {!isLoading ? (
@@ -270,7 +347,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarContent>
             {/* <p>Active Team: {JSON.stringify(team)}</p> */}
             <NavMain items={filteredSub} />
-            <NavProjects projects={data.projects} />
+            <NavProjects projects={matchedProjects} />
           </SidebarContent>
           <SidebarFooter>
             <NavUser user={data.user} />

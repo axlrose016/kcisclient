@@ -13,7 +13,7 @@ import { getSession } from "@/lib/sessions-client";
 import PersonProfileService from "./(authorized)/personprofile/form/PersonProfileService";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-import CFWBooklet from "@/components/PDF/CFWBooklet";
+import GeneratePDF from "@/components/PDF/CFW-Booklet";
 
 
 function page() {
@@ -124,7 +124,7 @@ function page() {
   useEffect((() => {
     const fetchData = async () => {
       try {
-        debugger;
+        //debugger;
         await dexieDb.open();
         await dexieDb.transaction('r', [dexieDb.person_profile,
         dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
@@ -133,7 +133,7 @@ function page() {
 
             // Fetch Profile (Dexie first, then LocalStorage)
             let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
-            debugger;
+            //debugger;
             if (!profile) {
               profile = JSON.parse(localStorage.getItem("person_profile") || "null");
             }
@@ -258,7 +258,7 @@ function page() {
                   </div>
                 </CardContent>
                 <CardFooter>
-                  {encodingPercentage === 100 ? <CFWBooklet /> : null}
+                  {encodingPercentage === 100 ? <GeneratePDF /> : null}
                 </CardFooter>
               </Card>
               <Card

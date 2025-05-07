@@ -8,13 +8,20 @@ import LoginService from "@/app/login/LoginService";
 const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
-  private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
-  private apiUrlDisabilities = 'https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/'
-  private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/'
-  private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
-  private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
-  private apiUrlCFWAssessment = 'https://kcnfms.dswd.gov.ph/api/cfw_assessment/create/'
-  private apiUrlCFWAssessmentPatch = 'https://kcnfms.dswd.gov.ph/api/cfw_assessment/status/patch/'
+  // private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+  // private apiUrlDisabilities = 'https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/'
+  // private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/'
+  // private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
+  // private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
+  // private apiUrlCFWAssessment = 'https://kcnfms.dswd.gov.ph/api/cfw_assessment/create/'
+  // private apiUrlCFWAssessmentPatch = 'https://kcnfms.dswd.gov.ph/api/cfw_assessment/status/patch/'
+  private apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+  private apiUrlDisabilities = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_disability/create/'
+  private apiUrlSectors = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_sector/create/'
+  private apiUrlFamilyComposition = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_family_composition/create/'
+  private apiUrlProgramDetails = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_engagement_history/create/'
+  private apiUrlCFWAssessment = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/create/'
+  private apiUrlCFWAssessmentPatch = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/status/patch/'
   // Method to sync data in bulk
   async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {

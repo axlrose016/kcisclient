@@ -76,7 +76,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useForm } from "react-hook-form"; 
+import { useForm } from "react-hook-form";
 import { AppTableDialogForm } from './app-table-dialog';
 interface DataTableProps {
   data: any[];
@@ -84,9 +84,10 @@ interface DataTableProps {
   onEditRecord?: (row: any) => void;
   onDelete?: (row: any) => void;
   onRowClick?: (row: any) => void;
+  onAddNewRecordNavigate?: (row: any) => void;
   onClick?: () => void;
   onClickAddNew?: () => void;
-  onClickEdit?: () => void;
+  onClickEdit?: (record: any) => void;
   onAddNewRecord?: (record: any) => void;
   onRefresh?: () => void;
   customActions?: {
@@ -125,6 +126,7 @@ export function AppTable({
   onEditRecord,
   onDelete,
   onRowClick,
+  onAddNewRecordNavigate,
   onClickAddNew,
   onClickEdit,
   onAddNewRecord,
@@ -173,6 +175,8 @@ export function AppTable({
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
+  const [isloading, setLoading] = useState(false)
+
   const createQueryString = useCallback(
     (params: Record<string, string | null>) => {
       const newSearchParams = new URLSearchParams(searchParams?.toString());
@@ -202,7 +206,6 @@ export function AppTable({
 
   const columns = useMemo(() => {
     if (providedColumns) return providedColumns;
-
     if (data.length === 0) return [];
 
     const sampleRow = data[0];
@@ -218,6 +221,15 @@ export function AppTable({
       sortable: true
     }));
   }, [data, providedColumns]);
+
+  useEffect(() => {
+    setLoading(true)
+    const loading = setTimeout(() => setLoading(false), 6500)
+    if (data.length != 0) {
+      setLoading(false)
+      clearTimeout(loading)
+    }
+  }, [data.length])
 
   useEffect(() => {
     const search = searchParams?.get('search') || '';
@@ -300,7 +312,6 @@ export function AppTable({
         if (tableColumn) {
           tableColumn.setFilterValue(value);
         }
-
         setShowFilterDialog(false);
         setSelectedColumn('');
         setSelectedValue('');
@@ -314,7 +325,6 @@ export function AppTable({
     const newFilters = activeFilters.filter(f => f.column !== filter.column);
     setActiveFilters(newFilters);
     updateUrl({ filters: JSON.stringify(newFilters) });
-
     const column = table.getColumn(filter.column);
     if (column) {
       column.setFilterValue('');
@@ -473,13 +483,13 @@ export function AppTable({
                       size="icon"
                       className="h-8 w-8"
                       onClick={(e) => {
-                        e.stopPropagation(); 
+                        e.stopPropagation();
                         if (onClickEdit) {
-                          onClickEdit()
-                        } 
+                          onClickEdit(rowData)
+                        }
                         if (onEditRecord) {
                           handleEdit(rowData);
-                        } 
+                        }
                       }}
                       disabled={isRefreshing}
                     >
@@ -635,7 +645,6 @@ export function AppTable({
                 <DropdownMenuContent align="end" className="w-[200px]">
                   <DropdownMenuLabel>Table Settings</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-
                   <DropdownMenuGroup>
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger>
@@ -666,7 +675,6 @@ export function AppTable({
                   </DropdownMenuGroup>
 
                   <DropdownMenuSeparator />
-
                   <DropdownMenuLabel className="font-normal text-xs text-muted-foreground">
                     Toggle Columns
                   </DropdownMenuLabel>
@@ -722,7 +730,7 @@ export function AppTable({
                 </TooltipProvider>
               )}
 
-              {(onAddNewRecord || onClickAddNew) && (
+              {(onAddNewRecord || onClickAddNew || onAddNewRecordNavigate) && (
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -736,6 +744,10 @@ export function AppTable({
                             setEditingRow(null);
                             setNewRecord({});
                             setShowAddDialog(true);
+                          }
+
+                          if(onAddNewRecordNavigate){
+                            onAddNewRecordNavigate({});
                           }
                         }}
                         disabled={isRefreshing}
@@ -753,7 +765,8 @@ export function AppTable({
           </div>
 
           {activeFilters.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className='flex gap-2 justify-end'>
+              <div className="flex gap-2 items-center flex-1"> 
               {activeFilters.map((filter, index) => (
                 <Badge
                   key={index}
@@ -779,6 +792,9 @@ export function AppTable({
                   </Button>
                 </Badge>
               ))}
+              
+            </div>
+             <Badge  variant="green">Found {table.getRowCount()} Record{table.getRowCount() > 1 ? "s":""}</Badge>
             </div>
           )}
         </>
@@ -845,7 +861,10 @@ export function AppTable({
                       colSpan={columns.length + 1}
                       className="h-24 text-center flex justify-center items-center gap-2"
                     >
-                      <Loader2 className="animate-spin" /> <span>Populating...</span>
+                      <div className="left-0 right-0 absolute">
+                        {isloading ? <div className='flex text-center justify-center items-center gap-2'><Loader2 className="animate-spin" /> <span>Loading...</span></div> : "No Record"}
+                      </div>
+
                     </TableCell>
                   </TableRow>
                 )}
@@ -1053,7 +1072,7 @@ export function AppTable({
                   <Input
                     value={filterInputValue}
                     onChange={(e) => setFilterInputValue(e.target.value)}
-                    placeholder="Enter value"
+                    placeholder="Enter search value"
                   />
                 )
               )}

@@ -1,6 +1,6 @@
 import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibWorkPlanTaskCategory, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from "@/components/interfaces/iuser";
 import { seedCFWSchedules, seedCFWTimeLogs } from "./user-service";
 
@@ -243,8 +243,8 @@ export const seedModules: IModules[] = [
     },
     {
         "id": "19a18164-3a26-4ec3-ac6d-755df1d3b980",
-        "module_description": "Finance",
-        "module_path": "finance",
+        "module_description": "Human Resource and Development",
+        "module_path": "hrdevelopment",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",
@@ -1592,7 +1592,7 @@ export const seedLibDeploymentArea: ILibDeploymentArea[] = [
     { "id": 43, "deployment_name": "SENATE", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 44, "deployment_name": "SENIOR HIGH SCHOOL", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { "id": 45, "deployment_name": "SOCIAL SECURITY SYSTEM", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
-    
+
 
 ];
 export const seedLibTypeOfWork: ILibTypeOfWork[] = [
@@ -2004,7 +2004,24 @@ export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [
     { id: 258, program_name: "DIPLOMA IN TECHNOLOGY MAJOR IN ELECTRONICS", program_code: "DTE-ELC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
     { id: 259, program_name: "ONE-YEAR SEAFARER’S RATING CERTIFICATE – STEWARDING (SRC)", program_code: "SRC-STW", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
     { id: 260, program_name: "TEACHER CERTIFICATE PROGRAM", program_code: "TCP", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
-    { id: 261, program_name: "Bachelor of Technical-Vocational Teacher Education MAJOR IN Computer Hardware Servicing", program_code: "TEC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" }
+    { id: 261, program_name: "BACHELOR OF TECHNICAL VOCATIONAL TEACHER EDUCATION WITH SPECIALIZATION IN COMPUTER HARDWARE SERVICING", program_code: "TEC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 262, program_name: "BACHELOR OF SCIENCE IN ENGINEERING PROGRAM", program_code: "BSE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 263, program_name: "BACHELOR OF SCIENCE IN CIVIL ENGINEERING", program_code: "BSCE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 264, program_name: "BACHELOR OF SCIENCE IN ELECTRICAL ENGINEERING", program_code: "BSEE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 265, program_name: "BACHELOR OF SCIENCE IN ELECTRONICS ENGINEERING", program_code: "BSECE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 266, program_name: "BACHELOR OF SCIENCE IN MECHANICAL ENGINEERING", program_code: "BSME", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 267, program_name: "BACHELOR OF SCIENCE IN DEGREE PROGRAM", program_code: "BSDP", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 268, program_name: "BACHELOR OF TECHNICAL VOCATIONAL TEACHER EDUCATION WITH SPECIALIZATION IN ELECTRICAL TECHNOLOGY", program_code: "TEE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 269, program_name: "BACHELOR OF TECHNICAL VOCATIONAL TEACHER EDUCATION WITH SPECIALIZATION IN ELECTRICAL TECHNOLOGY", program_code: "TEE", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 270, program_name: "BACHELOR OF TECHNICAL VOCATIONAL TEACHER EDUCATION WITH SPECIALIZATION IN COMPUTER HARDWARE SERVICING", program_code: "TEC", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 271, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN CHEMICAL TECHNOLOGY", program_code: "BETCT", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 272, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN CIVIL TECHNOLOGY", program_code: "BETCIV", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 273, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN ELECTROMECHANICAL TECHNOLOGY", program_code: "BETEM", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 274, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN NON-DESTRUCTIVE TESTING TECHNOLOGY", program_code: "BETNDT", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 275, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN DIES & MOULDS TECHNOLOGY", program_code: "BETDM", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+    { id: 276, program_name: "BACHELOR OF ENGINEERING TECHNOLOGY PROGRAM MAJOR IN HEATING, VENTILATION, AND AIRCONDITIONING/REFRIGERATION TECHNOLOGY", program_code: "BETHVACR", created_date: new Date().toISOString(), created_by: "00000000-0000-0000-0000-000000000000", last_modified_by: "", last_modified_date: "", push_status_id: 2, push_date: "", deleted_by: "", deleted_date: "", is_deleted: false, remarks: "Seeded" },
+
+
 
 
 ];
@@ -2013,6 +2030,12 @@ export const seedLibDeploymentAreaCategories: ILibDeploymentAreaCategories[] = [
     { id: 1, category_name: "Company/ LGU", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 2, category_name: "School", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 3, category_name: "N/A", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedLibWorkPlanTaskCategories: ILibWorkPlanTaskCategory[] = [
+    { id: 1, work_plan_category_name: "General", status_id: 1, "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, work_plan_category_name: "Specific", status_id: 1, "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+
 ]
 
 

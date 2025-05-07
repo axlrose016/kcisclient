@@ -72,10 +72,8 @@ export default function Users(){
                     Users
                 </div>
             </CardTitle>
-
         </CardHeader>
         <CardContent>
-
             <div className="min-h-screen">
                 <div className="min-h-screen">
                     <AppTable
@@ -87,7 +85,6 @@ export default function Users(){
                             filterType: 'text',
                             sortable: true,
                         })) : []}
-                        onEdit={handleEdit}
                         onDelete={handleDelete}
                         onRowClick={handleRowClick}
                         onAddNewRecord={handleAddNewRecord}

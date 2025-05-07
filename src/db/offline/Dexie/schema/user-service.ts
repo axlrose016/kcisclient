@@ -228,6 +228,25 @@ export const seedUser: IUser[] = [
         "is_deleted": false,
         "remarks": ""
     }
+    ,
+    {
+        "id": "8a9eb495-cb87-4ebc-b2cc-be1b186bb7ea",
+        "username": "HEI FOCAL PERSON TEST",
+        "email": "heifocaltest@gmail.com",
+        "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
+        "salt": Array.from(saltArray),
+        "role_id": "e2ebba79-7134-4ddb-838f-9350a89c2a0e",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "created_by": "8a9eb495-cb87-4ebc-b2cc-be1b186bb7ea",
+        "last_modified_date": "",
+        "last_modified_by": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_date": "",
+        "deleted_by": "",
+        "is_deleted": false,
+        "remarks": ""
+    }
 ];
 
 export const seedUserAccess: IUserAccess[] = [
@@ -280,13 +299,12 @@ export const seedUserAccess: IUserAccess[] = [
         "remarks": "",
         "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
     },
-    
     {
         "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
         "created_date": "2025-03-11T06:18:58.077Z",
         "deleted_by": "",
         "deleted_date": "",
-        "id": "3f7fd931-6c08-4706-9847-f5c7bf663807",
+        "id": "1d23ace1-0562-4274-ab6a-467704b94fed",
         "is_deleted": false,
         "last_modified_by": "",
         "last_modified_date": "",
@@ -297,7 +315,22 @@ export const seedUserAccess: IUserAccess[] = [
         "remarks": "",
         "user_id": "ebaea47e-df5e-463a-b9f8-aa3636db5fff"
     },
-    
+    {
+        "created_by": "78636dd9-bca4-46d1-b6aa-75168e7009f1",
+        "created_date": "2025-03-11T06:18:58.077Z",
+        "deleted_by": "",
+        "deleted_date": "",
+        "id": "17d4a50f-fda6-43e9-a059-37672dfb28fa",
+        "is_deleted": false,
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "module_id": "19a18164-3a26-4ec3-ac6d-755df1d3b980",
+        "permission_id": "5568ea7d-6f12-4ce9-b1e9-adb256e5b057",
+        "push_date": "",
+        "push_status_id": 2,
+        "remarks": "",
+        "user_id": "e9840dec-f388-418c-b5c9-c5cf295df9d7"
+    },
 
 ];
 
@@ -441,7 +474,6 @@ export async function seedUserData() {
     try {
         await tblUsers.bulkPut(seedUser);
         await tblUserAccess.bulkPut(seedUserAccess);
-
         return "User and User Access seeded successfully!!!";
     } catch (error) {
         console.error("Error User seed:", error);

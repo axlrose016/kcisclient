@@ -17,7 +17,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { useRouter } from "next/navigation";
 // import router, { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-const baseUrl = 'personprofile/masterlist'
+const baseUrl = '/personprofile/masterlist'
 const cache: Record<string, any> = {};
 function newAbortSignal(timeoutMs: number) {
     const abortController = new AbortController();
@@ -31,6 +31,122 @@ import LoginService from "@/app/login/LoginService";
 import { IAttachments } from "@/components/interfaces/general/attachments";
 
 const _session = await getSession() as SessionPayload;
+const columnsMasterlist = [
+
+    {
+        id: 'status',
+        header: 'Status',
+        accessorKey: 'STATUS',
+        filterType: 'select',
+        filterOptions: ['Pending', 'Eligible', 'Not Eligible', 'For Compliance'],
+        sortable: true,
+        align: "center",
+        cell: (value: any) => <Badge variant={value == "Eligible" || value == "Active" ? "green" :
+            value == "Pending" ? "warning" :
+                value == "Not Eligible" ? "destructive" : "default"
+        } >{value}</Badge>
+    },
+    {
+        id: 'region',
+        header: 'Region',
+        accessorKey: 'REGION',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'school_name',
+        header: 'School Name (HEI)',
+        accessorKey: 'SCHOOL NAME',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'first_name',
+        header: 'First Name',
+        accessorKey: 'FIRST NAME',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'middle_name',
+        header: 'Middle Name',
+        accessorKey: 'MIDDLE NAME',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'last_name',
+        header: 'Last Name',
+        accessorKey: 'LAST NAME',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'sex',
+        header: 'Sex Description',
+        accessorKey: 'SEX DESCRIPTION',
+        filterType: 'text',
+        sortable: true,
+        align: "center",
+        cell: null,
+    },
+    {
+        id: 'student_graduate',
+        header: 'Student/ Graduate',
+        accessorKey: 'STUDENT OR GRADUATE',
+        filterType: 'text',
+        sortable: true,
+        align: "center",
+        cell: null,
+    },
+    {
+        id: 'province',
+        header: 'Province',
+        accessorKey: 'PROVINCE',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'city',
+        header: 'City',
+        accessorKey: 'CITY',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'brgy',
+        header: 'Barangay',
+        accessorKey: 'BRGY',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+
+    // {
+    //   id: 'actions',
+    //   header: 'Action',
+    //   accessorKey: 'action',
+    //   filterType: 'text',
+    //   sortable: false,
+    //   align: "center",
+    //   cell: null,
+    // },
+];
 export default function PersonProfileMasterlist({ page }: { page: number }) {
     const [profiles, setProfiles] = useState<IPersonProfile[]>([]);
     const [selectedProfiles, setSelectedProfiles] = useState<IPersonProfile[]>([]);
@@ -103,7 +219,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                     }
                 };
 
-                fetchData("https://kcnfms.dswd.gov.ph/api/person_profile/view/pages/");
+                fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/pages/");
             } catch (error) {
                 console.error(error);
             } finally {
@@ -254,7 +370,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                                 }
                             });
 
-                            router.push(`/${baseUrl}/${row.id}`);
+                        router.push(baseUrl + `/${row.id}`);
                     }
 
 
@@ -269,7 +385,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                     }
                 }
             }
-            fetchSelectedData("https://kcnfms.dswd.gov.ph/api/person_profile/view/" + row.id);
+            fetchSelectedData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + row.id);
         }
         catch (error) {
             console.log("Error fetching data:", error);
@@ -278,8 +394,9 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
         // router.push(`/${baseUrl}/${row.id}`);
     };
 
-    const handleAddNewRecord = (newRecord: any) => {
-        console.log('handleAddNewRecord', newRecord)
+    const handleAddNewRecord = () => {
+        router.push(baseUrl + "/new")
+        // console.log('handleAddNewRecord', newRecord)
     };
 
     const fetchCFWMasterlist = () => {
@@ -301,7 +418,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         <DialogFooter>
 
                             <Button variant={"outline"}>Close</Button>
-                            <Button onClick={() => handleEligible(selectedCFWID)} variant={"green"}>Eligible</Button>
+                            <Button onClick={() => handleEligible(selectedCFWID)} variant={"default"}>Eligible</Button>
                         </DialogFooter>
                     </DialogContent>
 
@@ -336,17 +453,11 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
 
                     <AppTable
                         data={profiles}
-                        columns={profiles[0] ? Object.keys(profiles[0]).map((key, idx) => ({
-                            id: key,
-                            header: key,
-                            accessorKey: key,
-                            filterType: 'text',
-                            sortable: true,
-                        })) : []}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
+                        columns={columnsMasterlist}
+                        // onEdit={handleEdit}
+                        // onDelete={handleDelete}
                         onRowClick={handleRowClick}
-                        onAddNewRecord={handleAddNewRecord}
+                        // onAddNewRecord={handleAddNewRecord}
                     />
                 </div>
             </div>

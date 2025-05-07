@@ -98,7 +98,7 @@ export default async function RootLayout({
       <body className={`${GeistSans.className} ${GeistMono.className} antialiased`} cz-shortcut-listen="true">
         {children}
         <ServiceWorker />
-        <Toaster />
+        <Toaster/>
         <FloatingPWAStatusAvatar />
       </body>
     </html>

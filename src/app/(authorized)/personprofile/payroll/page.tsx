@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
+import { Badge } from '@/components/ui/badge';
 
 const baseUrl = 'personprofile/payroll'
 
@@ -86,6 +87,9 @@ const columns = [
         filterType: 'select',
         filterOptions: ['Active', 'Incoming', 'Hold', 'Cancelled'],
         sortable: true,
+        cell: (value: any) => <Badge variant={value == "Active" ? "green" : 
+                                                value == "Incoming" ? "warning" : 
+                                                value == "Cancelled" ? "destructive" : "default"}>{value}</Badge>
     },
 ];
 
@@ -162,7 +166,7 @@ export default function PayrollPage() {
 
                     <AppTable
                         data={data}
-                        columns={columns} 
+                        columns={columns}
                         onDelete={handleDelete}
                         onRowClick={handleRowClick}
                         onRefresh={handleRefresh}

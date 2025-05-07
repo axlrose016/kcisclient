@@ -53,7 +53,6 @@ export default function Details({ errors, capturedData, updateCapturedData, sele
         console.log("Selected Province ID:", id);
         setSelectedCFWCatId(id);
     };
-
     const handleHealthConcernChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
         // console.log('handleHealthConcernChange > value',value)

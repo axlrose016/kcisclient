@@ -73,7 +73,7 @@ export default function DashboardPage() {
             })
             return;
           }
-          await createSession(user.id, userData);
+          await createSession(user.id, userData, 'abc123');
           router.push("/dashboard");
           router.refresh();
         }
@@ -156,5 +156,5 @@ export default function DashboardPage() {
         </div>
         </div>
       </div>
-  )
+    )
 }

@@ -7,8 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
-import { Calendar } from "@/components/ui/calendar"
 import { useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
@@ -18,6 +16,8 @@ import { SessionPayload } from '@/types/globals';
 import { IPersonProfile } from '@/components/interfaces/personprofile';
 import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
 import { formatInTimeZone } from 'date-fns-tz';
+import { ICFWTimeLogs } from '@/components/interfaces/iuser';
+import { toast, useToast } from '@/hooks/use-toast';
 
 
 const columns = [
@@ -82,7 +82,7 @@ const columns = [
         filterType: 'text',
         sortable: true,
         className: "text-center"
-    }, 
+    },
 ]
 
 type IUser = IPersonProfile & ILibSchoolProfiles;
@@ -103,37 +103,45 @@ export default function DailyTimeRecordUser() {
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
-            const result = await getResults(_session)
-            setData(result)
-            console.log('data', result)
+            setData(await getResults())
         })();
     }, [])
 
 
-    const getResults = async (session: SessionPayload) => {
+    const getResults = async () => {
         const user = await dexieDb.person_profile.where('user_id')
             .equals(params!.id).first();
-    
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         };
-    
-        console.log('getResults', { session, merge });
         setUser(merge);
-    
         const results = await dexieDb.cfwtimelogs.where('created_by')
             .equals(user?.email ?? "")
-            .sortBy("created_date"); // Ascending: oldest → latest
-    
+            .sortBy("created_date"); // Ascending: oldest → latest  
+        console.log('getResults', results)
         return results;
     };
 
 
-    const handleEdit = (row: any) => {
-        console.log('Edit:', row);
+    const handleEdit = (row: ICFWTimeLogs) => {
+        (async () => {
+            console.log('Edit:', row);
+            await dexieDb.cfwtimelogs.put({
+                ...row,
+                last_modified_by: session!.userData!.email!,
+                last_modified_date: new Date().toISOString()
+            }, 'id')
+
+            toast({
+                variant: "default",
+                title: "Update",
+                description: "Record has been updated!",
+            });
+            setData(await getResults())
+        })();
     };
-  
+
     // const handleRowClick = (row: any) => {
     //     console.log('Row clicked:', row);
     //     router.push(`/${baseUrl}/${row.user_id}`);
@@ -188,8 +196,7 @@ export default function DailyTimeRecordUser() {
                         <AppTable
                             data={data}
                             columns={columns}
-                            onEditRecord={handleEdit} 
-                            onAddNewRecord={handleAddNewRecord}
+                            onEditRecord={session?.userData.role !== "CFW Beneficiary" ? handleEdit:undefined}
                         />
                     </div>
                 </div>

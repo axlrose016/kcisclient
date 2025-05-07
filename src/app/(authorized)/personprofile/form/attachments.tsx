@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption, } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { DialogDescription, DialogTitle, DialogTrigger } from "@radix-ui/react-dialog";
-import { Check, Edit, Info, Trash, Upload } from "lucide-react"
+import { Check, Edit, EyeIcon, Info, Trash, Upload } from "lucide-react"
 
 import { useState, useRef, useEffect, ChangeEvent } from "react"
 import { Input } from "@/components/ui/input"
@@ -27,7 +27,21 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { IAttachments } from "@/components/interfaces/general/attachments";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
- 
+import Image from "next/image";
+const filesToView = [
+    {
+        file_id: 1,
+        file_name: "",
+        hasSubmitted: "true",
+        fileToUpload: "",
+        fileURL: ""
+    }
+
+]
+interface ListOfAttachments {
+    file_id: number;
+    file_name: string;
+}
 export default function Attachments({ errors, capturedData, updateFormData, session, user_id_viewing }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void; session: any, user_id_viewing: string }) {
     const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
     const [file, setFile] = useState<File | null>(null)
@@ -41,8 +55,10 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
     const [attachmentsDexie, setAttachmentsDexie] = useState({});
     const [attachments, setAttachments] = useState<IAttachments[]>([]);
     const [attachmentNames, setAttachmentNames] = useState<Record<number, string>>({});
-
-
+    const [isOpenForViewingFile, setIsOpenForViewingFile] = useState(false);
+    const [selectedNameOfFile, setSelectedNameOfFile] = useState("")
+    const [listOfAttachmentsData, setListOfAttachmentsData] = useState<any[]>([])
+    const [selectFilePathUrl, setSelectedFilePathUrl] = useState("")
     let iflag = false;
     useEffect(() => {
 
@@ -61,6 +77,8 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                 (record) => ![3, 4, 5, 6, 9, 12].includes(Number(record.file_id))
             );
             setAttachments(allAttachments); // No error now
+
+
             // setAttachments(allAttachments); // No error now
 
             const files_to_upload = await getOfflineLibFilesToUpload();
@@ -68,6 +86,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
             setAttachmentNames(attachment_map);
             updateFormData(allAttachments);
             setAttachments(allAttachments);
+            setListOfAttachmentsData(files_to_upload)
             // debugger;
             if (!iflag) {
                 console.log("✅ Attachments fetched:", filteredRecords);
@@ -225,7 +244,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
     };
 
     const handleSaveFileUpload = () => {
-        debugger;
+        // debugger;
         const MAX_FILE_SIZE = 5; // * 1024 * 1024; // 50MB in bytes
         const fileSizeInMB = (Number(fileInfo.size) / 1024).toFixed(2);
         // console.log("File path " + fileInfo.file_path);
@@ -277,21 +296,21 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
 
     }
 
-    const handleDeleteFileRecord = (index: number) => {
-        toast({
-            variant: "destructive",
-            title: "Are you sure?",
-            description: "This action cannot be undone.",
-            action: (
-                <button
-                    onClick={() => confirmDelete(index)}
-                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
-                >
-                    Confirm
-                </button>
-            ),
-        });
-    };
+    // const handleDeleteFileRecord = (index: number) => {
+    //     toast({
+    //         variant: "destructive",
+    //         title: "Are you sure?",
+    //         description: "This action cannot be undone.",
+    //         action: (
+    //             <button
+    //                 onClick={() => confirmDelete(index)}
+    //                 className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700"
+    //             >
+    //                 Confirm
+    //             </button>
+    //         ),
+    //     });
+    // };
 
 
 
@@ -329,6 +348,27 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
             }
         }
     }, [userIdViewing]);
+    function handleViewAttachment(file_id: number, file_name: string): void {
+        setIsOpenForViewingFile(true);
+        // setSelectedNameOfFile(file_name);
+        // debugger;
+        if (file_id) {
+            // debugger;
+            const foundAttachment = listOfAttachmentsData.find((attachment) => attachment.id === file_id);
+            if (foundAttachment) {
+                setSelectedNameOfFile(foundAttachment.name);
+                setSelectedFilePathUrl("public/images/cover_page.png")
+                return;
+                if (file_name) {
+                    setSelectedFilePathUrl(file_name)
+                } else {
+                }
+            }
+        } else {
+
+        }
+    }
+
     return (
         <div id="attachments_info_form">
 
@@ -345,19 +385,28 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                     </div>
                 </div>
 
+                {/* <div>
+                    {listOfAttachmentsData.map((loa, index) => (
+                        <div key={index}>
+                            <pre>{JSON.stringify(loa, null, 2)}</pre>
+                        </div>
+                    ))}
+                </div> */}
 
                 <div className="p-2 col-span-4">
-                    <Table className={`min-w-[1000px] border ${userIdViewing ? "opacity-50 pointer-events-none" : ""}`}>
+                    <Table className={`min-w-[1000px] border }`}>
+                        {/* <Table className={`min-w-[1000px] border ${userIdViewing ? "opacity-50 pointer-events-none" : ""}`}> */}
                         {/* <Table className="border"> */}
 
                         <TableHeader>
                             <TableRow key={0}>
-
                                 <TableHead className="w-[10px]"><Check className="w-5 h-5 text-green-500" /></TableHead>
                                 <TableHead>File to Upload</TableHead>
                                 {/* <TableHead>File Name</TableHead>
                                 <TableHead>File Size</TableHead> */}
-                                <TableHead className="text-center">Action</TableHead>
+                                {/* <TableHead className="text-center">Action</TableHead> */}
+                                <TableHead className={`${userIdViewing ? "hidden text-center" : ""}`}>Action</TableHead>
+                                <TableHead className={`${userIdViewing ? "" : "hidden"} text-center`}>View Attachment</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -368,6 +417,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                     .map((f, index) => (
 
                                         <TableRow key={f.id}>
+
                                             <TableCell className="w-[10px]">
                                                 {f.file_type !== "" ? <Check className="w-5 h-5 text-green-500" /> : ""}
                                             </TableCell>
@@ -378,7 +428,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                                 </div>
                                             </TableCell>
 
-                                            <TableCell>
+                                            <TableCell className={`${userIdViewing ? "hidden" : ""}`}>
                                                 <div className="flex justify-center items-center space-x-2">
                                                     <TooltipProvider>
                                                         <Tooltip>
@@ -402,7 +452,18 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                                     />
                                                 </div>
                                             </TableCell>
-
+                                            <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant={"destructive"} className={`${f.file_type != "" ? "" : "hidden"} cursor-pointer`} onClick={(e) => handleViewAttachment(f.file_id, f.file_name)}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>View Attachment</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
+                                            </TableCell>
 
                                         </TableRow>
 
@@ -423,7 +484,27 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
 
             </div>
 
+            <Dialog open={isOpenForViewingFile} onOpenChange={setIsOpenForViewingFile}>
+                <DialogContent className=" max-w-full md:max-h-full">
+                    <DialogHeader>
+                        <DialogTitle></DialogTitle >
+                        <DialogDescription className="flex flex-col justify-center items-center pt-5">
+                            <Image
+                                src="/images/cover_page.png"
+                                width={1000}
+                                height={800}
+                                alt="File preview placeholder"
+                                className="rounded-md shadow-md   object-contain"
+                            />
+                            <span className="mt-5 text-2xl">{selectedNameOfFile}</span>
+                        </DialogDescription>
+                    </DialogHeader>
 
+                    {/* <DialogFooter>
+                        <Button type="submit">Save changes</Button>
+                    </DialogFooter> */}
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

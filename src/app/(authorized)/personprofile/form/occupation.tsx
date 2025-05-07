@@ -85,7 +85,6 @@ export default function Occupation({ errors, capturedData, updateCapturedData, s
 
     const occupationRef = useRef<HTMLInputElement>(null);
 
-
     useEffect(() => {
         if (hasOccupation && occupationRef.current) {
             occupationRef.current.focus(); // Auto-focus when enabled

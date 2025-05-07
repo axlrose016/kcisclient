@@ -270,6 +270,7 @@ export async function submit(prevState: any, formData: any) {
           dataToInsert.representative_skills = formCFWIndex4["representative_skills"];
           // push status 1 = uploaded
           // push status id = 2 for uploading
+          // push status id = 3 pending
 
           const result = await trx
             .insert(person_profile)

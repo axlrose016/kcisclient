@@ -1,4 +1,4 @@
-import type React from "react"
+
 import { z } from "zod"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -18,6 +18,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { useOnlineStatus } from "@/hooks/use-network"
 import UsersService from "./UsersService"
 import { datetime } from "drizzle-orm/mysql-core"
+import { useState } from "react"
 
 const formSchema = z
   .object({
@@ -44,6 +45,8 @@ export default function RegistrationForm({ className, ...props }: React.Componen
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
   })
+
+  const [showPassword, setShowPassword] = useState(false); // State for show password
 
   const onSubmit = async (data: FormData) => {
     // try {
@@ -191,8 +194,54 @@ export default function RegistrationForm({ className, ...props }: React.Componen
               {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
             </div>
           </div>
+
+          {/* Password and Confirm Password Fields with Show/Hide Feature */}
           <div className="mt-10 grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-8">
-            <PasswordFields register={register} errors={errors} />
+            <div className="sm:col-span-8">
+              <label htmlFor="password" className="block text-sm/6 font-medium text-gray-900">
+                Password
+              </label>
+              <div className="mt-2 relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"} // Toggle password visibility
+                  {...register("password")}
+                  placeholder="Password"
+                  className="normal-case"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
+            </div>
+
+            <div className="sm:col-span-8">
+              <label htmlFor="confirmPassword" className="block text-sm/6 font-medium text-gray-900">
+                Confirm Password
+              </label>
+              <div className="mt-2 relative">
+                <Input
+                  id="confirmPassword"
+                  type={showPassword ? "text" : "password"} // Toggle password visibility
+                  {...register("confirmPassword")}
+                  placeholder="Confirm Password"
+                  className="normal-case"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword.message}</p>}
+            </div>
           </div>
         </div>
       </div>
@@ -211,4 +260,3 @@ export default function RegistrationForm({ className, ...props }: React.Componen
     </form>
   )
 }
-

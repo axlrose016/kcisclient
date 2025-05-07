@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     debugger;
     await transporter.sendMail({
       from: `"KC IS CFW Module" <${process.env.EMAIL_USERNAME}>`,
+      // to: "dwightentico@gmail.com", 
       to: email, 
       cc: process.env.EMAIL_CC, // Add CC recipients from environment variable
       subject: email_subject,

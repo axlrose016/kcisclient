@@ -14,7 +14,7 @@ class PersonProfileService {
   private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
   private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
   // Method to sync data in bulk
-  async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
+  async syncBulkData(formPersonProfile: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {
       const unsyncedData = await dexieDb.person_profile
         .where("push_status_id")

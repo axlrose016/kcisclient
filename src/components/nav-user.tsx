@@ -41,8 +41,7 @@ export function NavUser({
     role: string
     avatar: string
   }
-}) 
-{
+}) {
   const router = useRouter()
   const { isMobile } = useSidebar()
   const handleLogout = async () => {
@@ -52,7 +51,7 @@ export function NavUser({
       //router.push('/login');
       console.log('URL updated, but waiting for navigation');
     } catch (error) {
-        console.error("Failed to log out:", error);
+      console.error("Failed to log out:", error);
     }
   };
   return (
@@ -95,22 +94,22 @@ export function NavUser({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuGroup>
+            {/*<DropdownMenuGroup>
               <DropdownMenuItem>
                 <Sparkles />
                 Upgrade to Pro
               </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
+            </DropdownMenuGroup> 
+            <DropdownMenuSeparator />*/}
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
+              {/* <DropdownMenuItem>
+                  <CreditCard />
+                  Billing
+                </DropdownMenuItem> */}
               <DropdownMenuItem>
                 <Bell />
                 Notifications
