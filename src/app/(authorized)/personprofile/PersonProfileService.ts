@@ -48,7 +48,7 @@ class PersonProfileService {
           console.log("Record", JSON.stringify(formattedRecord));
 
           console.log("Syncing record:", formattedRecord);
-
+          debugger;
           return axios.post(this.apiUrl, formattedRecord, {
             headers: {
               Authorization: `bearer ${_session.token}`,

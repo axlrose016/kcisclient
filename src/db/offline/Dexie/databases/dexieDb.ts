@@ -3,6 +3,7 @@ import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from '@/components/in
 // ICity, 
 import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
 import { IAccomplishmentActualTask, IAccomplishmentReport, ICFWAssessment, IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector, IWorkPlan, IWorkPlanCfw, IWorkPlanTasks } from '@/components/interfaces/personprofile';
+import { IReportColumn, IReportDesigner } from '@/components/interfaces/reportdesigner';
 import { lib_deployment_area_categories } from '@/db/schema/libraries';
 import { person_profile_disability, person_profile_family_composition } from '@/db/schema/personprofile';
 import Dexie, { Table } from 'dexie';
@@ -53,6 +54,8 @@ class MyDatabase extends Dexie {
     work_plan_cfw!:Table<IWorkPlanCfw, string>;
     accomplishment_report!:Table<IAccomplishmentReport, string>;
     accomplishment_actual_task!:Table<IAccomplishmentActualTask, string>;
+    report_designer!:Table<IReportDesigner, string>;
+    report_column!:Table<IReportColumn, string>;
     
 
 
@@ -112,6 +115,8 @@ class MyDatabase extends Dexie {
             work_plan_cfw: `id, work_plan_id,cfw_id,status_id, ${commonFields}`,
             accomplishment_report: `id, person_id, period_cover_from, work_plan_id,accomplishment_actual_task, status_id, ${commonFields}`,
             accomplishment_actual_task: `id, accomplishment_report_id, accomplishment, mov, status_id, ${commonFields}`,
+            report_designer: `id, name, columns, ${commonFields}`,
+            report_column: `id, report_designer_id, label, value, type, description, visible, options,${commonFields}`,
         });
     }
 }

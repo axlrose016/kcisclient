@@ -1,14 +1,18 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-import DOMPurify from 'dompurify';
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+import DOMPurify from "dompurify";
+import { HeaderData } from "@/app/(authorized)/report/designer/HeaderSettings";
 
 const encode = new TextEncoder();
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
-export async function hashPassword(password: string, salt: Uint8Array): Promise<string> {
+export async function hashPassword(
+  password: string,
+  salt: Uint8Array
+): Promise<string> {
   // Encode the password as bytes
   const passwordBytes = new TextEncoder().encode(password);
 
@@ -30,8 +34,8 @@ export async function hashPassword(password: string, salt: Uint8Array): Promise<
 
 export function sanitizeHTML(content: string): string {
   return DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'em', 'strong'],
-    ALLOWED_ATTR: []
+    ALLOWED_TAGS: ["p", "br", "b", "i", "em", "strong"],
+    ALLOWED_ATTR: [],
   });
 }
 
@@ -65,4 +69,52 @@ export const moveArrayAtIndex = <T>(
   array.splice(index, 1);
   array.splice(toIndex, 0, element);
   return array;
+};
+
+export const processExcelFile = async (file: File): Promise<any[]> => {
+  try {
+    // Dynamically import xlsx to avoid SSR issues
+    const XLSX = await import("xlsx");
+
+    // Read the file
+    const arrayBuffer = await file.arrayBuffer();
+    const workbook = XLSX.read(arrayBuffer, { type: "array" });
+
+    // Get the first worksheet
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+
+    // Convert to JSON
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+      header: 1,
+    }) as any[][];
+
+    console.log("jsonData", jsonData);
+    if (jsonData.length === 0) {
+      throw new Error("No data found in the Excel file");
+    }
+
+    // Convert data rows to objects using header names
+    const data = jsonData
+      .flat() // flatten the nested arrays
+      .filter((item) => item !== null) // remove nulls
+      .map((item) => item.trim()) // trim strings
+      .filter((item) => item !== "e"); // optional: remove specific values like "e"
+    return data;
+  } catch (error) {
+    console.error("Error processing Excel file:", error);
+    throw error;
+  }
+};
+
+export const downloadJson = (jsonData: string, fileName: string): void => {
+  const blob = new Blob([jsonData], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${fileName}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

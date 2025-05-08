@@ -25,11 +25,11 @@ import { person_profile } from "@/db/schema/personprofile";
 
 export default function FamilyComposition({ errors, capturedeData, familyCompositionData, updatedFamComposition, session, user_id_viewing }: {
     errors: any; capturedeData: Partial<IPersonProfile>; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
-    updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[]) => void; session: any; user_id_viewing: string;
+    updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[], action: string, id: string) => void; session: any; user_id_viewing: string;
 
 }) {
 
-
+    const [FCData, setFamilyCompositionData] = useState(familyCompositionData)
     const [relationshipToFamilyMemberOptions, setRelationshipToFamilyMemberOptions] = useState<LibraryOption[]>([]);
     const [selectedRelationshipToFamilyMember, setSelectedRelationshipToFamilyMember] = useState("");
     const [selectedRelationshipToFamilyMemberId, setSelectedRelationshipToFamilyMemberId] = useState<number | null>(null);
@@ -301,6 +301,8 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
             // console.log("Selected Highest Educational Attainment:", selectedTextHighestEducationalAttainment);
 
             // 1 = father, 2= mother, 5 = spouse, 7 = grandfather, 8=grandmother    
+            familyCompositionData = Array.isArray(familyCompositionData) ? familyCompositionData : [familyCompositionData];
+
             const famComMemberExists = familyCompositionData.some(
                 (member: any) =>
                     [1, 2, 5, 7, 8].includes(selectedRelationshipToFamilyMemberId) &&
@@ -354,7 +356,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 newFamilyMember,
             ];
 
-            updatedFamComposition(updatedData);
+            updatedFamComposition(updatedData, "new", "0");
             clearForm();
             setIsDialogOpen(false);
             toast({
@@ -425,10 +427,16 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
 
     // Delete function
 
-    const confirmDelete = (index: number) => {
+    const confirmDelete = (index: string) => {
+        debugger;
         if (!familyComposition.family_composition) return; // Ensure it exists
-        const updatedFamily = familyComposition.family_composition.filter((_, i) => i !== index);
+        console.log("😘Family composition typeof ", typeof familyCompositionData)
+        const updatedFamily = familyComposition.family_composition.filter((_, i) => i !== Number(index));
         setFamilyComposition({ family_composition: updatedFamily });
+
+        updatedFamComposition(familyCompositionData, 'delete', index);
+        console.log("😘Family composition typeof ", typeof familyCompositionData)
+
         // Update localStorage
         localStorage.setItem("family_composition", JSON.stringify({ family_composition: updatedFamily }));
 
@@ -438,7 +446,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
             description: "Record has been deleted!",
         });
     };
-    const handleDeleteFamMem = (index: number) => {
+    const handleDeleteFamMem = (index: any) => {
         // alert("why");
         toast({
             variant: "destructive",
@@ -708,24 +716,26 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                                         <TableHead>Age</TableHead>
                                         <TableHead>Educational level</TableHead>
                                         <TableHead>Occupation</TableHead>
-                                        <TableHead>Monthly Income</TableHead>
+                                        <TableHead className="text-center">Monthly Income</TableHead>
                                         <TableHead>Contact Number</TableHead>
                                         <TableHead className={`text-center ${userIdViewing ? "hidden" : ""}`}>Action</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
 
-                                    {familyCompositionData ? (
+                                    {Array.isArray(familyCompositionData) && familyCompositionData ? (
                                         familyCompositionData.map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
+                                            // {Array.isArray(familyCompositionData) && familyCompositionData ? (
+                                            //     familyCompositionData.map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
                                             <TableRow key={index}>
                                                 <TableCell>{index + 1}.</TableCell>
                                                 <TableCell>{familyMember.first_name} {familyMember.middle_name} {familyMember.last_name} {extensionNames[familyMember.extension_name_id ?? 0] || ""} </TableCell>
                                                 <TableCell>{relationshipNames[familyMember.relationship_to_the_beneficiary_id ?? 0] || "N/A"}</TableCell>
                                                 <TableCell>{familyMember.birthdate}</TableCell>
-                                                <TableCell>{familyMember.age}</TableCell>
+                                                <TableCell>{String(familyMember.age || "0")}</TableCell>
                                                 <TableCell>{educationNames[familyMember.highest_educational_attainment_id ?? 0] || ""}</TableCell>
                                                 <TableCell>{familyMember.work}</TableCell>
-                                                <TableCell>{familyMember.monthly_income}</TableCell>
+                                                <TableCell className="text-right">{String(familyMember.monthly_income || "0.00")}</TableCell>
                                                 <TableCell>{familyMember.contact_number}</TableCell>
                                                 <TableCell className={`text-center ${userIdViewing ? "hidden" : ""}`}>
                                                     <div className="flex justify-center  space-x-2">
@@ -733,7 +743,8 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                                                             <Tooltip>
                                                                 <TooltipTrigger>
 
-                                                                    <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(index)} />
+                                                                    <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(familyMember.id)} />
+                                                                    {/* <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(index)} /> */}
 
                                                                 </TooltipTrigger>
                                                                 <TooltipContent>
@@ -747,7 +758,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                                         ))
                                     ) : (
                                         <TableRow>
-                                            <TableCell colSpan={9}>No Family Members available</TableCell>
+                                            <TableCell colSpan={10} className="text-center">No Family Members available</TableCell>
                                         </TableRow>
                                     )}
 

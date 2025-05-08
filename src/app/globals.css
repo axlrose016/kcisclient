@@ -87,3 +87,34 @@ body {
   }
 }
 
+.dndsortable{
+  margin-top: 5px !important;
+}
+
+/* styles/SortableList.module.css */
+.sortable-list {
+  list-style: none;
+  padding: 0;
+}
+
+.sortable-item {
+  padding: 10px;
+  margin: 5px 0;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: grab;
+  border-radius: 10px;
+}
+
+.sortable-ghost {
+  opacity: 0.4;
+}
+
+.dnd-sortable-tree_simple_tree-item {
+  border-radius: 10px;
+  margin: 5px 0px;
+} 
+
+div[role="row"] { 
+  cursor: pointer;
+}

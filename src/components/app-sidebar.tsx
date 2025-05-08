@@ -36,7 +36,7 @@ const data = {
     name: "",
     email: "",
     avatar: "/avatars/shadcn.jpg",
-    role:""
+    role: ""
   },
   teams: [
     {
@@ -70,69 +70,69 @@ const data = {
       url: "#",
       icon: Earth,
       isActive: false,
-      items:[
+      items: [
         {
-          title:"Masterlist",
-          url:"/subproject/geotagging",
-          permission:["Can View","Can Delete"]
+          title: "Masterlist",
+          url: "/subproject/geotagging",
+          permission: ["Can View", "Can Delete"]
         }
       ],
       modules: ["Sub-Project"],
-      roles:["Administrator"]
+      roles: ["Administrator"]
     },
     {
-      title:"Tasks",
-      url:"#",
+      title: "Tasks",
+      url: "#",
       icon: Earth,
       items: [
         {
           title: "Masterlist",
-          url:"/subproject/tasks",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/subproject/tasks",
+          permission: ["Can Add", "Can View", "Can Delete"]
         }
       ],
       modules: ["Sub-Project"],
-      roles:["Administrator"]
+      roles: ["Administrator"]
 
     },
     {
-      title:"Libraries",
-      url:"#",
-      icon:Library,
-      items:[
+      title: "Libraries",
+      url: "#",
+      icon: Library,
+      items: [
         {
           title: "Roles",
-          url:"/settings/libraries/roles",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/settings/libraries/roles",
+          permission: ["Can Add", "Can View", "Can Delete"]
         },
         {
           title: "Permissions",
-          url:"/settings/libraries/permissions",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/settings/libraries/permissions",
+          permission: ["Can Add", "Can View", "Can Delete"]
         },
         {
           title: "Modules",
-          url:"/settings/libraries/modules",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/settings/libraries/modules",
+          permission: ["Can Add", "Can View", "Can Delete"]
         }
       ],
-      modules:["Settings"],
-      roles:["Administrator"]
+      modules: ["Settings"],
+      roles: ["Administrator"]
 
     },
     {
-      title:"Users",
-      url:"#",
+      title: "Users",
+      url: "#",
       icon: Library,
-      items:[
+      items: [
         {
           title: "Masterlist",
-          url:"/settings/users",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/settings/users",
+          permission: ["Can Add", "Can View", "Can Delete"]
         }
       ],
-      modules:["Settings"],
-      roles:["Administrator"]
+      modules: ["Settings"],
+      roles: ["Administrator"]
 
     },
     {
@@ -140,55 +140,75 @@ const data = {
       url: "#",
       icon: User2Icon,
       isActive: false,
-      items:[
+      items: [
         {
           title: "My Profile",
-          url:"/personprofile/form",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/personprofile/form",
+          permission: ["Can Add", "Can View", "Can Delete"]
         },
         {
           title: "Masterlist",
-          url:"/personprofile/masterlist",
-          permission:["Can View","Can Delete"]
+          url: "/personprofile/masterlist",
+          permission: ["Can View", "Can Delete"]
         },
         {
           title: "User Masterlist",
-          url:"/personprofile/user-masterlist",
-          permission:["Can View","Can Delete"]
+          url: "/personprofile/user-masterlist",
+          permission: ["Can View", "Can Delete"]
         },
         {
           title: "Daily Time Record",
-          url:"/personprofile/daily-time-record",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/personprofile/daily-time-record",
+          permission: ["Can Add", "Can View", "Can Delete"]
         },
         {
           title: "Accomplishment Report",
-          url:"/personprofile/accomplishment-report",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/personprofile/accomplishment-report",
+          permission: ["Can Add", "Can View", "Can Delete"]
         },
         {
           title: "Payroll",
-          url:"/personprofile/payroll",
-          permission:["Can Add","Can View","Can Delete"]
+          url: "/personprofile/payroll",
+          permission: ["Can Add", "Can View", "Can Delete"]
         }
       ],
       modules: ["Person Profile"],
-      roles:["*"]
+      roles: ["*"]
     },
     {
       title: "CFW Management",
       url: "#",
       icon: User2Icon,
       isActive: false,
-      items:[
+      items: [
         {
           title: "Work Plans",
           url:"/personprofile/work-plan",
           permission:["Can Add","Can View","Can Delete"],
         },
-       
+
       ],
-      roles: ["CFW Administrator","Administrator"],
+      roles: ["CFW Administrator", "Administrator"],
+      modules: ["Person Profile"],
+    }, {
+      title: "Report",
+      url: "#",
+      icon: User2Icon,
+      isActive: false,
+      items: [
+        {
+          title: "Designer",
+          url: "/report/designer",
+          permission: ["Can Add", "Can View", "Can Delete"],
+        },
+        {
+          title: "CFW",
+          url: "/report/cfw",
+          permission: ["Can Add", "Can View", "Can Delete"],
+        },
+
+      ],
+      roles: ["CFW Administrator", "Administrator"],
       modules: ["Person Profile"],
     },
     {
@@ -196,40 +216,40 @@ const data = {
       url: "",
       icon: User2Icon,
       isActive: false,
-      items:[
+      items: [
         {
-          title:"Masterlist",
-          url:"/hr-development/item-created",
-          permission:["Can View","Can Delete"]
+          title: "Masterlist",
+          url: "/hr-development/item-created",
+          permission: ["Can View", "Can Delete"]
         }
       ],
       modules: ["Human Resource and Development"],
-      roles:["Administrator"]
+      roles: ["Administrator"]
     },
     {
       title: "Position: Item Distribution",
-      url:"#",
+      url: "#",
       icon: User2Icon,
       isActive: false,
-      items:[
+      items: [
         {
-          title:"Hiring Procedures and Status",
-          url:"#",
-          permission:["Can View","Can Delete"]
+          title: "Hiring Procedures and Status",
+          url: "#",
+          permission: ["Can View", "Can Delete"]
         },
         {
-          title:"Application Status",
-          url:"#",
-          permission:["Can View","Can Delete"]
+          title: "Application Status",
+          url: "#",
+          permission: ["Can View", "Can Delete"]
         },
         {
-          title:"Employee Personal Data Sheet",
-          url:"#",
-          permission:["Can View","Can Delete"]
+          title: "Employee Personal Data Sheet",
+          url: "#",
+          permission: ["Can View", "Can Delete"]
         }
       ],
       modules: ["Human Resource and Development"],
-      roles:["Administrator"]
+      roles: ["Administrator"]
     }
   ],
   projects: [
@@ -265,18 +285,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       const _session = await getSession() as SessionPayload;
       //const session = (await response.json()) as SessionPayload;
       console.log("SideBar Session: ", _session);
-      if(_session != null){
+      if (_session != null) {
         user.email = _session.userData.email!;
         user.name = _session.userData.name!;
         user.role = _session.userData.role!;
-        const userTeams = _session.userData; 
+        const userTeams = _session.userData;
         // debugger;
-        setUserTeam(userTeams);      
+        setUserTeam(userTeams);
         // debugger;
         const navTeam = data.teams.filter((team) =>
           userTeams?.userAccess?.some((mod) => mod.module === team.name)
         );
-  
+
         setFilteredTeam(navTeam);
         const defaultTeam = navTeam.some(team => pathname?.includes(team.url)) ? navTeam.find(team => pathname?.includes(team.url))! : navTeam[0];
         setActiveTeam(defaultTeam);
@@ -288,35 +308,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, []);
 
   React.useEffect(() => {
-    async function loadNavMain(){
-        // Filter para sa module
-        const navMain = data.navMain.filter(
-          (nav) =>
-            nav.modules.includes(activeTeam?.name) // Filter based on active team
-        );  
+    async function loadNavMain() {
+      // Filter para sa module
+      const navMain = data.navMain.filter(
+        (nav) =>
+          nav.modules.includes(activeTeam?.name) // Filter based on active team
+      );
 
-        debugger;
-        const filteredSubModule = data.navMain.filter(item => 
-          item.modules.includes(activeTeam?.name) &&
-          (
-            item.roles?.includes("*") || // Allow all roles
-            item.roles?.some(role => userTeam?.role?.includes(role))
-          )
-        );
+      debugger;
+      const filteredSubModule = data.navMain.filter(item =>
+        item.modules.includes(activeTeam?.name) &&
+        (
+          item.roles?.includes("*") || // Allow all roles
+          item.roles?.some(role => userTeam?.role?.includes(role))
+        )
+      );
 
-        const filteredChildModule = filteredSubModule
+      const filteredChildModule = filteredSubModule
         .map(module => ({
           ...module,
-          items: module.items?.filter(permissions => 
+          items: module.items?.filter(permissions =>
             userTeam?.userAccess?.some(access =>
-                access.permission && permissions.permission.includes(access.permission)
-              )
+              access.permission && permissions.permission.includes(access.permission)
+            )
           )
         }))
         .filter(module => module.items && module.items.length > 0);
 
-        setFilteredNavMain(navMain);
-        setFilteredSub(filteredChildModule)
+      setFilteredNavMain(navMain);
+      setFilteredSub(filteredChildModule)
     }
 
     loadNavMain();
@@ -339,7 +359,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Sidebar collapsible="icon" {...props}>
           <SidebarHeader>
             <TeamSwitcher
-              teams={filteredTeam}  
+              teams={filteredTeam}
               activeTeam={activeTeam ?? data.teams.some(team => pathname?.includes(team.url)) ? data.teams.find(team => pathname?.includes(team.url))! : data.teams[0]}
               onChange={setActiveTeam}
             />
@@ -355,17 +375,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarRail />
         </Sidebar>
       ) :
-      (
-        <LoadingScreen
-          isLoading={isLoading}
-          text={"Loading... Please wait."}
-          style={"dots"}
-          fullScreen={true}
-          progress={0}
-          timeout={0}
-          onTimeout={() => console.log("Loading timed out")}
-        />
-      )}
+        (
+          <LoadingScreen
+            isLoading={isLoading}
+            text={"Loading... Please wait."}
+            style={"dots"}
+            fullScreen={true}
+            progress={0}
+            timeout={0}
+            onTimeout={() => console.log("Loading timed out")}
+          />
+        )}
     </>
   )
 }

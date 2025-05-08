@@ -8,13 +8,13 @@ import axios from 'axios';
 const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
-  private apiUrl = 'https://kcnfms.dswd.gov.ph/api/person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
-  private apiUrlDisabilities = 'https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/'
-  private apiUrlSectors = 'https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/'
-  private apiUrlFamilyComposition = 'https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/'
-  private apiUrlProgramDetails = 'https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/'
+  private apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile/create/';//process.env.NEXT_PUBLIC_API_PIMS_BASE_URL;
+  private apiUrlDisabilities = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_disability/create/'
+  private apiUrlSectors = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_sector/create/'
+  private apiUrlFamilyComposition = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_family_composition/create/'
+  private apiUrlProgramDetails = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profile_engagement_history/create/'
   // Method to sync data in bulk
-  async syncBulkData(formPersonProfile: IPersonProfile): Promise<{ success: number; failed: number }> {
+  async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {
       const unsyncedData = await dexieDb.person_profile
         .where("push_status_id")

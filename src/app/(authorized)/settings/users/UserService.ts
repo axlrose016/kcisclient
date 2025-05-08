@@ -62,7 +62,7 @@ export class UserService{
         return undefined;
         }
     }
-    async getOfflineUserAccessById(id: any): Promise<IUserAccess[] | undefined> {
+    async getOfflineUserAccessByUserId(id: any): Promise<IUserAccess[] | undefined> {
         try {
         const result = await dexieDb.transaction('r', [dexieDb.useraccess], async () => {
             const userAccess = await dexieDb.useraccess.where('user_id').equals(id).toArray();
@@ -79,4 +79,60 @@ export class UserService{
         return undefined;
         }
     }
+    async getOfflineUserAccessById(id: any): Promise<IUserAccess | undefined> {
+        try {
+        const result = await dexieDb.transaction('r', [dexieDb.useraccess], async () => {
+          debugger;
+            const userAccess = await dexieDb.useraccess.where('id').equals(id).first();
+            if (userAccess) {
+            return userAccess;
+            } else {
+            console.log('No record found with the given ID.');
+            return undefined;
+            }
+        });
+        return result;
+        } catch (error) {
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+        }
+    }
+    async saveOfflineUserAccess(userAccess: any): Promise<any | undefined> {
+        try {
+            let savedItem: IUserAccess | undefined;
+    
+            await dexieDb.transaction('rw', [dexieDb.useraccess], async () => {
+    
+              let data: IUserAccess = userAccess;
+             
+              if (userAccess.id === "") {
+                data = {
+                  ...userAccess,
+                  id: uuidv4(),
+                  created_date: new Date().toISOString(),
+                  created_by: _session.userData.email,
+                  push_status_id: 2,
+                  remarks: "Record Created by " + _session.userData.email,
+                };
+              } else {
+                data = {
+                  ...userAccess,
+                  last_modified_date: new Date().toISOString(),
+                  last_modified_by: _session.userData.email,
+                  push_status_id: 2,
+                  remarks: "Record Updated by " + _session.userData.email,
+                };
+              }
+    
+              await dexieDb.useraccess.put(data);
+              savedItem = data;
+            });
+    
+            return savedItem;
+          } catch (error) {
+            console.error('Transaction failed: ', error);
+            return undefined;
+          }
+    }
+
 }

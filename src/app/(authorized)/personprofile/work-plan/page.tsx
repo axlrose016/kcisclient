@@ -228,7 +228,7 @@ export default function WorkPlanMasterList({ page }: { page: number }) {
                     }
                 };
 
-                fetchData("https://kcnfms.dswd.gov.ph/kcis/api/work_plan/view/");
+                fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/");
             } catch (error) {
                 console.error(error);
             } finally {

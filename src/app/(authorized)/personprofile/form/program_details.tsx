@@ -130,6 +130,11 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                 setProgramTypeNames(programType_map);
                 setProgramTypesOptions(programTypes)
 
+                debugger;
+                console.log(typeof familyComposition)
+                if (typeof familyComposition === "object" && !Array.isArray(familyComposition)) {
+                    familyComposition = Object.values(familyComposition);
+                }
                 const family = familyComposition.map((row: any) => {
                     const fullName = `${row?.first_name || ""} ${row?.middle_name || ""} ${row?.last_name || ""}`.trim();
                     return {
@@ -274,7 +279,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                 created_by: session.userData.email,
                 person_profile_id: capturedData.id,
             };
-
+            console.log("CFW Fam Composition type is ", typeof cfwFamComposition)
             const isExist = cfwFamComposition.some(record =>
                 record.family_composition_id === newRecord.family_composition_id &&
                 record.program_type_id === newRecord.program_type_id &&
@@ -473,46 +478,46 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                                 {/* {capturedData !== undefined ? "" : capturedData?.cfw[1].program_details[0].cfw_type_id} */}
 
 
-                                {
+                                {Array.isArray(cfwFamComposition) &&
                                     cfwFamComposition ? (
-                                        cfwFamComposition.map((programDetail: Partial<IPersonProfileCfwFamProgramDetails>, index: number) => (
-                                            <TableRow key={index}>
-                                                <TableCell className="text-center">{index + 1}.</TableCell>
-                                                {/* <TableCell>{programDetail.program_type_first_name} {programDetail.program_type_middle_name}  {programDetail.program_type_last_name} {programDetail.selectedExtensionName} </TableCell> */}
-                                                <TableCell>{familyMap[programDetail.family_composition_id ?? ""] || "N/A"}</TableCell>
-                                                <TableCell>{programTypeNames[programDetail.program_type_id ?? 0] || "N/A"}</TableCell>
-                                                <TableCell className="text-center" >{yearServedNames[programDetail.year_served_id ?? 0] || "N/A"}</TableCell>
-                                                <TableCell className="text-center">
-                                                    <div className="flex space-x-2 text-center">
+                                    cfwFamComposition.map((programDetail: Partial<IPersonProfileCfwFamProgramDetails>, index: number) => (
+                                        <TableRow key={index}>
+                                            <TableCell className="text-center">{index + 1}.</TableCell>
+                                            {/* <TableCell>{programDetail.program_type_first_name} {programDetail.program_type_middle_name}  {programDetail.program_type_last_name} {programDetail.selectedExtensionName} </TableCell> */}
+                                            <TableCell>{familyMap[programDetail.family_composition_id ?? ""] || "N/A"}</TableCell>
+                                            <TableCell>{programTypeNames[programDetail.program_type_id ?? 0] || "N/A"}</TableCell>
+                                            <TableCell className="text-center" >{yearServedNames[programDetail.year_served_id ?? 0] || "N/A"}</TableCell>
+                                            <TableCell className="text-center">
+                                                <div className="flex space-x-2 text-center">
 
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    {/* <button onClick={() => handleDelete(programDetail.program_type_id,
+                                                    <TooltipProvider>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                {/* <button onClick={() => handleDelete(programDetail.program_type_id,
                                                                         programDetail.program_type_first_name,
                                                                         programDetail.program_type_middle_name,
                                                                         programDetail.program_type_last_name,
                                                                         programDetail.program_type_ext_name_id,
                                                                         programDetail.program_type_year_served_id)}
                                                                         className="text-red-500 hover:text-red-700"> */}
-                                                                    <button>
-                                                                        <Trash className="w-4 h-4" />
-                                                                    </button>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Delete Record</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={2}>No program details available</TableCell>
+                                                                <button>
+                                                                    <Trash className="w-4 h-4" />
+                                                                </button>
+                                                            </TooltipTrigger>
+                                                            <TooltipContent>
+                                                                <p>Delete Record</p>
+                                                            </TooltipContent>
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                </div>
+                                            </TableCell>
                                         </TableRow>
-                                    )}
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={5} className="text-center">No program details available</TableCell>
+                                    </TableRow>
+                                )}
 
 
                             </TableBody>

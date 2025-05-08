@@ -1,10 +1,8 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import ClientSessionCheck from "./clientSession";
-import { useEffect, useState } from "react";
-import BulkService, { ISummary } from "./BulkService";
-import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Pause, RefreshCcwDot, TrendingUpIcon } from "lucide-react";
 import { IPersonProfile, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
@@ -13,76 +11,123 @@ import { getSession } from "@/lib/sessions-client";
 import PersonProfileService from "./(authorized)/personprofile/form/PersonProfileService";
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
-import GeneratePDF from "@/components/PDF/CFW-Booklet";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { IAttachments } from "@/components/interfaces/general/attachments";
+import { useBulkSync } from "@/hooks/use-bulksync";
+import GeneratePDF from "@/components/pdf/CfwBooklet";
 
 
-function page() {
+function StartPage() {
 
-  const [summary, setSummary] = useState<ISummary>()
+  const { setTasks, startSync, state, summary, refreshSummary } = useBulkSync();
+
   useEffect(() => {
     (async () => {
-      BulkService.setTasks([
+      setTasks([
         {
-        tag: "CFW attendance log",
-        url: `http://10.10.10.162:9000/api/cfwtimelogs/create/`,
-        module: await dexieDb.cfwtimelogs,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned, status_id: 0, log_out: (cleaned.log_out == "" || cleaned.log_out == "-") ? null : cleaned.log_out };
-        }
-      },
-      {
-        tag: "Person Profile",
-        url: `https://kcnfms.dswd.gov.ph/api/person_profile/create/`,
-        module: await dexieDb.person_profile,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned };
-        }
-      },
-      {
-        tag: "Person Profile > person_profile_disability",
-        url: `https://kcnfms.dswd.gov.ph/api/person_profile_disability/create/`,
-        module: await dexieDb.person_profile_disability,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned };
-        }
-      },
-      {
-        tag: "Person Profile > person_profile_family_composition",
-        url: `https://kcnfms.dswd.gov.ph/api/person_profile_family_composition/create/`,
-        module: await dexieDb.person_profile_family_composition,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned };
-        }
-      },
-      {
-        tag: "Person Profile > person_profile_sector",
-        url: `https://kcnfms.dswd.gov.ph/api/person_profile_sector/create/`,
-        module: await dexieDb.person_profile_sector,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned };
-        }
-      },
-      {
-        tag: "Person Profile > person_profile_cfw_fam_program_details",
-        url: `https://kcnfms.dswd.gov.ph/api/person_profile_engagement_history/create/`,
-        module: await dexieDb.person_profile_cfw_fam_program_details,
-        cleanup: (record: any) => {
-          const { id, ...cleaned } = record;
-          return { ...cleaned };
-        }
-      },
+          tag: "CFW attendance log",
+          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `http://10.10.10.162:9000/api/cfwtimelogs/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `cfwtimelogs/create/`,
+          module: await dexieDb.cfwtimelogs,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned, status_id: 0, log_out: (cleaned.log_out == "" || cleaned.log_out == "-") ? null : cleaned.log_out };
+          }
+        },
+        {
+          tag: "Person Profile",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile/create/`,
+          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile/create/`,
+          module: await dexieDb.person_profile,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned };
+          }
+        },
+        {
+          tag: "Person Profile > person_profile_disability",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_disability/create/`,
+          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_disability/create/`,
+          module: await dexieDb.person_profile_disability,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned };
+          }
+        },
+        {
+          tag: "Person Profile > person_profile_family_composition",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_family_composition/create/`,
+          module: await dexieDb.person_profile_family_composition,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned };
+          }
+        },
+        {
+          tag: "Person Profile > person_profile_sector",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_sector/create/`,
+          module: await dexieDb.person_profile_sector,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned };
+          }
+        },
+        {
+          tag: "Person Profile > person_profile_cfw_fam_program_details",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_engagement_history/create/`,
+          module: await dexieDb.person_profile_cfw_fam_program_details,
+          cleanup: (record: any) => {
+            const { id, ...cleaned } = record;
+            return { ...cleaned };
+          }
+        },
+        {
+          tag: "Person Profile > attachments",
+          url: `https://kcnfms.dswd.gov.ph/kcis/api/attachments/create/`,
+          module: await dexieDb.attachments,
+          force: true,
+          formdata: (record) => {
+            console.log('Person Profile > attachments > record', record)
+            return ({
+              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id}##${record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
+            })
+          },
+          onSyncRecordResult: (record, result) => {
+            if (result.success) {
 
+              console.log('✅ attachments synced:', { record, result });
+
+              (async () => {
+                if (result.response.length !== 0) {
+                  const newRecord = {
+                    ...record as IAttachments,
+                    file_id: result.response.file_name,
+                    file_path: result.response.file_path,
+                    push_status_id: 1,
+                    push_date: new Date().toISOString()
+                  }
+                  console.log('✅ attachments synced:', { record, result });
+                  await dexieDb.attachments.put(newRecord, "id")
+                }
+              })();
+            } else {
+              console.error('❌ Order failed:', record.id, '-', result.error);
+            }
+          },
+        },
       ])
-      const r = await BulkService.status()
-      console.log('summary', r)
-      setSummary(r)
     })();
+    setTimeout(() => {
+      startSync()
+    }, 300)
   }, [])
+
+  useEffect(() => {
+    (async () => {
+      const r = await refreshSummary()
+      console.log('summary', r)
+    })();
+  }, [state])
 
 
 
@@ -205,6 +250,12 @@ function page() {
     fetchData();
   }), [session])
 
+  const handleStartSync = async () => {
+    console.log('handleStartSync')
+    startSync()
+  }
+
+
   return (
     <ClientSessionCheck>
       <div className="flex flex-1 flex-col">
@@ -215,16 +266,16 @@ function page() {
               <Card className="@container/card bg-[hsl(var(--sidebar-background))]">
                 <CardHeader className="relative">
                   <CardDescription>Total Sync Status</CardDescription>
-                  <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">{summary?.overallPercentage}%</CardTitle>
+                  <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">{summary?.overallPercentage}</CardTitle>
                   <div className="absolute right-4 top-4">
-                    <RefreshCcwDot size={40} className="h-10 w-12 text-muted-foreground mr-2" />
+                    <RefreshCcwDot onClick={() => handleStartSync()} size={40} className="h-10 w-12 text-muted-foreground mr-2" />
                   </div>
                 </CardHeader>
                 <CardFooter className="flex-col items-start gap-1 text-sm">
                   <div className="line-clamp-1 flex gap-2 font-medium">
                     Steady performance <TrendingUpIcon className="size-4" />
                   </div>
-                  <div className="text-muted-foreground">Syncing Progress</div>
+                  <div className="text-muted-foreground">Syncing {state}</div>
                 </CardFooter>
               </Card>
 
@@ -318,4 +369,4 @@ function page() {
   );
 }
 
-export default page
+export default StartPage

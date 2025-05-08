@@ -55,7 +55,7 @@ export default function FormModule() {
             getOfflineRoles()
           ]);
     
-          const useraccess = await userService.getOfflineUserAccessById(id) as IUserAccess[];
+          const useraccess = await userService.getOfflineUserAccessByUserId(id) as IUserAccess[];
           setRecord(fetchedRecord);
           setAccess(useraccess);
           setRoles(lib_roles);
@@ -116,8 +116,13 @@ export default function FormModule() {
 
 const handleRowClick = (row: any) => {
     console.log('Row clicked:', row);
-    router.push(`/${baseUrl}/form/${row.id}`);
+    debugger;
+    router.push(`/${baseUrl}/${row.user_id}/useraccess/${row.id}`);
 };
+const handleAddNewRecord = (newRecord: any) => {
+  debugger;
+    router.push(`/${baseUrl}/${id}/useraccess/0`)
+}
 
 
   return (
@@ -204,25 +209,23 @@ const handleRowClick = (row: any) => {
           </form>
         </Form>
         <CardContent>
-            {access && access.length > 0 ? (
-                <AppTable
-                data={access}
-                columns={Object.keys(access[0]).map((key) => ({
-                    id: key,
-                    header: key,
-                    accessorKey: key,
-                    filterType: 'text',
-                    sortable: true,
-                }))}
-                onDelete={handleDelete}
-                onRowClick={handleRowClick}
-                onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}
-                />
-            ) : (
-                <div className="text-center text-gray-500 py-10 text-lg">
-                No record found.
-                </div>
-            )}
+        <AppTable
+          data={access ?? []}
+          columns={
+            access && access.length > 0
+              ? Object.keys(access[0]).map((key) => ({
+                  id: key,
+                  header: key,
+                  accessorKey: key,
+                  filterType: 'text',
+                  sortable: true,
+                }))
+              : [] // Fallback to empty columns if no data
+          }
+          onDelete={handleDelete}
+          onRowClick={handleRowClick}
+          onAddNewRecordNavigate={handleAddNewRecord}
+        />
         </CardContent>
       </Card>
     </div>

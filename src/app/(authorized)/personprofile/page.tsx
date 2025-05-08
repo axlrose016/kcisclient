@@ -11,7 +11,7 @@ import { CalendarDays, HandCoins, Loader2, Pause, TrendingUpIcon, UserX2 } from 
 import { set } from "date-fns";
 import clsx from "clsx";
 import PersonProfileService from "./form/PersonProfileService";
-import GeneratePDF from "@/components/PDF/CFW-Booklet";
+import GeneratePDF from "@/components/pdf/CfwBooklet";
 
 
 //import pdfviewer from "../../components/PDF/pdfviewer";

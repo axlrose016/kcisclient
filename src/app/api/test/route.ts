@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
         const page_number = Number(req.nextUrl.searchParams.get('page_number') || 1);
         const page_size = Number(req.nextUrl.searchParams.get('page_size') || 10);
 
-        const response = await axios.get('https://kcnfms.dswd.gov.ph/api/person_profiles/view/pages/', {
+        const response = await axios.get(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profiles/view/pages/', {
             headers: {
                 Authorization: `Bearer ${session?.token || ''}`,
                 "Content-Type": "application/json",

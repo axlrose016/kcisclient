@@ -8,7 +8,7 @@ export default function TestPage() {
         try {
             const session = await getSession();
 
-            const response = await fetch('https://kcnfms.dswd.gov.ph/api/person_profiles/view/pages/', {
+            const response = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'person_profiles/view/pages/', {
                 headers: {
                     Authorization: `Bearer ${session?.token || ''}`,
                     'Content-Type': 'application/json',

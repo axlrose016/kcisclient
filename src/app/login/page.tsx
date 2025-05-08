@@ -54,6 +54,7 @@ export default function LoginPage() {
     formState: { errors, isSubmitting },
     reset,
   } = useForm<FormData>({
+
     resolver: zodResolver(formSchema),
   })
 
@@ -62,6 +63,7 @@ export default function LoginPage() {
       const user = await getUserByEmail(data.email);
 
       if (!user) {
+        setIsLoading(false)
         return toast({
           variant: "destructive",
           title: "No Record Found!",
@@ -141,6 +143,7 @@ export default function LoginPage() {
 
 
   const onSubmit = async (data: FormData) => {
+    setIsLoading(true);
     // debugger;
     try {
 
@@ -150,12 +153,13 @@ export default function LoginPage() {
           title: "Captcha Error!",
           description: "Invalid Captcha, Please try again!",
         });
+        setIsLoading(false)
         return;
       }
 
       if (isOnline) {
         const onlinePayload = await LoginService.onlineLogin(data.email, data.password);
-        debugger;
+        // debugger;
         if (onlinePayload) {
           const onlineProfile = await LoginService.getProfile(onlinePayload.user.id, onlinePayload.token);
           if (onlineProfile) {
@@ -209,6 +213,7 @@ export default function LoginPage() {
                     console.log("➕New record added to DexieDB:", onlineProfile.id);
                   }
                 } catch (error) {
+                  setIsLoading(false)
                   console.log("Error saving to DexieDB:", error);
                 }
               });
@@ -228,6 +233,7 @@ export default function LoginPage() {
       // If online login fails or offline mode
       await offlineLogin(data);
     } catch (error) {
+      setIsLoading(false)
       console.error("Login Error: ", error);
       toast({
         variant: "destructive",
@@ -240,11 +246,13 @@ export default function LoginPage() {
   const [testData, setTestData] = useState<any>(null);
   const [isVisi, setVisi] = useState(false);
   const handleOnClick = () => {
-    const testData1 = testData;
-    const testDataFinal = cleanNameToLowercase(testData1);
-    setTestData(testDataFinal);
-    setVisi(true);
+    setIsLoading(true)
+    // const testData1 = testData;
+    // const testDataFinal = cleanNameToLowercase(testData1);
+    // setTestData(testDataFinal);
+    // setVisi(true);
   }
+  const [isLoading, setIsLoading] = useState(false)
   return (
     // <div className="bg-[url('/assets/Backgrounds/DSWD-Virtual-Background-01.jpg')] bg-cover bg-center bg-no-repeat">
     <div className="min-h-screen w-full flex items-center justify-center">
@@ -311,7 +319,7 @@ export default function LoginPage() {
 
                 {(!verified && <Captcha verified={setVerified} />)}
 
-                <ButtonSubmit label="Login" />
+                <ButtonSubmit label="Login" disabled={isLoading} />
 
                 <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}

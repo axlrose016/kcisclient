@@ -57,6 +57,7 @@ export default function Users(){
 
     const handleAddNewRecord = (newRecord: any) => {
         console.log('handleAddNewRecord', newRecord)
+        router.push(`/${baseUrl}/${newRecord.id}`);
     };
     return(
         <Card>

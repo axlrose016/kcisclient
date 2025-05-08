@@ -132,7 +132,8 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                 await dexieDb.attachments.update(existingRecord.id, {
                     file_name: file.name,
                     file_type: file.type,
-                    file_path: fileBlob,
+                    file_path: fileBlob ,
+                    // file_path: fileBlob,
                     last_modified_date: new Date().toISOString()
                 });
                 console.log(`✅ Updated record for file_id: ${id}`);

@@ -48,4 +48,6 @@ export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_ip_group', 'na
 export const getOfflineLibStatuses = getOfflineLibraryOptions('lib_statuses', 'status_name');
 export const getOfflineLibDeploymentAreaCategories = getOfflineLibraryOptions('lib_deployment_area_categories', 'category_name');
 export const getOfflineRoles = getOfflineLibraryOptions('roles','role_description');
+export const getOfflineModules = getOfflineLibraryOptions('modules','module_description');
+export const getOfflinePermissions = getOfflineLibraryOptions('permissions','permission_description');
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');
