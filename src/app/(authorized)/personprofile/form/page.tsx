@@ -2256,7 +2256,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
           </CardDescription>
         </CardHeader>
-        <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre>
+        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
         {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
         {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
