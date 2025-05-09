@@ -35,7 +35,7 @@ import { getSession } from '@/lib/sessions-client'
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb'
 import PersonProfileService from '../PersonProfileService'
 import { ToastAction } from '@/components/ui/toast'
-import GeneratePDF from './pdf'
+// import GeneratePDF from './pdf'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { format } from 'path'
 import { and, is } from 'drizzle-orm'
@@ -153,19 +153,25 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
     setDataPrivacyOpen(true);
   }
   const updateFormFamilyCompositionData = (newData: Partial<IPersonProfileFamilyComposition>[], action: string, id: any) => {
-    debugger;
+    // debugger
     console.log("The action is ", action)
     if (action == "new") {
+      setFormFamilyCompositionData(newData)
+      localStorage.setItem("family_composition", JSON.stringify(newData))
+      // setFormFamilyCompositionData((oldData) => {
+      //   const updatedData = [...oldData, ...newData];
+      //   localStorage.setItem("family_composition", JSON.stringify(updatedData))
+      //   return updatedData
+      // })
+      // setFormFamilyCompositionData(() => {
+      //   const validNewData = Array.isArray(newData) ? newData : [];
 
-      setFormFamilyCompositionData(() => {
-        const validNewData = Array.isArray(newData) ? newData : [];
-
-        const familyCompositionMap = new Map(
-          validNewData.map((familyComposition) => [familyComposition.id ?? JSON.stringify(familyComposition), familyComposition])
-        );
-        localStorage.setItem("family_composition", JSON.stringify(Array.from(familyCompositionMap.values())));
-        return Array.from(familyCompositionMap.values());
-      });
+      //   const familyCompositionMap = new Map(
+      //     validNewData.map((familyComposition) => [familyComposition.id ?? JSON.stringify(familyComposition), familyComposition])
+      //   );
+      //   localStorage.setItem("family_composition", JSON.stringify(familyCompositionMap));
+      //   return Array.from(familyCompositionMap.values());
+      // });
     } else if (action == "delete") {
 
       setFormFamilyCompositionData((prevData) => {
@@ -173,7 +179,9 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         localStorage.setItem("family_composition", JSON.stringify(updatedData));
 
         return updatedData;
-      });
+      })
+    } else {
+
     }
   }
 
@@ -610,6 +618,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             updateFormData={updateFormAttachments}
             session={session}
             user_id_viewing={userIdViewing}
+            profileData={formData}
           />
         </div>
       ),
@@ -866,7 +875,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
             console.log("Formsectordata is type of ", typeof formSectorData)
             console.log("Formsectordata is  ", formSectorData)
-            debugger;
+            // debugger
             formPersonProfileSector = Object.values(formSectorData).map((sector) => {
               const sector_id = sector.id ?? uuidv4(); // Generate new ID if missing
 
@@ -977,7 +986,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 file_type: attachment.file_type ?? "",
                 module_path: attachment.module_path ?? "",
                 user_id: session.id,
-                created_by: session.userData.email ?? "",
+                created_by: _session.userData.email ?? "",
                 created_date: new Date().toISOString(),
                 last_modified_by: null,
                 last_modified_date: null,
@@ -997,7 +1006,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             // }
           }
 
-          debugger;
+          debugger
           dexieDb.open();
           dexieDb.transaction('rw', [dexieDb.person_profile,
           dexieDb.person_profile_sector, dexieDb.person_profile_disability, dexieDb.person_profile_family_composition,
@@ -1016,7 +1025,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               localStorage.removeItem("family_composition");
               localStorage.removeItem("person_cfw_program_details");
               localStorage.removeItem("person_disabilities");
-              debugger;
+              debugger
               const response = await PersonProfileService.syncBulkData(formPersonProfile);
               if (response.success) {
 
@@ -1029,11 +1038,11 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 });
               }
             } catch (error) {
-              debugger;
+              // debugger
               console.error("Error adding Person Profile to IndexedDB", error);
             }
           }).catch(error => {
-            debugger;
+            // debugger
             console.log('Transaction failed: ', error);
           });
 
@@ -1345,7 +1354,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
         // const requiredFile = formAttachmentsData.find(file => file.file_id === requiredFileId);
         // alert(requiredFile);
-        debugger;
+        // debugger
         console.log("Type of formAttachmentsData is ", typeof formAttachmentsData) //object is {}
         console.log("The value of formAttachmentsData is ", formAttachmentsData) //array is []
         const hasImageFile = Object.values(formAttachmentsData).some(item => item.file_type === "" && item.file_id == 13);
@@ -1497,7 +1506,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           immediate_supervisor_id: null,
           alternate_supervisor_id: null,
           cfw_category_id: formData.is_graduate ?? false,
-          created_by: session?.userData.email ?? "",
+          created_by: _session?.userData.email ?? "",
           created_date: new Date().toISOString(),
           last_modified_by: null,
           last_modified_date: null,
@@ -1514,7 +1523,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
         // assessment
-        // debugger;
+        // // debugger
         dexieDb.open();
         dexieDb.transaction('rw', [dexieDb.cfwassessment], async () => {
           try {
@@ -1542,7 +1551,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
             const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
-            debugger;
+            // debugger
             try {
               const res = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "cfw_assessment/status/patch/", {
                 method: "POST",
@@ -1565,7 +1574,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
                 // change the role to CFW Beneficiary
                 const lsPP = localStorage.getItem("person_profile");
-                debugger;
+                // debugger
                 if (lsPP) {
                   const parsedPP = JSON.parse(lsPP);
 
@@ -1784,12 +1793,13 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   //   // setIsAccepted(false);
   // })
 
+
   useEffect(() => {
     const fetchData = async () => {
       try {
 
         const files_upload = await getOfflineLibFilesToUpload();
-        console.log("Files to uploade: ", files_upload);
+        console.log("Files to upload: ", files_upload);
 
         const _session = await getSession() as SessionPayload;
         setSession(_session);
@@ -1822,6 +1832,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         const existingRecord = await dexieDb.attachments
           .where("file_id")
           .equals(13) //profile picture
+          .and((record) => record.user_id === _session.id) // Add criteria for user_id
           .first();
 
         if (existingRecord?.file_path instanceof Blob) {
@@ -1849,8 +1860,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 await Promise.all(
                   files_upload.map(async (file) => {
                     await dexieDb.attachments.put({
-                      id: crypto.randomUUID(),
-                      record_id: crypto.randomUUID(),
+                      id: uuidv4(),
+                      record_id: formData.id ?? "",
                       module_path: "personprofile",
                       file_id: file.id, //
                       file_name: file.name, //image1.jpg
@@ -1858,7 +1869,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                       file_path: null,
                       created_date: new Date().toISOString(),
                       last_modified_date: null,
-                      created_by: session?.id ?? "",
+                      created_by: _session?.userData.email ?? "",
                       last_modified_by: null,
                       push_status_id: 0,
                       push_date: null,
@@ -1866,7 +1877,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                       deleted_date: null,
                       deleted_by: null,
                       is_deleted: false,
-                      remarks: null,
+                      remarks: ".",
                     });
                   }
                   ))
@@ -1875,6 +1886,32 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           })
         );
 
+        // debugger
+        // if (!userIdViewing) {
+        //   // debugger
+        //   // get the family members by  person_profile_id
+        //   if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+        //   // const existingRecordsFamComp = await dexieDb.person_profile_family_composition.toArray();
+        //   const existingRecordsFamComp = await dexieDb.person_profile_family_composition
+        //     .where("person_profile_id")
+        //     .equals() //profile picture
+        //     // .and((record) => record.user_id === _session.id) // Add criteria for user_id
+        //     .first();
+        //   if (existingRecordsFamComp) {
+        //     setFormFamilyCompositionData([existingRecordsFamComp])
+        //   } else {
+
+        //     // if wala sa dexie then check sa localstorage
+        //     const lsFC = localStorage.getItem("family_composition");
+        //     if (lsFC) {
+        //       const parsedFC = JSON.parse(lsFC);
+        //       setFormFamilyCompositionData(parsedFC)
+        //     } else {
+        //       setFormFamilyCompositionData([])
+        //       console.log("No record found!")
+        //     }
+        //   }
+        // }
 
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -1892,7 +1929,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   //   console.log("User ID Viewing: ", userIdViewing);
   // },[userIdViewing])
   useEffect(() => {
-    debugger;
+    // debugger
     const fetchData = async () => {
       try {
 
@@ -1905,7 +1942,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
             // Fetch Profile (Dexie first, then LocalStorage)
             // alert("search id is : " + searchByUserId);
-            debugger;
+            debugger
             let profile: IPersonProfile | null = null;
             if (userIdViewing) {
               // setUserIdViewing(userIdViewing);
@@ -1962,13 +1999,14 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             if (!Array.isArray(family) || family.length === 0) {
               family = JSON.parse(localStorage.getItem("family_composition") || "[]") || [];
             }
-            debugger;
+            // debugger
             console.log("The type of family  is ", typeof family)
 
             // const userFamily = family.filter((member) => member.person_profile_id === profile?.id);
+            debugger;
             const userFamily = family.filter((member) => member.person_profile_id === profile?.id);
             if (userFamily.length > 0) {
-              updateFormFamilyCompositionData(family, "new", "0");
+              updateFormFamilyCompositionData(userFamily, "new", "0");
             }
 
             // Fetch CFW Family Program Details (Dexie first, then LocalStorage)
@@ -1999,6 +2037,15 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               if (parsedUserIdForViewing) {
                 setUserIdViewing(parsedUserIdForViewing);
                 console.log("User ID for viewing: ", parsedUserIdForViewing);
+              }
+            }
+
+            const lsPP = localStorage.getItem("attachments")
+            if (lsPP) {
+              const parsedPP = JSON.parse(lsPP);
+              const profilePicture = parsedPP.find((attachment: any) => attachment.file_id === 13);
+              if (profilePicture) {
+                setDisplayPic("https://kcnfms.dswd.gov.ph/media/blobs/" + profilePicture.file_name);
               }
             }
           }
@@ -2112,6 +2159,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           file_name: file.name,
           file_type: file.type,
           file_path: blob,
+          user_id: _session.id,
+          record_id: formData.id,
           last_modified_date: new Date().toISOString(),
           last_modified_by: "00000000-0000-0000-0000-000000000000"
         });
@@ -2119,8 +2168,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
       } else {
         // Insert if it doesn't exist
         await dexieDb.attachments.put({
-          id: crypto.randomUUID(), // Generate unique ID
-          record_id: crypto.randomUUID(),
+          id: uuidv4(), // Generate unique ID
+          record_id: formData.id ?? "",
           module_path: "personprofile",
           file_id: 13,
           file_name: file.name,
@@ -2128,15 +2177,15 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           file_path: blob,
           created_date: new Date().toISOString(),
           last_modified_date: null,
-          created_by: session?.id ?? "",
-          user_id: session?.id ?? "",
+          created_by: _session.userData.email ?? "",
+          user_id: _session?.id, // session?.id ?? "",
           last_modified_by: null,
           push_status_id: 0,
           push_date: null,
           deleted_date: null,
           deleted_by: null,
           is_deleted: false,
-          remarks: null
+          remarks: "."
         });
         console.log("✅ New record added.");
       }
@@ -2148,7 +2197,11 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
     }
   }
+  const handleUpload = () => {
 
+
+
+  }
   return (
 
     <div className='w-full'>
@@ -2230,6 +2283,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           <CardDescription>
             <div className={`p-3 bg-gray-100 border border-gray-300 rounded-lg shadow-sm ${userIdViewing ? "hidden" : ""} `}>
               <h2 className="text-xl font-semibold text-gray-800 mb-2">Important Instructions</h2>
+              {/* <Button onClick={handleUpload} >Upload</Button> */}
               <p className="text-gray-700 mb-4">
                 Please read and understand the following before proceeding:
               </p>
@@ -2256,12 +2310,18 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
           </CardDescription>
         </CardHeader>
-        <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre>
+        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
         {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
         {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
         {/* <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre> */}
-        {/* <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre> */}
+        {/* <pre><h1>Attachments</h1>{JSON.stringify(formAttachmentsData, null, 2)}</pre>
+        <pre>Profile picture ID: {hasProfilePicture} Display Pic: {displayPic}</pre>
+        <pre>Session ID: {_session.id}</pre>
+        <pre>Email: {_session.userData.email}</pre> */}
+        {/* <pre>Session: {JSON.stringify(_session)}</pre> */}
+        {/* <pre>Form Sector: {formSectorData.length}</pre> */}
+        {/* <pre>Form Sector: {JSON.stringify(formSectorData)}</pre> */}
         <CardContent>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-3">
@@ -2286,7 +2346,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
                 <Avatar className="h-[300px] w-[300px] cursor-pointer" onClick={handleAvatarClick} id="profile_picture">
-                  {displayPic && (hasProfilePicture || hasProfilePicture != undefined) ? (
+                  {displayPic ? (
                     <AvatarImage src={displayPic} alt="Display Picture" />
                   ) : (
                     <AvatarFallback className="bg-white border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 font-bold rounded-full w-full h-full">

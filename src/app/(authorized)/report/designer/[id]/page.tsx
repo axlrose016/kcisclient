@@ -16,7 +16,7 @@ import clsx from 'clsx';
 import { processExcelFile, removeItemAtIndex } from '@/lib/utils';
 import { FileUploader } from './FileUploader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { debounce } from 'lodash';
 import { AppTable } from '@/components/app-table';
@@ -27,6 +27,12 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { v4 as uuidv4 } from 'uuid';
 import { useParams } from 'next/navigation';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { replaceMetas } from '../../cfw/page';
+import Image from 'next/image';
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type TreeItemData = {
   id?: string;
@@ -40,7 +46,7 @@ export const TreeItem = forwardRef<
   TreeItemComponentProps<TreeItemData> | any
 >((props, ref) => {
 
-  const { dialog, onChangeDialog } = useReportDesigner();
+  const { onChangeDialog } = useReportDesigner();
   const { childCount, clone, onRemove, item, isOver, isOverParent } = props;
 
   const enableCustomStyleWhenOver =
@@ -68,6 +74,11 @@ export const TreeItem = forwardRef<
             size="sm"
             onClick={(e) => {
               e.stopPropagation();
+              onChangeDialog({
+                record: item,
+                open: true,
+                action: "edit"
+              })
               // onRemove();
               // const r = {
               //   ...dialog,
@@ -89,6 +100,7 @@ export const TreeItem = forwardRef<
               onChangeDialog({
                 record: item,
                 open: true,
+                action: "delete"
               })
               // setDialogOpen({
               //   // ...dialog,
@@ -120,10 +132,9 @@ export default function MonitoringCFW() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const items = columns as TreeItems<TreeItemData>
 
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+
   const [activeId, setActiveId] = useState("new")
-
-
-
   const [report, setReport] = useState({
     name: "",
     columns
@@ -132,7 +143,24 @@ export default function MonitoringCFW() {
   const [session, setSession] = useState<SessionPayload>();
 
   useEffect(() => {
-    setActiveId(params?.id == "new" ? uuidv4() : params!.id)
+    console.log('params', params)
+    const id = params?.id == "new" ? "new" : params!.id;
+    setActiveId(id);
+
+    (async () => {
+      if (id !== "new") {
+        setExcelData([])
+        const raw = await dexieDb.report_designer.where("id").equals(id).first()
+        const gc = await dexieDb.report_column.where("report_designer_id").equals(id).toArray()
+        const cols = replaceMetas(JSON.parse(raw!.columns), gc)
+        onChangeColumns(replaceMetas(cols, gc))
+        setReport({
+          name: raw!.name, columns: cols
+        })
+        console.log("raw", { raw, cols })
+      }
+      console.log('id', id)
+    })();
   }, [params])
 
   useEffect(() => {
@@ -181,7 +209,7 @@ export default function MonitoringCFW() {
   const handleSave = () => {
     const report_clean_column = cleanUpIds(columns)
     const raw = {
-      id: activeId,
+      id: activeId == "new" ? uuidv4() : activeId,
       name: report.name,
       columns: JSON.stringify(report_clean_column),
       push_status_id: params?.id == "new" ? 0 : 0,
@@ -194,29 +222,29 @@ export default function MonitoringCFW() {
       last_modified_date: params?.id == "new" ? null : new Date().toISOString(),
       is_deleted: false,
     }
- 
-    const fcols = flattenColumns(report_clean_column,columns) 
+
+    const fcols = flattenArray(columns)
     console.log('handleSave', { raw, fcols })
 
-    // if (raw.name.trim() == "" || columns.length == 0) {
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Error!",
-    //     description: "Please provide Report Name!",
-    //     duration: 3000
-    //   });
-    // } else {
-    //   (async () => {
-    //     await dexieDb.report_designer.put(raw, 'id')
-    //     await dexieDb.report_column.bulkPut(columns)
-    //     toast({
-    //       variant: "green",
-    //       title: "Success!",
-    //       description: "Report has successfuly saved!",
-    //       duration: 3000
-    //     });
-    //   })();
-    // }
+    if (raw.name.trim() == "" || columns.length == 0) {
+      toast({
+        variant: "destructive",
+        title: "Error!",
+        description: "Please provide Report Name!",
+        duration: 3000
+      });
+    } else {
+      (async () => {
+        await dexieDb.report_designer.put({ ...raw }, 'id')
+        await dexieDb.report_column.bulkPut(fcols)
+        toast({
+          variant: "green",
+          title: "Success!",
+          description: "Report has successfuly saved!",
+          duration: 3000
+        });
+      })();
+    }
   }
 
   const handleDelete = () => {
@@ -228,47 +256,105 @@ export default function MonitoringCFW() {
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <>
 
-      <div className='flex mx-2 items-center justify-between gap-2'>
-        <span className='font-bold'>Create Report</span>
-      </div>
-
-      {!excelData ?
-        <>  <FileUploader onFileUpload={handleFileUpload} isProcessing={isProcessing} /> </> : <>
-          <div className='flex mx-2 items-center justify-between gap-2'>
-            <Input className='text-lg' placeholder='Template Name' onChange={debounce((e) => setReport({
-              ...report,
-              name: e.target.value
-            }), 500)} />
-            <div className='flex items-center gap-2'>
-              <Button>
-                Add Label
-              </Button>
-              <Button onClick={handleSave}>
-                Save
-              </Button>
+      <Card>
+        <CardHeader>
+          <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
+            <div className="flex-shrink-0">
+              <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
             </div>
+            <span className='font-bold'>{activeId == "new" ? "Create" : "Update"} Template</span>
+          </CardTitle>
+
+        </CardHeader>
+        <CardContent>
+
+          <div className="min-h-screen">
+
+            {activeId == "" ? <span>Loading...</span> : <>
+              {!excelData ?
+                <>  <FileUploader onFileUpload={handleFileUpload} isProcessing={isProcessing} /> </> : <>
+                  <div className='flex mx-2 items-center justify-between gap-2'>
+                    <Input defaultValue={report.name} className='text-lg my-1' placeholder='Template Name' onChange={debounce((e) => setReport({
+                      ...report,
+                      name: e.target.value
+                    }), 500)} />
+                    <div className='flex items-center gap-2'>
+                      <Button>
+                        Add Label
+                      </Button>
+                      <Button onClick={handleSave}>
+                        Save
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="dndsortable px-2 max-h-[46rem] overflow-scroll rounded-xl ">
+                    <SortableTree
+                      items={items}
+                      onItemsChanged={onChangeColumns}
+                      TreeItemComponent={TreeItem}
+                    />
+                  </div>
+                </>}
+            </>}
+
           </div>
-          <div className="dndsortable px-2 dark:bg-gray-600 max-h-[46rem] overflow-scroll bg-gray-100 rounded-xl ">
-            <SortableTree
-              items={items}
-              onItemsChanged={onChangeColumns}
-              TreeItemComponent={TreeItem}
-            />
-          </div>
-        </>}
+
+        </CardContent>
+      </Card>
 
 
-      <Dialog open={dialog.open} onOpenChange={(e) => onChangeDialog({
+      <Drawer direction={isDesktop ? "right" : "bottom"} open={dialog.open && dialog.action == "edit"} onOpenChange={(e) => onChangeDialog({
+        ...dialog,
+        open: e
+      })}>
+
+        <DrawerContent className="left-auto  right-4 top-2 bottom-2 fixed z-50  outline-none w-[510px] flex border-none mt-0 ">
+          <DrawerHeader className="text-left">
+            <DrawerTitle className='font-bold my-2'>Configure Column</DrawerTitle>
+          </DrawerHeader>
+          <div className='h-full m-2'>
+
+            <div className="grid w-full max-w-sm items-center gap-1.5">
+              <Label htmlFor="email">Name</Label>
+              <Input placeholder='...' defaultValue={dialog.record?.name} />
+            </div>
+
+            <div className="grid w-full max-w-sm items-center gap-1.5 mb-4">
+              <Label htmlFor="type">Type</Label>
+              <Select defaultValue={dialog.record?.type || "Text"}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Text">Text</SelectItem>
+                  <SelectItem value="Number">Number</SelectItem>
+                  <SelectItem value="Calculated">Calculated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <span>{JSON.stringify(dialog.record)}</span>
+          </div>
+
+          <DrawerFooter className="pt-2">
+            <DrawerClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+
+
+      <Dialog open={dialog.open && dialog.action == "delete"} onOpenChange={(e) => onChangeDialog({
         ...dialog,
         open: e
       })}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Delete</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this record? This action cannot be undone.
+            <DialogDescription> Are you sure you want to delete this record? This action cannot be undone."
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -278,12 +364,13 @@ export default function MonitoringCFW() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDelete}>
-              Delete
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
+
   );
 }
 
@@ -294,29 +381,35 @@ export type Node = {
   [key: string]: any;
 };
 
-export const flattenColumns = (
-  indicators: any,
-  arr: any[] | null
-) => {
-  const flattened: any = [];
+export function flattenArray(arr: any[]) {
+  const result: any[] = [];
+  const excludedKeys = new Set([
+    "children",
+    "isLast",
+    "depth",
+    "index",
+    "parentId",
+    "parent"
+  ]);
 
-  const flatten = (items: any) => {
-    items.forEach((item: any) => {
-      const matchedValue = (arr || []).find(
-        (mapped: any) => mapped.id === item.id
-      );
-      if (matchedValue) {
-        flattened.push(matchedValue);
+  function recurse(items: any[]) {
+    for (const item of items) {
+      const cleanItem: any = {};
+      for (const key in item) {
+        if (!excludedKeys.has(key)) {
+          cleanItem[key] = item[key];
+        }
       }
-      if (item.children && item.children.length > 0) {
-        flatten(item.children); // Recurse into children
+      result.push(cleanItem);
+      if (item.children) {
+        recurse(item.children);
       }
-    });
-  };
+    }
+  }
 
-  flatten(indicators);
-  return flattened;
-};
+  recurse(arr);
+  return result;
+}
 
 function cleanUpIds(data: Node[]): { id: string; children?: any[] }[] {
   return data.map(({ id, children }) => ({

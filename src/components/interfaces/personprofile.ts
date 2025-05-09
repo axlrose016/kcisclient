@@ -162,7 +162,7 @@ export interface IPersonProfileDisability {
 }
 
 export interface IPersonProfileFamilyComposition {
-  id: string; //❌
+  id: string; 
   person_profile_id: string | null;
   first_name: string;
   middle_name: string;
@@ -175,9 +175,9 @@ export interface IPersonProfileFamilyComposition {
   monthly_income: number | null;
   relationship_to_the_beneficiary_id: number | null;
   work: string | null;
-  user_id: string; //❌
+  user_id: string;  
   created_by: string; 
-  created_date: string;//❌
+  created_date: string; 
   last_modified_by: string | null;
   last_modified_date: string | null;
   push_status_id: number;

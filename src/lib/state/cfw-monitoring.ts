@@ -1,9 +1,14 @@
 import { IReportColumn } from "@/components/interfaces/reportdesigner";
 import { create } from "zustand";
- 
+
+interface IDialog {
+  open: false;
+  record?: any;
+  action?: string;
+}
 interface IState {
   columns: IReportColumn[];
-  dialog: any;
+  dialog: IDialog;
   onChangeColumns: (by: any[]) => void;
   onChangeDialog: (value: any) => void;
 }

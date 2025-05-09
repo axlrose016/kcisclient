@@ -1,21 +1,23 @@
 "use client";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import React,{ useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { SessionPayload } from "@/types/globals";
 import { getSession } from "@/lib/sessions-client";
 import { IPersonProfile, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
 import { v4 as uuidv4, validate } from 'uuid';
-import { CalendarDays, HandCoins, Loader2, Pause, TrendingUpIcon, UserX2 } from "lucide-react";
+import { CalendarDays, HandCoins, Loader2, Pause, RefreshCcwDot, TrendingUpIcon, UserX2 } from "lucide-react";
 import { set } from "date-fns";
 import clsx from "clsx";
 import PersonProfileService from "./form/PersonProfileService";
 import GeneratePDF from "@/components/pdf/CfwBooklet";
+import { useBulkSync } from "@/hooks/use-bulksync";
+import { IAttachments } from "@/components/interfaces/general/attachments";
 
 
 //import pdfviewer from "../../components/PDF/pdfviewer";
-export default function PersonProfileDashboard() { 
+export default function PersonProfileDashboard() {
 
   const [isPaused, setIsPaused] = useState(false)
   const [session, setSession] = useState<SessionPayload | null>(null);
@@ -24,6 +26,87 @@ export default function PersonProfileDashboard() {
   const [encodingStatus, setEncodingStatus] = useState("");
   const [profile, setProfile] = useState<IPersonProfile | null>(null);
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
+
+
+  const { setTasks, startSync, state, summary, refreshSummary } = useBulkSync();
+
+  useEffect(() => {
+    (async () => {
+      setTasks([
+        {
+          tag: "Person Profile",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile/create/`,
+          module: await dexieDb.person_profile,
+        },
+        {
+          tag: "Person Profile > CFW attendance log",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `cfwtimelogs/create/`,
+          module: await dexieDb.cfwtimelogs,
+        },
+        {
+          tag: "Person Profile > person_profile_disability",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_disability/create/`,
+          module: await dexieDb.person_profile_disability,
+        },
+        {
+          tag: "Person Profile > person_profile_family_composition",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_family_composition/create/`,
+          module: await dexieDb.person_profile_family_composition,
+        },
+        {
+          tag: "Person Profile > person_profile_sector",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_sector/create/`,
+          module: await dexieDb.person_profile_sector,
+        },
+        {
+          tag: "Person Profile > person_profile_cfw_fam_program_details",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_engagement_history/create/`,
+          module: await dexieDb.person_profile_cfw_fam_program_details,
+        },
+        {
+          tag: "Person Profile > attachments",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
+          module: await dexieDb.attachments,
+          formdata: (record) => {
+            console.log('Person Profile > attachments > record', record)
+            return ({
+              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id}##${record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
+            })
+          },
+          onSyncRecordResult: (record, result) => {
+            if (result.success) {
+              console.log('✅ attachments synced:', { record, result });
+              (async () => {
+                if (result.response.length !== 0) {
+                  const newRecord = {
+                    ...record as IAttachments,
+                    file_id: result.response.file_name,
+                    file_path: result.response.file_path,
+                    push_status_id: 1,
+                    push_date: new Date().toISOString()
+                  }
+                  console.log('✅ attachments synced:', { record, result });
+                  await dexieDb.attachments.put(newRecord, "id")
+                }
+              })();
+            } else {
+              console.error('❌ Order failed:', record.id, '-', result.error);
+            }
+          },
+        },
+      ])
+    })();
+    setTimeout(() => {
+      startSync()
+    }, 100)
+  }, [])
+
+  useEffect(() => {
+    (async () => {
+      const r = await refreshSummary()
+      console.log('summary', r)
+    })();
+  }, [state])
 
   useEffect(() => {
     setEncodingPercentage(0);
@@ -143,8 +226,23 @@ export default function PersonProfileDashboard() {
         <div className="flex flex-col gap-4 py-2 md:gap-6 md:py-2">
 
           <div className="*:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4 grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card lg:px-2">
+            <Card className="@container/card bg-[hsl(var(--sidebar-background))]">
+              <CardHeader className="relative">
+                <CardDescription>Total Sync Status</CardDescription>
+                <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">{summary?.overallPercentage}</CardTitle>
+                <div className="absolute right-4 top-4">
+                  <RefreshCcwDot onClick={() => startSync()} size={40} className="h-10 w-12 text-muted-foreground mr-2" />
+                </div>
+              </CardHeader>
+              <CardFooter className="flex-col items-start gap-1 text-sm">
+                <div className="line-clamp-1 flex gap-2 font-medium">
+                  Steady performance <TrendingUpIcon className="size-4" />
+                </div>
+                <div className="text-muted-foreground">Syncing {state}</div>
+              </CardFooter>
+            </Card>
 
-          <Card
+            <Card
               className={clsx(
                 "rounded-xl shadow-md transition-all",
                 encodingPercentage === 100 ? "bg-green-400" : "bg-red-400"

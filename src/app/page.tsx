@@ -25,67 +25,40 @@ function StartPage() {
     (async () => {
       setTasks([
         {
-          tag: "CFW attendance log",
-          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `http://10.10.10.162:9000/api/cfwtimelogs/create/`,
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `cfwtimelogs/create/`,
-          module: await dexieDb.cfwtimelogs,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned, status_id: 0, log_out: (cleaned.log_out == "" || cleaned.log_out == "-") ? null : cleaned.log_out };
-          }
+          tag: "Person Profile",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile/create/`,
+          module: await dexieDb.person_profile,
         },
         {
-          tag: "Person Profile",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile/create/`,
-          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile/create/`,
-          module: await dexieDb.person_profile,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned };
-          }
+          tag: "Person Profile > CFW attendance log",
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `cfwtimelogs/create/`,
+          module: await dexieDb.cfwtimelogs,
         },
         {
           tag: "Person Profile > person_profile_disability",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_disability/create/`,
-          // url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_disability/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_disability/create/`,
           module: await dexieDb.person_profile_disability,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned };
-          }
         },
         {
           tag: "Person Profile > person_profile_family_composition",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_family_composition/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_family_composition/create/`,
           module: await dexieDb.person_profile_family_composition,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned };
-          }
         },
         {
           tag: "Person Profile > person_profile_sector",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_sector/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_sector/create/`,
           module: await dexieDb.person_profile_sector,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned };
-          }
         },
         {
           tag: "Person Profile > person_profile_cfw_fam_program_details",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL + `person_profile_engagement_history/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_engagement_history/create/`,
           module: await dexieDb.person_profile_cfw_fam_program_details,
-          cleanup: (record: any) => {
-            const { id, ...cleaned } = record;
-            return { ...cleaned };
-          }
         },
         {
+          
           tag: "Person Profile > attachments",
-          url: `https://kcnfms.dswd.gov.ph/kcis/api/attachments/create/`,
+          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
           module: await dexieDb.attachments,
-          force: true,
           formdata: (record) => {
             console.log('Person Profile > attachments > record', record)
             return ({
@@ -94,9 +67,7 @@ function StartPage() {
           },
           onSyncRecordResult: (record, result) => {
             if (result.success) {
-
               console.log('✅ attachments synced:', { record, result });
-
               (async () => {
                 if (result.response.length !== 0) {
                   const newRecord = {
@@ -119,7 +90,7 @@ function StartPage() {
     })();
     setTimeout(() => {
       startSync()
-    }, 300)
+    }, 100)
   }, [])
 
   useEffect(() => {

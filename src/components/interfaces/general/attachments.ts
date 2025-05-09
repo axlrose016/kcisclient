@@ -3,7 +3,7 @@ export interface IAttachments {
     record_id: string;
     file_id: number;
     file_name: string;
-    file_path: Blob | null;
+    file_path: Blob | string | null;
     file_type: string,
     module_path: string;
     user_id: string;
@@ -18,3 +18,4 @@ export interface IAttachments {
     is_deleted: boolean,             
     remarks: string | null,  
 }
+

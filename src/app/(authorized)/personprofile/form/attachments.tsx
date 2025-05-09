@@ -1,3 +1,8 @@
+
+const _session = await getSession() as SessionPayload;
+
+import { useRouter } from 'next/navigation'
+import { v4 as uuidv4 } from 'uuid';
 import { FormDropDown } from "@/components/forms/form-dropdown";
 import { PictureBox } from "@/components/forms/picture-box";
 import { LibraryOption } from "@/components/interfaces/library-interface";
@@ -28,6 +33,7 @@ import { IAttachments } from "@/components/interfaces/general/attachments";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
 import Image from "next/image";
+import { IPersonProfile } from "@/components/interfaces/personprofile";
 const filesToView = [
     {
         file_id: 1,
@@ -42,7 +48,7 @@ interface ListOfAttachments {
     file_id: number;
     file_name: string;
 }
-export default function Attachments({ errors, capturedData, updateFormData, session, user_id_viewing }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void; session: any, user_id_viewing: string }) {
+export default function Attachments({ errors, capturedData, updateFormData, session, user_id_viewing, profileData }: { errors: any; capturedData: Partial<IAttachments>[]; updateFormData: (newData: Partial<IAttachments>[]) => void; session: any, user_id_viewing: string; profileData: Partial<IPersonProfile> }) {
     const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
     const [file, setFile] = useState<File | null>(null)
     const [error, setError] = useState<string | null>(null)
@@ -59,6 +65,8 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
     const [selectedNameOfFile, setSelectedNameOfFile] = useState("")
     const [listOfAttachmentsData, setListOfAttachmentsData] = useState<any[]>([])
     const [selectFilePathUrl, setSelectedFilePathUrl] = useState("")
+    const [onlineAttachments, setOnlineAttachments] = useState<any[]>([]);
+    const router = useRouter()
     let iflag = false;
     useEffect(() => {
 
@@ -132,7 +140,10 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                 await dexieDb.attachments.update(existingRecord.id, {
                     file_name: file.name,
                     file_type: file.type,
-                    file_path: fileBlob ,
+                    file_path: fileBlob,
+                    record_id: profileData.id,
+                    remarks: ".",
+                    user_id: _session.id,
                     // file_path: fileBlob,
                     last_modified_date: new Date().toISOString()
                 });
@@ -142,8 +153,8 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
 
 
                 await dexieDb.attachments.add({
-                    id: crypto.randomUUID(), // Generate unique ID
-                    record_id: crypto.randomUUID(),
+                    id: uuidv4(), // Generate unique ID
+                    record_id: profileData.id ?? "",
                     module_path: "personprofile",
                     file_id: Number(id),
                     file_name: file.name,
@@ -152,14 +163,14 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                     created_date: new Date().toISOString(),
                     last_modified_date: null,
                     user_id: session.id ?? "",
-                    created_by: session.userData.email ?? "", //for changing
+                    created_by: _session.userData.email ?? "", //for changing
                     last_modified_by: null,
                     push_status_id: 0,
                     push_date: null,
                     deleted_date: null,
                     deleted_by: null,
                     is_deleted: false,
-                    remarks: null
+                    remarks: "."
                 });
                 console.log(`✅ Added new record for file_id: ${id}`);
             }
@@ -340,39 +351,81 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
 
     // readonly when admin viewing 
     useEffect(() => {
+        debugger;
         if (userIdViewing) {
-            const form = document.getElementById("health_concern_info_form");
+            const form = document.getElementById("attachments");
             if (form) {
                 form.querySelectorAll("input, select, textarea, button, label").forEach((el) => {
                     el.setAttribute("disabled", "true");
                 });
             }
+
+            const lsAtt = localStorage.getItem("attachments");
+            if (lsAtt) {
+                const parseAtt = JSON.parse(lsAtt);
+                setOnlineAttachments(parseAtt)
+                // console.log("Parse att", parseAtt)
+                // console.log("File ID", file_id)
+                // const foundAttachment = parseAtt.filter((att: any) => att.file_id === file_id);
+                // console.log("Nakita ", foundAttachment.length)
+                // if (foundAttachment.length > 0) {
+                //     const router = useRouter()
+                //     router.push("https://kcnfms.dswd.gov.ph/media/blobs/" + foundAttachment.file_name)
+                // }
+
+
+            }
         }
     }, [userIdViewing]);
-    function handleViewAttachment(file_id: number, file_name: string): void {
-        setIsOpenForViewingFile(true);
+
+    function handleViewAttachment(file_name: string): void {
+        window.open("https://kcnfms.dswd.gov.ph/media/blobs/" + file_name, "_blank")
+        // router.push("https://kcnfms.dswd.gov.ph/media/blobs/" + file_name)
+
+        // const lsAtt = localStorage.getItem("attachments");
+        // if (lsAtt) {
+        //     const parseAtt = JSON.parse(lsAtt);
+        //     console.log("Parse att", parseAtt)
+        //     console.log("File ID", file_id)
+        //     const foundAttachment = parseAtt.filter((att: any) => att.file_id === file_id);
+        //     console.log("Nakita ", foundAttachment.length)
+        //     if (foundAttachment.length > 0) {
+        //     }
+
+
+        // }
+
+        // alert(file_name);
+        // const router = useRouter()
+        // setIsOpenForViewingFile(true);
+        // setSelectedFilePathUrl("https://kcnfms.dswd.gov.ph/media/blobs/" + file_name)
+        //router.push("https://kcnfms.dswd.gov.ph/media/blobs/" + file_name)
+        // setSelectedFilePathUrl(URL.createObjectURL("https://kcnfms.dswd.gov.ph/media/blobs/" + file_name))
+
         // setSelectedNameOfFile(file_name);
         // debugger;
-        if (file_id) {
-            // debugger;
-            const foundAttachment = listOfAttachmentsData.find((attachment) => attachment.id === file_id);
-            if (foundAttachment) {
-                setSelectedNameOfFile(foundAttachment.name);
-                setSelectedFilePathUrl("public/images/cover_page.png")
-                return;
-                if (file_name) {
-                    setSelectedFilePathUrl(file_name)
-                } else {
-                }
-            }
-        } else {
+        // if (file_id) {
+        //     // debugger;
+        //     const foundAttachment = listOfAttachmentsData.find((attachment) => attachment.id === file_id);
+        //     if (foundAttachment) {
+        //         setSelectedNameOfFile(foundAttachment.name);
+        //         setSelectedFilePathUrl("https://kcnfms.dswd.gov.ph/media/blobs/" + foundAttachment.name)
+        //         // setSelectedFilePathUrl("public/images/cover_page.png")
+        //         return;
+        //         if (file_name) {
+        //             // setSelectedFilePathUrl(file_path)
+        //         } else {
+        //         }
+        //     }
+        // } else {
 
-        }
+        // }
     }
 
     return (
         <div id="attachments_info_form">
 
+            {/* <pre><h1>Attachments</h1>{JSON.stringify(capturedData, null, 2)}</pre> */}
 
             <div className="p-2 sm:col-span-4">
 
@@ -411,12 +464,45 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {attachments.length > 0 ? (
+                            {userIdViewing ? (
+                                onlineAttachments
+                                    .filter((f) => f.file_id !== 13) // Exclude file_id 13
+                                    .map((f, index) => (<TableRow key={index}>
+
+                                        <TableCell className="w-[10px]">
+                                            {f.file_type !== "" ? <Check className="w-5 h-5 text-green-500" /> : ""}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center space-x-2">
+                                                {attachmentNames[f.file_id ?? 0]}
+
+                                            </div>
+                                        </TableCell>
+
+
+                                        <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button variant={"destructive"} className={`  cursor-pointer`} onClick={() => { handleViewAttachment(f.file_name); }}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>View Attachment</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        </TableCell>
+
+                                    </TableRow>
+                                    ))
+                            ) : ""}
+
+
+                            {!userIdViewing && attachments.length > 0 ? (
                                 attachments
-                                    .filter((record) => ![5, 6, 12, 13].includes(record.file_id)) // Excludes 3, 4, and 7
+                                    .filter((record) => ![5, 6, 12, 13].includes(record.file_id ?? 0)) // Excludes 3, 4, and 7
                                     // .sort((a, b) => a.file_to_upload_name.localeCompare(b.file_to_upload_name))
                                     .map((f, index) => (
-
                                         <TableRow key={f.id}>
 
                                             <TableCell className="w-[10px]">
@@ -424,7 +510,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex items-center space-x-2">
-                                                    {attachmentNames[f.file_id]}
+                                                    {attachmentNames[f.file_id ?? 0]}
 
                                                 </div>
                                             </TableCell>
@@ -453,18 +539,18 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                                     />
                                                 </div>
                                             </TableCell>
-                                            <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
+                                            {/* <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
-                                                            <Button variant={"destructive"} className={`${f.file_type != "" ? "" : "hidden"} cursor-pointer`} onClick={(e) => handleViewAttachment(f.file_id, f.file_name)}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
+                                                            <Button variant={"destructive"} className={`${f.file_type != null ? "" : "hidden"} cursor-pointer`} onClick={() => { handleViewAttachment(f.file_id); alert(f.file_id) }}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             <p>View Attachment</p>
                                                         </TooltipContent>
                                                     </Tooltip>
                                                 </TooltipProvider>
-                                            </TableCell>
+                                            </TableCell> */}
 
                                         </TableRow>
 
@@ -490,13 +576,13 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                     <DialogHeader>
                         <DialogTitle></DialogTitle >
                         <DialogDescription className="flex flex-col justify-center items-center pt-5">
-                            <Image
-                                src="/images/cover_page.png"
+                            {/* <Image
+                                src={selectFilePathUrl}
                                 width={1000}
                                 height={800}
                                 alt="File preview placeholder"
                                 className="rounded-md shadow-md   object-contain"
-                            />
+                            /> */}
                             <span className="mt-5 text-2xl">{selectedNameOfFile}</span>
                         </DialogDescription>
                     </DialogHeader>

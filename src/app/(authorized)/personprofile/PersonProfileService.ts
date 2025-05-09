@@ -23,11 +23,11 @@ class PersonProfileService {
   private apiUrlCFWAssessment = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/create/'
   private apiUrlCFWAssessmentPatch = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/status/patch/'
   // Method to sync data in bulk
-  async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
+  async syncBulkData(formPersonProfile: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {
       const unsyncedData = await dexieDb.person_profile
-        .where("push_status_id")
-        .equals(2)
+        .where("id")
+        .equals(formPersonProfile.id)
         .toArray();
 
       if (unsyncedData.length === 0) {

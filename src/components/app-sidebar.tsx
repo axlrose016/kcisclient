@@ -315,7 +315,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           nav.modules.includes(activeTeam?.name) // Filter based on active team
       );
 
-      debugger;
+      // debugger;
       const filteredSubModule = data.navMain.filter(item =>
         item.modules.includes(activeTeam?.name) &&
         (

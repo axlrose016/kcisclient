@@ -9,10 +9,10 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import { IReportDesigner } from '@/components/interfaces/reportdesigner';
+import Image from 'next/image';
 
 const _session = await getSession() as SessionPayload;
 const baseUrl = 'report/designer'
-
 
 const columns = [
   {
@@ -56,7 +56,7 @@ export default function MonitoringCFWList() {
         <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
           {/* Logo Section */}
           <div className="flex-shrink-0">
-            <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
+            <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
           </div>
 
           {/* Title Section */}

@@ -312,8 +312,10 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
 
                         console.log("✅✅Person Profile Sector: ", data.person_profile_sector);
                         console.log("Last Name: ", data.last_name)
+                        localStorage.removeItem ("attachments")
+                        localStorage.setItem("attachments", JSON.stringify(data.attachments))
 
-
+                        // alert(data.attachments)
                         // save to dexiedb
                         dexieDb.open();
                         dexieDb.transaction('rw', [
@@ -331,7 +333,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                                         await dexieDb.person_profile_sector.update(data.id, data.person_profile_sector);
                                         await dexieDb.person_profile_disability.update(data.id, data.person_profile_disability ?? []);
                                         await dexieDb.person_profile_family_composition.update(data.id, data.person_profile_family_composition ?? []);
-                                        await dexieDb.attachments.update(data.id, data.attachments ?? []);
+                                        await dexieDb.attachments.bulkPut(data.id, data.attachments ?? []);
                                         await dexieDb.cfwassessment.update(data.id, data.cfw_assessment ?? []);
                                         await dexieDb.person_profile_cfw_fam_program_details.update(data.id, data.person_profile_cfw_fam_program_details ?? []);
                                         console.log("Record updated in DexieDB:", data.id);
@@ -457,7 +459,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         // onEdit={handleEdit}
                         // onDelete={handleDelete}
                         onRowClick={handleRowClick}
-                        // onAddNewRecord={handleAddNewRecord}
+                    // onAddNewRecord={handleAddNewRecord}
                     />
                 </div>
             </div>

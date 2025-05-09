@@ -22,13 +22,15 @@ import { IPersonProfile, IPersonProfileFamilyComposition } from "@/components/in
 import { v4 as uuidv4, validate } from 'uuid';
 import { lib_extension_name } from "@/db/schema/libraries";
 import { person_profile } from "@/db/schema/personprofile";
-
+import { SessionPayload } from '@/types/globals';
+import { getSession } from '@/lib/sessions-client'
+const _session = await getSession() as SessionPayload;
 export default function FamilyComposition({ errors, capturedeData, familyCompositionData, updatedFamComposition, session, user_id_viewing }: {
     errors: any; capturedeData: Partial<IPersonProfile>; familyCompositionData: Partial<IPersonProfileFamilyComposition>[];
     updatedFamComposition: (newData: Partial<IPersonProfileFamilyComposition>[], action: string, id: string) => void; session: any; user_id_viewing: string;
 
 }) {
-
+    const [sessiondata, setSession] = useState<SessionPayload | null>(null);
     const [FCData, setFamilyCompositionData] = useState(familyCompositionData)
     const [relationshipToFamilyMemberOptions, setRelationshipToFamilyMemberOptions] = useState<LibraryOption[]>([]);
     const [selectedRelationshipToFamilyMember, setSelectedRelationshipToFamilyMember] = useState("");
@@ -121,6 +123,8 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 const year_level = await getOfflineLibYearLevel();//await getYearLevelLibraryOptions();
                 setYearLevelOptions(year_level);
 
+                const _session = await getSession() as SessionPayload;
+                setSession(_session);
 
                 const educational_attainment = await getOfflineLibEducationalAttainment();//await getEducationalAttainmentLibraryOptions();
                 const educational_map = Object.fromEntries(educational_attainment.map((ext: { id: number; name: string }) => [ext.id, ext.name]));
@@ -170,6 +174,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
 
                 }));
                 setRelationshipToFamilyMemberOptions(formattedRelationship);
+
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -348,7 +353,8 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 monthly_income: parseFloat(familyMemberMonthlyIncome.replace(/,/g, '')),
                 contact_number: familyMemberContactNumber,
                 created_by: session.userData.email,
-                person_profile_id: capturedeData.id
+                person_profile_id: capturedeData.id,
+                user_id: _session.id
             };
 
             const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
@@ -356,7 +362,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 newFamilyMember,
             ];
 
-            updatedFamComposition(updatedData, "new", "0");
+            updatedFamComposition(updatedData, "new", "0"); //creates new family member
             clearForm();
             setIsDialogOpen(false);
             toast({
@@ -478,13 +484,17 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
             }
         }
     }, [userIdViewing]);
+
+
     return (
         <div id="family_composition_info_form" >
             <div className="w-full overflow-x-auto " >
                 <div className="grid sm:grid-cols-4 sm:grid-rows-1 ">
                     <div className="p-2 col-span-4 ">
                         <div className="flex justify-start">
-
+                            {/* <pre>{FamilyCompositionForm.length}</pre> */}
+                            {/* <pre>{JSON.stringify(session)}</pre> */}
+                            {/* <pre>User ID for Viewing: {userIdViewing}</pre> */}
                             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen} modal={false}>
                                 <DialogTrigger asChild className={`${userIdViewing ? "hidden" : ""}`}>
                                     <p className="border px-4 py-2 ml-2 rounded-md bg-blue-600 text-white text-center cursor-pointer hover:bg-blue-700 transition">
@@ -497,6 +507,7 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                                         <DialogHeader>
                                             <DialogTitle className="text-left">Add Family Members</DialogTitle>
                                             <DialogDescription className="text-left">
+
                                                 Please complete the fields below and click "Save."
                                             </DialogDescription>
                                         </DialogHeader>

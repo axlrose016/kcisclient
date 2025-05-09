@@ -87,7 +87,7 @@ body {
   }
 }
 
-.dndsortable{
+.dndsortable {
   margin-top: 5px !important;
 }
 
@@ -113,8 +113,30 @@ body {
 .dnd-sortable-tree_simple_tree-item {
   border-radius: 10px;
   margin: 5px 0px;
-} 
+}
 
-div[role="row"] { 
+div[role="row"] {
   cursor: pointer;
+}
+
+/* Add this to your CSS file */
+.rdg-header-row .rdg-cell {
+  border: 1px solid #ccc; /* Adds a border to each header cell */
+  white-space-collapse: break-spaces;
+  text-wrap-mode: wrap;
+  padding-block-start: 0 !important;
+  text-align: center;
+  font-size: x-small;
+}
+  
+/* styles/global.css */
+.cell-title {
+  white-space: normal; /* Allows text to wrap */
+  word-wrap: break-word; /* Breaks long words to fit within the cell */
+  overflow: hidden; /* Ensures no text overflows */
+}
+
+.cell-data {
+  cursor: pointer;
+  white-space: break-space;
 }
