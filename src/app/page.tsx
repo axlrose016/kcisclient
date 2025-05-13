@@ -19,7 +19,17 @@ import GeneratePDF from "@/components/pdf/CfwBooklet";
 
 function StartPage() {
 
-  const { setTasks, startSync, state, summary, refreshSummary } = useBulkSync();
+  const [session, setSession] = useState<SessionPayload | null>(null);
+  useEffect(() => {
+    setEncodingPercentage(0);
+    const fetchUser = async () => {
+      const _session = await getSession() as SessionPayload;
+      setSession(_session);
+    }
+    fetchUser();
+  }, [])
+
+  const { startSync, state,setTasks, summary } = useBulkSync();
 
   useEffect(() => {
     (async () => {
@@ -55,14 +65,14 @@ function StartPage() {
           module: await dexieDb.person_profile_cfw_fam_program_details,
         },
         {
-          
+
           tag: "Person Profile > attachments",
           url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
           module: await dexieDb.attachments,
           formdata: (record) => {
             console.log('Person Profile > attachments > record', record)
             return ({
-              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id}##${record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
+              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id == "" ? record.record_id : record.user_id}##${record.created_by == "" ? "error" : record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
             })
           },
           onSyncRecordResult: (record, result) => {
@@ -88,35 +98,21 @@ function StartPage() {
         },
       ])
     })();
-    setTimeout(() => {
-      startSync()
-    }, 100)
-  }, [])
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      const r = await refreshSummary()
-      console.log('summary', r)
-    })();
+    console.log('summary', summary)
   }, [state])
 
 
 
   const [isPaused, setIsPaused] = useState(false)
-  const [session, setSession] = useState<SessionPayload | null>(null);
   const [encodingPercentage, setEncodingPercentage] = useState(0);
   const [encodingStatus, setEncodingStatus] = useState("");
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
   const [profile, setProfile] = useState<IPersonProfile | null>(null);
   const [personSynching, setPersonSynching] = useState(false);
-  useEffect(() => {
-    setEncodingPercentage(0);
-    const fetchUser = async () => {
-      const _session = await getSession() as SessionPayload;
-      setSession(_session);
-    }
-    fetchUser();
-  }, [])
+
 
   useEffect(() => {
     const syncData = async () => {
@@ -221,9 +217,8 @@ function StartPage() {
     fetchData();
   }), [session])
 
-  const handleStartSync = async () => {
-    console.log('handleStartSync')
-    startSync()
+  const handleStartSync = async () => { 
+    startSync(session!)
   }
 
 

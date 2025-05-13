@@ -296,6 +296,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         localStorage.setItem("userIdViewOnly", JSON.stringify(row.id));
                         debugger;
                         const data = await response.json();
+                        localStorage.setItem("personProfileFromAPI", JSON.stringify(data));
                         console.log("Person profile > view > success ", data)
                         setSelectedProfiles(data);
                         setProfilesSector(data.person_profile_sector);
@@ -312,9 +313,11 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
 
                         console.log("✅✅Person Profile Sector: ", data.person_profile_sector);
                         console.log("Last Name: ", data.last_name)
-                        localStorage.removeItem ("attachments")
+                        localStorage.removeItem("attachments")
                         localStorage.setItem("attachments", JSON.stringify(data.attachments))
 
+                        console.log("👨‍👩‍👧‍👦Family Composition: ", data.person_profile_family_composition);
+                        // return;
                         // alert(data.attachments)
                         // save to dexiedb
                         dexieDb.open();

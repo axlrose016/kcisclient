@@ -18,31 +18,48 @@ import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
-import { LibrariesService } from "../../../../../library/LibrariesService"
-import { IPermissions, IRoles } from "@/components/interfaces/library-interface"
+import { ILibEmploymentStatus, ILibPosition } from "@/components/interfaces/library-interface"
+import { LibrariesService } from "@/app/(authorized)/library/LibrariesService"
 
 const formSchema = z.object({
-  id: z.string(),
-  permission_description: z.string().min(1, { message: "Role description is required" }),
+  id: z.number().optional(),
+  position_description: z.string().min(1, "Position Description is Required"),
 });
 
 type FormValues = z.infer<typeof formSchema>
 const libService = new LibrariesService();
 
-export default function FormPermission() {
+export default function FormPositionItem() {
   const router = useRouter();
   const params = useParams() || undefined; // for dynamic route segments
-  const baseUrl = 'settings/libraries/permissions/'
+  const baseUrl = 'hr-development/configuration/positions'
 
   const [record, setRecord] = useState<any>(null);
 
-  const id = typeof params?.id === 'string' ? params.id : '';
+  const id = params?.id != null ? Number(params.id) : NaN;
+
+  if (isNaN(id)) {
+    console.error("Invalid ID provided.");
+    return;
+  }  
+
+  // Default values for the form (could come from API for editing)
+  let defaultValues: Partial<FormValues> = {
+    id: id && id > 0 ? id : undefined,
+    position_description: "",
+  };
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues,
+  })
+
 
   useEffect(() => {
     debugger;
     async function fetchRecord() {
       if (id) {
-        const fetchedRecord = await libService.getOfflinePermissionById(id) as IPermissions;
+        const fetchedRecord = await libService.getOfflineLibPositionById(id) as ILibPosition;
         setRecord(fetchedRecord);
         form.reset(fetchedRecord as any); // ✅ Apply fetched record to form
       }
@@ -50,21 +67,10 @@ export default function FormPermission() {
     fetchRecord();
   }, [id]);
 
-  // Default values for the form (could come from API for editing)
-  let defaultValues: Partial<FormValues> = {
-    id: "",
-    permission_description: "",
-  }
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues,
-  })
-
   function onSubmit(data: FormValues) {
     console.log("Form submitted:", data)
-
-    libService.saveOfflinePermission(data).then((response:any) => {
+    // Here you would typically send the data to your API
+    libService.saveOfflinePosition(data).then((response:any) => {
       if (response) {
         router.push(`/${baseUrl}/`);
         toast({
@@ -80,13 +86,13 @@ export default function FormPermission() {
     <div className="container mx-auto py-10">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
-          <CardTitle>Permission</CardTitle>
-          <CardDescription>Enter Permission Details.</CardDescription>
+          <CardTitle>Position</CardTitle>
+          <CardDescription>Enter or update the Position.</CardDescription>
         </CardHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 <FormField
                   control={form.control}
                   name="id"
@@ -100,28 +106,26 @@ export default function FormPermission() {
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
-                  name="permission_description"
+                  name="position_description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Permission Description</FormLabel>
+                      <FormLabel>Position</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter Permission Description" {...field} />
+                        <Input placeholder="Enter Position" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-             
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" type="button" onClick={() => router.push(`/${baseUrl}/`)}>
                 Cancel
               </Button>
-              <Button type="submit">Save Permission</Button>
+              <Button type="submit">Save Position</Button>
             </CardFooter>
           </form>
         </Form>

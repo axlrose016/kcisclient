@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { LibraryOption } from "../interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 
 // const getOfflineLibraryOptions = (library: string, descriptionField: string): () => Promise<LibraryOption[]> => {
 //     return cache(async () => {
@@ -25,6 +26,20 @@ const getOfflineLibraryOptions = (library: string, descriptionField: string, p0?
         }));
     });
 }
+
+const getOfflineLibOptions = (library: string, descriptionField: string, p0?: string[]): () => Promise<LibraryOption[]> => {
+    return cache(async () => {
+        await libDb.open();
+        const results = await libDb.table(library).toArray();
+        return results.map((row: any) => ({
+            id: row.id,
+            name: row[descriptionField],
+            label: row[descriptionField],
+            short_name: row.short_name // 👈 add this field            
+        }));
+    });
+}
+
 export const getOfflineLibModalityOptions = getOfflineLibraryOptions('lib_modality', 'modality_name');
 export const getOfflineLibModalitySubCategoryOptions = getOfflineLibraryOptions('lib_modality_sub_category', 'modality_sub_category_name');
 export const getOfflineLibSexOptions = getOfflineLibraryOptions('lib_sex', 'sex_description');
@@ -50,4 +65,5 @@ export const getOfflineLibDeploymentAreaCategories = getOfflineLibraryOptions('l
 export const getOfflineRoles = getOfflineLibraryOptions('roles','role_description');
 export const getOfflineModules = getOfflineLibraryOptions('modules','module_description');
 export const getOfflinePermissions = getOfflineLibraryOptions('permissions','permission_description');
+export const getOfflineLibLevel = getOfflineLibOptions('lib_level','level_description');
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

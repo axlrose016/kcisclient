@@ -1,6 +1,7 @@
 import type { Metadata } from "next"; 
 import "../globals.css"; 
 import ClientSessionCheck from "../clientSession";
+import React from 'react'
 
 // Constants for the app metadata
 const APP_NAME = "KALAHI-CIDSS Information System";

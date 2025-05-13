@@ -1,3 +1,4 @@
+import { SessionPayload } from "@/types/globals";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface IBulkSync {
@@ -6,7 +7,7 @@ export interface IBulkSync {
   module: any;
   formdata?: (record: any) => Record<string, any>;
   cleanup?: (record: any) => any;
-  force?: boolean; // Optional: if true, sync all records, ignoring 'push_status_id' check
+  force?: boolean;
   onSyncRecordResult?: (
     record: any,
     result: { success: boolean; response?: any; error?: string }
@@ -22,7 +23,7 @@ export interface ISummary {
     unsynced: number;
     total: number;
     percentage: number;
-    errors: number; // just count of errors
+    errors: number;
   }[];
   totalSynced: number;
   totalUnsynced: number;
@@ -143,8 +144,20 @@ export function useBulkSync() {
   };
 
   const startSync = useCallback(
-    async (force = false) => {
-      if (!force && state === "in progress") {
+    async (
+      session: SessionPayload,
+      tags?: string | string[] // single tag or multiple
+    ) => {
+      if (!session) {
+        console.warn("⚠️ Session not found. Sync aborted.");
+        return {
+          success: 0,
+          failed: 0,
+          state: "idle",
+        };
+      }
+
+      if (state === "in progress") {
         const existing = await statusCheck();
         return {
           success: existing.totalSynced,
@@ -153,22 +166,50 @@ export function useBulkSync() {
         };
       }
 
+      console.log("🔄 Sync process started.");
       setState("in progress");
       callbacksRef.current.onStart?.();
 
-      const tasks = tasksRef.current;
+      const tasks = tasksRef.current.filter((task) => {
+        if (!tags) return true;
+        const selected = Array.isArray(tags) ? tags : [tags];
+        return selected.includes(task.tag);
+      });
+
       errorListMap.current.clear();
 
-      let success = 0;
-      let failed = 0;
+      let totalSuccess = 0;
+      let totalFailed = 0;
+      const statusList: {
+        tag: string;
+        success: number;
+        failed: number;
+        errors: string[];
+        state: "completed";
+      }[] = [];
 
       for (const task of tasks) {
+        console.log(`🚧 Processing task: ${task.tag}`);
+        let success = 0;
+        let failed = 0;
+        const errorMessages: string[] = [];
+
         try {
           const records = task.force
             ? await task.module.toArray()
             : await task.module.where("push_status_id").notEqual(1).toArray();
 
-          if (records.length === 0) continue;
+          if (records.length === 0) {
+            console.log(`✅ No unsynced records for: ${task.tag}`);
+            statusList.push({
+              tag: task.tag,
+              success: 0,
+              failed: 0,
+              errors: [],
+              state: "completed",
+            });
+            continue;
+          }
 
           const prepared = task.cleanup ? records.map(task.cleanup) : records;
 
@@ -185,8 +226,11 @@ export function useBulkSync() {
                 });
                 body = form;
               } else {
-                body = JSON.stringify(record);
-                headers = { "Content-Type": "application/json" };
+                body = JSON.stringify([record]);
+                headers = {
+                  "Content-Type": "application/json",
+                  Authorization: `bearer ${session?.token}`,
+                };
               }
 
               const response = await fetch(task.url, {
@@ -209,6 +253,7 @@ export function useBulkSync() {
               } else {
                 const message = `HTTP ${response.status}`;
                 addError(task.tag, record.id, message);
+                errorMessages.push(message);
                 failed++;
                 task.onSyncRecordResult?.(record, {
                   success: false,
@@ -218,6 +263,7 @@ export function useBulkSync() {
             } catch (err: any) {
               const message = err?.message || "Unknown error";
               addError(task.tag, record.id, message);
+              errorMessages.push(message);
               failed++;
               task.onSyncRecordResult?.(record, {
                 success: false,
@@ -228,19 +274,34 @@ export function useBulkSync() {
         } catch (err: any) {
           const message = err?.message || "Task error";
           addError(task.tag, "task-level", message);
+          errorMessages.push(message);
           failed++;
         }
+
+        console.log(`✅ Completed task: ${task.tag}`);
+        totalSuccess += success;
+        totalFailed += failed;
+
+        statusList.push({
+          tag: task.tag,
+          success,
+          failed,
+          errors: errorMessages,
+          state: "completed",
+        });
       }
 
+      console.log("🎉 All sync tasks completed.");
       const newState: ISummary["state"] = "completed";
       setState(newState);
       const finalSummary = await statusCheck();
       callbacksRef.current.onComplete?.(finalSummary);
 
       return {
-        success,
-        failed,
+        success: totalSuccess,
+        failed: totalFailed,
         state: newState,
+        progressStatus: statusList,
       };
     },
     [statusCheck, state]

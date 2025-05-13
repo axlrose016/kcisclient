@@ -27,8 +27,7 @@ export default function PersonProfileDashboard() {
   const [profile, setProfile] = useState<IPersonProfile | null>(null);
   const [uploadingPercentage, setUploadingPercentage] = useState(0);
 
-
-  const { setTasks, startSync, state, summary, refreshSummary } = useBulkSync();
+  const { startSync, state,setTasks, summary } = useBulkSync();
 
   useEffect(() => {
     (async () => {
@@ -64,13 +63,14 @@ export default function PersonProfileDashboard() {
           module: await dexieDb.person_profile_cfw_fam_program_details,
         },
         {
+
           tag: "Person Profile > attachments",
           url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
           module: await dexieDb.attachments,
           formdata: (record) => {
             console.log('Person Profile > attachments > record', record)
             return ({
-              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id}##${record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
+              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id == "" ? record.record_id : record.user_id}##${record.created_by == "" ? "error" : record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
             })
           },
           onSyncRecordResult: (record, result) => {
@@ -96,17 +96,12 @@ export default function PersonProfileDashboard() {
         },
       ])
     })();
-    setTimeout(() => {
-      startSync()
-    }, 100)
   }, [])
 
   useEffect(() => {
-    (async () => {
-      const r = await refreshSummary()
-      console.log('summary', r)
-    })();
+    console.log('summary', summary)
   }, [state])
+
 
   useEffect(() => {
     setEncodingPercentage(0);
@@ -231,13 +226,14 @@ export default function PersonProfileDashboard() {
                 <CardDescription>Total Sync Status</CardDescription>
                 <CardTitle className="@[250px]/card:text-3xl text-2xl font-semibold tabular-nums">{summary?.overallPercentage}</CardTitle>
                 <div className="absolute right-4 top-4">
-                  <RefreshCcwDot onClick={() => startSync()} size={40} className="h-10 w-12 text-muted-foreground mr-2" />
+                  <RefreshCcwDot onClick={() => startSync(session!)} size={40} className="h-10 w-12 text-muted-foreground mr-2" />
                 </div>
               </CardHeader>
               <CardFooter className="flex-col items-start gap-1 text-sm">
                 <div className="line-clamp-1 flex gap-2 font-medium">
                   Steady performance <TrendingUpIcon className="size-4" />
                 </div>
+               
                 <div className="text-muted-foreground">Syncing {state}</div>
               </CardFooter>
             </Card>

@@ -459,7 +459,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                 {/* <TableHead>File Name</TableHead>
                                 <TableHead>File Size</TableHead> */}
                                 {/* <TableHead className="text-center">Action</TableHead> */}
-                                <TableHead className={`${userIdViewing ? "hidden text-center" : ""}`}>Action</TableHead>
+                                {/* <TableHead className={`${userIdViewing ? "hidden text-center" : ""}`}>Action</TableHead> */}
                                 <TableHead className={`${userIdViewing ? "" : "hidden"} text-center`}>View Attachment</TableHead>
                             </TableRow>
                         </TableHeader>

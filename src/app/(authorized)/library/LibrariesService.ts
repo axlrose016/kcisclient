@@ -1,5 +1,6 @@
-import { IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibEmploymentStatus, ILibPosition, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
 import { v4 as uuidv4 } from 'uuid';
@@ -205,4 +206,137 @@ export class LibrariesService{
             return [];
         }
     }
-}
+    
+    //HR Libraries
+    async getOfflineLibEmploymentStatus(): Promise<ILibEmploymentStatus[]> {
+        try {
+            await libDb.open();
+            const result = await libDb.transaction('r', [libDb.lib_employment_status], async () => {
+                const employment_status = await libDb.lib_employment_status.toArray();
+                return employment_status;
+            });
+            return result;
+        } catch (error) {
+        console.error('Fetch Records Failed: ', error);
+        return [];
+        }
+    }
+    async getOfflineLibPosition(): Promise<ILibPosition[]>{
+      try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_position], async () => {
+          const positions = await libDb.lib_position.toArray();
+          return positions;
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Records Failed: ', error);
+        return [];
+      }
+    }
+    async getOfflineLibEmploymentStatusById(id:number): Promise<ILibEmploymentStatus | undefined>{
+    try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_employment_status], async () => {
+            const employment_status = await libDb.lib_employment_status.where('id').equals(id).first();
+            if(employment_status){
+              return employment_status;
+            }else{
+              console.log('No record found with the given ID.');
+              return undefined;
+            }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async getOfflineLibPositionById(id:number): Promise<ILibPosition | undefined>{
+      try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_position], async () => {
+          const position = await libDb.lib_position.where('id').equals(id).first();
+          if(position){
+            return position;
+          }else{
+            console.log('No record found with the given ID.');
+            return undefined;
+          }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineEmploymentStatus(emp: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibEmploymentStatus | undefined;
+
+        await libDb.transaction('rw',[libDb.lib_employment_status], async () => {
+          let data: ILibEmploymentStatus = emp;
+
+          if(!emp.id || emp.id === ""){
+            data = {
+              ...emp,
+              created_date: new Date().toISOString(),
+              created_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Created by " + _session.userData.email,
+            };
+          }else{
+            data = {
+              ...emp,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session.userData.email,
+            }
+          }
+
+          await libDb.lib_employment_status.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflinePosition(pos: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibPosition | undefined;
+        await libDb.transaction('rw', [libDb.lib_position], async () => {
+          let data: ILibPosition = pos;
+
+          if(!pos.id || pos.id === ""){
+            data = {
+              ...pos,
+              created_date: new Date().toISOString(),
+              created_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Created by " + _session.userData.email,
+            };
+          }else{
+            data = {
+              ...pos, 
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session.userData.email,
+            }
+          }
+
+          await libDb.lib_position.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+  }

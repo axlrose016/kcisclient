@@ -1,6 +1,7 @@
 import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibWorkPlanTaskCategory, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { libDb } from "../databases/libraryDb";
+import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibLevel, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibWorkPlanTaskCategory, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from "@/components/interfaces/iuser";
 import { seedCFWSchedules, seedCFWTimeLogs } from "./user-service";
 
@@ -32,6 +33,7 @@ const tblLibSchoolProfiles = dexieDb.table('lib_school_profiles') as EntityTable
 const tblLibSchoolPrograms = dexieDb.table('lib_school_programs') as EntityTable<ILibSchoolPrograms, 'id'>;
 const tblLibStatuses = dexieDb.table('lib_statuses') as EntityTable<ILibStatuses, 'id'>;
 const tblLibDeploymentAreaCategories = dexieDb.table('lib_deployment_area_categories') as EntityTable<ILibDeploymentAreaCategories, 'id'>;
+const tblLibLevel = libDb.table('lib_level') as EntityTable<ILibLevel, 'id'>;
 
 //Roles Service
 export async function addRole(role: IRoles) {
@@ -2038,6 +2040,12 @@ export const seedLibWorkPlanTaskCategories: ILibWorkPlanTaskCategory[] = [
 
 ]
 
+export const seedLibLevel: ILibLevel[] = [
+    { id: 1, level_description: "NPMO", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, level_description: "RPMO", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, level_description: "MCT", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 4, level_description: "ACT", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
 
 export async function seedData() {
     try {
@@ -2069,6 +2077,7 @@ export async function seedData() {
         await tblLibSchoolPrograms.bulkPut(seedLibSchoolPrograms);
         await tblLibStatuses.bulkPut(seedLibStatuses);
         await tblLibDeploymentAreaCategories.bulkPut(seedLibDeploymentAreaCategories);
+        await tblLibLevel.bulkPut(seedLibLevel);
         return "Library seeded successfully!!!";
         // try {
         //     await dexieDb.roles.bulkPut(seedRoles);

@@ -26,7 +26,6 @@ const fetchOfflineLibrary = cache(async (endpoint: string, errorMessage: string,
         }
     }
 });
-
 const fetchData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
     try {
         const response = await fetch(api_base_url + endpoint);
@@ -47,7 +46,6 @@ const fetchData = cache(async (endpoint: string, errorMessage: string, offline_t
         throw new Error(errorMessage);
     }
 });
-
 const fetchPIMSData = cache(async (endpoint: string, errorMessage: string, offline_table: any = null) => {
     try {
         const username = "dsentico@dswd.gov.ph";
@@ -87,7 +85,6 @@ const createFetchFunctionPIMS = (endpoint: string, errorMessage: string, offline
 
     return async () => fetchPIMSData(endpoint, errorMessage, offline_table);
 };
-
 const createFetchOfflineLibrary = (endpoint: string, errorMessage: string, offline_table?: any) => {
     return async () => fetchOfflineLibrary(endpoint, errorMessage, offline_table);
 }

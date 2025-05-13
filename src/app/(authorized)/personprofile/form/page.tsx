@@ -1373,7 +1373,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             (attachment) => attachment.file_id === requiredFileId && attachment.file_type !== ""
           );
           if (!isFilePresent) {
-            errorToast(`Please upload Primary ID (front) and Primary (Back) and Certificate of Indigency!`, "attachment", "");
+            errorToast(`Please upload Primary ID (front) and Primary (Back), Profile Picture, and Certificate of Indigency!`, "attachment", "");
             return;
           }
         }
@@ -2043,7 +2043,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             const lsPP = localStorage.getItem("attachments")
             if (lsPP) {
               const parsedPP = JSON.parse(lsPP);
-              const profilePicture = parsedPP.find((attachment: any) => attachment.file_id === 13);
+              const profilePicture = parsedPP.find((att: any) => att.file_id === 13);
               if (profilePicture) {
                 setDisplayPic("https://kcnfms.dswd.gov.ph/media/blobs/" + profilePicture.file_name);
               }
@@ -2310,6 +2310,9 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             {/* It displays essential details about an individual, including their name, photo, role, contact info, and other related information.</CardDescription> */}
           </CardDescription>
         </CardHeader>
+        {/* <pre>{"Has pic: " + displayPic}</pre> */}
+        {/* <pre>{"Token: " + _session.token}</pre> */}
+        {/* <pre><h1>Family Composition</h1>{JSON.stringify(data.person_profile_family_composition, null, 2)}</pre> */}
         {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
         {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
         {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}

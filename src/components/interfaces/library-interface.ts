@@ -426,7 +426,6 @@ export interface ILibDeploymentAreaCategories {
 export interface ILibWorkPlanTaskCategory {
   id: number;  
   work_plan_category_name: string;
-    
   status_id: number;
   created_date: string,
   created_by: string,
@@ -438,5 +437,49 @@ export interface ILibWorkPlanTaskCategory {
   deleted_by: string | null,
   is_deleted: boolean,
   remarks?: string | null,
-  
+}
+
+export interface ILibLevel {
+  id: number;
+  level_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibEmploymentStatus{
+  id: number;
+  employment_status_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibPosition{
+  id: number;
+  position_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
 }

@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Button } from '@/components/ui/button';
 import { FolderInput, PlusCircle } from 'lucide-react';
 
-function ItemCreated() {
+function ItemDistribution() {
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
@@ -19,7 +19,7 @@ function ItemCreated() {
     React.useEffect(() => {
         async function loadRoles() {
           try {
-            const data = await hrService.getOfflinePositionItems() as any;
+            const data = await hrService.getOfflinePositionItemDistributionMasterlist() as any;
             setData(data);
           } catch (error) {
             console.error(error);
@@ -32,8 +32,7 @@ function ItemCreated() {
 
 
     const baseUrl = 'hr-development/item-created/'
-    const distributeUrl = 'hr-development/item-distribution/'
-
+    
     const handleEdit = (row: any) => {
         console.log('Edit:', row);
     };
@@ -41,22 +40,20 @@ function ItemCreated() {
     const handleDelete = (row: any) => {
         console.log('Delete:', row);
     };
-
-    const handleCreateDistribute = (row: any) => {
-      alert('Create Item Distribution' + row);
-      router.push(`/${distributeUrl}/form/${row}`);
-    };
+    const handleDistribute = (row: any) => {
+      console.log('Delete:', row);
+  };
 
     const handleRowClick = (row: any) => {
-      console.log('Row clicked:', row);
-      router.push(`/${baseUrl}/form/${row.id}`);
+        console.log('Row clicked:', row);
+        router.push(`/${baseUrl}/form/${row.id}`);
     };
 
     const columnsMasterlist = [
       {
-        id: 'record_id', 
+        id: 'shortcut', 
         header: 'Shortcut',
-        accessorKey: 'id',
+        accessorKey: 'shortcuts',
         filterType: null,
         sortable: false,
         align: "center",
@@ -70,17 +67,16 @@ function ItemCreated() {
                   className="h-8 w-8"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleCreateDistribute(value);
+                    handleDistribute(value);
                   }}
                   //disabled={isRefreshing}
                 >
                   <FolderInput className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Create Item Distribution</TooltipContent>
+              <TooltipContent>Distribute Item</TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
       },
       {
           id: 'item code',
@@ -164,4 +160,4 @@ function ItemCreated() {
   )
 }
 
-export default ItemCreated
+export default ItemDistribution

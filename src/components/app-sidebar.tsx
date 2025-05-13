@@ -7,6 +7,7 @@ import {
   Frame,
   GalleryVerticalEnd,
   Library,
+  SettingsIcon,
   User2Icon,
 } from "lucide-react"
 
@@ -233,6 +234,11 @@ const data = {
       isActive: false,
       items: [
         {
+          title: "Masterlist",
+          url: "/hr-development/item-distribution",
+          permission: ["Can View", "Can Delete"]
+        },
+        {
           title: "Hiring Procedures and Status",
           url: "#",
           permission: ["Can View", "Can Delete"]
@@ -267,6 +273,13 @@ const data = {
       pathname: ["personprofile"],
       roles:["CFW Administrator","Administrator"]
     },
+    {
+      name:"Configuration",
+      url: "/hr-development/configuration/",
+      icon:SettingsIcon,
+      pathname: ["hr-development"],
+      roles: ["Administrator"],
+    }
   ],
 }
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
