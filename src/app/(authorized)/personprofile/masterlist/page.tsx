@@ -299,12 +299,13 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         localStorage.setItem("personProfileFromAPI", JSON.stringify(data));
                         console.log("Person profile > view > success ", data)
                         setSelectedProfiles(data);
-                        setProfilesSector(data.person_profile_sector);
+                        setProfilesSector(data.person_profile_sector as IPersonProfileSector[]);
                         setProfileCfwDisabilities(data.person_profile_disability ?? []);
-                        setProfilesFamCom(data.person_profile_family_composition);
-                        setProfilesAttachments(data.attachments);
+                        setProfilesFamCom(data.person_profile_family_composition as IPersonProfileFamilyComposition[]);
+                        const tempAttachments = data.attachments as IAttachments[]
+                        setProfilesAttachments(tempAttachments);
                         setAssessmentDetials(data.cfw_assessment);
-                        setProfileCfwFamProgramDetails(data.person_profile_cfw_fam_program_details);
+                        setProfileCfwFamProgramDetails(data.person_profile_cfw_fam_program_details as IPersonProfileCfwFamProgramDetails[]);
                         console.log("😘Person Profile Family Composition: ", data.person_profile_family_composition);
                         console.log("😊Person Profile Attachments: ", data.attachments);
                         console.log("😂Person Profile CFW Family Program Details: ", data.person_profile_cfw_fam_program_details);
@@ -336,7 +337,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                                         await dexieDb.person_profile_sector.update(data.id, data.person_profile_sector);
                                         await dexieDb.person_profile_disability.update(data.id, data.person_profile_disability ?? []);
                                         await dexieDb.person_profile_family_composition.update(data.id, data.person_profile_family_composition ?? []);
-                                        await dexieDb.attachments.bulkPut(data.id, data.attachments ?? []);
+                                        await dexieDb.attachments.bulkPut(tempAttachments ?? []);
                                         await dexieDb.cfwassessment.update(data.id, data.cfw_assessment ?? []);
                                         await dexieDb.person_profile_cfw_fam_program_details.update(data.id, data.person_profile_cfw_fam_program_details ?? []);
                                         console.log("Record updated in DexieDB:", data.id);

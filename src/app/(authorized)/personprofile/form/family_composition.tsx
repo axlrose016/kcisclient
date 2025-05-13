@@ -357,12 +357,23 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 user_id: _session.id
             };
 
-            const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
-                ...familyCompositionData, // Ensure previous data exists
-                newFamilyMember,
-            ];
 
-            updatedFamComposition(updatedData, "new", "0"); //creates new family member
+            if (updatedFamComposition.length > 0) {
+                const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
+                    ...familyCompositionData, // Ensure previous data exists
+                    newFamilyMember,
+                ];
+                 updatedFamComposition(updatedData, "new", "0"); //creates new family member
+            } else {
+                const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
+
+                    newFamilyMember,
+                ];
+                 updatedFamComposition(updatedData, "new", "0"); //creates new family member
+            }
+ 
+
+           
             clearForm();
             setIsDialogOpen(false);
             toast({

@@ -84,7 +84,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
             const filteredRecords = allAttachments.filter(
                 (record) => ![3, 4, 5, 6, 9, 12].includes(Number(record.file_id))
             );
-            setAttachments(allAttachments); // No error now
+            // setAttachments(allAttachments); // No error now
 
 
             // setAttachments(allAttachments); // No error now
@@ -448,6 +448,9 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                 </div> */}
 
                 <div className="p-2 col-span-4">
+                    {/* {userIdViewing ? (
+                        <p>Viewing</p>
+                    ) : 'Not viewing'} */}
                     <Table className={`min-w-[1000px] border }`}>
                         {/* <Table className={`min-w-[1000px] border ${userIdViewing ? "opacity-50 pointer-events-none" : ""}`}> */}
                         {/* <Table className="border"> */}
@@ -464,58 +467,36 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {userIdViewing ? (
-                                onlineAttachments
-                                    .filter((f) => f.file_id !== 13) // Exclude file_id 13
-                                    .map((f, index) => (<TableRow key={index}>
-
+                            {(userIdViewing ? onlineAttachments.filter(f => f.file_id !== 13) : attachments.filter(f => ![5, 6, 12, 13].includes(f.file_id ?? 0)))
+                                .map((f, index) => (
+                                    <TableRow key={f.id ?? index}>
                                         <TableCell className="w-[10px]">
                                             {f.file_type !== "" ? <Check className="w-5 h-5 text-green-500" /> : ""}
                                         </TableCell>
+
                                         <TableCell>
                                             <div className="flex items-center space-x-2">
                                                 {attachmentNames[f.file_id ?? 0]}
-
                                             </div>
                                         </TableCell>
 
-
-                                        <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
-                                            <TooltipProvider>
-                                                <Tooltip>
-                                                    <TooltipTrigger asChild>
-                                                        <Button variant={"destructive"} className={`  cursor-pointer`} onClick={() => { handleViewAttachment(f.file_name); }}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
-                                                    </TooltipTrigger>
-                                                    <TooltipContent>
-                                                        <p>View Attachment</p>
-                                                    </TooltipContent>
-                                                </Tooltip>
-                                            </TooltipProvider>
-                                        </TableCell>
-
-                                    </TableRow>
-                                    ))
-                            ) : ""}
-
-
-                            {!userIdViewing && attachments.length > 0 ? (
-                                attachments
-                                    .filter((record) => ![5, 6, 12, 13].includes(record.file_id ?? 0)) // Excludes 3, 4, and 7
-                                    // .sort((a, b) => a.file_to_upload_name.localeCompare(b.file_to_upload_name))
-                                    .map((f, index) => (
-                                        <TableRow key={f.id}>
-
-                                            <TableCell className="w-[10px]">
-                                                {f.file_type !== "" ? <Check className="w-5 h-5 text-green-500" /> : ""}
+                                        {userIdViewing ? (
+                                            <TableCell className="text-center">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="destructive" onClick={() => handleViewAttachment(f.file_name)}>
+                                                                <EyeIcon className="cursor-pointer text-2xl" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>View Attachment</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                             </TableCell>
+                                        ) : (
                                             <TableCell>
-                                                <div className="flex items-center space-x-2">
-                                                    {attachmentNames[f.file_id ?? 0]}
-
-                                                </div>
-                                            </TableCell>
-
-                                            <TableCell className={`${userIdViewing ? "hidden" : ""}`}>
                                                 <div className="flex justify-center items-center space-x-2">
                                                     <TooltipProvider>
                                                         <Tooltip>
@@ -535,27 +516,16 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                                         type="file"
                                                         className="hidden"
                                                         onChange={(e) => handleUploadFile(e, Number(f.file_id))}
-                                                        accept=".jpg,.png,.pdf" // Adjust as needed
+                                                        accept=".jpg,.png,.pdf"
                                                     />
                                                 </div>
                                             </TableCell>
-                                            {/* <TableCell className={`${userIdViewing ? "" : "hidden"} text-center`}>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant={"destructive"} className={`${f.file_type != null ? "" : "hidden"} cursor-pointer`} onClick={() => { handleViewAttachment(f.file_id); alert(f.file_id) }}  ><EyeIcon className="cursor-pointer text-2xl" /></Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            <p>View Attachment</p>
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                            </TableCell> */}
+                                        )}
+                                    </TableRow>
+                                ))}
 
-                                        </TableRow>
-
-                                    ))
-                            ) : (
+                            {/* Fallback message for attachments */}
+                            {!userIdViewing && attachments.filter(f => ![5, 6, 12, 13].includes(f.file_id ?? 0)).length === 0 && (
                                 <TableRow key={0}>
                                     <TableCell colSpan={4} className="text-center text-gray-500">
                                         No Attachments.
@@ -563,6 +533,7 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
                                 </TableRow>
                             )}
                         </TableBody>
+
 
 
 
