@@ -1,16 +1,18 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Wifi, WifiOff, Check, AlertCircle, Loader2 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils" 
+import { SyncSummaryDrawer } from "../app-syncdrawer" 
 
 export default function FloatingPWAStatusAvatar() {
   const [swStatus, setSwStatus] = useState<"loading" | "registered" | "active" | "unsupported">("loading")
   const [isOnline, setIsOnline] = useState(true)
   const [isOpen, setIsOpen] = useState(false)
 
+   
   useEffect(() => {
     // Check if service worker is supported
     if (!("serviceWorker" in navigator)) {
@@ -96,76 +98,78 @@ export default function FloatingPWAStatusAvatar() {
     }
   }
 
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button className="relative group" onClick={() => setIsOpen(!isOpen)} aria-label="PWA offline status">
-              <Avatar className="h-12 w-12 border-2 shadow-lg hover:shadow-xl transition-shadow">
-                <AvatarImage src="/placeholder.svg?height=48&width=48" alt="App logo" />
-                <AvatarFallback>PWA</AvatarFallback>
-              </Avatar>
+  return ( 
+    <SyncSummaryDrawer>
+      <div className="fixed bottom-4 right-4 z-50">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button className="relative group" onClick={() => setIsOpen(!isOpen)} aria-label="PWA offline status">
+                <Avatar className="h-12 w-12 border-2 shadow-lg hover:shadow-xl transition-shadow">
+                  <AvatarImage src="/placeholder.svg?height=48&width=48" alt="App logo" />
+                  <AvatarFallback>PWA</AvatarFallback>
+                </Avatar>
 
-              {/* Status indicator dot */}
-              <span
+                {/* Status indicator dot */}
+                <span
+                  className={cn(
+                    "absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-white",
+                    isOnline ? (swStatus === "active" ? "bg-green-500" : "bg-yellow-500") : "bg-red-500",
+                  )}
+                />
+
+                {/* Connection status icon */}
+                <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                  {isOnline ? <Wifi className="h-3 w-3 text-primary" /> : <WifiOff className="h-3 w-3 text-red-500" />}
+                </span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left" className="flex flex-col gap-1">
+              <div className="font-medium">PWA Status</div>
+              <div className="flex items-center gap-1.5 text-sm">
+                {getStatusIcon()} {getStatusText()}
+              </div>
+              <div className="text-xs text-muted-foreground">{isOnline ? "Online" : "Offline"}</div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Expanded status panel (optional) */}
+        {isOpen && (
+          <div className="absolute bottom-14 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 w-64 border">
+            <div className="text-sm font-medium mb-2">PWA Offline Status</div>
+
+            <div className="flex items-center gap-2 mb-2">
+              <div
                 className={cn(
-                  "absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-white",
-                  isOnline ? (swStatus === "active" ? "bg-green-500" : "bg-yellow-500") : "bg-red-500",
+                  "p-1.5 rounded-full",
+                  swStatus === "active"
+                    ? "bg-green-100 dark:bg-green-900/20"
+                    : swStatus === "unsupported"
+                      ? "bg-red-100 dark:bg-red-900/20"
+                      : "bg-yellow-100 dark:bg-yellow-900/20",
                 )}
-              />
-
-              {/* Connection status icon */}
-              <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-white flex items-center justify-center shadow-sm">
-                {isOnline ? <Wifi className="h-3 w-3 text-primary" /> : <WifiOff className="h-3 w-3 text-red-500" />}
-              </span>
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="left" className="flex flex-col gap-1">
-            <div className="font-medium">PWA Status</div>
-            <div className="flex items-center gap-1.5 text-sm">
-              {getStatusIcon()} {getStatusText()}
+              >
+                {getStatusIcon()}
+              </div>
+              <div className="text-sm">{getStatusText()}</div>
             </div>
-            <div className="text-xs text-muted-foreground">{isOnline ? "Online" : "Offline"}</div>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
 
-      {/* Expanded status panel (optional) */}
-      {isOpen && (
-        <div className="absolute bottom-14 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 w-64 border">
-          <div className="text-sm font-medium mb-2">PWA Offline Status</div>
-
-          <div className="flex items-center gap-2 mb-2">
-            <div
-              className={cn(
-                "p-1.5 rounded-full",
-                swStatus === "active"
-                  ? "bg-green-100 dark:bg-green-900/20"
-                  : swStatus === "unsupported"
-                    ? "bg-red-100 dark:bg-red-900/20"
-                    : "bg-yellow-100 dark:bg-yellow-900/20",
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {isOnline ? (
+                <>
+                  <Wifi className="h-3 w-3" /> Connected
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3" /> Offline
+                </>
               )}
-            >
-              {getStatusIcon()}
             </div>
-            <div className="text-sm">{getStatusText()}</div>
           </div>
-
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            {isOnline ? (
-              <>
-                <Wifi className="h-3 w-3" /> Connected
-              </>
-            ) : (
-              <>
-                <WifiOff className="h-3 w-3" /> Offline
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </SyncSummaryDrawer>
   )
 }
 

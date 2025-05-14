@@ -172,7 +172,7 @@ export interface IPersonProfileFamilyComposition {
   age: number | null;
   contact_number: string | null;
   highest_educational_attainment_id: number | null;
-  monthly_income: number | null;
+  monthly_income: number | string | null;
   relationship_to_the_beneficiary_id: number | null;
   work: string | null;
   user_id: string;  

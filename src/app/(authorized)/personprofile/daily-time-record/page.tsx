@@ -94,6 +94,8 @@ export default function DailyTimeRecordPage() {
     };
  
     useEffect(() => { 
+        console.log('DTR: session',_session)
+        debugger;
         if (_session.userData.role != "Administrator") {
             router.push(`/${baseUrl}/${_session.id}`);
         } else {

@@ -111,6 +111,8 @@ export default function DailyTimeRecordUser() {
     const getResults = async () => {
         const user = await dexieDb.person_profile.where('user_id')
             .equals(params!.id).first();
+
+        console.log('user', {user,params})
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
@@ -196,7 +198,7 @@ export default function DailyTimeRecordUser() {
                         <AppTable
                             data={data}
                             columns={columns}
-                            onEditRecord={session?.userData.role !== "CFW Beneficiary" ? handleEdit:undefined}
+                            onEditRecord={session?.userData.role !== "CFW Beneficiary" ? handleEdit : undefined}
                         />
                     </div>
                 </div>

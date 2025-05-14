@@ -1,19 +1,16 @@
-"use client";
-import { FormDropDown } from "@/components/forms/form-dropdown";
+"use client"; 
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { toast } from "@/hooks/use-toast";
 import { v4 as uuidv4, validate } from 'uuid';
-
-import { uuid } from "drizzle-orm/pg-core";
-import { useState, useEffect, useRef } from "react";
-import { v4 } from "uuid";
-import LoginService from "../login/LoginService";
-import { log } from "console";
+ 
+import React,{ useState, useEffect, useRef } from "react"; 
+import LoginService from "../login/LoginService"; 
 import { ICFWTimeLogs } from "@/components/interfaces/iuser"; 
 import { endOfDay, startOfDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
@@ -150,13 +147,8 @@ export default function ClockInOut() {
             status: "Pending",
             total_work_hours: 0,
             "created_date": new Date().toISOString(),
-            "created_by": user.userData.email,
-            "last_modified_by": "",
-            "last_modified_date": "",
-            "push_status_id": 2,
-            "push_date": "",
-            "deleted_by": "",
-            "deleted_date": "",
+            "created_by": user.userData.email, 
+            "push_status_id": 2, 
             "is_deleted": false,
             "remarks": ""
         } : {

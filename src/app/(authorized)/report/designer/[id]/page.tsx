@@ -11,9 +11,9 @@ import {
 } from "dnd-kit-sortable-tree";
 import { Edit2Icon, Trash2Icon } from 'lucide-react';
 import styles from "@/components/dndkit/TreeItem.module.css";
-import useReportDesigner from '@/lib/state/cfw-monitoring';
+import useReportDesigner from '@/lib/state/cfw-monitoring-store';
 import clsx from 'clsx';
-import { processExcelFile, removeItemAtIndex } from '@/lib/utils';
+import { processExcelFile, removeItemAtIndex, replaceItemAtIndex } from '@/lib/utils';
 import { FileUploader } from './FileUploader';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +33,7 @@ import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, Dr
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 type TreeItemData = {
   id?: string;
@@ -208,8 +209,9 @@ export default function MonitoringCFW() {
 
   const handleSave = () => {
     const report_clean_column = cleanUpIds(columns)
+    const saveId = params?.id == "new" ? uuidv4() : activeId
     const raw = {
-      id: activeId == "new" ? uuidv4() : activeId,
+      id: saveId,
       name: report.name,
       columns: JSON.stringify(report_clean_column),
       push_status_id: params?.id == "new" ? 0 : 0,
@@ -223,7 +225,7 @@ export default function MonitoringCFW() {
       is_deleted: false,
     }
 
-    const fcols = flattenArray(columns)
+    const fcols = flattenArray(columns).map(i => ({ ...i, report_designer_id: saveId }))
     console.log('handleSave', { raw, fcols })
 
     if (raw.name.trim() == "" || columns.length == 0) {
@@ -253,6 +255,31 @@ export default function MonitoringCFW() {
     onChangeDialog({
       open: false
     })
+  }
+
+
+  const handleSaveColumnConfig = (e?: string, key?: string) => {
+    if (key) {
+      const raw = {
+        ...dialog.record,
+        [key]: e
+      }
+      onChangeDialog({
+        ...dialog,
+        record: raw,
+      })
+
+      console.log('handleSave', { columns, e, key, raw })
+    } else {
+      const idx = columns.findIndex(i => i.id == dialog.record.id)
+      const newcols = replaceItemAtIndex(columns, idx, dialog.record)
+      onChangeColumns(newcols)
+
+      onChangeDialog({
+        open: false
+      })
+      console.log('handleSave', { columns, newcols })
+    }
   }
 
   return (
@@ -289,7 +316,7 @@ export default function MonitoringCFW() {
                       </Button>
                     </div>
                   </div>
-                  <div className="dndsortable px-2 max-h-[46rem] overflow-scroll rounded-xl ">
+                  <div className="dndsortable px-2 max-h-[56rem] overflow-scroll rounded-xl ">
                     <SortableTree
                       items={items}
                       onItemsChanged={onChangeColumns}
@@ -310,38 +337,53 @@ export default function MonitoringCFW() {
         open: e
       })}>
 
-        <DrawerContent className="left-auto  right-4 top-2 bottom-2 fixed z-50  outline-none w-[510px] flex border-none mt-0 ">
+        <DrawerContent className="left-auto  right-4 top-2 bottom-2 fixed z-50  outline-none max-w-[510px] flex border-none mt-0 ">
           <DrawerHeader className="text-left">
             <DrawerTitle className='font-bold my-2'>Configure Column</DrawerTitle>
           </DrawerHeader>
-          <div className='h-full m-2'>
 
-            <div className="grid w-full max-w-sm items-center gap-1.5">
-              <Label htmlFor="email">Name</Label>
-              <Input placeholder='...' defaultValue={dialog.record?.name} />
+          <div className='flex flex-col  p-4 w-full'>
+            <div className="grid w-full items-center gap-1.5 mb-4">
+              <Label htmlFor="name">Label</Label>
+              <Input
+                onChange={debounce((e) => handleSaveColumnConfig(e.target.value, "label"), 500)}
+                id="name" className="w-full" placeholder="..." defaultValue={dialog.record?.label} />
             </div>
 
-            <div className="grid w-full max-w-sm items-center gap-1.5 mb-4">
+            <div className="grid w-full items-center gap-1.5 mb-4">
               <Label htmlFor="type">Type</Label>
-              <Select defaultValue={dialog.record?.type || "Text"}>
+              <Select onValueChange={(e) => handleSaveColumnConfig(e, "type")} defaultValue={dialog.record?.type || "Text"}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Text">Text</SelectItem>
-                  <SelectItem value="Number">Number</SelectItem>
-                  <SelectItem value="Calculated">Calculated</SelectItem>
+                  <SelectItem value="text">Text</SelectItem>
+                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="calculated">Calculated</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="grid w-full items-center gap-1.5 mb-4">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                className="w-full"
+                placeholder="Enter description..."
+                defaultValue={dialog.record?.description}
+                onChange={debounce((e) => handleSaveColumnConfig(e.target.value, "description"), 500)}
+              />
             </div>
 
             <span>{JSON.stringify(dialog.record)}</span>
           </div>
 
           <DrawerFooter className="pt-2">
-            <DrawerClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DrawerClose>
+            <div className="mt-6 px-2">
+              <Button onClick={() => handleSaveColumnConfig()} className="w-full"  >
+                Save
+              </Button>
+            </div>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>

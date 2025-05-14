@@ -163,7 +163,10 @@ export default function LoginPage() {
         const onlinePayload = await LoginService.onlineLogin(data.email, data.password);
         // debugger;
         if (onlinePayload) {
-          const onlineProfile = await LoginService.getProfile(onlinePayload.user.id, onlinePayload.token);
+          const raw = await LoginService.getProfile(onlinePayload.user.id, onlinePayload.token);
+          const onlineProfile = await LoginService.getProfile(raw.id, onlinePayload.token);
+          console.log('onlineProfile',onlineProfile)
+          debugger;
           if (onlineProfile) {
             // save to dexie
             dexieDb.open();
@@ -179,12 +182,18 @@ export default function LoginPage() {
                   if (existingRecord) {
                     debugger;
                     await dexieDb.person_profile.update(onlineProfile.id, onlineProfile);
-                    await dexieDb.person_profile_sector.update(onlineProfile.id, onlineProfile.person_profile_sector);
-                    await dexieDb.person_profile_disability.update(onlineProfile.id, onlineProfile.person_profile_disability ?? []);
-                    await dexieDb.person_profile_family_composition.update(onlineProfile.id, onlineProfile.person_profile_family_composition ?? []);
-                    await dexieDb.attachments.update(onlineProfile.id, onlineProfile.attachments ?? []);
-                    await dexieDb.person_profile_cfw_fam_program_details.update(onlineProfile.id, onlineProfile.person_profile_cfw_fam_program_details ?? []);
-                    console.log("Record updated in DexieDB:", onlineProfile.id);
+                    await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector);
+                    await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability ?? []);
+                    await dexieDb.person_profile_family_composition.bulkPut(onlineProfile.person_profile_family_composition ?? []);
+                    
+                    const att = onlineProfile.attachments.map((x:any)=> ({...x, id: x._id})) ?? []
+                    delete att._id;
+
+                    debugger;
+                    await dexieDb.attachments.bulkPut(att);
+                    await dexieDb.person_profile_cfw_fam_program_details.bulkPut(onlineProfile.person_profile_cfw_fam_program_details ?? []);
+                    console.log("Record updated in DexieDB:", {id:onlineProfile.id,att});
+                   
                   } else {
                     await dexieDb.person_profile.add(onlineProfile);
                     if (onlineProfile.person_profile_disability.length !== 0) {
@@ -213,12 +222,14 @@ export default function LoginPage() {
                       }
                     }
                     console.log("➕New record added to DexieDB:", onlineProfile.id);
+                    debugger;
                   }
                 } catch (error) {
                   setIsLoading(false)
                   console.log("Error saving to DexieDB:", error);
                 }
               });
+              debugger;
 
           }
           await createSession(onlinePayload.user.id, onlinePayload.user.userData, onlinePayload.token);

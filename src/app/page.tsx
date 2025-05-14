@@ -12,9 +12,8 @@ import PersonProfileService from "./(authorized)/personprofile/form/PersonProfil
 import clsx from "clsx";
 import { Badge } from "@/components/ui/badge";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
-import { IAttachments } from "@/components/interfaces/general/attachments";
-import { useBulkSync } from "@/hooks/use-bulksync";
 import GeneratePDF from "@/components/pdf/CfwBooklet";
+import { useBulkSyncStore } from "@/lib/state/bulksync-store";
 
 
 function StartPage() {
@@ -29,77 +28,7 @@ function StartPage() {
     fetchUser();
   }, [])
 
-  const { startSync, state,setTasks, summary } = useBulkSync();
-
-  useEffect(() => {
-    (async () => {
-      setTasks([
-        {
-          tag: "Person Profile",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile/create/`,
-          module: await dexieDb.person_profile,
-        },
-        {
-          tag: "Person Profile > CFW attendance log",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `cfwtimelogs/create/`,
-          module: await dexieDb.cfwtimelogs,
-        },
-        {
-          tag: "Person Profile > person_profile_disability",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_disability/create/`,
-          module: await dexieDb.person_profile_disability,
-        },
-        {
-          tag: "Person Profile > person_profile_family_composition",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_family_composition/create/`,
-          module: await dexieDb.person_profile_family_composition,
-        },
-        {
-          tag: "Person Profile > person_profile_sector",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_sector/create/`,
-          module: await dexieDb.person_profile_sector,
-        },
-        {
-          tag: "Person Profile > person_profile_cfw_fam_program_details",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile_engagement_history/create/`,
-          module: await dexieDb.person_profile_cfw_fam_program_details,
-        },
-        {
-
-          tag: "Person Profile > attachments",
-          url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
-          module: await dexieDb.attachments,
-          formdata: (record) => {
-            console.log('Person Profile > attachments > record', record)
-            return ({
-              [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id == "" ? record.record_id : record.user_id}##${record.created_by == "" ? "error" : record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]: record.file_path, // should be a File or Blob
-            })
-          },
-          onSyncRecordResult: (record, result) => {
-            if (result.success) {
-              console.log('✅ attachments synced:', { record, result });
-              (async () => {
-                if (result.response.length !== 0) {
-                  const newRecord = {
-                    ...record as IAttachments,
-                    file_id: result.response.file_name,
-                    file_path: result.response.file_path,
-                    push_status_id: 1,
-                    push_date: new Date().toISOString()
-                  }
-                  console.log('✅ attachments synced:', { record, result });
-                  await dexieDb.attachments.put(newRecord, "id")
-                }
-              })();
-            } else {
-              console.error('❌ Order failed:', record.id, '-', result.error);
-            }
-          },
-        },
-      ])
-    })();
-  }, []);
-
+  const { startSync, state, summary } = useBulkSyncStore();
   useEffect(() => {
     console.log('summary', summary)
   }, [state])
@@ -217,8 +146,8 @@ function StartPage() {
     fetchData();
   }), [session])
 
-  const handleStartSync = async () => { 
-    startSync(session!)
+  const handleStartSync = async () => {
+    startSync(session!, "Person Profile")
   }
 
 
@@ -250,6 +179,7 @@ function StartPage() {
                   "rounded-xl shadow-md transition-all",
                   encodingPercentage === 100 ? "bg-green-400" : "bg-red-400"
                 )}
+                onClick={() => startSync(session!)}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
