@@ -24,6 +24,7 @@ import Captcha from "@/components/general/captcha";
 import { Button } from "@/components/ui/button";
 import { set } from "date-fns";
 import UsersService from "@/components/dialogs/registration/UsersService";
+import { cloneDeep } from "lodash";
 
 
 const formSchema = z.object({
@@ -144,7 +145,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: FormData) => {
 
-    
+
     setIsLoading(true);
     // debugger;
     try {
@@ -165,72 +166,109 @@ export default function LoginPage() {
         if (onlinePayload) {
           const raw = await LoginService.getProfile(onlinePayload.user.id, onlinePayload.token);
           const onlineProfile = await LoginService.getProfile(raw.id, onlinePayload.token);
-          console.log('onlineProfile',onlineProfile)
+          console.log('onlineProfile', onlineProfile)
           debugger;
           if (onlineProfile) {
-            // save to dexie
-            dexieDb.open();
-            dexieDb.transaction('rw', [
-              dexieDb.person_profile,
-              dexieDb.person_profile_sector,
-              dexieDb.person_profile_disability,
-              dexieDb.person_profile_family_composition,
-              dexieDb.attachments,
-              dexieDb.person_profile_cfw_fam_program_details], async () => {
-                try {
-                  const existingRecord = await dexieDb.person_profile.get(onlineProfile.id);
-                  if (existingRecord) {
-                    debugger;
-                    await dexieDb.person_profile.update(onlineProfile.id, onlineProfile);
-                    await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector);
-                    await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability ?? []);
-                    await dexieDb.person_profile_family_composition.bulkPut(onlineProfile.person_profile_family_composition ?? []);
-                    
-                    const att = onlineProfile.attachments.map((x:any)=> ({...x, id: x._id})) ?? []
-                    delete att._id;
 
-                    debugger;
-                    await dexieDb.attachments.bulkPut(att);
-                    await dexieDb.person_profile_cfw_fam_program_details.bulkPut(onlineProfile.person_profile_cfw_fam_program_details ?? []);
-                    console.log("Record updated in DexieDB:", {id:onlineProfile.id,att});
-                   
-                  } else {
-                    await dexieDb.person_profile.add(onlineProfile);
-                    if (onlineProfile.person_profile_disability.length !== 0) {
-                      await dexieDb.person_profile_disability.bulkAdd(onlineProfile.person_profile_disability);
-                    }
-                    if (onlineProfile.person_profile_family_composition.length !== 0) {
-                      for (let i = 0; i < onlineProfile.person_profile_family_composition.length; i++) {
-                        const family = onlineProfile.person_profile_family_composition[i];
-                        await dexieDb.person_profile_family_composition.add(family); // Save the object without raw_id
-                      }
-                    }
-                    if (onlineProfile.person_profile_sector.length !== 0) {
-                      for (let i = 0; i < onlineProfile.person_profile_sector.length; i++) {
-                        await dexieDb.person_profile_sector.bulkAdd(onlineProfile.person_profile_sector);
-                      }
-                    }
-                    if (onlineProfile.attachments.length !== 0) {
-                      for (let i = 0; i < onlineProfile.attachments.length; i++) {
-                        await dexieDb.attachments.bulkAdd(onlineProfile.attachments);
-                      }
+            const p = cloneDeep(onlineProfile)
+            delete p.attachments
+            delete p.cfw_assessment
+            delete p.person_profile_cfw_fam_program_details
+            delete p.person_profile_disability
+            delete p.person_profile_engagement_history
+            delete p.person_profile_family_composition
+            delete p.person_profile_file_upload
+            delete p.person_profile_sector
 
-                    }
-                    if (onlineProfile.person_profile_cfw_fam_program_details) {
-                      for (let i = 0; i < onlineProfile.person_profile_cfw_fam_program_details.length; i++) {
-                        await dexieDb.person_profile_cfw_fam_program_details.bulkAdd(onlineProfile.person_profile_cfw_fam_program_details);
-                      }
-                    }
-                    console.log("➕New record added to DexieDB:", onlineProfile.id);
-                    debugger;
-                  }
-                } catch (error) {
-                  setIsLoading(false)
-                  console.log("Error saving to DexieDB:", error);
-                }
-              });
-              debugger;
+            await dexieDb.person_profile.put({ ...p })
+            await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector)
+            await dexieDb.person_profile_family_composition.bulkPut(onlineProfile.person_profile_family_composition)
+            await dexieDb.person_profile_cfw_fam_program_details.bulkPut(onlineProfile.person_profile_cfw_fam_program_details)
+            await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability)
 
+            for (let index = 0; index < (onlineProfile.attachments as []).length; index++) {
+              const element = onlineProfile.attachments[index];
+              if (element._id) {
+                await dexieDb.attachments.put({
+                  ...onlineProfile.attachments[index],
+                  id: onlineProfile.attachments[index]._id
+                })
+              } else {
+                await dexieDb.attachments.put(onlineProfile.attachments[index])
+              }
+            }
+            // // save to dexie
+            // dexieDb.open();
+            // dexieDb.transaction('rw', [
+            //   dexieDb.person_profile,
+            //   dexieDb.person_profile_sector,
+            //   dexieDb.person_profile_disability,
+            //   dexieDb.person_profile_family_composition,
+            //   dexieDb.attachments,
+            //   dexieDb.person_profile_cfw_fam_program_details], async () => {
+            //     try {
+            //       const existingRecord = await dexieDb.person_profile.get(onlineProfile.id);
+
+            //       await dexieDb.person_profile.update(onlineProfile.id, onlineProfile);
+            //       await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector);
+            //       await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability ?? []);
+            //       await dexieDb.person_profile_family_composition.bulkPut(onlineProfile.person_profile_family_composition ?? []);
+            //       await dexieDb.attachments.bulkPut(onlineProfile.attachments);
+            //       await dexieDb.person_profile_cfw_fam_program_details.bulkPut(onlineProfile.person_profile_cfw_fam_program_details ?? []);
+
+
+            //       if (existingRecord) {
+            //         debugger;
+            //         await dexieDb.person_profile.update(onlineProfile.id, onlineProfile);
+            //         await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector);
+            //         await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability ?? []);
+            //         await dexieDb.person_profile_family_composition.bulkPut(onlineProfile.person_profile_family_composition ?? []);
+            //         await dexieDb.attachments.bulkPut(onlineProfile.attachments);
+            //         await dexieDb.person_profile_cfw_fam_program_details.bulkPut(onlineProfile.person_profile_cfw_fam_program_details ?? []);
+            //         console.log("Record updated in DexieDB:", { id: onlineProfile.id, att });
+
+            //       } else {
+
+            //         if (onlineProfile.person_profile_disability.length !== 0) {
+            //           await dexieDb.person_profile_disability.bulkPut(onlineProfile.person_profile_disability);
+            //         }
+            //         debugger;
+            //         if (onlineProfile.person_profile_family_composition.length !== 0) {
+            //           for (let i = 0; i < onlineProfile.person_profile_family_composition.length; i++) {
+            //             const family = onlineProfile.person_profile_family_composition[i];
+            //             await dexieDb.person_profile_family_composition.add(family); // Save the object without raw_id
+            //           }
+            //         }
+            //         debugger;
+            //         if (onlineProfile.person_profile_sector.length !== 0) {
+            //           await dexieDb.person_profile_sector.bulkPut(onlineProfile.person_profile_sector);
+            //         }
+
+            //         if (onlineProfile.attachments.length !== 0) {
+            //           await dexieDb.attachments.bulkPut(onlineProfile.attachments);
+            //         }
+            //         if (onlineProfile.person_profile_cfw_fam_program_details) {
+            //           await dexieDb.person_profile_cfw_fam_program_details.bulkAdd(onlineProfile.person_profile_cfw_fam_program_details);
+            //         }
+
+            //         let p = onlineProfile
+
+            //         delete p.person_profile_cfw_fam_program_details
+            //         delete p.person_profile_family_composition
+            //         delete p.person_profile_sector
+            //         delete p.attachments
+
+            //         await dexieDb.person_profile.add(p);
+            //         debugger;
+            //         console.log("➕New record added to DexieDB:", { id: onlineProfile.id, profile: p });
+            //         debugger;
+            //       }
+            //     } catch (error) {
+            //       setIsLoading(false)
+            //       console.log("Error saving to DexieDB:", error);
+            //     }
+            //   });
+            // debugger; 
           }
           await createSession(onlinePayload.user.id, onlinePayload.user.userData, onlinePayload.token);
           toast({

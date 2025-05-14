@@ -8,7 +8,6 @@ export const syncTask: IBulkSync[] = [
     url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile/create/`,
     module: await dexieDb.person_profile,
     force: true,
-    postAs: "object",
   },
   {
     tag: "Person Profile > CFW attendance log",
