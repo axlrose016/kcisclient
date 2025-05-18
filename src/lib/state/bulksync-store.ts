@@ -2,9 +2,16 @@ import { create } from "zustand";
 import { SessionPayload } from "@/types/globals";
 import { toast } from "@/hooks/use-toast";
 import { syncTask } from "../bulksync";
+import { hasOnlineAccess, isValidTokenString } from "../utils";
 
 export interface ISummary {
-  state: "idle" | "in progress" | "completed" | `error: ${string}`;
+  state:
+    | "idle"
+    | "in progress"
+    | "completed"
+    | `error: ${string}`
+    | "error"
+    | "failed";
   tasks: {
     tag: string;
     url: string;
@@ -47,7 +54,7 @@ export interface ProgressStatus {
     success: number;
     failed: number;
     errors: { record_id: number | string; error_message: string }[];
-    state: "in progress" | "completed";
+    state: "in progress" | "completed" | "error";
   };
 }
 
@@ -57,8 +64,14 @@ interface BulkSyncStore {
   progressStatus: ProgressStatus;
   summary: ISummary;
   setTasks: (tasks: IBulkSync[]) => void;
-  setProgressStatus: (tag: string, data: Partial<ProgressStatus[string]>) => void;
-  updateTaskProgress: (tag: string, data: Partial<ProgressStatus[string]>) => void;
+  setProgressStatus: (
+    tag: string,
+    data: Partial<ProgressStatus[string]>
+  ) => void;
+  updateTaskProgress: (
+    tag: string,
+    data: Partial<ProgressStatus[string]>
+  ) => void;
   resetAllTasks: () => void;
   resetSummary: () => void;
   startSync: (
@@ -142,7 +155,14 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
     }),
 
   startSync: async (session, tags, progressUpdate) => {
-    if (!session?.token) return;
+    const hasNetAccess = await hasOnlineAccess();
+    const hasToken = isValidTokenString(session?.token);
+
+    // alert(JSON.stringify({ hasToken, hasNetAccess }));
+
+    if (!hasNetAccess) return;
+
+    if (!hasToken) return;
 
     const { tasks, setProgressStatus } = get();
     const filteredTasks = tags
@@ -151,7 +171,6 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
         )
       : tasks;
 
-    // Reset state
     set({
       state: "in progress",
       summary: {
@@ -161,7 +180,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
       },
     });
 
-    if (!tags) get().resetAllTasks(); // Only when full sync is triggered
+    if (!tags) get().resetAllTasks();
 
     let totalRecords = 0;
     const taskRecordMap: Record<string, any[]> = {};
@@ -170,7 +189,9 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
       const records = task.force
         ? await task.module.toArray()
         : await task.module.where("push_status_id").notEqual(1).toArray();
-      taskRecordMap[task.tag] = task.cleanup ? records.map(task.cleanup) : records;
+      taskRecordMap[task.tag] = task.cleanup
+        ? records.map(task.cleanup)
+        : records;
       totalRecords += records.length;
     }
 
@@ -192,77 +213,95 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
         errors: [],
       });
 
+      let encounteredError = false;
+
       for (const record of records) {
-        try {
-          let body: BodyInit;
-          let headers: HeadersInit = {
-            Authorization: `bearer ${session.token}`,
-          };
+        if (!hasNetAccess || !hasToken) {
+          const msg = "Internet or token error";
+          failed++;
+          encounteredError = true;
+          errors.push({ record_id: record.id, error_message: msg });
+        } else {
+          try {
+            let body: BodyInit;
+            let headers: HeadersInit = {
+              Authorization: `bearer ${session.token}`,
+            };
 
-          if (task.formdata) {
-            const form = new FormData();
-            const data = task.formdata(record);
-            Object.entries(data).forEach(([key, value]) => form.append(key, value));
-            body = form;
-          } else {
-            const payload = task.postAs === "object" ? record : [record];
-            body = JSON.stringify(payload);
-            headers["Content-Type"] = "application/json";
-          }
+            if (task.formdata) {
+              const form = new FormData();
+              const data = task.formdata(record);
+              Object.entries(data).forEach(([key, value]) =>
+                form.append(key, value)
+              );
+              body = form;
+            } else {
+              const payload = task.postAs === "object" ? record : [record];
+              body = JSON.stringify(payload);
+              headers["Content-Type"] = "application/json";
+            }
 
-          const res = await fetch(task.url, {
-            method: "POST",
-            body,
-            headers,
-          });
-
-          if (res.ok) {
-            const json = await res.clone().json();
-            await task.module.update(record.id, {
-              push_status_id: 1,
-              push_date: new Date().toISOString(),
+            const res = await fetch(task.url, {
+              method: "POST",
+              body,
+              headers,
             });
-            success++;
-            task.onSyncRecordResult?.(record, { success: true, response: json });
-          } else {
-            const msg = `HTTP ${res.status}`;
+
+            if (res.ok) {
+              const json = await res.clone().json();
+              await task.module.update(record.id, {
+                push_status_id: 1,
+                push_date: new Date().toISOString(),
+              });
+              success++;
+              task.onSyncRecordResult?.(record, {
+                success: true,
+                response: json,
+              });
+
+              processedCount++;
+            } else {
+              const msg = `HTTP ${res.status}`;
+              failed++;
+              encounteredError = true;
+              errors.push({ record_id: record.id, error_message: msg });
+              task.onSyncRecordResult?.(record, { success: false, error: msg });
+            }
+          } catch (err: any) {
+            const msg = err?.message || "Unknown error";
             failed++;
+            encounteredError = true;
             errors.push({ record_id: record.id, error_message: msg });
             task.onSyncRecordResult?.(record, { success: false, error: msg });
           }
-        } catch (err: any) {
-          const msg = err?.message || "Unknown error";
-          failed++;
-          errors.push({ record_id: record.id, error_message: msg });
-          task.onSyncRecordResult?.(record, { success: false, error: msg });
         }
-
-        processedCount++;
-        const percent = totalRecords
-          ? `${Math.round((processedCount / totalRecords) * 100)}%`
-          : "0%";
 
         const taskProgress: ProgressStatus[string] = {
           tag: task.tag,
           success,
           failed,
           errors,
-          state: "in progress",
+          state: encounteredError ? "error" : "in progress",
         };
 
         setProgressStatus(task.tag, taskProgress);
         progressUpdate?.(taskProgress);
-
-        set((state) => ({
-          summary: {
-            ...state.summary,
-            overallPercentage: percent,
-            lastSyncedAt: new Date().toISOString(),
-          },
-        }));
       }
 
-      setProgressStatus(task.tag, { state: "completed" });
+      const percent = totalRecords
+        ? `${Math.round((processedCount / totalRecords) * 100)}%`
+        : "0%";
+      set((state) => ({
+        summary: {
+          ...state.summary,
+          overallPercentage: percent,
+          lastSyncedAt: new Date().toISOString(),
+        },
+      }));
+
+      setProgressStatus(task.tag, {
+        state: !hasNetAccess || !hasToken ? "error" : "completed",
+      });
 
       finalTasks.push({
         tag: task.tag,
@@ -281,7 +320,10 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
         success,
         failed,
         errors,
-        state: "completed",
+        state:
+          !hasNetAccess || !hasToken || encounteredError
+            ? "error"
+            : "completed",
       };
 
       errorList.push(...errors.map((e) => ({ ...e, tag: task.tag })));
@@ -310,10 +352,12 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
       },
     });
 
-    toast({
-      title: "Sync finished",
-      description: `Overall: ${overallPercentage}`,
-      duration: 1500,
-    });
+    if (hasNetAccess && hasToken) {
+      toast({
+        title: "Sync finished",
+        description: `Overall: ${overallPercentage}`,
+        duration: 1500,
+      });
+    }
   },
 }));

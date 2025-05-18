@@ -187,7 +187,7 @@ export default function TaskManagement() {
           </CardHeader>
           <CardContent>
             <div className="mb-6 ml-2">
-              <div className="mb-4">
+              {/* <div className="mb-4">
                 <Label className="block text-sm font-medium text-gray-700">Title</Label>
                 <Input
                   type="text"
@@ -195,7 +195,7 @@ export default function TaskManagement() {
                   name="workPlanTitle"
                   value={taskManagement.workPlanTitle ?? ""}
                   onChange={handleInputChangeTaskManagement} />
-              </div>
+              </div> */}
               <div className="mb-4">
                 <Label className="block text-sm font-medium text-gray-700">Name of Company</Label>
                 <Input

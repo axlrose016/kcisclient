@@ -83,4 +83,20 @@ export const syncTask: IBulkSync[] = [
       }
     },
   },
+  {
+    tag: "Person Profile > Accomplishment Report",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `accomplishment_report/create/`,
+    module: await dexieDb.accomplishment_report,
+    force: true,
+  },
+  {
+    tag: "Person Profile > Accomplishment Report Task",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `accomplishment_report_task/create/`,
+    module: await dexieDb.accomplishment_actual_task,
+    force: true,
+  },
 ];

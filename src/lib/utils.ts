@@ -118,3 +118,27 @@ export const downloadJson = (jsonData: string, fileName: string): void => {
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
 };
+
+export function isValidTokenString(str: any): boolean {
+  return typeof str === 'string' && str.length > 64;
+}
+
+export async function hasOnlineAccess(
+  pingUrl = "https://www.google.com/favicon.ico"
+) {
+  // First, check the basic navigator flag
+  if (!navigator.onLine) return false;
+
+  try {
+    // Try to ping a known URL or your own backend health check
+    await fetch(pingUrl, {
+      method: "HEAD",
+      mode: "no-cors", // prevent CORS errors (no-cors won't throw if reachable)
+      cache: "no-store",
+    });
+
+    return true; // If fetch doesn't throw, assume online
+  } catch (err) {
+    return false;
+  }
+}

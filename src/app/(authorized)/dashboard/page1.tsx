@@ -49,11 +49,12 @@ export default function DashboardPage() {
       try{
         const user = await getUserByEmail(data.email);
         if(user == null){
-          toast({
+            toast({
             variant: "destructive",
-            title: "No Record Found!",
-            description: "The Email was not found on the database, Please try again!",
-          })
+            title: "Access Denied!",
+            description: "The Email and/ or password is invalid.",
+            duration: 5000,
+            })
         }
         const decryptedPassword = await hashPassword(data.password, user?.salt);
         if(user?.password === decryptedPassword && user.email === data.email)

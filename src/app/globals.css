@@ -42,6 +42,7 @@ body {
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
@@ -82,6 +83,7 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -121,22 +123,38 @@ div[role="row"] {
 
 /* Add this to your CSS file */
 .rdg-header-row .rdg-cell {
-  border: 1px solid #ccc; /* Adds a border to each header cell */
+  border: 1px solid #ccc;
+  /* Adds a border to each header cell */
   white-space-collapse: break-spaces;
   text-wrap-mode: wrap;
   padding-block-start: 0 !important;
   text-align: center;
   font-size: x-small;
 }
-  
+
 /* styles/global.css */
 .cell-title {
-  white-space: normal; /* Allows text to wrap */
-  word-wrap: break-word; /* Breaks long words to fit within the cell */
-  overflow: hidden; /* Ensures no text overflows */
+  white-space: normal;
+  /* Allows text to wrap */
+  word-wrap: break-word;
+  /* Breaks long words to fit within the cell */
+  overflow: hidden;
+  /* Ensures no text overflows */
 }
 
 .cell-data {
   cursor: pointer;
   white-space: break-space;
+}
+
+#editable:empty:before {
+  content: attr(data-placeholder);
+  color: gray;
+  font-style: italic;
+  padding: 10px;
+  pointer-events: none;
+}
+
+[contenteditable]:focus {
+  outline: 0px solid transparent;
 }

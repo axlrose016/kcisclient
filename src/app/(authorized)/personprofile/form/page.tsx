@@ -46,6 +46,7 @@ import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/app/login/LoginService";
 import { Toaster } from '@/components/ui/toaster';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 const _session = await getSession() as SessionPayload;
 export default function PersonProfileForm({ user_id_viewing }: any) {
@@ -1032,8 +1033,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
               } else {
                 toast({
-                  variant: "destructive",
-                  title: "Error",
+                  variant: "green",
+                  title: "Please re-login your account and try again.",
                   description: "The record has been saved, but the data could not be synchronized at this time.",
                 });
               }
@@ -1267,8 +1268,12 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         if (!formData?.skills) { errorToast("Skill is required!", "occupation", "skills"); return; }
 
 
-        const storedSectors = localStorage.getItem("person_sectors");
-        if (formSectorData.length == 0 || formSectorData == undefined) { errorToast("Sectors required!", "sector", ""); return; }
+        // const storedSectors = localStorage.getItem("person_sectors");
+        console.log("Debugging Sector")
+        console.log("Sector data type is ", typeof formSectorData)
+        console.log("Sector data is ", formSectorData)
+        if (Object.keys(formSectorData).length == 0) { errorToast("Sectors required!", "sector", ""); return; }
+        // if (formSectorData.length == 0 || formSectorData == undefined) { errorToast("Sectors required!", "sector", ""); return; }
 
         // const parsedSectors = JSON.parse(storedSectors) as IPersonProfileSector[];
 
@@ -1280,11 +1285,24 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           return;
         }
 
+        // if (formData?.is_pwd) {
+        //   // check if there is disabilities
+
+
+        //   if (!formDisabilitiesData) { errorToast("Pease select a disability!", "sector", "type_of_disabilities"); return; }
+
+        //   const formattedDisabilities = Object.fromEntries(
+        //     formDisabilitiesData.map((id: any) => [`disability_id_${id}`, Number(id)])
+        //   );
+
+        //   appendData("disabilities", formattedDisabilities);
+        // }
+        debugger;
         if (formData?.is_pwd) {
-          // check if there is disabilities
-
-
-          if (!formDisabilitiesData) { errorToast("Pease select a disability!", "sector", "type_of_disabilities"); return; }
+          if (!Array.isArray(formDisabilitiesData) || formDisabilitiesData.length === 0) {
+            errorToast("Please select at least one disability!", "sector", "type_of_disabilities");
+            return;
+          }
 
           const formattedDisabilities = Object.fromEntries(
             formDisabilitiesData.map((id: any) => [`disability_id_${id}`, Number(id)])
@@ -1293,18 +1311,26 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           appendData("disabilities", formattedDisabilities);
         }
 
+
         if (formData?.is_ip) {
           // check if there is disabilities
-          const storedIPGroupId = localStorage.getItem("ipgroup_id");
-          if (!storedIPGroupId) { errorToast("Pease select an IP Group!", "sector", "ip_group"); return; }
-          const parsedIpGroupId = JSON.parse(storedIPGroupId);
-          if (parsedIpGroupId === 0) { errorToast("Pease select an IP Group", "sector", "ip_group"); return; }
-          appendData("ip_group_id", parsedIpGroupId);
+          //  const ip_group_id = localStorage.getItem("ipgroup_id") || "0";
+          const storedIPGroupId = localStorage.getItem("ipgroup_id") || "0";
+          // const parsedIpGroupId = JSON.parse(storedIPGroupId);
+          // alert("type of parsed IP Group ID is " + typeof parsedIpGroupId)
+          // alert("type of stored IP Group ID is " + typeof storedIPGroupId)
+          if (storedIPGroupId == "0") { errorToast("Please select an IP Group!", "sector", "ip_group"); return; }
+
+          // if (parsedIpGroupId === 0) { errorToast("Pease select an IP Group", "sector", "ip_group"); return; }
+          appendData("ip_group_id", storedIPGroupId);
         }
 
 
 
         // family composition
+        console.log("For Validation")
+        console.log("Family Composition Data type is ", typeof formFamilyCompositionData)
+        console.log("Family Composition Data is ", formFamilyCompositionData)
         if (!formFamilyCompositionData || formFamilyCompositionData.length === 0) { errorToast("Family composition is required!", "family_composition", ""); return; }
 
 
@@ -1913,6 +1939,10 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         //   }
         // }
 
+        if (!userIdViewing) {
+          localStorage.removeItem("attachments")
+        }
+
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -2206,6 +2236,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
     <div className='w-full'>
 
+
       <Dialog modal={false} open={dataPrivacyOpen} onOpenChange={setDataPrivacyOpen}>
         <DialogContent>
           <DialogHeader>
@@ -2313,8 +2344,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         {/* <pre>{"Has pic: " + displayPic}</pre> */}
         {/* <pre>{"Token: " + _session.token}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(data.person_profile_family_composition, null, 2)}</pre> */}
-        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData, null, 2)}</pre> */}
-        {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
+        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData.id, null, 2)}</pre>
+        <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
         {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
         {/* <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre> */}

@@ -318,6 +318,8 @@ export interface IAccomplishmentReport {
 export interface IAccomplishmentActualTask {
   id: string;  
   accomplishment_report_id: string;
+  category_id: string;
+  task: string;
   accomplishment: string;
   mov: string;
   status_id: number;

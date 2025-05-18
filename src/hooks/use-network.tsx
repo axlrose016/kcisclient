@@ -1,31 +1,47 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState, useCallback } from "react";
 
-export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(true)
+const DEFAULT_PING_URL = "https://www.google.com/favicon.ico"; 
+export function useOnlineStatus(pingUrl = DEFAULT_PING_URL) {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  const checkConnection = useCallback(async () => {
+    if (!navigator.onLine) {
+      setIsOnline(false);
+      return false;
+    }
+
+    try {
+      await fetch(pingUrl, {
+        method: "HEAD",
+        mode: "no-cors",
+        cache: "no-store"
+      });
+      setIsOnline(true);
+      return true;
+    } catch {
+      setIsOnline(false);
+      return false;
+    }
+  }, [pingUrl]);
 
   useEffect(() => {
-    // Set the initial state
-    setIsOnline(navigator.onLine)
+    // Initial check
+    checkConnection();
 
-    function handleOnline() {
-      setIsOnline(true)
-    }
+    // Event listeners for real-time changes
+    const handleOnline = () => checkConnection();
+    const handleOffline = () => setIsOnline(false);
 
-    function handleOffline() {
-      setIsOnline(false)
-    }
-
-    window.addEventListener("online", handleOnline)
-    window.addEventListener("offline", handleOffline)
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline)
-      window.removeEventListener("offline", handleOffline)
-    }
-  }, [])
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, [checkConnection]);
 
   return isOnline
 }
-

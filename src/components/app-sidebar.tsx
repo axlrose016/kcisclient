@@ -6,6 +6,7 @@ import {
   Earth,
   Frame,
   GalleryVerticalEnd,
+  HandCoinsIcon,
   Library,
   SettingsIcon,
   User2Icon,
@@ -63,6 +64,12 @@ const data = {
       logo: User2Icon,
       plan: "Configuration",
       url: "/hr-development",
+    },
+    {
+      name: "Finance",
+      logo: HandCoinsIcon,
+      plan: "Finance",
+      url: "/finance",
     }
   ],
   navMain: [
@@ -189,7 +196,7 @@ const data = {
         },
 
       ],
-      roles: ["CFW Administrator", "Administrator"],
+      roles: ["CFW Administrator", "Administrator", "CFW Immediate Supervisor"],
       modules: ["Person Profile"],
     }, {
       title: "Report",
@@ -255,6 +262,51 @@ const data = {
         }
       ],
       modules: ["Human Resource and Development"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Allocation",
+      url:"#",
+      icon: HandCoinsIcon,
+      isActive: false,
+      items: [
+         {
+          title: "Masterlist",
+          url: "/finance/allocation",
+          permission: ["Can View", "Can Delete"]
+        },
+      ],
+      modules: ["Finance"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Monthly Obligation Plan",
+      url: "#",
+      icon: HandCoinsIcon,
+      isActive: false,
+      items:[
+        {
+          title: "Masterlist",
+          url: "/finance/mop",
+          permission: ["Can View", "Can Delete"],
+        }
+      ],
+      modules: ["Finance"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Allotment",
+      url: "#",
+      icon: HandCoinsIcon,
+      isActive: false,
+      items:[
+        {
+          title: "Masterlist",
+          url: "/finance/allotment",
+          permission: ["Can View", "Can Delete"],
+        }
+      ],
+      modules: ["Finance"],
       roles: ["Administrator"]
     }
   ],

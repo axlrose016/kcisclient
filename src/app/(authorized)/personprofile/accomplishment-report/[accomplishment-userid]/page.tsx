@@ -61,8 +61,8 @@ export default function AccomplishmentReportUsersList() {
 
     const router = useRouter();
     const [user, setUser] = useState<IUser | any>();
-    const [session, setSession] = useState<SessionPayload>();
-    const params = useParams<{ 'accomplishment-user-list': string; id: string }>()
+    const [, setSession] = useState<SessionPayload>();
+    const params = useParams<{ 'accomplishment-userid': string; id: string }>()
     const [data, setARList] = useState<IAccomplishmentReport[]>([])
 
     useEffect(() => {
@@ -81,7 +81,7 @@ export default function AccomplishmentReportUsersList() {
 
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('user_id')
-            .equals(params?.['accomplishment-user-list']!).first();
+            .equals(params?.['accomplishment-userid']!).first();
 
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
@@ -90,7 +90,7 @@ export default function AccomplishmentReportUsersList() {
 
         console.log('getResults', { session, merge });
         setUser(merge);
-        setARList(await dexieDb.accomplishment_report.where("person_id").equals(params?.['accomplishment-user-list']!).toArray())
+        setARList(await dexieDb.accomplishment_report.where("person_id").equals(params?.['accomplishment-userid']!).toArray())
 
         const results = await dexieDb.cfwtimelogs.where('created_by')
             .equals(user?.email ?? "")
@@ -99,27 +99,19 @@ export default function AccomplishmentReportUsersList() {
         return results;
     };
 
-    console.log('params', params)
-
-    // const [data, setData] = useState<{ id: string; date_cover: string; total_hours: number; status: string; }[]>(initialData);
-
-    const handleEdit = () => {
-        console.log('Edit:');
-    };
-
     const handleDelete = (row: any) => {
         console.log('Delete:', row);
     };
 
     const handleRowClick = (row: any) => {
-        const r = `/${baseUrl}/${params!['accomplishment-user-list']}/${row.id.split("-")[1] ?? "new"}`
+        const r = `/${baseUrl}/${params!['accomplishment-userid']}/${row.id ?? "new"}`
         console.log('Row clicked:', { r, row });
         router.push(r);
     };
 
     const handleClickAddNew = () => {
         console.log('handleClickAddNew')
-        const r = `/${baseUrl}/${params!['accomplishment-user-list']}/new`
+        const r = `/${baseUrl}/${params!['accomplishment-userid']}/new`
         router.push(r);
     };
 
