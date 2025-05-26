@@ -1,3 +1,4 @@
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { hrDb } from "@/db/offline/Dexie/databases/hrDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { IPositionItem, IPositionItemDistribution } from "@/db/offline/Dexie/schema/hr-service";
@@ -26,13 +27,45 @@ export class HRService {
       }
     }
 
-    async getOfflinePositionItems(): Promise<IPositionItem[]> {
+    async getOfflinePositionDistributionById(id: any): Promise<IPositionItemDistribution | undefined> {
       try {
-        const result = await hrDb.transaction('r', [hrDb.position_item], async () => {
-          const positionItems = await hrDb.position_item.toArray();
-          return positionItems;
+        const result = await hrDb.transaction('r', [hrDb.position_item_distribution], async () => {
+          const positionItemDistribution = await hrDb.position_item_distribution.where('id').equals(id).first();
+          if (positionItemDistribution) {
+            return positionItemDistribution;
+          } else {
+            console.log('No record found with the given ID.');
+            return undefined;
+          }
         });
         return result;
+      }
+      catch (error) {
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+
+    async getOfflinePositionItems(): Promise<IPositionItem[]> {
+      try {
+        const positionList = await libDb.lib_position.toArray();
+        const positionMap = new Map(positionList.map((item) => [item.id, item.position_description || ""]));
+
+        const employmentList = await libDb.lib_employment_status.toArray();
+        const employmentMap = new Map(employmentList.map((item) => [item.id, item.employment_status_description || ""]));
+
+        const modalityList = await dexieDb.lib_modality.toArray();
+        const modalityMap = new Map(modalityList.map((item) => [item.id, item.modality_name || ""]));
+
+        return await hrDb.transaction('r', [hrDb.position_item], async () => {
+          const positionItems = await hrDb.position_item.toArray();
+          return positionItems.map((item) => ({
+            ...item,
+            position_description: positionMap.get(item.position_id) || "",
+            employment_status_description: employmentMap.get(item.employment_status_id) || "",
+            modality_name: modalityMap.get(item.modality_id) || "",
+          }));
+        });
       } catch (error) {
         console.error('Fetch Records Failed: ', error);
         return [];
@@ -57,7 +90,13 @@ export class HRService {
               remarks: "Record Created by " + _session.userData.email,
             };
           } else {
+            const existing = await hrDb.position_item.get(positionItem.id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
             data = {
+              ...existing,
               ...positionItem,
               last_modified_date: new Date().toISOString(),
               last_modified_by: _session.userData.email,
@@ -93,7 +132,13 @@ export class HRService {
               remarks: "Record Created by " + _session.userData.email,
             };
           } else {
+            const existing = await hrDb.position_item_distribution.get(postionDistribution.id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
             data = {
+              ...existing,
               ...postionDistribution,
               last_modified_date: new Date().toISOString(),
               last_modified_by: _session.userData.email,

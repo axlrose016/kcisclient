@@ -9,6 +9,9 @@ export default {
 	],
 	theme: {
 		extend: {
+			backdropBrightness: {
+				dim: '0.4', // optional
+			},
 			colors: {
 				cfw_bg_color: '#2e4942',
 				background: 'hsl(var(--background))',
@@ -82,5 +85,5 @@ export default {
 
 		}
 	},
-	plugins: [require("tailwindcss-animate"),require("@tailwindcss/container-queries")],
+	plugins: [require("tailwindcss-animate"), require("@tailwindcss/container-queries")],
 } satisfies Config;

@@ -25,6 +25,12 @@ import { Button } from "@/components/ui/button";
 import { set } from "date-fns";
 import UsersService from "@/components/dialogs/registration/UsersService";
 import { cloneDeep } from "lodash";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Alert } from "@/components/ui/alert";
+import { Info } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { CustomDialog } from "@/components/ui/custom-dialog";
 
 
 const formSchema = z.object({
@@ -37,15 +43,120 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+
+type ForgotPasswordProps = {
+  email: string;
+  birthdate: Date;
+};
 export default function LoginPage() {
+  const [isShowForgotPassword, setIsShowForgotPassword] = useState(false);
+  const [isLoadingResetButton, setIsLoadingResetButton] = useState(false);
   const isOnline = useOnlineStatus()
   const router = useRouter();
   const [isClient, setIsClient] = useState(false);
   const [verified, setVerified] = useState<boolean>(false);
+  const [verifiedResetPassword, setVerifiedResetPassword] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(false);
+  const [pageNo, setPageNo] = useState(1);
+  const [iAgreeForgotPassword, setIAgreeForgotPassword] = useState(false);
+  const [showLoginButton, setShowLoginButton] = useState(false);
+  const [forgotPassword, setForgotPassword] = useState<ForgotPasswordProps>({
+    email: "",
+    birthdate: new Date(),
+  });
+
+  const [isShowReloginButton, setShowReloginButton] = useState(false)
 
   useEffect(() => {
+    if (verifiedResetPassword) {
+      setPageNo(3);
+      setErrorMessage(false);
+      setSuccessMessage(false);
+      setIsLoadingResetButton(false);
+    } else {
+      setPageNo(2);
+    }
+
+  }, [verifiedResetPassword])
+  const onHandleSubmitReset = async () => {
+    // setIsLoadingResetButton(true)
+    // setErrorMessage(false);
+    // setSuccessMessage(true);
+
+    // setIsLoadingResetButton(false);
+
+
+    async function doResetPasswordFromForgotPassword() {
+      try {
+        const fetchData = async (endpoint: string) => {
+          setIsLoadingResetButton(true);
+          try {
+            debugger;
+
+            const response = await fetch(endpoint, {
+              method: "POST",
+              body: (() => {
+                const formData = new FormData();
+                formData.append("email", forgotPassword.email);
+                formData.append("birthdate", forgotPassword.birthdate.toISOString().split('T')[0]);
+                return formData;
+              })(),
+            });
+
+            if (!response.ok) {
+              setErrorMessage(true);
+              setSuccessMessage(false);
+
+              setShowReloginButton(false)
+              console.log(response);
+            } else {
+
+
+              setShowReloginButton(true)
+              const data = await response.json();
+              console.log("data from api ", data.data);
+
+            }
+          } catch (error: any) {
+            if (error.name === "AbortError") {
+              console.log("Request canceled", error.message);
+              alert("Request canceled" + error.message);
+            } else {
+              console.error("Error fetching data:", error);
+              alert("Error fetching data:" + error);
+            }
+          }
+        };
+
+        fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "forgot_password/");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    doResetPasswordFromForgotPassword();
+    // if (successMessage) {
+    //   setShowLoginButton(true);
+    //   setPageNo(4);
+    // }
+    // toast({
+    //   variant: "green",
+    //   title: "Success!",
+    //   description: "Password reset instructions have been sent to your email.",
+    // });
+    // toast({
+    //   variant: "destructive",
+    //   title: "Account Not Found",
+    //   description: "No matching account found for the email and birthdate provided. Please double-check your details or contact the system administrator.",
+    // });
+  }
+
+  // useEffect(() => {
+  //   setShowLoginButton(true);
+  // }, [successMessage]);
+  useEffect(() => {
     console.log("API: ", process.env.NEXT_PUBLIC_API_BASE_URL_KCIS)
-    
+
     seedData();
     seedUserData();
   }, []);
@@ -68,8 +179,8 @@ export default function LoginPage() {
         setIsLoading(false)
         return toast({
           variant: "destructive",
-          title: "No Record Found!",
-          description: "The email was not found in the database. Please try again!",
+          title: "Incorrect Email and/or Password!",
+          description: "The email and/or password you entered is incorrect. Please try again!",
         });
       }
 
@@ -95,8 +206,6 @@ export default function LoginPage() {
           description: "There was a problem during login. Please try again!",
         });
       }
-      console.log(userData)
-      console.log(user.id)
 
       if (isOnline) {
         const userAccess = await getUserAccessById(user.id);
@@ -110,7 +219,7 @@ export default function LoginPage() {
 
       }
 
-
+      debugger;
       await createSession(user.id, userData, "ABC123");
       // await createSession(user.id, userData, "ABC123");
 
@@ -305,6 +414,27 @@ export default function LoginPage() {
     // setVisi(true);
   }
   const [isLoading, setIsLoading] = useState(false)
+  useEffect(() => {
+    // Reset error/success messages when pageNo changes in forgot password dialog
+    setErrorMessage(false);
+    setSuccessMessage(false);
+    setIsLoadingResetButton(false);
+    // setVerifiedResetPassword(false); 
+    setIAgreeForgotPassword(false);
+    setPageNo(pageNo)
+
+  }, [pageNo])
+  const handleCheckEmailAndBirthdate = () => {
+    if (!forgotPassword.email || !forgotPassword.birthdate) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in all fields."
+      });
+      return;
+    }
+    setPageNo(2)
+  }
   return (
     // <div className="bg-[url('/assets/Backgrounds/DSWD-Virtual-Background-01.jpg')] bg-cover bg-center bg-no-repeat">
     <div className="min-h-screen w-full flex items-center justify-center">
@@ -361,7 +491,15 @@ export default function LoginPage() {
                 <div className="grid gap-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
-                    <a href="#" className="text-sm text-primary underline-offset-2 hover:underline">
+                    <a onClick={() => {
+                      setIsShowForgotPassword(true);
+                      setIsLoadingResetButton(false);
+                      setVerifiedResetPassword(false);
+                      setErrorMessage(false);
+                      setSuccessMessage(false);
+                      setShowReloginButton(false)
+                      setPageNo(1);
+                    }} href="#" className="text-sm text-primary underline-offset-2 hover:underline">
                       Forgot your password?
                     </a>
                   </div>
@@ -392,7 +530,276 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
-    </div>
+
+      <CustomDialog
+
+        trigger={() => setIsShowForgotPassword(true)}
+        title="Basic Dialog"
+        description="This is a basic dialog with a dimmed background."
+        className="max-w-md"
+        open={isShowForgotPassword}
+        onOpenChange={setIsShowForgotPassword}
+      >
+        {/* <Dialog modal={false}> */}
+
+
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="mb-3">Forgot Password {isShowReloginButton}</DialogTitle>
+            <Alert variant="default" className="mb-2 mt-5 text-center bg-muted">
+              <DialogDescription>
+                {forgotPassword.email}
+                {forgotPassword.birthdate?.toString()}
+                <span className="flex justify-center mb-2">
+
+                  <Info className="h-10 w-10 text-muted-foreground" />
+                </span>
+                Please enter your registered email and birthdate to reset your password.<br />
+                Your current password will be replaced with a new system-generated one, which will be sent to your email if your details match our records.
+              </DialogDescription>
+            </Alert>
+          </DialogHeader>
+          <div className={`grid gap-4  ${pageNo == 1 ? "" : "hidden"}`}>
+            <div className="grid gap-4">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="email_forgot_password">Email</Label>
+                <Input
+                  id="email_forgot_password"
+                  type="email"
+                  className="mt-2 lowercase"
+                  value={forgotPassword.email}
+                  onChange={(e) => {
+                    setForgotPassword({ ...forgotPassword, email: e.target.value })
+
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-1 ">
+                <Label htmlFor="birthdate_forgot_password">Birthdate (Month/day/year)</Label>
+                <Input
+                  type="date"
+                  id="birthdate_forgot_password"
+                  value={forgotPassword.birthdate ? forgotPassword.birthdate.toISOString().split('T')[0] : ""}
+                  className="mt-2"
+                  onChange={(e) => {
+                    setForgotPassword({ ...forgotPassword, birthdate: e.target.value ? new Date(e.target.value) : new Date() })
+                  }}
+                />
+                {/* <DatePicker
+                  id="birthdate_forgot_password"
+                  value={forgotPassword.birthdate}
+                  onDateChange={(date) => {
+                    setForgotPassword({ ...forgotPassword, birthdate: date })
+                  }}
+                /> */}
+
+              </div>
+            </div>
+          </div>
+          <div className={`grid gap-4  ${pageNo == 2 ? "" : "hidden"}`}>
+            <div className="grid gap-4">
+              <div className="flex flex-col gap-1">
+                {(!verifiedResetPassword && <Captcha verified={setVerifiedResetPassword} />)}
+
+              </div>
+
+            </div>
+          </div>
+          <div className={`grid gap-4  ${errorMessage ? "" : "hidden"}`}>
+            <div className="grid gap-4">
+              <div className="flex items-center gap-2">
+                <Alert variant="destructive" className="text-center">
+                  <span className="font-semibold">Account Not Found</span>
+                  <div className="text-sm">
+                    No matching account found for the email and birthdate provided.
+                    Please double-check your details or contact the system administrator.
+                  </div>
+                </Alert>
+              </div>
+            </div>
+          </div>
+          <div className={`grid gap-4  ${pageNo == 3 && !isShowReloginButton ? "" : "hidden"}`}>
+            <div className="grid gap-4">
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="terms"
+                  checked={iAgreeForgotPassword}
+                  onCheckedChange={(checked) => setIAgreeForgotPassword(!!checked)}
+                />
+                <label
+                  htmlFor="terms"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  I acknowledge and accept that my current password will be replaced with a new, system-generated password.
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div className={`grid gap-4  ${successMessage ? "" : "hidden"}`}>
+            <div className="grid gap-4">
+              <div className="flex items-center gap-2">
+                <Alert variant="success" className="text-center">
+                  <span className="font-semibold">Success!</span>
+                  <div className="text-sm">
+                    A new, system-generated password has been sent to your registered email address.<br />
+                    <span className="block mt-2">
+                      Please check your inbox (and spam/junk folder) for further instructions.<br />
+                      For your security, we recommend changing your password after logging in.
+                    </span>
+                  </div>
+                </Alert>
+              </div>
+            </div>
+          </div>
+
+
+          <div className="grid gap-4 ">
+
+            {/* {pageNo}  */}
+            <div className="flex flex-col-2 gap-1 mt-2 ">
+              {pageNo >= 2 && pageNo <= 3 && !isShowReloginButton && (
+
+                <Button
+                  className={`w-full `}
+                  onClick={() => {
+                    setPageNo(pageNo - 1);
+                    setVerifiedResetPassword(false);
+                  }}
+                >Previous</Button>
+              )
+              }
+
+              {pageNo === 1 && (
+                <Button
+                  className="w-full"
+                  onClick={() => handleCheckEmailAndBirthdate()}
+                >
+                  Next
+                </Button>
+              )}
+              {pageNo === 3 && !isShowReloginButton && (
+                <Button
+                  className="w-full"
+                  disabled={!iAgreeForgotPassword || isLoadingResetButton}
+                  onClick={() => {
+                    setIsLoadingResetButton(true);
+                    onHandleSubmitReset();
+                    successMessage ? setPageNo(4) : "";
+                  }}
+                >
+                  {isLoadingResetButton ? (
+                    <svg
+                      className="animate-spin h-5 w-5 mr-3 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8.009 8.009 0 0 1 12 20Z"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 mr-1"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <rect width="18" height="11" x="3" y="11" rx="2" />
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                    </svg>
+                  )}
+                  Confirm Password Reset
+                </Button>
+              )}
+              {isShowReloginButton && (
+                <Button
+                  className="w-full"
+                  onClick={() => { location.reload() }}
+                >
+                  Login
+                </Button>
+              )}
+            </div>
+
+          </div>
+
+
+          <DialogFooter className="flex flex-col gap-4">
+
+            {/* {errorMessage && ( */}
+            <div className="text-center w-full">
+
+
+            </div>
+
+
+            {/* Submit Button */}
+
+            <div className="hidden">
+              <Button
+                type="submit"
+                className="w-full"
+                onClick={() => {
+                  setIsLoadingResetButton(true);
+                  onHandleSubmitReset();
+                }}
+                disabled={isLoadingResetButton}
+              >
+                {isLoadingResetButton ? (
+                  <svg
+                    className="animate-spin h-5 w-5 mr-3 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 18a8 8 0 1 1 8-8A8.009 8.009 0 0 1 12 20Z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <rect width="18" height="11" x="3" y="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                )}
+                Confirm Password Reset
+              </Button>
+            </div>
+          </DialogFooter>
+
+
+        </DialogContent>
+
+        {/* </Dialog> */}
+      </CustomDialog>
+      {/* <AlertDialog>
+        <AlertDialogTrigger>Open</AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account
+              and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog> */}
+    </div >
     // </div>
   )
 }

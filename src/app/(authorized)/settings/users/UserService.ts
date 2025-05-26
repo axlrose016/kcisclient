@@ -26,7 +26,14 @@ export class UserService{
                   remarks: "Record Created by " + _session.userData.email,
                 };
               } else {
+                const existing = await dexieDb.users.get(user.id);
+
+                if (!existing) {
+                  throw new Error("Record not found for update.");
+                }
+
                 data = {
+                  ...existing,
                   ...user,
                   last_modified_date: new Date().toISOString(),
                   last_modified_by: _session.userData.email,
@@ -34,7 +41,6 @@ export class UserService{
                   remarks: "Record Updated by " + _session.userData.email,
                 };
               }
-    
               await dexieDb.users.put(data);
               savedItem = data;
             });

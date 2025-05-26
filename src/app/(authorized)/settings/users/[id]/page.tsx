@@ -15,7 +15,7 @@ import { IModules, IRoles, LibraryOption } from "@/components/interfaces/library
 import { UserService } from "../UserService"
 import { IUser, IUserAccess } from "@/components/interfaces/iuser"
 import { AppTable } from "@/components/app-table"
-import { getOfflineRoles } from "@/components/_dal/offline-options"
+import { getOfflineLibLevel, getOfflineRoles } from "@/components/_dal/offline-options"
 import { FormDropDown } from "@/components/forms/form-dropdown"
 
 const formSchema = z.object({
@@ -23,6 +23,7 @@ const formSchema = z.object({
   username: z.string().min(1, { message: "Username is required" }),
   email: z.string().min(1, { message: "Email is required" }),
   role_id: z.string().min(1, { message: "Role is required" }),
+  level_id: z.coerce.number().int().positive("User Level is required"),
 });
 
 type FormValues = z.infer<typeof formSchema>
@@ -35,6 +36,7 @@ export default function FormModule() {
 
   const [record, setRecord] = useState<any>(null);
   const [access, setAccess] = useState<any>(null);
+  const [level, setLevel] = useState<LibraryOption[]>([]);
   const [roles, setRoles] = useState<LibraryOption[]>([]);
 
   const id = typeof params?.id === 'string' ? params.id : '';
@@ -43,10 +45,13 @@ export default function FormModule() {
     async function fetchLibrary(){
       const lib_roles = await getOfflineRoles(); //await getDeploymentAreaLibraryOptions();
       setRoles(lib_roles);
+      const lib_level = await getOfflineLibLevel(); 
+      setLevel(lib_level);
     }
     fetchLibrary();
   }, [])
 
+  
   useEffect(() => {
       async function fetchRecordAndResetForm() {
         if (id) {
@@ -61,13 +66,7 @@ export default function FormModule() {
           setRoles(lib_roles);
     
           if (fetchedRecord) {
-            debugger;
-            form.reset({
-              id: fetchedRecord.id,
-              username: fetchedRecord.username,
-              email: fetchedRecord.email,
-              role_id: fetchedRecord.role_id
-            });
+            form.reset(fetchedRecord as any); // ✅ Apply fetched record to form
           }
         }
       }
@@ -80,7 +79,8 @@ export default function FormModule() {
     id: "",
     username: "",
     email: "",
-    role_id: ""
+    role_id: "",
+    level_id: 0,
   }
 
   const form = useForm<FormValues>({
@@ -198,6 +198,28 @@ const handleAddNewRecord = (newRecord: any) => {
                           </FormItem>
                         )}
                       />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <FormField
+                  control={form.control}
+                  name="level_id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>User Level</FormLabel>
+                      <FormControl>
+                        <FormDropDown
+                          id="level_id"
+                          options={level}
+                          selectedOption={level.find(lvl => lvl.id === field.value)?.id || null}
+                          onChange={(selected) => {
+                            field.onChange(selected); 
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 </div>
             </CardContent>
             <CardFooter className="flex justify-between">

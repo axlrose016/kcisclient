@@ -38,6 +38,7 @@ const data = {
     name: "",
     email: "",
     avatar: "/avatars/shadcn.jpg",
+    level: "",
     role: ""
   },
   teams: [
@@ -220,104 +221,59 @@ const data = {
       modules: ["Person Profile"],
     },
     {
-      title: "Position: Item Created",
-      url: "",
+      title:"Hiring and Deployment",
+      url:"#",
       icon: User2Icon,
       isActive: false,
-      items: [
+      items:[
         {
-          title: "Masterlist",
-          url: "/hr-development/item-created",
-          permission: ["Can View", "Can Delete"]
+          title:"Item Created",
+          url:"/hr-development/hiring-and-deployment/item-created",
+          permission:["Can Add", "Can View", "Can Delete"]
+        },
+         {
+          title:"Item Distribution",
+          url:"/hr-development/hiring-and-deployment/item-distribution",
+          permission:["Can Add", "Can View", "Can Delete"],
         }
       ],
       modules: ["Human Resource and Development"],
       roles: ["Administrator"]
     },
     {
-      title: "Position: Item Distribution",
-      url: "#",
-      icon: User2Icon,
-      isActive: false,
-      items: [
-        {
-          title: "Masterlist",
-          url: "/hr-development/item-distribution",
-          permission: ["Can View", "Can Delete"]
-        },
-        {
-          title: "Hiring Procedures and Status",
-          url: "#",
-          permission: ["Can View", "Can Delete"]
-        },
-        {
-          title: "Application Status",
-          url: "#",
-          permission: ["Can View", "Can Delete"]
-        },
-        {
-          title: "Employee Personal Data Sheet",
-          url: "#",
-          permission: ["Can View", "Can Delete"]
-        }
-      ],
-      modules: ["Human Resource and Development"],
-      roles: ["Administrator"]
-    },
-    {
-      title: "Allocation",
+      title: "Budget",
       url:"#",
       icon: HandCoinsIcon,
       isActive: false,
       items: [
          {
-          title: "Masterlist",
-          url: "/finance/allocation",
+          title: "Allocation",
+          url: "/finance/budget/allocation",
+          permission: ["Can View", "Can Delete"]
+        },
+        {
+          title: "Monthly Obligation Plan",
+          url: "/finance/budget/mop",
+          permission: ["Can View", "Can Delete"]
+        },
+        {
+          title: "Allotment",
+          url: "/finance/budget/allotment",
           permission: ["Can View", "Can Delete"]
         },
       ],
       modules: ["Finance"],
       roles: ["Administrator"]
     },
-    {
-      title: "Monthly Obligation Plan",
-      url: "#",
-      icon: HandCoinsIcon,
-      isActive: false,
-      items:[
-        {
-          title: "Masterlist",
-          url: "/finance/mop",
-          permission: ["Can View", "Can Delete"],
-        }
-      ],
-      modules: ["Finance"],
-      roles: ["Administrator"]
-    },
-    {
-      title: "Allotment",
-      url: "#",
-      icon: HandCoinsIcon,
-      isActive: false,
-      items:[
-        {
-          title: "Masterlist",
-          url: "/finance/allotment",
-          permission: ["Can View", "Can Delete"],
-        }
-      ],
-      modules: ["Finance"],
-      roles: ["Administrator"]
-    }
   ],
   projects: [
-    {
-      name: "Update Library",
-      url: "/library",
-      icon: Frame,
-      pathname: ["*"],
-      roles:["*"]
-    },
+    // {
+    //   name: "Update Library",
+    //   url: "/library",
+    //   icon: Frame,
+    //   pathname: ["*"],
+    //   roles:["*"]
+    // },
     {
       name: "Attendance",
       url: "/punch",
@@ -330,6 +286,13 @@ const data = {
       url: "/hr-development/configuration/",
       icon:SettingsIcon,
       pathname: ["hr-development"],
+      roles: ["Administrator"],
+    },
+    {
+      name:"Configuration",
+      url: "/finance/configuration/",
+      icon:SettingsIcon,
+      pathname: ["finance"],
       roles: ["Administrator"],
     }
   ],
@@ -351,9 +314,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       //const session = (await response.json()) as SessionPayload;
       console.log("SideBar Session: ", _session);
       if (_session != null) {
+        debugger;
         user.email = _session.userData.email!;
         user.name = _session.userData.name!;
         user.role = _session.userData.role!;
+        user.level = _session.userData.level!;
         const userTeams = _session.userData;
         // debugger;
         setUserTeam(userTeams);

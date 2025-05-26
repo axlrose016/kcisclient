@@ -6,6 +6,7 @@ export interface IUserData {
   email?: string,
   photo?: string,
   role?: string,
+  level?: string,
   userAccess?: IUserDataAccess[]
 }
 
@@ -41,6 +42,7 @@ export interface IUser {
   password: any;
   salt: any;
   role_id: string;
+  level_id: number | null;
   created_date: string;
   created_by: string;
   last_modified_date: string | null;

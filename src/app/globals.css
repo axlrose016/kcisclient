@@ -5,7 +5,9 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
-
+.dialog-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
 @layer base {
   :root {
     --background: 0 0% 100%;

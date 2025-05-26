@@ -236,14 +236,17 @@ export interface ICFWAssessment {
 }
 
 export interface IWorkPlan {
-  id: string;  
+   id: string; 
+  work_plan_title: string; //✨ 
   immediate_supervisor_id: string;
   alternate_supervisor_id: string;
+  office_name?: string; //✨
   objectives: string;
   area_focal_person_id: string; //main focal person of the company i.e HEI Focal Person
   no_of_days_program_engagement: number;
   approved_work_schedule_from: string;
-  approved_work_schedule_date: string;
+  approved_work_schedule_to: string; //✨
+  total_number_of_bene: number; //✨
   status_id: number;
   created_date: string,
   created_by: string,
@@ -267,7 +270,8 @@ export interface IWorkPlanTasks {
   expected_output: string;
   timeline_from: Date;
   timeline_to: Date;
-  assigned_person_id: string;
+  
+  assigned_person_id: string; //person_profile_id = record_id
   status_id: number;
   created_date: string,
   created_by: string,

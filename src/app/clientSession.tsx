@@ -7,7 +7,6 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { useRouter } from 'next/navigation';
 import LoadingScreen from '@/components/general/loading-screen';
 import LoginPage from './login/page';
-import { useBulkSync } from '@/hooks/use-bulksync';
 import { SessionPayload } from '@/types/globals';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { IAttachments } from '@/components/interfaces/general/attachments';

@@ -125,7 +125,7 @@ export default function FormEmploymentStatus() {
               <Button variant="outline" type="button" onClick={() => router.push(`/${baseUrl}/`)}>
                 Cancel
               </Button>
-              <Button type="submit">Save Status</Button>
+              <Button type="submit">Save</Button>
             </CardFooter>
           </form>
         </Form>

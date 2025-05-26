@@ -3,6 +3,7 @@ import { dexieDb } from '../databases/dexieDb'; // Assuming dexieDb is properly 
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
 import { hashPassword } from '@/lib/utils';
+import { libDb } from '../databases/libraryDb';
 
 // Ensure you're using a single instance for interacting with the users table
 const tblUsers = dexieDb.table('users') as EntityTable<IUser, 'id'>;
@@ -98,6 +99,7 @@ export async function getUserData(id: string): Promise<IUserData | null> {
         }
         const userrole = await dexieDb.roles.where('id').equals(user.role_id).first();
         const useraccess = await tblUserAccess.where('user_id').equals(id).toArray();
+        const userlevel = await libDb.lib_level.where('id').equals(user.level_id ?? 0).first();
         console.log("User Access: ", useraccess);
         const userDataAccess: IUserDataAccess[] = [];
         for (const access of useraccess) {
@@ -116,6 +118,7 @@ export async function getUserData(id: string): Promise<IUserData | null> {
             email: user?.email,
             photo: "",
             role: userrole?.role_description,
+            level: userlevel?.level_description,
             userAccess: userDataAccess
         }
         return userData;
@@ -163,6 +166,7 @@ export const seedUser: IUser[] = [
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
         "role_id": "d4003a01-36c6-47af-aae5-13d3f04e110f",
+        "level_id": 0,
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
@@ -181,6 +185,7 @@ export const seedUser: IUser[] = [
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
         "role_id": "cf05023f-b2dc-46be-ab08-d82dfc8d8cd5",
+        "level_id": 0,
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
@@ -199,6 +204,7 @@ export const seedUser: IUser[] = [
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
         "role_id": "3d735b9c-f169-46e0-abd1-59f66db1943c",
+        "level_id": 0,
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
@@ -217,6 +223,7 @@ export const seedUser: IUser[] = [
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
         "role_id": "eed84e85-cd50-49eb-ab19-a9d9a2f3e374",
+        "level_id": 0,
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "e9840dec-f388-418c-b5c9-c5cf295df9d7",
         "last_modified_date": "",
@@ -236,6 +243,7 @@ export const seedUser: IUser[] = [
         "password": "Svk7OMYHydnYeJIlCzG9MnhlBb7SSQ7c1E3zvx4KWsM=",
         "salt": Array.from(saltArray),
         "role_id": "e2ebba79-7134-4ddb-838f-9350a89c2a0e",
+        "level_id": 0,
         "created_date": "2025-03-11T06:18:58.077Z",
         "created_by": "8a9eb495-cb87-4ebc-b2cc-be1b186bb7ea",
         "last_modified_date": "",

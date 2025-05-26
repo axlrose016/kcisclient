@@ -62,7 +62,7 @@ class MyDatabase extends Dexie {
     constructor() {
         super('kcisdb');
         this.version(1).stores({
-            users: `id, username, email, password, role_id, ${commonFields}`,
+            users: `id, username, email, password, role_id, level_id, ${commonFields}`,
             useraccess: `id, module_id, permission_id, ${commonFields}`,
             roles: `id, role_description, ${commonFields}`,
             modules: `id, module_description, module_path, ${commonFields}`,

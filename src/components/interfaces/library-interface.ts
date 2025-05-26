@@ -261,6 +261,7 @@ export interface ILibCourses {
 export interface ILibDeploymentArea {
   id: number,
   deployment_name: string,
+  deployment_area_short_name: string,
   created_date: string,
   created_by: string,
   last_modified_date: string | null,
@@ -472,6 +473,142 @@ export interface ILibEmploymentStatus{
 export interface ILibPosition{
   id: number;
   position_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibOffice{
+  id: number;
+  office_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibDivision{
+  id: number;
+  division_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibBudgetYear{
+  id: number;
+  budget_year_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibPAP{
+  id: number;
+  pap_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibAppropriationSource{
+  id: number;
+  appropriation_source_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibAppropriationType{
+  id: number;
+  appropriation_type_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibComponent{
+  id: number;
+  component_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibExpense{
+  id: number;
+  expense_code: string;
+  expense_description: string;
+  created_date: string,
+  created_by: string,
+  last_modified_date?: string | null,
+  last_modified_by?: string | null,
+  push_status_id?: number,
+  push_date?: string,
+  deleted_date: string | null,
+  deleted_by: string | null,
+  is_deleted: boolean,
+  remarks?: string | null,
+}
+
+export interface ILibAllotmentClass{
+  id: number;
+  allotment_class_description: string;
   created_date: string,
   created_by: string,
   last_modified_date?: string | null,

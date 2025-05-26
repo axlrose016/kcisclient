@@ -1,5 +1,5 @@
 "use client"
-
+import beneficiaries from './beneficiaries.json'
 import { useEffect, useState } from "react"
 import { Save, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -12,88 +12,107 @@ import { useToast } from '@/hooks/use-toast'
 import { Toast } from "@/components/ui/toast"
 import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion";
+import Wizard from './wizard'
 // Define the task type
-interface Task {
+interface WorkPlanTasks {
   id: string
-  type: string
-  task: string
-  expectedOutput: string
-  startDate: string
-  endDate: string
-  assignedPerson: string
+  work_plan_id: string
+  category_id: string //task type: 1 general, 2 specific
+  activities_tasks: string
+  expected_output: string
+  timeline_from: string
+  timeline_to: string
+  assigned_person_id: string
 }
 
 interface WorkPlanProps {
-  companyName: string;
-  officeName: string;
-  noOfDays: number;
-  approvedScheduleFrom: string;
-  approvedScheduleTo: string;
+  id: string;
+  work_plan_title: string;
+  immediate_supervisor_id: string;
+  deployment_area_name: string;
+  office_name: string;
+  no_of_days_program_engagement: number;
+  approved_work_schedule_from: string;
+  approved_work_schedule_to: string;
   generalObjective: string;
-  workPlanTitle: string;
 
 
 }
+
+type Beneficiary = {
+  id: string
+  full_name: string
+  course_name: string
+  school_name: string
+  status_name: string
+  // is_selected: string
+}
+
 export default function TaskManagement() {
-  const [taskManagement, setTaskManagement] = useState<WorkPlanProps>({
-    companyName: "",
-    officeName: "",
-    noOfDays: 0,
-    approvedScheduleFrom: "",
-    approvedScheduleTo: "",
+  // Load beneficiaries from JSON
+  const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>(beneficiaries)
+  const [workPlanData, setWorkPlanData] = useState<WorkPlanProps>({
+    id: "",
+    work_plan_title: "",
+    immediate_supervisor_id: "",
+    deployment_area_name: "",
+    office_name: "",
+    no_of_days_program_engagement: 0,
+    approved_work_schedule_from: "",
+    approved_work_schedule_to: "",
     generalObjective: "",
-    workPlanTitle: ""
   })
 
   const handleInputChangeTaskManagement = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setTaskManagement((prev) => ({ ...prev, [name]: value }))
-    const lsTM = localStorage.getItem("taskManagement")
-    if (lsTM) {
-      const parsedTM = JSON.parse(lsTM) as WorkPlanProps
-      localStorage.setItem("taskManagement", JSON.stringify({ ...parsedTM, [name]: value }))
+    setWorkPlanData((prev) => ({ ...prev, [name]: value }))
+    const lsWorkPlanData = localStorage.getItem("work_plan")
+    if (lsWorkPlanData) {
+      const parsedTM = JSON.parse(lsWorkPlanData) as WorkPlanProps
+      localStorage.setItem("work_plan", JSON.stringify({ ...parsedTM, [name]: value }))
     }
     else {
-      localStorage.setItem("taskManagement", JSON.stringify({ ...taskManagement, [name]: value }))
+      localStorage.setItem("work_plan", JSON.stringify({ ...workPlanData, [name]: value }))
     }
   }
   const { toast } = useToast()
 
   useEffect(() => {
     // Fetch task management data from local storage or server if needed
-    const lsTM = localStorage.getItem("taskManagement")
-    if (lsTM) {
-      const parsedTM = JSON.parse(lsTM) as WorkPlanProps
-      setTaskManagement(parsedTM)
+    const lsWorkPlanData = localStorage.getItem("work_plan")
+    if (lsWorkPlanData) {
+      const parsedTM = JSON.parse(lsWorkPlanData) as WorkPlanProps
+      setWorkPlanData(parsedTM)
     } else {
-      localStorage.setItem("taskManagement", JSON.stringify(taskManagement))
+      localStorage.setItem("work_plan", JSON.stringify(workPlanData))
     }
 
   }, [])
   useEffect(() => {
     // Fetch tasks from the server or local storage if needed
     // For now, we are using an empty array as initial state
-    const lsWP = localStorage.getItem("workPlan")
-    if (lsWP) {
-      const parsedTasks = JSON.parse(lsWP) as Task[]
+    const lsWPTasks = localStorage.getItem("work_plan_tasks")
+    if (lsWPTasks) {
+      const parsedTasks = JSON.parse(lsWPTasks) as WorkPlanTasks[]
       setTasks(parsedTasks)
     } else {
-      localStorage.setItem("workPlan", JSON.stringify([]))
+      localStorage.setItem("work_plan_tasks", JSON.stringify([]))
       setTasks([])
     }
   }, [])
   // State for tasks
-  const [tasks, setTasks] = useState<Task[]>([])
+  const [tasks, setTasks] = useState<WorkPlanTasks[]>([])
 
   // State for the new task form
-  const [newTask, setNewTask] = useState<Task>({
+  const [newTask, setNewTask] = useState<WorkPlanTasks>({
     id: "",
-    type: "",
-    task: "",
-    expectedOutput: "",
-    startDate: "",
-    endDate: "",
-    assignedPerson: "",
+    work_plan_id: "",
+    category_id: "",
+    activities_tasks: "",
+    expected_output: "",
+    timeline_from: "",
+    timeline_to: "",
+    assigned_person_id: "",
   })
 
   // State to track which task is being edited
@@ -101,7 +120,7 @@ export default function TaskManagement() {
 
   // Function to handle saving a new task
   const handleSaveTask = () => {
-    if (!newTask.type || !newTask.task) {
+    if (!newTask.category_id || !newTask.activities_tasks) {
       return // Basic validation
     }
 
@@ -109,7 +128,7 @@ export default function TaskManagement() {
     const taskToSave = { ...newTask, id: taskId }
     // const { toast } = useToast()
     // debugger;
-    const isTaskExist = tasks.some((task) => task.task.toLowerCase().trim() === newTask.task.toLowerCase().trim() && task.type.toLowerCase().trim() === newTask.type.toLowerCase().trim())
+    const isTaskExist = tasks.some((task) => task.activities_tasks.toLowerCase().trim() === newTask.activities_tasks.toLowerCase().trim() && task.category_id.toLowerCase().trim() === newTask.category_id.toLowerCase().trim())
     if (isTaskExist) {
       toast({
         variant: "destructive",
@@ -124,12 +143,13 @@ export default function TaskManagement() {
     // Reset the form
     setNewTask({
       id: "",
-      type: "",
-      task: "",
-      expectedOutput: "",
-      startDate: "",
-      endDate: "",
-      assignedPerson: "",
+      work_plan_id: "",
+      category_id: "",
+      activities_tasks: "",
+      expected_output: "",
+      timeline_from: "",
+      timeline_to: "",
+      assigned_person_id: "",
     })
   }
 
@@ -146,16 +166,17 @@ export default function TaskManagement() {
   const handleUpdateTask = () => {
     const updatedTasks = tasks.map((task) => (task.id === editingTaskId ? newTask : task))
     setTasks(updatedTasks)
-    localStorage.setItem("workPlan", JSON.stringify(updatedTasks))
+    localStorage.setItem("work_plan_tasks", JSON.stringify(updatedTasks))
     // Reset the form and editing state
     setNewTask({
       id: "",
-      type: "",
-      task: "",
-      expectedOutput: "",
-      startDate: "",
-      endDate: "",
-      assignedPerson: "",
+      work_plan_id: "",
+      category_id: "",
+      activities_tasks: "",
+      expected_output: "",
+      timeline_from: "",
+      timeline_to: "",
+      assigned_person_id: "",
     })
     setEditingTaskId(null)
   }
@@ -164,7 +185,7 @@ export default function TaskManagement() {
   const handleDeleteTask = (taskId: string) => {
     const deleteTask = tasks.filter((task) => task.id !== taskId)
     setTasks(deleteTask)
-    localStorage.setItem("workPlan", JSON.stringify(deleteTask))
+    localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
   }
   const submitWorkPlan = () => {
     alert("Submitting")
@@ -174,10 +195,32 @@ export default function TaskManagement() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="w-full"
+      className="w-full p-0"
     >
-      <div className="container mx-auto py-10">
-        <Card>
+
+      {/* <main className="max-h-screen w-full bg-background py-10">
+        <Wizard
+          title='Work Plan Creation'
+          description='Create a work plan for the beneficiaries'
+        />
+      </main> */}
+
+      <div className="w-full mx-auto px-4 pt-0 mt-0 py-0">
+        <Wizard
+          title='Work Plan Creation'
+          description='Create a work plan for the beneficiaries'
+          beneficiariesData={beneficiariesData}
+          workPlanDetails={workPlanData}
+          workPlanTasks={tasks}
+        />
+        {/* {beneficiariesData.map((beneficiary) => (
+          <div key={beneficiary.id} className="mb-4">
+            <h2 className="text-lg font-semibold">{beneficiary.first_name} {beneficiary.middle_name} {beneficiary.extension_name} {beneficiary.last_name}</h2>
+            <p>{beneficiary.status}</p>
+          </div>
+        ))} */}
+
+        <Card className='hidden'>
           <CardHeader>
             <CardTitle className="text-2xl font-bold">
               Work Plan
@@ -202,8 +245,8 @@ export default function TaskManagement() {
                   type="text"
                   placeholder="Enter company name"
                   className="mt-1"
-                  name="companyName"
-                  value={taskManagement.companyName ?? ""}
+                  name="deployment_area_name"
+                  value={workPlanData.deployment_area_name ?? ""}
                   onChange={handleInputChangeTaskManagement} />
               </div>
               <div className="mb-4">
@@ -213,7 +256,7 @@ export default function TaskManagement() {
                   placeholder="Enter office name"
                   className="mt-1"
                   name="officeName"
-                  value={taskManagement.officeName}
+                  value={workPlanData.office_name}
                   onChange={handleInputChangeTaskManagement} />
               </div>
               <div className="mb-4">
@@ -223,8 +266,8 @@ export default function TaskManagement() {
                   placeholder="Enter number of days"
                   className="mt-1"
                   min={1}
-                  name="noOfDays"
-                  value={taskManagement.noOfDays}
+                  name="no_of_days_program_engagement"
+                  value={workPlanData.no_of_days_program_engagement}
                   onChange={handleInputChangeTaskManagement} />
               </div>
               <div className="mb-4">
@@ -235,8 +278,8 @@ export default function TaskManagement() {
                       type="date"
                       placeholder="Start date"
                       className="mt-1"
-                      name="approvedScheduleFrom"
-                      value={taskManagement.approvedScheduleFrom}
+                      name="approved_work_schedule_from"
+                      value={workPlanData.approved_work_schedule_from}
                       onChange={handleInputChangeTaskManagement} />
                   </div>
                   <span className="text-muted-foreground">-</span>
@@ -245,8 +288,8 @@ export default function TaskManagement() {
                       type="date"
                       placeholder="End date"
                       className="mt-1"
-                      name="approvedScheduleTo"
-                      value={taskManagement.approvedScheduleTo}
+                      name="approved_work_schedule_to"
+                      value={workPlanData.approved_work_schedule_to}
                       onChange={handleInputChangeTaskManagement} />
                   </div>
                 </div>
@@ -258,7 +301,7 @@ export default function TaskManagement() {
                   placeholder="Enter general objective"
                   className="mt-1"
                   name="generalObjective"
-                  value={taskManagement.generalObjective}
+                  value={workPlanData.generalObjective}
                   onChange={handleInputChangeTaskManagement} />
               </div>
             </div>
@@ -279,13 +322,13 @@ export default function TaskManagement() {
                   {/* Input row */}
                   <tr className="border-b">
                     <td className="p-2">
-                      <Select value={newTask.type} onValueChange={(value) => setNewTask({ ...newTask, type: value })}>
+                      <Select value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="General">General</SelectItem>
-                          <SelectItem value="Specific">Specific</SelectItem>
+                          <SelectItem value="1">General</SelectItem>
+                          <SelectItem value="2">Specific</SelectItem>
                         </SelectContent>
                       </Select>
                     </td>
@@ -294,31 +337,31 @@ export default function TaskManagement() {
                         rows={3}
                         className="sm:w-[200px] md:w-full"
                         placeholder="Enter task"
-                        value={newTask.task}
-                        onChange={(e) => setNewTask({ ...newTask, task: e.target.value })} />
+                        value={newTask.activities_tasks}
+                        onChange={(e) => setNewTask({ ...newTask, activities_tasks: e.target.value })} />
                     </td>
                     <td className="p-2">
                       <Textarea
                         rows={3}
                         className="sm:w-[200px] md:w-full"
                         placeholder="Expected output"
-                        value={newTask.expectedOutput}
-                        onChange={(e) => setNewTask({ ...newTask, expectedOutput: e.target.value })} />
+                        value={newTask.expected_output}
+                        onChange={(e) => setNewTask({ ...newTask, expected_output: e.target.value })} />
                     </td>
                     <td className="p-2">
                       <div className="flex flex-col w-full gap-2 md:flex-row md:items-center md:justify-between">
                         <Input
                           type="date"
                           className="w-full md:w-[140px]" // Adjust width as needed
-                          value={newTask.startDate}
-                          onChange={(e) => setNewTask({ ...newTask, startDate: e.target.value })}
+                          value={newTask.timeline_from}
+                          onChange={(e) => setNewTask({ ...newTask, timeline_from: e.target.value })}
                         />
                         <span className="text-center text-muted-foreground hidden md:inline">-</span>
                         <Input
                           type="date"
                           className="w-full md:w-[140px]" // Adjust width as needed
-                          value={newTask.endDate}
-                          onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
+                          value={newTask.timeline_to}
+                          onChange={(e) => setNewTask({ ...newTask, timeline_to: e.target.value })}
                         />
                       </div>
                     </td>
@@ -326,8 +369,8 @@ export default function TaskManagement() {
 
                     <td className="p-2">
                       <Select
-                        value={newTask.assignedPerson}
-                        onValueChange={(value) => setNewTask({ ...newTask, assignedPerson: value })}
+                        value={newTask.assigned_person_id}
+                        onValueChange={(value) => setNewTask({ ...newTask, assigned_person_id: value })}
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue placeholder="Assign to" />
@@ -364,19 +407,19 @@ export default function TaskManagement() {
                   {/* Task rows */}
                   {tasks.map((task) => (
                     <tr key={task.id} className="border-b hover:bg-muted/50">
-                      <td className="p-2">{task.type}</td>
-                      <td className="p-2">{task.task}</td>
-                      <td className="p-2">{task.expectedOutput}</td>
+                      <td className="p-2">{task.category_id == "1" ? "General" : "Specific"}</td>
+                      <td className="p-2">{task.activities_tasks}</td>
+                      <td className="p-2">{task.expected_output}</td>
                       <td className="p-2">
-                        {task.startDate && task.endDate ? (
+                        {task.timeline_from && task.timeline_to ? (
                           <span>
-                            {task.startDate} - {task.endDate}
+                            {task.timeline_from} - {task.timeline_to}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">No dates set</span>
                         )}
                       </td>
-                      <td className="p-2">{task.assignedPerson}</td>
+                      <td className="p-2">{task.assigned_person_id}</td>
                       <td className="p-2">
                         <div className="flex gap-2">
                           <Button

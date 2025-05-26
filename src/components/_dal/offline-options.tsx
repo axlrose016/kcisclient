@@ -2,6 +2,7 @@ import { cache } from "react";
 import { LibraryOption } from "../interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
+import { hrDb } from "@/db/offline/Dexie/databases/hrDb";
 
 // const getOfflineLibraryOptions = (library: string, descriptionField: string): () => Promise<LibraryOption[]> => {
 //     return cache(async () => {
@@ -27,10 +28,23 @@ const getOfflineLibraryOptions = (library: string, descriptionField: string, p0?
     });
 }
 
-const getOfflineLibOptions = (library: string, descriptionField: string, p0?: string[]): () => Promise<LibraryOption[]> => {
+export const getOfflineLibOptions = (library: string, descriptionField: string, p0?: string[]): () => Promise<LibraryOption[]> => {
     return cache(async () => {
         await libDb.open();
         const results = await libDb.table(library).toArray();
+        return results.map((row: any) => ({
+            id: row.id,
+            name: row[descriptionField],
+            label: row[descriptionField],
+            short_name: row.short_name // 👈 add this field            
+        }));
+    });
+}
+
+export const getOfflineHROptions = (library: string, descriptionField: string, p0?: string[]): () => Promise<LibraryOption[]> => {
+    return cache(async () => {
+        await libDb.open();
+        const results = await hrDb.table(library).toArray();
         return results.map((row: any) => ({
             id: row.id,
             name: row[descriptionField],
@@ -66,4 +80,15 @@ export const getOfflineRoles = getOfflineLibraryOptions('roles','role_descriptio
 export const getOfflineModules = getOfflineLibraryOptions('modules','module_description');
 export const getOfflinePermissions = getOfflineLibraryOptions('permissions','permission_description');
 export const getOfflineLibLevel = getOfflineLibOptions('lib_level','level_description');
+export const getOfflineLibBudgetYear = getOfflineLibOptions('lib_budget_year', 'budget_year_description');
+export const getOfflineLibPAP = getOfflineLibOptions('lib_pap', 'pap_description');
+export const getOfflineLibAppropriationSource = getOfflineLibOptions('lib_appropriation_source','appropriation_source_description');
+export const getOfflineLibAppropriationType = getOfflineLibOptions('lib_appropriation_type', 'appropriation_type_description');
+export const getOfflineLibComponent = getOfflineLibOptions('lib_component','component_description');
+export const getOfflineLibAllotmentClass = getOfflineLibOptions('lib_allotment_class', 'allotment_class_description');
+export const getOfflineLibExpense = getOfflineLibOptions('lib_expense','expense_description');
+export const getOfflineLibPosition = getOfflineLibOptions('lib_position','position_description');
+export const getOfflineLibEmploymentStatus = getOfflineLibOptions('lib_employment_status','employment_status_description');
+export const getOfflineLibOffice = getOfflineLibOptions('lib_office','office_description');
+export const getOfflineLibDivision = getOfflineLibOptions('lib_division','division_description');
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

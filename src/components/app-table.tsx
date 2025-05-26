@@ -99,6 +99,7 @@ interface DataTableProps {
   simpleView?: boolean;
   initialFilters?: Filter[];
   onFilterChange?: (filters: Filter[]) => void;
+  
 }
 
 interface Filter {
