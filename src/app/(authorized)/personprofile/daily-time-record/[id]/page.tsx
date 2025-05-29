@@ -1,12 +1,10 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Clock, Plus, Trash2, Save, X, Printer, CalendarIcon, Download } from 'lucide-react';
+import { Clock, Plus, Trash2, Save, X, Printer, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { addDays, endOfMonth, format } from 'date-fns';
 import { useParams } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
@@ -14,13 +12,21 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import { IPersonProfile } from '@/components/interfaces/personprofile';
-import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
+import { ILibSchoolProfiles, LibraryOption } from '@/components/interfaces/library-interface';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ICFWTimeLogs } from '@/components/interfaces/iuser';
-import { toast, useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
+import { DateRange } from 'react-day-picker';
+import { DatePickerWithRange } from '@/components/app-daterange';
+import Image from 'next/image';
+import AppSubmitReview from '@/components/app-submit-review';
+import { ICFWPayrollBene, ISubmissionLog } from '@/components/interfaces/cfw-payroll';
+import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
+import { v4 as uuidv4 } from 'uuid';
+import { v5 as uuidv5 } from 'uuid';
 
 
-const columns = [
+export const DTRcolumns = [
     {
         id: 'created_date',
         header: '',
@@ -29,7 +35,7 @@ const columns = [
         sortable: true,
         cell: (value: Date | undefined) => {
             if (value) {
-                return formatInTimeZone(value, 'UTC', 'dd');
+                return formatInTimeZone(value, 'UTC', 'MMM dd');
             }
             return "-";
         },
@@ -88,13 +94,51 @@ const columns = [
 type IUser = IPersonProfile & ILibSchoolProfiles;
 
 export default function DailyTimeRecordUser() {
+    const params = useParams<{ id: string }>()
+
+
 
     const [data, setData] = useState<any[]>([]);
     const [user, setUser] = useState<IUser | any>();
     const [session, setSession] = useState<SessionPayload>();
-    const params = useParams<{ id: string }>()
+
+    const [statusesOptions, setStatusesOptions] = useState<LibraryOption[]>([]);
+    const [payrollbene, setCFWPayrollBene] = useState<ICFWPayrollBene>()
+    const [submissionLogs, setSubmissionLogs] = useState<ISubmissionLog[]>([]);
+    const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
+        id: "",
+        record_id: "",
+        bene_id: "",
+        module: "",
+        comment: "",
+        status: "",
+        status_date: "",
+        created_date: "",
+        created_by: ""
+    });
+
+    const getInitialDateRange = (): DateRange => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth();
+
+        const isAfter15th = today.getDate() >= 16;
+        const from = isAfter15th
+            ? new Date(year, month, 16)
+            : new Date(year, month, 1);
+
+        const to = isAfter15th
+            ? endOfMonth(today)
+            : addDays(from, 15);
+
+        return { from, to };
+    };
+
+
+    const [date, setDate] = React.useState<DateRange | undefined>(getInitialDateRange())
 
     useEffect(() => {
+
         (async () => {
             const _session = await getSession() as SessionPayload;
             setSession(_session);
@@ -103,23 +147,60 @@ export default function DailyTimeRecordUser() {
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
-            setData(await getResults())
+
+            const statuses = await getOfflineLibStatuses();
+            const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
+            setStatusesOptions(filteredStatuses);
+
+            const user = await dexieDb.person_profile.where('user_id')
+                .equals(params!.id).first();
+
+            const period_cover = format(getInitialDateRange().from!.toISOString(), 'MMM dd') + "-" + format(getInitialDateRange().to!.toISOString(), 'dd, yyyy')
+            const r = uuidv5(period_cover, user!.id)
+
+            const logsQuery = await dexieDb.submission_log.where("record_id").equals(r)
+            const logs = await logsQuery.sortBy("created_date")
+            const logslast = logs.length > 0 ? logs[logs.length - 1] : null
+
+            console.log('period_cover', period_cover, r, logsQuery.toArray())
+            console.log('user', { user, params })
+
+            setSubmissionLogs(logs)
+            setSelectedStatus(logslast ?? selectedStatus)
+
+            const pb = await dexieDb.cfwpayroll_bene.where({
+                period_cover_from: date!.from!,
+                period_cover_to: date!.to!,
+                bene_id: user!.id
+            }).first()
+            setCFWPayrollBene(pb)
+            console.log('ar', { params, pb })
+
+            const merge = {
+                ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+                ...user
+            };
+            setUser(merge);
+
         })();
     }, [])
 
 
-    const getResults = async () => {
-        const user = await dexieDb.person_profile.where('user_id')
-            .equals(params!.id).first();
+    useEffect(() => {
+        (async () => {
+            setData(await getResults())
+            console.log('date', date)
+        })();
+    }, [date, user])
 
-        console.log('user', {user,params})
-        const merge = {
-            ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
-            ...user
-        };
-        setUser(merge);
-        const results = await dexieDb.cfwtimelogs.where('created_by')
+    const getResults = async () => {
+        const results = await dexieDb.cfwtimelogs
+            .where('created_by')
             .equals(user?.email ?? "")
+            .and(log => {
+                const logDate = new Date(log.log_in);
+                return logDate >= date!.from! && logDate <= date!.to!;
+            })
             .sortBy("created_date"); // Ascending: oldest → latest  
         console.log('getResults', results)
         return results;
@@ -154,6 +235,67 @@ export default function DailyTimeRecordUser() {
     };
 
 
+    const handleSubmitReview = () => {
+        (async () => {
+            try {
+                const period_cover = format(getInitialDateRange().from!.toISOString(), 'MMM dd') + "-" + format(getInitialDateRange().to!.toISOString(), 'dd, yyyy')
+                const record_id = uuidv5(period_cover, user!.id)
+                console.log('period_cover', period_cover, record_id)
+
+                const raw = {
+                    ...selectedStatus!,
+                    id: uuidv4(),
+                    record_id: record_id,
+                    bene_id: user!.id,
+                    module: "daily time record",
+                    created_date: new Date().toISOString(),
+                    created_by: session!.userData!.email!,
+                    push_status_id: 0,
+                }
+                console.log('handleSubmitReview', raw)
+                await dexieDb.submission_log.put(raw)
+
+                console.log('handleSaveAccomplishmentReport', raw, payrollbene)
+                if (raw.status == "2") {
+                    const rev = {
+                        id: payrollbene ? payrollbene.id : uuidv4(),
+                        bene_id: user!.id,
+                        daily_time_record_id: record_id,
+                        daily_time_record_reviewed_date: new Date().toISOString(),
+                        accomplishment_report_id: payrollbene?.accomplishment_report_id || "",
+                        accomplishment_report_reviewed_date: payrollbene?.accomplishment_report_reviewed_date || "",
+                        period_cover_from: getInitialDateRange().from!,
+                        period_cover_to: getInitialDateRange().to!,
+                        operation_status: "",
+                        operation_status_date: "",
+                        odnpm_status: "",
+                        odnpm_status_date: "",
+                        finance_status: "",
+                        finance_status_date: "",
+                        date_released: "",
+                        date_received: "",
+                    }
+                    console.log('review', rev)
+                    await dexieDb.cfwpayroll_bene.put(rev)
+                }
+
+                toast({
+                    variant: "green",
+                    title: "Submit Review",
+                    description: "Your review has been submitted!",
+                });
+                // console.log('handleSaveAccomplishmentReport > admin > submission', { raw })
+            } catch (error) {
+                toast({
+                    variant: "destructive",
+                    title: "Submit Review",
+                    description: `Review or user session is not yet ready ${error} `,
+                });
+            }
+        })();
+    }
+
+
     return (
 
         <Card>
@@ -161,7 +303,7 @@ export default function DailyTimeRecordUser() {
                 <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
                     {/* Logo Section */}
                     <div className="flex-shrink-0">
-                        <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
+                        <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
                     </div>
 
                     {/* Title Section */}
@@ -185,6 +327,7 @@ export default function DailyTimeRecordUser() {
                             <h2 className="text-lg font-semibold uppercase">{user?.first_name} {user?.last_name}</h2>
                             <p className="text-sm text-gray-500">{user?.school_name}</p>
                         </div>
+                        <DatePickerWithRange className={"bg-primary text-primary-foreground hover:bg-primary/90 p-[6px] rounded-md px-2"} value={date} onChange={setDate} />
                         <Button onClick={() => console.log('enteries', null)} size="sm" className="flex items-center gap-2">
                             <Printer className="h-4 w-4" />
                         </Button>
@@ -194,13 +337,26 @@ export default function DailyTimeRecordUser() {
 
                     </div>
 
-                    <div className="rounded-lg">
+                    <div className="rounded-lg mb-6">
                         <AppTable
                             data={data}
-                            columns={columns}
+                            columns={DTRcolumns}
                             onEditRecord={session?.userData.role !== "CFW Beneficiary" ? handleEdit : undefined}
                         />
                     </div>
+
+
+                    <div className="no-print">
+                        <AppSubmitReview
+                            session={session!}
+                            review_logs={submissionLogs}
+                            options={statusesOptions}
+                            review={selectedStatus}
+                            onChange={(review) => setSelectedStatus(review)}
+                            onSubmit={() => handleSubmitReview()}
+                        />
+                    </div>
+
                 </div>
 
             </CardContent>

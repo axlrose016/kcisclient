@@ -416,6 +416,7 @@ export default function WorkPlanMasterList({ page }: { page: number }) {
 
     return (
         <div className="p-2">
+            Work Plans: {JSON.stringify(dataWorkPlan)}
             <Dialog open={forReviewApprove} onOpenChange={setForReviewApprove}>
                 <DialogContent className="w-[400px] shadow-lg z-50 pb-[50px]">
                     <DialogTitle>Approval Confirmation</DialogTitle>

@@ -3,6 +3,7 @@ import { SessionPayload } from "@/types/globals";
 import { toast } from "@/hooks/use-toast";
 import { syncTask } from "../bulksync";
 import { hasOnlineAccess, isValidTokenString } from "../utils";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 
 export interface ISummary {
   state:
@@ -158,6 +159,10 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
     const hasNetAccess = await hasOnlineAccess();
     const hasToken = isValidTokenString(session?.token);
 
+    const isUserGoodToSync = (await dexieDb.person_profile
+      .where("email")
+      .equals(session!.userData!.email!)
+      .first())?.push_status_id == 1 ;
     // alert(JSON.stringify({ hasToken, hasNetAccess }));
 
     if (!hasNetAccess) return;

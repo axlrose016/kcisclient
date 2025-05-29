@@ -27,6 +27,9 @@ import { map } from "lodash"
 import { useSearchParams } from "next/dist/client/components/navigation"
 import { getOfflineItemCodes } from "@/components/_dal/hr/hr-options"
 import { setItem } from "localforage"
+import { FormTabs } from "@/components/forms/form-tabs"
+import HiringProcedures from "./hiring-procedures/page"
+import ApplicantList from "./applicants/page"
 
 const formSchema = z.object({
   id: z.string(),
@@ -57,6 +60,7 @@ export default function FormPositionDistribution() {
   const [province, setProvince] = useState<LibraryOption[]>([]);
   const [city, setCity] = useState<LibraryOption[]>([]);
   const [itemCode, setItemCode] = useState<LibraryOption[]>([]);
+  const [activeTab, setActiveTab] = useState("hiring-procedures");
       
   // const searchParams = useSearchParams() || undefined;
   // const id = searchParams?.get('id');
@@ -181,6 +185,29 @@ export default function FormPositionDistribution() {
       }
     });
   }
+
+  const tabs = [
+    {
+      value: "hiring-procedures",
+      label: "Hiring Procedures",
+      content: activeTab === "hiring-procedures" && (
+        <div className="bg-card rounded-lg">
+          <HiringProcedures
+          />
+        </div>
+      ),
+    },
+    {
+      value:"applicants",
+      label: "Applicants",
+      content: activeTab === "applicants" && (
+        <div className="bg-card rounded-lg">
+          <ApplicantList
+          />
+        </div>
+      ),
+    }
+  ]
 
   return (
     <div className="container mx-auto py-10">
@@ -344,7 +371,7 @@ export default function FormPositionDistribution() {
                   name="division_id"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Office</FormLabel>
+                      <FormLabel>Division/Section/Unit</FormLabel>
                       <FormControl>
                         <FormDropDown
                           id="division_id"
@@ -421,6 +448,9 @@ export default function FormPositionDistribution() {
             </CardFooter>
           </form>
         </Form>
+        <div className="p-3 col-span-full">
+          <FormTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+        </div>
       </Card>
     </div>
   )

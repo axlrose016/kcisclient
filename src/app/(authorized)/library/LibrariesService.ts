@@ -1,4 +1,4 @@
-import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibOffice, ILibPAP, ILibPosition, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibHiringProcedure, ILibOffice, ILibPAP, ILibPosition, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { getSession } from "@/lib/sessions-client";
@@ -226,6 +226,19 @@ export class LibrariesService{
     }
     
     //HR Libraries
+    async getOfflineLibHiringProcedure() : Promise<ILibHiringProcedure[]> {
+      try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_hiring_procedure], async () => {
+          const hiring_procedures = await libDb.lib_hiring_procedure.toArray();
+          return hiring_procedures;
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Records Failed: ', error);
+        return [];
+      }
+    }
     async getOfflineLibEmploymentStatus(): Promise<ILibEmploymentStatus[]> {
         try {
             await libDb.open();
@@ -309,6 +322,24 @@ export class LibrariesService{
           }
         });
         return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async getOfflineLibHiringProcedureById(id:number): Promise<ILibHiringProcedure | undefined>{
+      try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_hiring_procedure], async () => {
+          const hiring_procedure = await libDb.lib_hiring_procedure.where('id').equals(id).first();
+          if(hiring_procedure){
+            return hiring_procedure;
+          }else{
+            console.log('No record found with the given ID.');
+            return undefined;
+          }
+      });
+      return result;
       }catch(error){
         console.error('Fetch Record Failed: ', error);
         return undefined;
@@ -469,6 +500,45 @@ export class LibrariesService{
         return undefined;
       }
     }
+    async saveOfflineLibHiringProcedure(hiring_procedure: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibHiringProcedure | undefined;
+        await libDb.transaction('rw', [libDb.lib_hiring_procedure], async () => {
+          let data: ILibHiringProcedure = hiring_procedure;
+
+          if(!hiring_procedure.id || hiring_procedure.id === ""){
+            data = {
+              ...hiring_procedure,
+              created_date: new Date().toISOString(),
+              created_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Created by " + _session.userData.email,
+            };
+          }else{
+            const existing = await libDb.lib_hiring_procedure.get(hiring_procedure.id);
+            if( !existing) {
+              throw new Error("Record not found for update.");
+            }
+
+            data = {
+              ...existing,
+              ...hiring_procedure,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session.userData.email,
+            }
+          }
+          await libDb.lib_hiring_procedure.put(data);
+          savedItem = data;
+        });
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+
     async saveOfflinePosition(pos: any): Promise<any | undefined>{
       try{
         let savedItem: ILibPosition | undefined;

@@ -379,7 +379,6 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                         router.push(baseUrl + `/${row.id}`);
                     }
 
-
                 } catch (error: any) {
                     console.log("Error fetching data:", error);
                     if (error.name === "AbortError") {
@@ -391,7 +390,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                     }
                 }
             }
-            fetchSelectedData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + row.id);
+            fetchSelectedData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + row.id + "/");
         }
         catch (error) {
             console.log("Error fetching data:", error);

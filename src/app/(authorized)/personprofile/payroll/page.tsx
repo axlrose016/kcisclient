@@ -1,108 +1,98 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
-import { Building2, CalendarIcon, Download, Edit, Plus, Printer, Trash2, Users } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Building2, Users } from 'lucide-react';
 import { AppTable } from '@/components/app-table';
 import { Badge } from '@/components/ui/badge';
+import Image from 'next/image';
+import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
+import { v4 as uuidv4 } from 'uuid';
+import { toast } from '@/hooks/use-toast';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
+import { ICFWPayroll } from '@/components/interfaces/cfw-payroll';
 
+import { v3 as uuidv3 } from 'uuid';
+import { format } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
+
+const ModuleKey = 'kcis-payroll';//dont chnage
+
+const session = await getSession() as SessionPayload;
+
+// Internal lookup maps
+const stringToUUIDMap: Record<string, string> = {};
+const uuidToStringMap: Record<string, string> = {};
+
+// Function to convert and store mapping
+function encodeUUID(input: string): string {
+    const uuid = uuidv3(input, ModuleKey);
+    stringToUUIDMap[input] = uuid;
+    uuidToStringMap[uuid] = input;
+    return uuid;
+}
+
+// Simulate "reverse lookup"
+function decodeUUID(uuid: string): string | undefined {
+    return uuidToStringMap[uuid];
+}
+ 
 const baseUrl = 'personprofile/payroll'
-
-
-const initialData = [
-    {
-        id: 'SF-123678',
-        name: 'Jane Cooper',
-        avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330',
-        school: 'Quezon City University',
-        contact_number: '09090909',
-        status: 'Active'
-    },
-    {
-        id: 'SA-464737',
-        name: 'Jenny Wilson',
-        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9',
-        school: 'University Of the Philipines',
-        contact_number: '09090909',
-        status: 'Active'
-    },
-    {
-        id: 'BD-112458',
-        name: 'Albert Flores',
-        avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12',
-        school: 'Polytechnic University of the Philipines',
-        contact_number: '09090909',
-        status: 'Incoming'
-    },
-    {
-        id: 'PM-589046',
-        name: 'Cody Fisher',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-        school: 'San Bartolome National High School',
-        contact_number: '09090909',
-        status: 'Hold'
-    },
-    {
-        id: 'PM-589046',
-        name: 'Cody Fisher',
-        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e',
-        school: 'Batasan National High School',
-        contact_number: '09090909',
-        status: 'Cancelled'
-    }
-];
 
 const columns = [
     {
-        id: 'name',
-        header: 'Name',
-        accessorKey: 'name',
+        id: 'date_cover_from',
+        header: 'Date Cover',
+        accessorKey: 'period_cover_from',
         filterType: 'text',
         sortable: true,
+        cell: (value: Date | undefined) => {
+            if (value) {
+                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
+            }
+            return "-";
+        },
     },
     {
-        id: 'school',
-        header: 'School',
-        accessorKey: 'school',
+        id: 'date_cover_to',
+        header: 'Date Cover To',
+        accessorKey: 'period_cover_to',
         filterType: 'text',
         sortable: true,
+        cell: (value: Date | undefined) => {
+            if (value) {
+                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
+            }
+            return "-";
+        },
     },
     {
-        id: 'contact_number',
-        header: 'Contact',
-        accessorKey: 'contact_number',
+        id: 'mov_path',
+        header: 'MOV',
+        accessorKey: 'mov_path',
         filterType: 'text',
         sortable: true,
+        cell: (value: any) => value == "" ? "No Attachments" : "Link"
     },
     {
         id: 'status',
         header: 'Status',
         accessorKey: 'status',
         filterType: 'select',
-        filterOptions: ['Active', 'Incoming', 'Hold', 'Cancelled'],
+        filterOptions: ['Created', 'On-Going', 'Released'],
         sortable: true,
-        cell: (value: any) => <Badge variant={value == "Active" ? "green" : 
-                                                value == "Incoming" ? "warning" : 
-                                                value == "Cancelled" ? "destructive" : "default"}>{value}</Badge>
-    },
-];
-
-const customActions = [
-    {
-        label: 'View Profile',
-        icon: Users,
-        onClick: (row: any) => console.log('View Profile:', row),
+        cell: (value: any) => <Badge variant={value == "Released" ? "green" :
+            value == "On-Going" ? "warning" :
+                value == "Cancelled" ? "destructive" : "default"}>{value}</Badge>
     },
     {
-        label: 'View Department',
-        icon: Building2,
-        onClick: (row: any) => console.log('View Department:', row),
+        id: 'last_modified_date',
+        header: 'Last Update',
+        accessorKey: 'last_modified_date',
+        filterType: 'text',
+        sortable: true,
     },
 ];
 
@@ -110,10 +100,52 @@ const customActions = [
 export default function PayrollPage() {
 
     const router = useRouter();
-    const [data, setData] = useState(initialData);
+    const [data, setData] = useState<ICFWPayroll[]>([]);
+
+    useEffect(() => {
+        if (["Guest","CFW Beneficiary"].includes(session!.userData!.role!)) {
+            router.push(`/${baseUrl}/${session.id}`);
+        } else {
+            (async () => {
+                try {
+                    if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
+                } catch (error) {
+                    console.error('Error fetching data:', error);
+                }
+                const data = await dexieDb.cfwpayroll_bene.toArray()
+                const groupedData = data.reduce((acc: any[], curr) => {
+                    const existingGroup = acc.find(group =>
+                        group.period_cover_from.getTime() === new Date(curr.period_cover_from).getTime() &&
+                        group.period_cover_to.getTime() === new Date(curr.period_cover_to).getTime()
+                    );
+
+                    if (!existingGroup) {
+                        acc.push({
+                            period_cover_from: new Date(curr.period_cover_from).toISOString(),
+                            period_cover_to: new Date(curr.period_cover_to).toISOString()
+                        });
+                    }
+                    return acc;
+                }, []);
+                setData(groupedData)
+                console.log('payroll > data', data, groupedData)
+            })();
+        }
+    }, [])
 
     const handleEdit = (row: any) => {
-        console.log('Edit:', row);
+        (async () => {
+            await dexieDb.cfwpayroll.put({
+                last_modified_date: new Date().toISOString(),
+                last_modified_by: session.userData.email,
+                ...row
+            })
+            toast({
+                variant: "green",
+                title: "Payroll Updated",
+                description: "Payroll has been updated!",
+            })
+        })();
     };
 
     const handleDelete = (row: any) => {
@@ -121,26 +153,37 @@ export default function PayrollPage() {
     };
 
     const handleRowClick = (row: any) => {
-        console.log('Row clicked:', row);
-        router.push(`/${baseUrl}/${row.id}`);
+
+        const period_cover = format(new Date(row.period_cover_from)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(row.period_cover_to)!.toISOString(), 'yyyyMMdd')
+        console.log('Row clicked:', period_cover);
+        router.push(`/${baseUrl}/${period_cover}`);
     };
 
     const handleAddNewRecord = (newRecord: any) => {
-        setData((prevData) => [...prevData, { id: String(prevData.length + 1), ...newRecord }]);
+        // setData((prevData) => [...prevData, { id: String(prevData.length + 1), ...newRecord }]);
+        (async () => {
+            await dexieDb.cfwpayroll.put({
+                id: uuidv4(),
+                created_date: new Date().toISOString(),
+                created_by: session.userData.email,
+                ...newRecord
+            })
+            toast({
+                variant: "green",
+                title: "Payroll",
+                description: "Payroll has been created!",
+            })
+        })();
     };
 
     const handleRefresh = async () => {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 1000));
-        setData(initialData);
+        setData([]);
     };
 
     const handleClickAddNew = () => {
         console.log('handleClickAddNew')
-    };
-
-    const handleClickEdit = () => {
-        console.log('handleClickEdit')
     };
 
 
@@ -151,7 +194,7 @@ export default function PayrollPage() {
                 <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
                     {/* Logo Section */}
                     <div className="flex-shrink-0">
-                        <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
+                        <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
                     </div>
 
                     {/* Title Section */}
@@ -172,8 +215,7 @@ export default function PayrollPage() {
                         onRefresh={handleRefresh}
                         onAddNewRecord={handleAddNewRecord}
                         onClickAddNew={handleClickAddNew}
-                        onClickEdit={handleClickEdit}
-                        customActions={customActions}
+                        onEditRecord={handleEdit}
                     />
                 </div>
 

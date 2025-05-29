@@ -34,7 +34,7 @@ interface WorkPlanProps {
   no_of_days_program_engagement: number;
   approved_work_schedule_from: string;
   approved_work_schedule_to: string;
-  generalObjective: string;
+  objectives: string;
 
 
 }
@@ -47,37 +47,34 @@ type Beneficiary = {
   status_name: string
   // is_selected: string
 }
+import LoginService from "@/app/login/LoginService";
+import { SessionPayload } from '@/types/globals';
+import { getSession } from '@/lib/sessions-client'
+const _session = await getSession() as SessionPayload;
+export default function CreateWorkPlanPage() {
 
-export default function TaskManagement() {
+  const [personProfileId, setPersonProfileId] = useState<string>("")
+  const [deploymentAreaId, setDeploymentAreaId] = useState(0)
+  const [deploymentAreaCategoryId, setDeploymentAreaCategoryId] = useState<string>("")
   // Load beneficiaries from JSON
-  const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>(beneficiaries)
+  // const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>(beneficiaries) //default using json file
+  const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>([])
+  const [deploymentAreaName, setDeploymentAreaName] = useState("")
   const [workPlanData, setWorkPlanData] = useState<WorkPlanProps>({
     id: "",
     work_plan_title: "",
-    immediate_supervisor_id: "",
-    deployment_area_name: "",
+    immediate_supervisor_id: _session.id,
+    deployment_area_name: deploymentAreaName,
     office_name: "",
     no_of_days_program_engagement: 0,
     approved_work_schedule_from: "",
     approved_work_schedule_to: "",
-    generalObjective: "",
+    objectives: "",
+
   })
-
-  const handleInputChangeTaskManagement = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setWorkPlanData((prev) => ({ ...prev, [name]: value }))
-    const lsWorkPlanData = localStorage.getItem("work_plan")
-    if (lsWorkPlanData) {
-      const parsedTM = JSON.parse(lsWorkPlanData) as WorkPlanProps
-      localStorage.setItem("work_plan", JSON.stringify({ ...parsedTM, [name]: value }))
-    }
-    else {
-      localStorage.setItem("work_plan", JSON.stringify({ ...workPlanData, [name]: value }))
-    }
-  }
-  const { toast } = useToast()
-
+  
   useEffect(() => {
+
     // Fetch task management data from local storage or server if needed
     const lsWorkPlanData = localStorage.getItem("work_plan")
     if (lsWorkPlanData) {
@@ -87,10 +84,6 @@ export default function TaskManagement() {
       localStorage.setItem("work_plan", JSON.stringify(workPlanData))
     }
 
-  }, [])
-  useEffect(() => {
-    // Fetch tasks from the server or local storage if needed
-    // For now, we are using an empty array as initial state
     const lsWPTasks = localStorage.getItem("work_plan_tasks")
     if (lsWPTasks) {
       const parsedTasks = JSON.parse(lsWPTasks) as WorkPlanTasks[]
@@ -99,7 +92,109 @@ export default function TaskManagement() {
       localStorage.setItem("work_plan_tasks", JSON.stringify([]))
       setTasks([])
     }
-  }, [])
+
+
+    async function loadPersonProfile() {
+      try {
+        debugger;
+        const email = "dsentico@dswd.gov.ph";
+        const password = "Dswd@123";
+
+        const onlinePayload = await LoginService.onlineLogin(email, password);
+        const token = onlinePayload.token;
+
+        const personProfileRes = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}person_profile/view/${_session.id}/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!personProfileRes.ok) {
+          const errorData = await personProfileRes.json();
+          console.error("❌ Failed to load person profile:", errorData);
+          return;
+        }
+
+        const personData = await personProfileRes.json();
+        console.log("🧔 Person Profile:", personData);
+
+        const ppid = personData.id;
+        const dan = personData.cfw_assessment[0].deployment_area_name
+        setWorkPlanData((prev) => ({
+          ...prev,
+          deployment_area_name: dan
+        }))
+
+        localStorage.setItem("deployment_area_supervisor", personData.cfw_assessment[0].deployment_area_name)
+        localStorage.setItem("deployment_area_short_name_supervisor", personData.cfw_assessment[0].deployment_area_short_name)
+        // alert("Deployment Area ID: " + personData.cfw_assessment[0].deployment_area_id)
+        // alert("Deployment Area category ID: " + personData.cfw_assessment[0].deployment_area_category_id)
+        setPersonProfileId(ppid);
+        setDeploymentAreaName(personData.cfw_assessment[0].deployment_area_name)
+        // setDeploymentAreaShortName(personData.cfw_assessment[0].deployment_area_short_name);
+
+        const deploymentAreaId = personData.cfw_assessment[0].deployment_area_id;
+        const deploymentAreaCategoryId = personData.cfw_assessment[0].deployment_area_category_id;
+        debugger
+        const eligibleBenesResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}cfw_assessment/view/cfw_assessment_by_deployment_category/`,
+          {
+            // const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+              Authorization: `bearer ${onlinePayload.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              "deployment_area_category_id": deploymentAreaCategoryId,
+              "deployment_area_id": deploymentAreaId
+            })
+          });
+
+        if (!eligibleBenesResponse.ok) {
+          const data = await eligibleBenesResponse.json();
+          console.log("Error fetching data:", data);
+        } else {
+          const data = await eligibleBenesResponse.json();
+          console.log("👨‍👩‍👧‍👦Eligible Beneficiaries  from api ", data);
+
+
+          setBeneficiariesData(data); //these are the eligible beneficiaries
+        }
+
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          console.warn("🚫 Request canceled:", error.message);
+        } else {
+          console.error("🔥 Unexpected error:", error);
+        }
+      }
+    }
+
+    loadPersonProfile();
+
+
+
+
+  }, []);
+
+
+
+  // const handleInputChangeTaskManagement = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  //   const { name, value } = e.target;
+  //   const updated = { ...workPlanData, [name]: value };
+  //   setWorkPlanData(updated);
+  //   localStorage.setItem("work_plan", JSON.stringify(updated));
+  // }
+  const { toast } = useToast()
+
+
+
   // State for tasks
   const [tasks, setTasks] = useState<WorkPlanTasks[]>([])
 
@@ -119,77 +214,77 @@ export default function TaskManagement() {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
 
   // Function to handle saving a new task
-  const handleSaveTask = () => {
-    if (!newTask.category_id || !newTask.activities_tasks) {
-      return // Basic validation
-    }
+  // const handleSaveTask = () => {
+  //   if (!newTask.category_id || !newTask.activities_tasks) {
+  //     return // Basic validation
+  //   }
 
-    const taskId = Date.now().toString()
-    const taskToSave = { ...newTask, id: taskId }
-    // const { toast } = useToast()
-    // debugger;
-    const isTaskExist = tasks.some((task) => task.activities_tasks.toLowerCase().trim() === newTask.activities_tasks.toLowerCase().trim() && task.category_id.toLowerCase().trim() === newTask.category_id.toLowerCase().trim())
-    if (isTaskExist) {
-      toast({
-        variant: "destructive",
-        description: "Task with the same type and name already exists!"
+  //   const taskId = Date.now().toString()
+  //   const taskToSave = { ...newTask, id: taskId }
+  //   // const { toast } = useToast()
+  //   // debugger;
+  //   const isTaskExist = tasks.some((task) => task.activities_tasks.toLowerCase().trim() === newTask.activities_tasks.toLowerCase().trim() && task.category_id.toLowerCase().trim() === newTask.category_id.toLowerCase().trim())
+  //   if (isTaskExist) {
+  //     toast({
+  //       variant: "destructive",
+  //       description: "Task with the same type and name already exists!"
 
-      })
+  //     })
 
-      return;
-    }
-    setTasks([...tasks, taskToSave])
-    localStorage.setItem("workPlan", JSON.stringify([...tasks, taskToSave]))
-    // Reset the form
-    setNewTask({
-      id: "",
-      work_plan_id: "",
-      category_id: "",
-      activities_tasks: "",
-      expected_output: "",
-      timeline_from: "",
-      timeline_to: "",
-      assigned_person_id: "",
-    })
-  }
+  //     return;
+  //   }
+  //   setTasks([...tasks, taskToSave])
+  //   localStorage.setItem("workPlan", JSON.stringify([...tasks, taskToSave]))
+  //   // Reset the form
+  //   setNewTask({
+  //     id: "",
+  //     work_plan_id: "",
+  //     category_id: "",
+  //     activities_tasks: "",
+  //     expected_output: "",
+  //     timeline_from: "",
+  //     timeline_to: "",
+  //     assigned_person_id: "",
+  //   })
+  // }
 
-  // Function to handle editing a task
-  const handleEditTask = (taskId: string) => {
-    setEditingTaskId(taskId)
-    const taskToEdit = tasks.find((task) => task.id === taskId)
-    if (taskToEdit) {
-      setNewTask(taskToEdit)
-    }
-  }
+  // // Function to handle editing a task
+  // const handleEditTask = (taskId: string) => {
+  //   setEditingTaskId(taskId)
+  //   const taskToEdit = tasks.find((task) => task.id === taskId)
+  //   if (taskToEdit) {
+  //     setNewTask(taskToEdit)
+  //   }
+  // }
 
-  // Function to handle updating a task
-  const handleUpdateTask = () => {
-    const updatedTasks = tasks.map((task) => (task.id === editingTaskId ? newTask : task))
-    setTasks(updatedTasks)
-    localStorage.setItem("work_plan_tasks", JSON.stringify(updatedTasks))
-    // Reset the form and editing state
-    setNewTask({
-      id: "",
-      work_plan_id: "",
-      category_id: "",
-      activities_tasks: "",
-      expected_output: "",
-      timeline_from: "",
-      timeline_to: "",
-      assigned_person_id: "",
-    })
-    setEditingTaskId(null)
-  }
+  // // Function to handle updating a task
+  // const handleUpdateTask = () => {
+  //   const updatedTasks = tasks.map((task) => (task.id === editingTaskId ? newTask : task))
+  //   setTasks(updatedTasks)
+  //   localStorage.setItem("work_plan_tasks", JSON.stringify(updatedTasks))
+  //   // Reset the form and editing state
+  //   setNewTask({
+  //     id: "",
+  //     work_plan_id: "",
+  //     category_id: "",
+  //     activities_tasks: "",
+  //     expected_output: "",
+  //     timeline_from: "",
+  //     timeline_to: "",
+  //     assigned_person_id: "",
+  //   })
+  //   setEditingTaskId(null)
+  // }
 
-  // Function to handle deleting a task
-  const handleDeleteTask = (taskId: string) => {
-    const deleteTask = tasks.filter((task) => task.id !== taskId)
-    setTasks(deleteTask)
-    localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
-  }
-  const submitWorkPlan = () => {
-    alert("Submitting")
-  }
+  // // Function to handle deleting a task
+  // const handleDeleteTask = (taskId: string) => {
+  //   const deleteTask = tasks.filter((task) => task.id !== taskId)
+  //   setTasks(deleteTask)
+  //   localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
+  // }
+  // const submitWorkPlan = () => {
+  //   alert("Submitting")
+  // }
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -206,12 +301,15 @@ export default function TaskManagement() {
       </main> */}
 
       <div className="w-full mx-auto px-4 pt-0 mt-0 py-0">
+        {/* Workplan Details {JSON.stringify(workPlanData)} */}
         <Wizard
           title='Work Plan Creation'
           description='Create a work plan for the beneficiaries'
           beneficiariesData={beneficiariesData}
           workPlanDetails={workPlanData}
           workPlanTasks={tasks}
+          deploymentAreaName={workPlanData.deployment_area_name}
+          
         />
         {/* {beneficiariesData.map((beneficiary) => (
           <div key={beneficiary.id} className="mb-4">
@@ -220,238 +318,7 @@ export default function TaskManagement() {
           </div>
         ))} */}
 
-        <Card className='hidden'>
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold">
-              Work Plan
-              <p className="text-sm font-regular">Deployment Area Name</p>
-            </CardTitle>
 
-          </CardHeader>
-          <CardContent>
-            <div className="mb-6 ml-2">
-              {/* <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">Title</Label>
-                <Input
-                  type="text"
-                  className="mt-1"
-                  name="workPlanTitle"
-                  value={taskManagement.workPlanTitle ?? ""}
-                  onChange={handleInputChangeTaskManagement} />
-              </div> */}
-              <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">Name of Company</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter company name"
-                  className="mt-1"
-                  name="deployment_area_name"
-                  value={workPlanData.deployment_area_name ?? ""}
-                  onChange={handleInputChangeTaskManagement} />
-              </div>
-              <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">Name of Office</Label>
-                <Input
-                  type="text"
-                  placeholder="Enter office name"
-                  className="mt-1"
-                  name="officeName"
-                  value={workPlanData.office_name}
-                  onChange={handleInputChangeTaskManagement} />
-              </div>
-              <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">Number of Days of Program Engagement</Label>
-                <Input
-                  type="number"
-                  placeholder="Enter number of days"
-                  className="mt-1"
-                  min={1}
-                  name="no_of_days_program_engagement"
-                  value={workPlanData.no_of_days_program_engagement}
-                  onChange={handleInputChangeTaskManagement} />
-              </div>
-              <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">Approved Schedule (Include Lunch Break)</Label>
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col">
-                    <Input
-                      type="date"
-                      placeholder="Start date"
-                      className="mt-1"
-                      name="approved_work_schedule_from"
-                      value={workPlanData.approved_work_schedule_from}
-                      onChange={handleInputChangeTaskManagement} />
-                  </div>
-                  <span className="text-muted-foreground">-</span>
-                  <div className="flex flex-col">
-                    <Input
-                      type="date"
-                      placeholder="End date"
-                      className="mt-1"
-                      name="approved_work_schedule_to"
-                      value={workPlanData.approved_work_schedule_to}
-                      onChange={handleInputChangeTaskManagement} />
-                  </div>
-                </div>
-              </div>
-              <div className="mb-4">
-                <Label className="block text-sm font-medium text-gray-700">General Objective</Label>
-                <Textarea
-                  rows={3}
-                  placeholder="Enter general objective"
-                  className="mt-1"
-                  name="generalObjective"
-                  value={workPlanData.generalObjective}
-                  onChange={handleInputChangeTaskManagement} />
-              </div>
-            </div>
-            <div className="overflow-x-auto ml-2">
-              <h1 className="font-bold text-2xl mb-2">Task List</h1>
-              <table className="w-full border-collapse border">
-                <thead>
-                  <tr className="bg-muted">
-                    <th className="p-2 text-left font-medium min-w-[200px] md:w-[30%] lg:w-[10%]">Task Type</th>
-                    <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[30%] lg:w-[40%]">Tasks</th>
-                    <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[30%] lg:w-[40%]">Expected Output</th>
-                    <th className="p-2 text-left font-medium">Timeline (Start - End)</th>
-                    <th className="p-2 text-left font-medium">Assigned Person</th>
-                    <th className="p-2 text-left font-medium">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Input row */}
-                  <tr className="border-b">
-                    <td className="p-2">
-                      <Select value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">General</SelectItem>
-                          <SelectItem value="2">Specific</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="p-2">
-                      <Textarea
-                        rows={3}
-                        className="sm:w-[200px] md:w-full"
-                        placeholder="Enter task"
-                        value={newTask.activities_tasks}
-                        onChange={(e) => setNewTask({ ...newTask, activities_tasks: e.target.value })} />
-                    </td>
-                    <td className="p-2">
-                      <Textarea
-                        rows={3}
-                        className="sm:w-[200px] md:w-full"
-                        placeholder="Expected output"
-                        value={newTask.expected_output}
-                        onChange={(e) => setNewTask({ ...newTask, expected_output: e.target.value })} />
-                    </td>
-                    <td className="p-2">
-                      <div className="flex flex-col w-full gap-2 md:flex-row md:items-center md:justify-between">
-                        <Input
-                          type="date"
-                          className="w-full md:w-[140px]" // Adjust width as needed
-                          value={newTask.timeline_from}
-                          onChange={(e) => setNewTask({ ...newTask, timeline_from: e.target.value })}
-                        />
-                        <span className="text-center text-muted-foreground hidden md:inline">-</span>
-                        <Input
-                          type="date"
-                          className="w-full md:w-[140px]" // Adjust width as needed
-                          value={newTask.timeline_to}
-                          onChange={(e) => setNewTask({ ...newTask, timeline_to: e.target.value })}
-                        />
-                      </div>
-                    </td>
-
-
-                    <td className="p-2">
-                      <Select
-                        value={newTask.assigned_person_id}
-                        onValueChange={(value) => setNewTask({ ...newTask, assigned_person_id: value })}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Assign to" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All</SelectItem>
-                          <SelectItem value="john">John Doe</SelectItem>
-                          <SelectItem value="jane">Jane Smith</SelectItem>
-                          <SelectItem value="alex">Alex Johnson</SelectItem>
-                          <SelectItem value="sarah">Sarah Williams</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </td>
-                    <td className="p-2">
-                      {editingTaskId ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={handleUpdateTask}
-                          className="flex items-center gap-1"
-                        >
-                          <Save className="h-4 w-4" />
-                          Update
-                        </Button>
-                      ) : (
-                        <Button variant="outline" size="sm" onClick={handleSaveTask} className="flex items-center gap-1">
-                          <Save className="h-4 w-4" />
-                          Save
-                        </Button>
-                      )}
-                    </td>
-                  </tr>
-
-                  {/* Task rows */}
-                  {tasks.map((task) => (
-                    <tr key={task.id} className="border-b hover:bg-muted/50">
-                      <td className="p-2">{task.category_id == "1" ? "General" : "Specific"}</td>
-                      <td className="p-2">{task.activities_tasks}</td>
-                      <td className="p-2">{task.expected_output}</td>
-                      <td className="p-2">
-                        {task.timeline_from && task.timeline_to ? (
-                          <span>
-                            {task.timeline_from} - {task.timeline_to}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground">No dates set</span>
-                        )}
-                      </td>
-                      <td className="p-2">{task.assigned_person_id}</td>
-                      <td className="p-2">
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditTask(task.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteTask(task.id)}
-                            className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-          <CardFooter >
-            <Button onClick={submitWorkPlan}>Submit</Button>
-          </CardFooter>
-        </Card>
       </div>
     </motion.div >
 

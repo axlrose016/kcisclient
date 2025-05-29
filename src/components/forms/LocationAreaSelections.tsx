@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -127,7 +127,7 @@ export default function LocationAreaSelections({
         fetchData("regions", "/api-libs/psgc/regions", (data) => {
             if (data?.status) {
                 const mappedRegions: LibraryOption[] = data.data.map((item: any) => ({
-                    id: item.code,
+                    id: item.code_correspondence,
                     name: item.name,
                 }));
                 setOptions((prev) => ({ ...prev, regions: mappedRegions }))
@@ -140,7 +140,7 @@ export default function LocationAreaSelections({
             fetchData(`provinces-${debouncedRegion}`, `/api-libs/psgc/provincesByRegion?region=${debouncedRegion}`, (data) => {
                 if (data?.status) {
                     const mappedProvince: LibraryOption[] = data.data.provinces.map((item: any) => ({
-                        id: item.code,
+                        id: item.code_correspondence,
                         name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, provinces: mappedProvince }))
@@ -154,7 +154,7 @@ export default function LocationAreaSelections({
             fetchData(`muni-${debouncedProvince}`, `/api-libs/psgc/municipalityByProvince?province=${debouncedProvince}`, (data) => {
                 if (data?.status) {
                     const mappedCity: LibraryOption[] = data.data.municipalities.map((item: any) => ({
-                        id: item.code,
+                        id: item.code_correspondence,
                         name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, municipalities: mappedCity }))
@@ -168,7 +168,7 @@ export default function LocationAreaSelections({
             fetchData(`barangays-${debouncedMunicipality}`, `/api-libs/psgc/barangayByMunicipality?municipality=${debouncedMunicipality}`, (data) => {
                 if (data?.status) {
                     const mappedBarangay: LibraryOption[] = data.data.barangay.map((item: any) => ({
-                        id: item.code,
+                        id: item.code_correspondence,
                         name: item.name,
                     }));
                     setOptions((prev) => ({ ...prev, barangays: mappedBarangay }))

@@ -10,29 +10,29 @@ import { toast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
+import { SessionPayload } from '@/types/globals';
+import { getSession } from '@/lib/sessions-client'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { v4 as uuidv4 } from 'uuid';
+import LoginService from "@/app/login/LoginService";
 
-type WizardProps = {
-    title: string
-    description: string
-    beneficiariesData?: any[]
-    workPlanDetails?: any
-    workPlanTasks?: any[]
-}
+// checklist
+// deployment_area_short_name_supervisor ✅
+// deployment_area_supervisor ✅
+// selectedBeneficiaries✅
+// work plan
+// title
+
+
 const columnsMasterlist = [
 
-    // {
-    //     id: 'id',
-    //     header: 'ID',
-    //     accessorKey: 'id',
-    //     filterType: 'text',
-    //     sortable: true,
-    //     align: "center",
-
-    // },
     {
         id: 'status_name',
         header: 'Status',
-        accessorKey: 'status_name',
+        accessorKey: 'STATUS/DEPLOYED AT',
         filterType: 'text',
         sortable: true,
         align: "center",
@@ -42,45 +42,18 @@ const columnsMasterlist = [
     {
         id: 'full_name',
         header: 'Full Name',
-        accessorKey: 'full_name',
+        accessorKey: 'FULL NAME',
         filterType: 'text',
         sortable: true,
         align: "left",
 
 
     },
-    // {
-    //     id: 'middle_name',
-    //     header: 'Middle Name',
-    //     accessorKey: 'middle_name',
-    //     filterType: 'text',
-    //     sortable: true,
-    //     align: "left",
 
-    // },
-    // {
-    //     id: 'last_name',
-    //     header: 'Last Name',
-    //     accessorKey: 'last_name',
-    //     filterType: 'text',
-    //     sortable: true,
-    //     align: "left",
-
-    // },
-
-    // {
-    //     id: 'extension_name',
-    //     header: 'Extension Name',
-    //     accessorKey: 'extension_name',
-    //     filterType: 'text',
-    //     sortable: true,
-    //     align: "left",
-
-    // },
     {
         id: 'course_name',
         header: 'Course Name',
-        accessorKey: 'course_name',
+        accessorKey: 'COURSE',
         filterType: 'text',
         sortable: true,
         align: "left",
@@ -89,27 +62,49 @@ const columnsMasterlist = [
     {
         id: 'school_name',
         header: 'School Name',
-        accessorKey: 'school_name',
+        accessorKey: 'SCHOOL NAME',
         filterType: 'text',
         sortable: true,
         align: "left",
 
     },
-    // {
-    //     id: 'is_selected',
-    //     header: 'Selected',
-    //     accessorKey: 'is_selected',
-    //     filterType: 'text',
-    //     sortable: true,
-    //     align: "center",
-
-    // },
 
 ];
 let totalNumberOfSelectedBeneficiaries = 0
+let totalNumberOfTasks = 0
 
-export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks }: WizardProps) {
+const _session = await getSession() as SessionPayload;
+type WizardProps = {
+    title?: string
+    description?: string
+    beneficiariesData?: any[]
+    workPlanDetails?: any
+    workPlanTasks?: any[]
+    noOfSelectedBeneficiaries?: number
+    noOfTasks?: number
+    deploymentAreaName?: string
+
+}
+export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
+
+    const [totalNoOfTasks, setTotalNoOfTasks] = useState(0)
+
+    const [deploymentAreaNameSup, setDeploymentAreaNameSup] = useState(deploymentAreaName)
+    const [workPlanTitle, setWorkPlanTitle] = useState<string>("")
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<any[]>(beneficiariesData || []);
+    // const [workPlanData, setWorkPlanData] = useState<any>(workPlanDetails || {});
+    const [workPlanData, setWorkPlanData] = useState(() => {
+        if (typeof window !== "undefined") {
+            const stored = localStorage.getItem("work_plan");
+            return stored ? JSON.parse(stored) : {};
+        }
+        return {};
+    });
+
+    const [workPlanTasksData, setWorkPlanTasksData] = useState<any[]>(workPlanTasks || []);
+
+
 
 
 
@@ -118,30 +113,292 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
             id: "beneficiaries",
             name: "Beneficiaries" + " (" + totalNumberOfSelectedBeneficiaries + ")",
             icon: <Users className="h-5 w-5" />,
-            component: <BeneficiariesStep beneficiariesData={beneficiariesData as any[]} title={""} description={""} />,
+            component: <BeneficiariesStep beneficiariesData={beneficiariesData} />,
         },
         {
             id: "workplan",
             name: "Work Plan Details",
             icon: <ClipboardList className="h-5 w-5" />,
-            component: <WorkPlanStep workPlanDetails={workPlanDetails} title={""} description={""} />,
+            component: <WorkPlanStep workPlanDetails={workPlanDetails} />,
         },
         {
             id: "tasks",
-            name: "Tasks",
+            name: "Tasks" + " (" + totalNumberOfTasks + ")",
             icon: <ListTodo className="h-5 w-5" />,
-            component: <TasksStep workPlanTasks={workPlanTasks} title="" description="" />,
+            component: <TasksStep workPlanTasks={workPlanTasks} />,
         },
         {
             id: "preview",
             name: "Preview",
             icon: <Eye className="h-5 w-5" />,
-            component: <PreviewStep />,
+            component: <PreviewStep setCurrentStep={setCurrentStep} />,
+        },
+        {
+            id: "submitted",
+            name: "Submitted",
+            icon: <CheckCircle className="h-5 w-5" />,
+            component: <SubmittedStep />,
         },
     ]
 
+
+
+    // to save is work plan, tasks, selected beneficiaries
+
+
+    const submitWorkPlan = async () => {
+        // work_plan/create/
+        // alert("WOrk Plan Title: " + workPlanData.work_plan_title)
+
+        // return
+        // alert("Submitting the work plan" + workPlanData?.id)
+        const lsWP = localStorage.getItem("work_plan")
+        if (lsWP) {
+            const parsedWP = JSON.parse(lsWP)
+            setWorkPlanData(parsedWP)
+        }
+
+        debugger
+        const email = "dsentico@dswd.gov.ph";
+        const password = "Dswd@123";
+
+        const onlinePayload = await LoginService.onlineLogin(email, password);
+        const token = onlinePayload.token;
+        let workplanid = uuidv4()
+        const workPlanCreate = await fetch(
+            `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`,
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify([{
+                    "id": workplanid,
+                    "created_by": _session.userData?.email,
+                    "remarks": "Work Plan Created",
+                    "work_plan_title": workPlanData.work_plan_title,
+                    "immediate_supervisor_id": _session.id,
+                    "objectives": workPlanData.objectives,
+                    "no_of_days_program_engagement": workPlanData.no_of_days_program_engagement,
+                    "approved_work_schedule_from": workPlanData.approved_work_schedule_from,
+                    "approved_work_schedule_to": workPlanData.approved_work_schedule_to,
+                    "push_status_id": 2,
+                    "created_date": new Date().toISOString(),
+
+
+                }]),
+            }
+        );
+
+        if (!workPlanCreate.ok) {
+            const errorBody = await workPlanCreate.text(); // safer than .json() in case of non-JSON error
+            console.error("❌ Failed to create work plan:", errorBody);
+            alert("Work Plan creation failed.");
+            return;
+        }
+        const result = await workPlanCreate.json();
+        console.error("❌ Failed to create work plan:", result);
+
+        // const personData = await workPlanCreate.json();
+        console.log("🧔 work plan created", result);
+        alert("Work Plan Created Successfully");
+    }
+
+    const getWorkPlan_Tasks_Benes_data = () => {
+
+
+        return;
+        const dep_name = localStorage.getItem("deployment_area_supervisor");
+        const dep_short_name = localStorage.getItem("deployment_area_short_name_supervisor");
+        const workPlanDetailsLS = localStorage.getItem("work_plan");
+        console.log("Deployment Area Name: ", dep_name, dep_short_name);
+        let parsed: any = {};
+        if (workPlanDetailsLS) {
+            try {
+                parsed = JSON.parse(workPlanDetailsLS || "");
+                setWorkPlanData(parsed);
+                // if (typeof parsed !== "object" || parsed === null) {
+                //     parsed = {};
+                // }
+            } catch {
+                parsed = {};
+            }
+        }
+        if (dep_name) {
+            parsed.deployment_area_name = dep_name;
+            parsed.deployment_area_short_name = dep_short_name;
+            parsed.work_plan_title = workPlanTitle;
+        }
+        setWorkPlanData(parsed);
+        return;
+
+
+        const selectedBeneficiariesLS = localStorage.getItem("selectedBeneficiaries");
+        if (selectedBeneficiariesLS) {
+            try {
+                const parsed = JSON.parse(selectedBeneficiariesLS || "");
+                setSelectedBeneficiaries(parsed);
+            } catch {
+                setSelectedBeneficiaries([]);
+            }
+        }
+        console.log("Selected Beneficiaries: ", selectedBeneficiaries);
+        return;
+
+
+
+
+        const workPlanTasksLS = localStorage.getItem("work_plan_tasks");
+        if (workPlanTasksLS) {
+            try {
+                const parsed = JSON.parse(workPlanTasksLS || "");
+                setWorkPlanTasksData(Array.isArray(parsed) ? parsed : []);
+            } catch {
+                setWorkPlanTasksData([]);
+            }
+        }
+
+        const workPlanTitleTo = localStorage.getItem("work_plan_title_preview");
+        setWorkPlanTitle(workPlanTitleTo ?? "")
+
+    }
+
+    // useEffect(() => {
+    //     localStorage.setItem("work_plan", JSON.stringify(workPlanData));
+    // }, [workPlanData]);
+
+    useEffect(() => {
+        debugger;
+
+        console.log("Work Plan: ", workPlanData);
+        console.log("Work Plan type: ", typeof workPlanData);
+
+        console.log("Work Plan Title: ", workPlanTitle);
+        console.log("Selected Beneficiaries: ", selectedBeneficiaries);
+
+        const stored = localStorage.getItem("work_plan");
+        if (stored) {
+            setWorkPlanData(JSON.parse(stored));
+        }
+
+        // update the workPlanData 
+        // setWorkPlanData((prevData: any) => ({
+        //     ...prevData,
+        //     deployment_area_name: deploymentAreaNameSup,
+        //     work_plan_title: workPlanTitle,
+        // }));
+
+        // // update the localStorage
+        // localStorage.setItem("work_plan", JSON.stringify({
+        //     ...workPlanData,
+        //     deployment_area_name: deploymentAreaNameSup,
+        //     work_plan_title: workPlanTitle,
+        // }));
+
+        // localStorage.setItem("work_plan_title_preview", workPlanTitle);
+
+        // // update the selectedBeneficiaries
+        // localStorage.setItem("selectedBeneficiaries", JSON.stringify(selectedBeneficiaries));
+
+        // // update the workPlanTasksData
+        // localStorage.setItem("work_plan_tasks", JSON.stringify(workPlanTasksData));
+
+    }, [selectedBeneficiaries, workPlanTasksData, workPlanTitle]);
     const nextStep = () => {
-        if (currentStep < steps.length - 1) {
+
+        if (currentStep == 0) {
+            const selectedBenes = localStorage.getItem("selectedBeneficiaries")
+            if (selectedBenes) {
+                let parsedBenes: any[] = [];
+                try {
+                    parsedBenes = JSON.parse(selectedBenes);
+                    if (!Array.isArray(parsedBenes)) {
+                        parsedBenes = [];
+                    }
+                } catch {
+                    parsedBenes = [];
+                }
+
+                totalNumberOfSelectedBeneficiaries = parsedBenes.length
+            }
+            if (totalNumberOfSelectedBeneficiaries == 0) {
+                toast({
+                    title: "Beneficiaries",
+                    description: "Please select at least one beneficiary.",
+                    variant: "destructive",
+                })
+                return;
+            }
+
+
+        }
+
+        if (currentStep == 1) {
+            debugger
+            const lsWorkPlanDetails = localStorage.getItem("work_plan")
+            let parsedWorkPlanDetails: any = {};
+            try {
+                parsedWorkPlanDetails = JSON.parse(lsWorkPlanDetails ?? "{}");
+                if (typeof parsedWorkPlanDetails !== "object") {
+                    parsedWorkPlanDetails = {};
+                }
+
+
+                if (parsedWorkPlanDetails?.office_name == "" || parsedWorkPlanDetails?.no_of_days_program_engagement == "" || parsedWorkPlanDetails?.approved_work_schedule_from == "" || parsedWorkPlanDetails?.approved_work_schedule_to == "" || parsedWorkPlanDetails?.objectives == "") {
+                    toast({
+                        title: "Work Plan Details",
+                        description: "Please fill in all required fields.",
+                        variant: "destructive",
+                    })
+                    return;
+                }
+            } catch {
+                parsedWorkPlanDetails = {};
+            }
+
+
+
+        }
+
+        if (currentStep == 2) {
+            debugger
+            const lsWorkPlanTasks = localStorage.getItem("work_plan_tasks")
+            let parsedTasks: WorkPlanTasks[] = [];
+            try {
+                parsedTasks = JSON.parse(lsWorkPlanTasks ?? "[]");
+                if (!Array.isArray(parsedTasks)) {
+                    parsedTasks = [];
+                }
+            } catch {
+                parsedTasks = [];
+            }
+            if (parsedTasks.length == 0) {
+                toast({
+                    title: "Tasks",
+                    description: "Please add at least one task.",
+                    variant: "destructive",
+                })
+                return;
+            }
+
+
+        }
+
+
+
+        if (currentStep == 3) {
+            // getWorkPlan_Tasks_Benes_data() //get everything or prepare before sending to the database
+            submitWorkPlan()
+
+
+
+
+
+            // alert("Submitting the work plan")
+        }
+
+        if (currentStep >= 0 && currentStep < steps.length - 1) {
             setCurrentStep(currentStep + 1)
         }
     }
@@ -151,9 +408,17 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
             setCurrentStep(currentStep - 1)
         }
     }
-
+    // useEffect(() => {
+    //     alert("Current Step: " + currentStep)
+    // }, [currentStep])
     return (
         <div className="mx-auto px-0 py-8 mt-0">
+
+            {/* {JSON.stringify(workPlanData)} */}
+            {/* {JSON.stringify(beneficiariesData)} */}
+            {/* {_session.id} */}
+            {/* Deployment Area Name: {workPlanDetails?.deployment_area_name} */}
+            {/* {JSON.stringify(workPlanDetails)} */}
             <Card className="w-full">
                 <CardHeader>
                     <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
@@ -191,7 +456,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
                         Step {currentStep + 1} of {steps.length}
                     </div>
                     <Button onClick={nextStep} disabled={currentStep === steps.length - 1}>
-                        {currentStep === steps.length - 1 ? "Finish" : "Next"} <ChevronRight className="ml-2 h-4 w-4" />
+                        {currentStep === steps.length - 2 ? "Submit" : "Next"} <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                 </CardFooter>
             </Card>
@@ -233,20 +498,18 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
     };
 
     const handleBeneficiarySelection = (selectedRows: Beneficiary | Beneficiary[]) => {
-        if (Array.isArray(selectedRows) && selectedRows.length > 0) {
-            const selectedRow = selectedRows[0];
-            if (selectedRow.status_name !== "Available") {
-                return; // Do not select if not available
-            }
-        } else if (selectedRows && !Array.isArray(selectedRows) && (selectedRows as Beneficiary).status_name !== "Available") {
+        debugger;
+        // Always get the selected row (whether array or single object)
+        const selectedRow = Array.isArray(selectedRows) ? selectedRows[0] : selectedRows;
+        if (!selectedRow || selectedRow["STATUS/DEPLOYED AT"] !== "Available") {
             return; // Do not select if not available
         }
         // setSelectedBeneficiaries(selectedRows)
         // const selectedRow = JSON.stringify(selectedRows)
         // alert(selectedRow)
-        const selectedBenes = localStorage.getItem("selectedBeneficiaries") //&& localStorage.removeItem("selectedBeneficiaries")
+        const selectedBenes = localStorage.getItem("selectedBeneficiaries");
+        let parsedBenes: Beneficiary[] = [];
         if (selectedBenes) {
-            let parsedBenes: Beneficiary[] = [];
             try {
                 parsedBenes = JSON.parse(selectedBenes);
                 if (!Array.isArray(parsedBenes)) {
@@ -255,17 +518,24 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
             } catch {
                 parsedBenes = [];
             }
-
-            // selectedRows is a single row (from onRowClick)
-            const selectedRow = Array.isArray(selectedRows) ? selectedRows[0] : selectedRows;
-            const existingIndex = parsedBenes.findIndex((bene: Beneficiary) => bene.id === selectedRow?.id);
-
+        }
+        // const selectedRow = Array.isArray(selectedRows) ? selectedRows[0] : selectedRows;
+        if (parsedBenes.length === 0) {
+            // If empty, insert the selected row
+            parsedBenes.push(selectedRow);
+            toast({
+                title: "Beneficiary added",
+                description: `${selectedRow["FULL NAME"]} has been added to the selected beneficiaries.`,
+                variant: "green",
+            });
+        } else {
+            const existingIndex = parsedBenes.findIndex((bene: Beneficiary) => bene.ID === selectedRow?.ID);
             if (existingIndex !== -1) {
                 // If already there, remove it
                 parsedBenes.splice(existingIndex, 1);
                 toast({
                     title: "Beneficiary removed",
-                    description: `${selectedRow?.full_name} has been removed from the selected beneficiaries.`,
+                    description: `${selectedRow["FULL NAME"]} has been removed from the selected beneficiaries.`,
                     variant: "destructive",
                 });
             } else {
@@ -273,18 +543,17 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
                 parsedBenes.push(selectedRow);
                 toast({
                     title: "Beneficiary added",
-                    description: `${selectedRow?.full_name} has been added to the selected beneficiaries.`,
+                    description: `${selectedRow["FULL NAME"]} has been added to the selected beneficiaries.`,
                     variant: "green",
                 });
             }
-
-            localStorage.setItem("selectedBeneficiaries", JSON.stringify(parsedBenes));
-            const lst = localStorage.getItem("selectedBeneficiaries")
-            if (lst) {
-                const parsedList = JSON.parse(lst);
-                totalNumberOfSelectedBeneficiaries = parsedList.length
-                setSelectedBeneficiaries(parsedList);
-            }
+        }
+        localStorage.setItem("selectedBeneficiaries", JSON.stringify(parsedBenes));
+        const lst = localStorage.getItem("selectedBeneficiaries");
+        if (lst) {
+            const parsedList = JSON.parse(lst);
+            totalNumberOfSelectedBeneficiaries = parsedList.length;
+            setSelectedBeneficiaries(parsedList);
         }
 
 
@@ -330,22 +599,22 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
 
                 {selectedBeneficiaries.map((bene) => {
                     return (
-                        <div key={bene.id} className="inline-flex items-center mr-2 mb-2">
+                        <div key={bene.ID} className="inline-flex items-center mr-2 mb-2">
                             <Badge variant="green" className="flex items-center gap-2 pr-2">
-                                {bene.full_name}
+                                {bene["FULL NAME"]}
                                 <Button
                                     size="icon"
                                     variant="ghost"
                                     className="ml-1 h-4 w-4 p-0"
                                     onClick={() => {
                                         // Remove this beneficiary from selectedBeneficiaries and localStorage
-                                        const updated = selectedBeneficiaries.filter((b: any) => b.id !== bene.id);
+                                        const updated = selectedBeneficiaries.filter((b: any) => b.ID !== bene.ID);
                                         setSelectedBeneficiaries(updated);
                                         localStorage.setItem("selectedBeneficiaries", JSON.stringify(updated));
                                         totalNumberOfSelectedBeneficiaries = updated.length
                                         toast({
                                             title: "Beneficiary removed",
-                                            description: `${bene.full_name} has been removed from the selected beneficiaries.`,
+                                            description: `${bene["FULL NAME"]} has been removed from the selected beneficiaries.`,
                                             variant: "destructive",
                                         });
 
@@ -368,7 +637,7 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
             <div className="border rounded-md p-6 bg-muted/20">
 
                 <AppTable
-                    data={listOfBeneficiaries as any[]}
+                    data={beneficiariesData as any[]}
                     columns={columnsMasterlist}
 
                     // enableRowSelection={true}
@@ -391,46 +660,116 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
     )
 }
 
+
 function WorkPlanStep({ workPlanDetails }: WizardProps) {
-    const [workPlanDetailsData, setWorkPlanDetailsData] = useState<any>(workPlanDetails || "")
-    const [workPlanTitle, setWorkPlanTitle] = useState("")
+    const [workPlanData, setWorkPlanData] = useState<any>({})
+    const [deploymentAreaName, setDeploymentAreaName] = useState("")
+    debugger
+    // alert(typeof workPlanDetails)
+    // Count the number of keys in the workPlanDetails object
+    const workPlanDetailsCount = workPlanDetails ? Object.keys(workPlanDetails).length : 0;
 
-
-    const updateWorkPlanDetails = (field: any, value: any) => {
-        setWorkPlanDetailsData((prevDetails: any) => ({
-            ...prevDetails,
-            [field]: value,
-        }))
-        localStorage.setItem("work_plan", JSON.stringify({ ...workPlanDetailsData, [field]: value }))
-
-    }
+    // alert(`Number of items in workPlanDetails: ${workPlanDetailsCount}`);
 
     useEffect(() => {
+
+        // get the deployment area name from local storage
+        const lsDAN = localStorage.getItem("deployment_area_supervisor")
+        if (lsDAN) setDeploymentAreaName(lsDAN)
+
+        // update the deployment area
+        const wp = localStorage.getItem("work_plan")
+        if (wp) {
+            const lsWP = JSON.parse(wp)
+            lsWP.deployment_area_name = lsDAN
+            localStorage.setItem("work_plan", JSON.stringify(lsWP)) // Persist the change
+        }
+
+        // if (lsDAN) {
+        //     setDeploymentAreaName(JSON.parse(lsDAN))
+        // }
+
+
         const workPlanDetails = localStorage.getItem("work_plan")
         if (workPlanDetails) {
-            let parsedWorkPlanDetails: any = {};
-            try {
-                parsedWorkPlanDetails = JSON.parse(workPlanDetails);
-                if (typeof parsedWorkPlanDetails !== "object") {
-                    parsedWorkPlanDetails = {};
-                }
-            } catch {
-                parsedWorkPlanDetails = {};
-            }
+            setWorkPlanData(JSON.parse(workPlanDetails));
+            // let parsedWorkPlanDetails: any = {};
+            // try {
+            //     parsedWorkPlanDetails = JSON.parse(workPlanDetails);
+            //     if (typeof parsedWorkPlanDetails !== "object") {
+            //         parsedWorkPlanDetails = {};
+            //     }
+            // } catch {
+            //     parsedWorkPlanDetails = {};
+            // }
 
-            setWorkPlanDetailsData(parsedWorkPlanDetails);
 
         }
+
+
     }, [])
+
+    const updateWorkPlanData = (field: string, value: any) => {
+        setWorkPlanData((prevData: any) => ({
+            ...prevData,
+            [field]: value,
+        }));
+
+        localStorage.setItem("work_plan", JSON.stringify({
+            ...workPlanData,
+            [field]: value,
+        }));
+
+        // localStorage.setItem("work_plan", JSON.stringify({
+        //     ...workPlanData,
+        //     [field]: value,
+        //     deployment_area_name: deploymentAreaNameSup,
+        //     work_plan_title: workPlanTitle,
+        // }));
+    }
+    // function WorkPlanStep({ workPlanDetails, deploymentAreaName }: WizardProps) {
+    // const [workPlanDetailsData, setWorkPlanDetailsData] = useState<any>(workPlanDetails || "")
+    // const [workPlanTitle, setWorkPlanTitle] = useState("")
+
+
+    // const updateWorkPlanDetails = (field: string, value: any) => {
+    //     // alert("Updating " + field + " to " + value + " in localStorage" + uuidv4())  
+    //     const updated = {
+    //         ...workPlanDetailsData,
+    //         [field]: value,
+    //         immediate_supervisor_id: _session.id,
+    //         id: workPlanDetailsData?.id || uuidv4(), // Only assign a new ID if one doesn't exist
+    //     };
+
+    //     setWorkPlanDetailsData(updated);
+    //     localStorage.setItem("work_plan", JSON.stringify(updated));
+    // };
+
+
     return (
         <div >
+            {/* Deployment Area name nato promise: {deploymentAreaName} */}
             {/* Data: {JSON.stringify(workPlanDetailsData)} */}
             <h2 className="text-lg font-medium">Work Plan Details</h2>
             <p className="text-muted-foreground ">Define the overall plan, timeline, and objectives for this program.</p>
-            <p className="py-3">Work Plan Title :  deployment area short name - office - approved from and to - number of days - number of bene </p>
+
             {/* deployment area short name - office - approved from and to - number of bene - number of days */}
             <div className="border rounded-md p-6 bg-muted/20">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="col-span-2">
+                        <label className="block text-sm font-medium mb-1" htmlFor="deployment_area_name">
+                            Deployment Area
+                        </label>
+                        <input
+                            id="deployment_area_name"
+                            name="deployment_area_name"
+                            type="text"
+                            className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
+                            value={deploymentAreaName}
+                            onChange={(e) => updateWorkPlanData("deployment_area_name", e.target.value)}
+                            readOnly
+                        />
+                    </div>
                     <div>
                         <label className="block text-sm font-medium mb-1" htmlFor="office_name">
                             Name of Office
@@ -441,8 +780,8 @@ function WorkPlanStep({ workPlanDetails }: WizardProps) {
                             type="text"
                             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
                             placeholder="Enter office name"
-                            value={workPlanDetailsData?.office_name || ""}
-                            onChange={(e) => updateWorkPlanDetails("office_name", e.target.value)}
+                            value={workPlanData?.office_name || ""}
+                            onChange={(e) => updateWorkPlanData("office_name", e.target.value)}
                         />
                     </div>
                     <div>
@@ -456,8 +795,8 @@ function WorkPlanStep({ workPlanDetails }: WizardProps) {
                             min={1}
                             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
                             placeholder="e.g. 30"
-                            value={workPlanDetailsData?.no_of_days_program_engagement || ""}
-                            onChange={(e) => updateWorkPlanDetails("no_of_days_program_engagement", e.target.value)}
+                            value={workPlanData?.no_of_days_program_engagement || ""}
+                            onChange={(e) => updateWorkPlanData("no_of_days_program_engagement", e.target.value)}
                         />
                     </div>
                     <div>
@@ -469,8 +808,8 @@ function WorkPlanStep({ workPlanDetails }: WizardProps) {
                             name="approved_work_schedule_from"
                             type="date"
                             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-                            value={workPlanDetailsData?.approved_work_schedule_from || ""}
-                            onChange={(e) => updateWorkPlanDetails("approved_work_schedule_from", e.target.value)}
+                            value={workPlanData?.approved_work_schedule_from || ""}
+                            onChange={(e) => updateWorkPlanData("approved_work_schedule_from", e.target.value)}
                         />
                     </div>
                     <div>
@@ -482,8 +821,8 @@ function WorkPlanStep({ workPlanDetails }: WizardProps) {
                             name="approved_work_schedule_to"
                             type="date"
                             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
-                            value={workPlanDetailsData?.approved_work_schedule_to || ""}
-                            onChange={(e) => updateWorkPlanDetails("approved_work_schedule_to", e.target.value)}
+                            value={workPlanData?.approved_work_schedule_to || ""}
+                            onChange={(e) => updateWorkPlanData("approved_work_schedule_to", e.target.value)}
                         />
                     </div>
                     <div className="col-span-full">
@@ -496,8 +835,8 @@ function WorkPlanStep({ workPlanDetails }: WizardProps) {
                             rows={4}
                             className="w-full border rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-300"
                             placeholder="Describe the general objectives of the program"
-                            value={workPlanDetailsData?.objectives || ""}
-                            onChange={(e) => updateWorkPlanDetails("objectives", e.target.value)}
+                            value={workPlanData?.objectives || ""}
+                            onChange={(e) => updateWorkPlanData("objectives", e.target.value)}
                         />
                     </div>
                 </div>
@@ -515,12 +854,15 @@ type WorkPlanTasks = {
     timeline_from: string
     timeline_to: string
     assigned_person_id: string //person_profile_id = record_id
+    assigned_person_name: string
 }
 
 
 
-
-function TasksStep({ workPlanTasks }: WizardProps) {
+// type TasksStepProps = {
+//     updateWorkPlanData: (field: string, value: any) => void;
+// }
+function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
     const [tasks, setTasks] = useState<WorkPlanTasks[]>([])
     const [newTask, setNewTask] = useState<WorkPlanTasks>({
         id: "",
@@ -531,11 +873,53 @@ function TasksStep({ workPlanTasks }: WizardProps) {
         timeline_from: "",
         timeline_to: "",
         assigned_person_id: "",
+        assigned_person_name: "",
     })
+    const [selectedBeneficiariesOptions, setSelectedBeneficiariesOptions] = useState<any[]>([])
+    useEffect(() => {
+        const lsSelectedBeneficiaries = localStorage.getItem("selectedBeneficiaries")
+        if (lsSelectedBeneficiaries) {
+            let parsedBenes: any[] = [];
+            try {
+                parsedBenes = JSON.parse(lsSelectedBeneficiaries);
+                if (!Array.isArray(parsedBenes)) {
+                    parsedBenes = [];
+                }
+            } catch {
+                parsedBenes = [];
+            }
+
+            setSelectedBeneficiariesOptions(parsedBenes);
+        }
+
+        const lsWorkPlanTasks = localStorage.getItem("work_plan_tasks")
+        if (lsWorkPlanTasks) {
+            let parsedTasks: WorkPlanTasks[] = [];
+            try {
+                parsedTasks = JSON.parse(lsWorkPlanTasks);
+                if (!Array.isArray(parsedTasks)) {
+                    parsedTasks = [];
+                }
+            } catch {
+                parsedTasks = [];
+            }
+
+            setTasks(parsedTasks);
+        }
+    }, [])
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+
+    useEffect(() => {
+        totalNumberOfTasks = tasks.length
+    }, [tasks])
     // Function to handle saving a new task
     const handleSaveTask = () => {
-        if (!newTask.category_id || !newTask.activities_tasks) {
+        if (!newTask.category_id || !newTask.activities_tasks || !newTask.expected_output || !newTask.timeline_from || !newTask.timeline_to || !newTask.assigned_person_id) {
+            toast({
+                title: "Missing Information",
+                description: "Please fill in all required fields.",
+                variant: "destructive",
+            })
             return // Basic validation
         }
 
@@ -554,7 +938,8 @@ function TasksStep({ workPlanTasks }: WizardProps) {
             return;
         }
         setTasks([...tasks, taskToSave])
-        localStorage.setItem("workPlan", JSON.stringify([...tasks, taskToSave]))
+
+        localStorage.setItem("work_plan_tasks", JSON.stringify([...tasks, taskToSave]))
         // Reset the form
         setNewTask({
             id: "",
@@ -565,6 +950,7 @@ function TasksStep({ workPlanTasks }: WizardProps) {
             timeline_from: "",
             timeline_to: "",
             assigned_person_id: "",
+            assigned_person_name: "",
         })
     }
 
@@ -592,6 +978,7 @@ function TasksStep({ workPlanTasks }: WizardProps) {
             timeline_from: "",
             timeline_to: "",
             assigned_person_id: "",
+            assigned_person_name: "",
         })
         setEditingTaskId(null)
     }
@@ -602,6 +989,12 @@ function TasksStep({ workPlanTasks }: WizardProps) {
         setTasks(deleteTask)
         localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
     }
+
+    const handleSubmitWorkPlan = async () => {
+
+    }
+
+
     const submitWorkPlan = () => {
         alert("Submitting")
     }
@@ -609,14 +1002,16 @@ function TasksStep({ workPlanTasks }: WizardProps) {
         <div >
             <h2 className="text-lg font-medium">Define Tasks</h2>
             <p className="text-muted-foreground mb-5">Break down the work plan into specific tasks and assign responsibilities.</p>
-            <div className="border rounded-md p-6 bg-muted/20 ">
+            <div className="border rounded-md p-6 bg-muted/20 overflow-x-auto">
+                {/* {JSON.stringify(newTask)} */}
+                <h3 className="text-lg font-semibold mb-2">Add New Task</h3>
 
                 <table className="w-full border-collapse border">
                     <thead>
                         <tr className="bg-muted">
-                            <th className="p-2 text-left font-medium min-w-[200px] md:w-[30%] lg:w-[10%]">Task Type</th>
-                            <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[30%] lg:w-[40%]">Tasks</th>
-                            <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[30%] lg:w-[40%]">Expected Output</th>
+                            <th className="p-2 text-left font-medium min-w-[120px] md:w-[15%] lg:w-[5%]">Task Type</th>
+                            <th className="p-2 text-left font-medium min-w-[300px] w-full md:w-[30%] lg:w-[25%]">Tasks</th>
+                            <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[20%] lg:w-[25%]">Expected Output</th>
                             <th className="p-2 text-left font-medium">Timeline (Start - End)</th>
                             <th className="p-2 text-left font-medium">Assigned Person</th>
                             <th className="p-2 text-left font-medium">Action</th>
@@ -626,7 +1021,19 @@ function TasksStep({ workPlanTasks }: WizardProps) {
                         {/* Input row */}
                         <tr className="border-b">
                             <td className="p-2">
-                                <Select value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
+                                <RadioGroup value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
+
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="General" id="general" />
+                                        <Label htmlFor="general">General</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="Specific" id="specific" />
+                                        <Label htmlFor="specific">Specific</Label>
+                                    </div>
+                                </RadioGroup>
+
+                                {/* <Select value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select type" />
                                     </SelectTrigger>
@@ -634,20 +1041,24 @@ function TasksStep({ workPlanTasks }: WizardProps) {
                                         <SelectItem value="1">General</SelectItem>
                                         <SelectItem value="2">Specific</SelectItem>
                                     </SelectContent>
-                                </Select>
+                                </Select> */}
                             </td>
                             <td className="p-2">
                                 <Textarea
                                     rows={3}
-                                    className="sm:w-[200px] md:w-full"
+                                    className="sm:w-[200px] md:w-full normal-case"
                                     placeholder="Enter task"
                                     value={newTask.activities_tasks}
-                                    onChange={(e) => setNewTask({ ...newTask, activities_tasks: e.target.value })} />
+                                    onChange={(e) => {
+
+                                        setNewTask({ ...newTask, activities_tasks: e.target.value });
+                                    }}
+                                />
                             </td>
                             <td className="p-2">
                                 <Textarea
                                     rows={3}
-                                    className="sm:w-[200px] md:w-full"
+                                    className="sm:w-[200px] md:w-full normal-case"
                                     placeholder="Expected output"
                                     value={newTask.expected_output}
                                     onChange={(e) => setNewTask({ ...newTask, expected_output: e.target.value })} />
@@ -656,15 +1067,16 @@ function TasksStep({ workPlanTasks }: WizardProps) {
                                 <div className="flex flex-col w-full gap-2 md:flex-row md:items-center md:justify-between">
                                     <Input
                                         type="date"
-                                        className="w-full md:w-[140px]" // Adjust width as needed
+                                        className="w-full md:w-[140px]"
                                         value={newTask.timeline_from}
                                         onChange={(e) => setNewTask({ ...newTask, timeline_from: e.target.value })}
                                     />
                                     <span className="text-center text-muted-foreground hidden md:inline">-</span>
                                     <Input
                                         type="date"
-                                        className="w-full md:w-[140px]" // Adjust width as needed
+                                        className="w-full md:w-[140px]"
                                         value={newTask.timeline_to}
+                                        min={newTask.timeline_from || undefined}
                                         onChange={(e) => setNewTask({ ...newTask, timeline_to: e.target.value })}
                                     />
                                 </div>
@@ -674,17 +1086,30 @@ function TasksStep({ workPlanTasks }: WizardProps) {
                             <td className="p-2">
                                 <Select
                                     value={newTask.assigned_person_id}
-                                    onValueChange={(value) => setNewTask({ ...newTask, assigned_person_id: value })}
+                                    onValueChange={(value) => {
+                                        const selectedName = selectedBeneficiariesOptions.find((bene) => bene.ID === value)["FULL NAME"] || "";
+                                        setNewTask({
+                                            ...newTask,
+                                            assigned_person_id: value,
+                                            assigned_person_name: selectedName
+                                        });
+                                    }}
+
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Assign to" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All</SelectItem>
-                                        <SelectItem value="john">John Doe</SelectItem>
-                                        <SelectItem value="jane">Jane Smith</SelectItem>
-                                        <SelectItem value="alex">Alex Johnson</SelectItem>
-                                        <SelectItem value="sarah">Sarah Williams</SelectItem>
+                                        {newTask.category_id == "General" && (
+                                            <SelectItem value="all">All</SelectItem>
+                                        )}
+
+                                        {selectedBeneficiariesOptions.map((bene) => (
+                                            <SelectItem key={bene.ID} value={bene.ID}>
+                                                {bene["FULL NAME"]}
+                                                {/* //{bene.ID} */}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </td>
@@ -708,62 +1133,515 @@ function TasksStep({ workPlanTasks }: WizardProps) {
                             </td>
                         </tr>
 
-                        {/* Task rows */}
-                        {tasks.map((task) => (
-                            <tr key={task.id} className="border-b hover:bg-muted/50">
-                                <td className="p-2">{task.category_id == "1" ? "General" : "Specific"}</td>
-                                <td className="p-2">{task.activities_tasks}</td>
-                                <td className="p-2">{task.expected_output}</td>
-                                <td className="p-2">
-                                    {task.timeline_from && task.timeline_to ? (
-                                        <span>
-                                            {task.timeline_from} - {task.timeline_to}
-                                        </span>
-                                    ) : (
-                                        <span className="text-muted-foreground">No dates set</span>
-                                    )}
-                                </td>
-                                <td className="p-2">{task.assigned_person_id}</td>
-                                <td className="p-2">
-                                    <div className="flex gap-2">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleEditTask(task.id)}
-                                            className="h-8 w-8 p-0"
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                            <span className="sr-only">Edit</span>
-                                        </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            onClick={() => handleDeleteTask(task.id)}
-                                            className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete</span>
-                                        </Button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
+
                     </tbody>
                 </table>
+                {tasks.length > 0 && (
+                    <>
+
+                        <h3 className="text-lg font-semibold mb-2 mt-3">List of Added Tasks</h3>
+                        <table className="w-full border-collapse border ">
+                            <thead>
+                                <tr className="bg-muted">
+                                    <th className="p-2 text-left font-medium min-w-[120px] md:w-[15%] lg:w-[5%]">Task Type</th>
+                                    <th className="p-2 text-left font-medium min-w-[300px] w-full md:w-[30%] lg:w-[25%]">Tasks</th>
+                                    <th className="p-2 text-left font-medium min-w-[200px] w-full md:w-[20%] lg:w-[25%]">Expected Output</th>
+                                    <th className="p-2 text-left font-medium  min-w-[300px] w-full md:w-[20%] lg:w-[25%]">Timeline (Start - End)</th>
+                                    <th className="p-2 text-left font-medium  min-w-[140px] w-full md:w-[20%] lg:w-[25%]">Assigned Person</th>
+                                    <th className="p-2 text-left font-medium">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                {/* Task rows */}
+                                {tasks.map((task) => (
+                                    <tr key={task.id} className="border-b hover:bg-muted/50">
+                                        <td className="p-2">{task.category_id == "1" ? "General" : "Specific"}</td>
+                                        <td className="p-2">{task.activities_tasks}</td>
+                                        <td className="p-2">{task.expected_output}</td>
+                                        <td className="p-2">
+                                            {task.timeline_from && task.timeline_to ? (
+                                                <span>
+                                                    {task.timeline_from} - {task.timeline_to}
+                                                </span>
+                                            ) : (
+                                                <span className="text-muted-foreground">No dates set</span>
+                                            )}
+                                        </td>
+                                        <td className="p-2">{task.assigned_person_name}</td>
+                                        <td className="p-2">
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleEditTask(task.id)}
+                                                    className="h-8 w-8 p-0"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                    <span className="sr-only">Edit</span>
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => handleDeleteTask(task.id)}
+                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                    <span className="sr-only">Delete</span>
+                                                </Button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+
+                            </tbody>
+                        </table>
+                    </>
+
+                )}
 
 
             </div>
-        </div>
+        </div >
     )
 }
 
-function PreviewStep() {
+
+function PreviewStep({ setCurrentStep }: any) {
+    const [workPlanTitleGen, setWorkPlanTitleGen] = useState("")
+    const [selectedBenes, setSelectedBenes] = useState<any[]>([])
+    const [workPlanDataForReview, setWorkPlanDataForReview] = useState<WizardProps[]>([])
+    const [officeName, setOfficeName] = useState("")
+    const [noOfDaysEngagement, setNoOfDaysEngagement] = useState("")
+    const [dateFrom, setDateFrom] = useState("")
+    const [dateTo, setDateTo] = useState("")
+    const [objectives, setObjectives] = useState("")
+    const [workPlanTasksData, setWorkPlanTasksData] = useState<any[]>([])
+    // all data that will display is from localstorage
+    // for title - deployment area short name - duration - number of days - number of bene
+    const workPlanTitle = () => {
+        debugger;
+        let title = ""
+        const lsDASN = localStorage.getItem("deployment_area_short_name_supervisor")
+        if (lsDASN) {
+            title = lsDASN.replace(/\s+/g, '-');
+
+        }
+        const lswp = localStorage.getItem("work_plan")
+        if (lswp) {
+            const parsedWP = JSON.parse(lswp)
+            setWorkPlanDataForReview(parsedWP)
+            setOfficeName(parsedWP.office_name)
+            setNoOfDaysEngagement(parsedWP.no_of_days_program_engagement)
+            setDateFrom(parsedWP.approved_work_schedule_from)
+            setDateTo(parsedWP.approved_work_schedule_to)
+            setObjectives(parsedWP.objectives)
+            title += '-' + parsedWP.office_name.slice(0, 3).toUpperCase();
+            const rawFrom = parsedWP.approved_work_schedule_from;
+            const rawTo = parsedWP.approved_work_schedule_to; // Adjusted: likely meant to use `approved_work_schedule_to`
+
+            const formatDate = (dateStr: string) => {
+                const date = new Date(dateStr);
+                const yy = String(date.getFullYear()).slice(-2);
+                const mm = String(date.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+                const dd = String(date.getDate()).padStart(2, '0');
+                return `${yy}${mm}${dd}`;
+            };
+
+            const workFrom = formatDate(rawFrom);
+            const workTo = formatDate(rawTo);
+            title += "-" + workFrom + "-" + workTo + "-" + parsedWP.no_of_days_program_engagement
+
+        }
+
+        const lsNoSB = localStorage.getItem("selectedBeneficiaries")
+        if (lsNoSB) {
+            const parsedNoSB = JSON.parse(lsNoSB)
+            title += "-" + parsedNoSB.length
+            const lsWP = localStorage.getItem("work_plan");
+            if (lsWP) {
+                try {
+                    const parsedWP = JSON.parse(lsWP);
+                    parsedWP.work_plan_title = title;
+                    localStorage.setItem("work_plan", JSON.stringify(parsedWP)); // ✅ save it back
+                } catch (err) {
+                    console.error("Error parsing work_plan from localStorage", err);
+                }
+            }
+            setSelectedBenes(parsedNoSB)
+            console.log("Selected Benes ", parsedNoSB)
+        }
+        setWorkPlanTitleGen(title)
+
+    }
+
+
+
+    // Use the props passed from parent for current data
+    // If not available, fallback to localStorage (for backward compatibility)
+    // const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<any[]>(beneficiariesData || []);
+    // const [workPlanData, setworkPlanData] = useState<any>(workPlanData || {});
+    // const [workPlanTasksData, setWorkPlanTasksData] = useState<any[]>(workPlanTasks || []);
+
+    useEffect(() => {
+        workPlanTitle()
+
+        const workPlanTasks = localStorage.getItem("work_plan_tasks")
+        if (workPlanTasks) {
+            let parsedWorkPlanTasks: any = {};
+            try {
+                parsedWorkPlanTasks = JSON.parse(workPlanTasks);
+                if (typeof parsedWorkPlanTasks !== "object") {
+                    parsedWorkPlanTasks = {};
+                }
+            } catch {
+                parsedWorkPlanTasks = {};
+            }
+
+            setWorkPlanTasksData(parsedWorkPlanTasks);
+
+        }
+        // If props are not provided, fallback to localStorage
+        // if (!beneficiariesData) {
+        //     const selectedBeneficiariesLS = localStorage.getItem("selectedBeneficiaries");
+        //     if (selectedBeneficiariesLS) {
+        //         try {
+        //             const parsed = JSON.parse(selectedBeneficiariesLS);
+        //             setSelectedBeneficiaries(Array.isArray(parsed) ? parsed : []);
+        //         } catch {
+        //             setSelectedBeneficiaries([]);
+        //         }
+        //     }
+        // }
+        // if (!workPlanData) {
+        //     const dep_name = localStorage.getItem("deployment_area_supervisor");
+        //     const dep_short_name = localStorage.getItem("deployment_area_short_name_supervisor");
+        //     const workPlanDetailsLS = localStorage.getItem("work_plan");
+        //     let parsed: any = {};
+        //     if (workPlanDetailsLS) {
+        //         try {
+        //             parsed = JSON.parse(workPlanDetailsLS);
+        //             if (typeof parsed !== "object" || parsed === null) {
+        //                 parsed = {};
+        //             }
+        //         } catch {
+        //             parsed = {};
+        //         }
+        //     }
+        //     if (dep_name) {
+        //         parsed.deployment_area_name = dep_name;
+        //         parsed.deployment_area_short_name = dep_short_name;
+        //     }
+        //     setworkPlanData(parsed);
+        // }
+        // if (!workPlanTasks) {
+        //     const workPlanTasksLS = localStorage.getItem("work_plan_tasks");
+        //     if (workPlanTasksLS) {
+        //         try {
+        //             const parsed = JSON.parse(workPlanTasksLS);
+        //             setWorkPlanTasksData(Array.isArray(parsed) ? parsed : []);
+        //         } catch {
+        //             setWorkPlanTasksData([]);
+        //         }
+        //     }
+        // }
+    }, []);
+    // }, [beneficiariesData, workPlanTasks]);
+
+    // Example: To modify the data, you should call a parent function via props (e.g., onEditBeneficiaries)
+    // Here, we just show how to trigger edit (navigate to step)
     return (
-        <div className="space-y-4">
+        <div>
+            {/* {JSON.stringify(workPlanDetailsData)} */}
             <h2 className="text-lg font-medium">Preview</h2>
-            <p className="text-muted-foreground">Review all the information before finalizing the project.</p>
+            <p className="text-muted-foreground mb-3">Review all the information before submitting the Work Plan.</p>
             <div className="border rounded-md p-6 bg-muted/20">
-                <p className="text-center text-muted-foreground">Project preview placeholder</p>
+                <p className="text-center text-2xl">Work Plan</p>
+                <div className="text-center text-sm text-muted-foreground">
+                    {workPlanTitleGen}
+                </div>
+                {/* {JSON.stringify(workPlanData)} */}
+                {/* <p className="py-3">Work Plan Title :  deployment area short name - office - approved from and to - number of days - number of bene </p> */}
+
+                <div className="text-center text-sm text-muted-foreground">
+                    {
+                        // Generate the work plan title
+                        // (() => {
+                        //     const deploymentArea = workPlanData?.deployment_area_short_name
+                        //         ? workPlanData.deployment_area_short_name.replace(/\s+/g, "-")
+                        //         : "";
+                        //     if (!deploymentArea) return "";
+                        //     const office = workPlanData?.office_name
+                        //         ? workPlanData.office_name.substring(0, 3).toUpperCase()
+                        //         : "";
+                        //     const format = (dateStr: string) => {
+                        //         if (!dateStr) return "";
+                        //         const [y, m, d] = dateStr.split("-");
+                        //         return `${m?.slice(-2) ?? ""}${d?.slice(-2) ?? ""}${y?.slice(-2) ?? ""}`;
+                        //     };
+                        //     const schedule =
+                        //         workPlanData.approved_work_schedule_from
+                        //             ? `${format(workPlanData.approved_work_schedule_from)}${workPlanData.approved_work_schedule_to
+                        //                 ? format(workPlanData.approved_work_schedule_to)
+                        //                 : ""
+                        //             }`
+                        //             : "";
+                        //     const days = workPlanData.no_of_days_program_engagement || "";
+                        //     const beneCount = selectedBeneficiaries.length;
+
+                        //     // Compose the title
+                        //     const title = `${deploymentArea}-${office}-${schedule}-${days}-${beneCount}`;
+
+                        //     // Save to localStorage
+                        //     if (typeof window !== "undefined") {
+                        //         localStorage.setItem("work_plan_title_preview", title);
+                        //     }
+                        //     setWorkPlanTitle(title); // Update the global variable if needed
+                        //     updateWorkPlanData("work_plan_title", title)
+                        //     return title;
+                        // })()
+                    }
+
+                </div>
+                {/* <div className="text-center text-sm text-muted-foreground">
+                    Work Plan ID  {workPlanData.id}
+                </div> */}
+
+                {/* Preview dynamic data */}
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-2 flex items-center ">
+                        Selected Beneficiaries
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        // className="bg-red-200 ml-0"
+                                        onClick={() => {
+                                            if (setCurrentStep) setCurrentStep(0); // Go back 3 steps, not below 0
+                                            // if (setCurrentStep) setCurrentStep((prev: number) => Math.max(prev - 3, 0)); // Go back 3 steps, not below 0
+                                        }}
+
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Edit the list of selected beneficiaries
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+
+                    </h3>
+                    {/* {JSON.stringify(selectedBenes)} */}
+                    {selectedBenes.map((bene) => (
+                        <p key={bene.ID}>
+                            {bene["FULL NAME"]}
+                            {bene.COURSE ? ` – ${bene.COURSE}` : ""}
+                            {bene["SCHOOL NAME"] ? `, ${bene["SCHOOL NAME"]}` : ""}
+                        </p >
+                    ))}
+                    {/* <ul className="list-disc list-inside space-y-1">
+                        {selectedBenes.map((bene: any) => (
+                            <li key={bene.id}>
+                                ✅ {bene["FULL NAME"]}
+                                {bene.COURSE ? ` – ${bene.COURSE}` : ""}
+                                {bene["SCHOOL NAME"] ? `, ${bene["SCHOOL NAME"]}` : ""}
+                            </li>
+                        ))}
+                    </ul> */}
+
+
+
+                </div>
+
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-2">Work Plan Details
+
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        // className="bg-red-200 ml-0"
+                                        onClick={() => {
+                                            if (setCurrentStep) setCurrentStep(1);
+                                            // if (setCurrentStep) setCurrentStep((prev: number) => Math.max(prev - 2, 1)); // Go back 3 steps, not below 1
+
+                                        }}
+
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Edit the Work Plan details
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </h3>
+                    <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                        <div>
+                            <span className="font-medium">Office Name:</span>{" "}
+                            {officeName || <span className="text-muted-foreground">N/A</span>}
+                        </div>
+                        <div>
+                            <span className="font-medium">Days Engaged:</span>{" "}
+                            {noOfDaysEngagement || <span className="text-muted-foreground">N/A</span>}
+                        </div>
+                        <div>
+                            <span className="font-medium">Schedule:</span>{" "}
+                            {dateFrom && dateTo
+                                ? `${dateFrom} – ${dateTo}`
+                                : <span className="text-muted-foreground">N/A</span>}
+                        </div>
+                        <div>
+                            <span className="font-medium">Objectives:</span>{" "}
+                            {objectives || <span className="text-muted-foreground">N/A</span>}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mb-6">
+                    <h3 className="text-lg font-semibold mb-2">Tasks
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        // className="bg-red-200 ml-0"
+                                        onClick={() => {
+                                            if (setCurrentStep) setCurrentStep(2); // Go to step 2 (Tasks)
+                                            // if (setCurrentStep) setCurrentStep((prev: number) => Math.max(prev - 1, 2)); // Go back 3 steps, not below 2
+                                        }}
+
+                                    >
+                                        <Edit className="h-4 w-4" />
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    Edit the Tasks
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    </h3>
+                    <div className="overflow-x-auto">
+                        {/* {JSON.stringify(workPlanTasksData)} */}
+                        <Table className="border border-gray-300">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Category</TableHead>
+                                    <TableHead>Task</TableHead>
+                                    <TableHead>Output</TableHead>
+                                    <TableHead>Start</TableHead>
+                                    <TableHead>End</TableHead>
+                                    <TableHead>Assigned To</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {Array.isArray(workPlanTasksData) && workPlanTasksData.length > 0 ? (
+                                    workPlanTasksData.map((task: any, idx: number) => (
+                                        <TableRow key={task.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                            <TableCell>{task.category_id || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{task.activities_tasks || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{task.expected_output || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{task.timeline_from || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{task.timeline_to || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell>{task.assigned_person_name || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                            No tasks added.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function SubmittedStep() {
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<any[]>([])
+    const [workPlanDetailsData, setWorkPlanDetailsData] = useState<any>({})
+    const [workPlanTasksData, setWorkPlanTasksData] = useState<any[]>([])
+    useEffect(() => {
+        const selectedBeneficiaries = localStorage.getItem("selectedBeneficiaries")
+        if (selectedBeneficiaries) {
+            let parsedSelectedBeneficiaries: any = {};
+            try {
+                parsedSelectedBeneficiaries = JSON.parse(selectedBeneficiaries);
+                if (typeof parsedSelectedBeneficiaries !== "object") {
+                    parsedSelectedBeneficiaries = {};
+                }
+            } catch {
+                parsedSelectedBeneficiaries = {};
+            }
+
+            setSelectedBeneficiaries(parsedSelectedBeneficiaries);
+
+
+        }
+
+        const workPlanDetails = localStorage.getItem("work_plan")
+        if (workPlanDetails) {
+            let parsedWorkPlanDetails: any = {};
+            try {
+                parsedWorkPlanDetails = JSON.parse(workPlanDetails);
+                if (typeof parsedWorkPlanDetails !== "object") {
+                    parsedWorkPlanDetails = {};
+                }
+            } catch {
+                parsedWorkPlanDetails = {};
+            }
+
+            setWorkPlanDetailsData(parsedWorkPlanDetails);
+
+        }
+
+        const workPlanTasks = localStorage.getItem("work_plan_tasks")
+        if (workPlanTasks) {
+            let parsedWorkPlanTasks: any = {};
+            try {
+                parsedWorkPlanTasks = JSON.parse(workPlanTasks);
+                if (typeof parsedWorkPlanTasks !== "object") {
+                    parsedWorkPlanTasks = {};
+                }
+            } catch {
+                parsedWorkPlanTasks = {};
+            }
+
+            setWorkPlanTasksData(parsedWorkPlanTasks);
+
+        }
+
+    }, [])
+
+    return (
+        <div>
+            {/* <h2 className="text-lg font-medium">Preview</h2>
+            <p className="text-muted-foreground mb-3">Review all the information before submitting the Work Plan.</p> */}
+            <div className="border rounded-md p-6 bg-muted/20">
+                {/* <p className="text-center text-2xl">Work Plan</p> */}
+                <div className="flex flex-col items-center justify-center py-10">
+                    <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
+                    <h3 className="text-2xl font-bold mb-2 text-green-700">Submitted Successfully!</h3>
+                    <p className="text-muted-foreground text-center max-w-md">
+                        Your work plan has been submitted. You will be notified once it is reviewed. Thank you!
+                    </p>
+                </div>
             </div>
         </div>
     )

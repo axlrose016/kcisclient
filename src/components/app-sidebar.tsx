@@ -235,6 +235,11 @@ const data = {
           title:"Item Distribution",
           url:"/hr-development/hiring-and-deployment/item-distribution",
           permission:["Can Add", "Can View", "Can Delete"],
+        },
+        {
+          title:"Applicants",
+          url:"/hr-development/hiring-and-deployment/applicants",
+          permission:["Can View", "Can Delete"],
         }
       ],
       modules: ["Human Resource and Development"],

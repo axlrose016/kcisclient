@@ -296,7 +296,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                         onClick={() => handleResync(tag)}
                                                     >
                                                         <RefreshCw
-                                                            className={`w-4 h-4 ${summary.state === 'in progress' ? 'animate-spin' : ''
+                                                            className={`w-4 h-4 ${task.state === 'in progress' ? 'animate-spin' : ''
                                                                 }`}
                                                         />
                                                     </Button>

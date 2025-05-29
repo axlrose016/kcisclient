@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibComponent, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibLevel, ILibOffice, ILibPAP, ILibPosition } from '@/components/interfaces/library-interface';
+import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibComponent, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibHiringProcedure, ILibLevel, ILibOffice, ILibPAP, ILibPosition } from '@/components/interfaces/library-interface';
 
 const commonFields = 'user_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks';
 
@@ -16,6 +16,7 @@ class LibDatabase extends Dexie {
     lib_component!: Table<ILibComponent, string>;
     lib_office!: Table<ILibOffice, string>;
     lib_division!: Table<ILibDivision, string>;
+    lib_hiring_procedure!: Table<ILibHiringProcedure, string>; // Assuming this is a placeholder for hiring procedures
 
     constructor() {
         super('libdb');
@@ -32,6 +33,7 @@ class LibDatabase extends Dexie {
             lib_component: `++id, component_description, ${commonFields}`,
             lib_office: `++id, office_description, ${commonFields}`,
             lib_division: `++id, division_description, ${commonFields}`,
+            lib_hiring_procedure: `++id, hiring_procedure_description, ${commonFields}`,
         })
     }
 }

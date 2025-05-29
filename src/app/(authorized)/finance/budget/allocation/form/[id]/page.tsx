@@ -23,6 +23,7 @@ import { IAllocation, IAllocationUacs } from "@/db/offline/Dexie/schema/finance-
 import { AppTable } from "@/components/app-table"
 import { FinanceService } from "../../../../FinanceService"
 import { formatPHP } from "@/components/utils/utils"
+import { useAlert } from "@/components/general/alert-modal"
 
 const formSchema = z.object({
   id: z.string(),
@@ -38,6 +39,8 @@ type FormValues = z.infer<typeof formSchema>
 const financeService = new FinanceService();
 
 export default function FormAllocation() {
+const { showError, showWarning, showSuccess } = useAlert()
+
   const router = useRouter();
   const params = useParams() || undefined; 
   const searchParams = useSearchParams();
@@ -113,10 +116,14 @@ export default function FormAllocation() {
   fetchRecord();
   }, [id,form]);
 
-  function onSubmit(data: FormValues, redirect?: boolean) {
-    // Perform your form submission logic here
-    console.log("Form submitted:", data)
-    // Here you would typically send the data to your API
+  async function onSubmit(data: FormValues, redirect?: boolean) {
+    // debugger;
+    // const hasExist = await financeService.checkDuplicateAllocation(data);
+    // if(hasExist){
+    //     showError("Save Failed", "Unable to save allocation. Please check your data and try again.")
+    //     return;
+    // }
+
     financeService.saveOfflineAllocation(data).then((response:any) => {
       if (response) {
         if(redirect){

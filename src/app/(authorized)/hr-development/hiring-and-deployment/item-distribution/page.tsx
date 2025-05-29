@@ -48,41 +48,68 @@ function ItemDistribution() {
     };
 
     const columnsMasterlist = [
+      // {
+      //   id: 'shortcut', 
+      //   header: 'Shortcut',
+      //   accessorKey: 'shortcuts',
+      //   filterType: null,
+      //   sortable: false,
+      //   align: "center",
+      //   cell: (value: any) => 
+      //     <TooltipProvider>
+      //       <Tooltip>
+      //         <TooltipTrigger asChild>
+      //           <Button
+      //             variant="ghost"
+      //             size="icon"
+      //             className="h-8 w-8"
+      //             onClick={(e) => {
+      //               e.stopPropagation();
+      //             }}
+      //             //disabled={isRefreshing}
+      //           >
+      //             <FolderInput className="h-4 w-4" />
+      //           </Button>
+      //         </TooltipTrigger>
+      //         <TooltipContent>Distribute Item</TooltipContent>
+      //       </Tooltip>
+      //     </TooltipProvider>
+      // },
       {
-        id: 'shortcut', 
-        header: 'Shortcut',
-        accessorKey: 'shortcuts',
-        filterType: null,
-        sortable: false,
-        align: "center",
-        cell: (value: any) => 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  //disabled={isRefreshing}
-                >
-                  <FolderInput className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Distribute Item</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+        id: 'item code',
+        header: 'Item Code',
+        accessorKey: 'item_code',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
       },
       {
-          id: 'item code',
-          header: 'Item Code',
-          accessorKey: 'item_code',
-          filterType: 'text',
-          sortable: true,
-          align: "left",
-          cell: null,
+        id: 'level id',
+        header: 'Level',
+        accessorKey: 'level',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+      },
+      {
+        id: 'office id',
+        header: 'Office',
+        accessorKey: 'office',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+      },
+      {
+        id: 'division id',
+        header: 'Division/Section/Unit',
+        accessorKey: 'division',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
       },
     ];
 

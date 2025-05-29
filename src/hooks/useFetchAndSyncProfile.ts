@@ -32,7 +32,7 @@ export function useFetchAndSyncProfile(userId: string): UseProfileData {
                 debugger;
                 setLoading(true);
                 setError(null);
-                const urlFetchData = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + userId;
+                const urlFetchData = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + userId + "/";
                 // const urlFetchData = "http://10.10.10.162:9000/api/person_profile/view/" + userId;
                 const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
                 // alert("Token: " + onlinePayload.token)

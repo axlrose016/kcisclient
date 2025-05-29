@@ -1,12 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { addDays, format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
+import { addDays, format } from "date-fns" 
 import { DateRange } from "react-day-picker"
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils" 
 import { Calendar } from "@/components/ui/calendar"
 import {
     Popover,
@@ -19,7 +17,7 @@ export function DatePickerWithRange({
     value,
     onChange,
 }: {
-    className?: React.HTMLAttributes<HTMLDivElement>
+    className?: string
     value: DateRange | undefined
     onChange: (range: DateRange | undefined) => void
 }) {
@@ -32,7 +30,7 @@ export function DatePickerWithRange({
                         <span
                             id="date"
                             className={cn(
-                                "cursor-pointer border border-solid border-gray-300 px-2 py-1 rounded-md",
+                                "cursor-pointer py-1 rounded-md",
                                 !value && "text-muted-foreground"
                             )}
                         >

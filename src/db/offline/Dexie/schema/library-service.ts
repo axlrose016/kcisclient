@@ -1743,6 +1743,9 @@ export const seedLibStatuses: ILibStatuses[] = [
     { id: 18, status_name: "Stopped", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 19, status_name: "Transferred", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
     { id: 20, status_name: "Not Eligible", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 21, status_name: "To be Hired", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 22, status_name: "Regret", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+
 ];
 
 export const seedLibSchoolPrograms: ILibSchoolPrograms[] = [

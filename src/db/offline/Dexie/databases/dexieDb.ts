@@ -1,3 +1,4 @@
+import { ICFWPayroll, ICFWPayrollBene, ICFWPayrollLog, ISubmissionLog } from '@/components/interfaces/cfw-payroll';
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from '@/components/interfaces/iuser';
 // ICity, 
@@ -56,6 +57,9 @@ class MyDatabase extends Dexie {
     accomplishment_actual_task!:Table<IAccomplishmentActualTask, string>;
     report_designer!:Table<IReportDesigner, string>;
     report_column!:Table<IReportColumn, string>;
+    cfwpayroll!:Table<ICFWPayroll, string>;
+    cfwpayroll_bene!:Table<ICFWPayrollBene, string>;
+    submission_log!:Table<ISubmissionLog, string>;
     
 
 
@@ -117,10 +121,13 @@ class MyDatabase extends Dexie {
             accomplishment_actual_task: `id, accomplishment_report_id,task,category_id, accomplishment, mov, status_id, ${commonFields}`,
             report_designer: `id, name, columns, ${commonFields}`,
             report_column: `id, report_designer_id, label, value, type, description, visible, options,${commonFields}`,
-        });
-    }
+            cfwpayroll: `id, period_cover_from, period_cover_to, status, status_date,mov_path,${commonFields}`,
+            cfwpayroll_bene: `id ,bene_id,daily_time_record_id ,daily_time_record_reviewed_date,accomplishment_report_id ,accomplishment_report_reviewed_date ,period_cover_from, period_cover_to, operation_status,operation_reviewed_by, operation_status_date, odnpm_status, odnpm_reviewed_by, odnpm_status_date, finance_status,finance_reviewed_by ,finance_status_date,date_released,date_received,${commonFields}`,
+            submission_log: `id, record_id ,bene_id ,module ,comment,status , status_date,${commonFields}`,
+        }); 
+    } 
 }
-
+ 
 
 // Transaction Modes in Dexie
 // "rw" (Read/Write): Allows both reading and writing.

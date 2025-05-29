@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -79,6 +79,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from "react-hook-form";
 import { AppTableDialogForm } from './app-table-dialog';
 interface DataTableProps {
+  iconEdit?: ReactNode;
+  iconDelete?: ReactNode;
   data: any[];
   columns?: any[];
   onEditRecord?: (row: any) => void;
@@ -99,7 +101,7 @@ interface DataTableProps {
   simpleView?: boolean;
   initialFilters?: Filter[];
   onFilterChange?: (filters: Filter[]) => void;
-  
+
 }
 
 interface Filter {
@@ -129,6 +131,8 @@ export function AppTable({
   onRowClick,
   onAddNewRecordNavigate,
   onClickAddNew,
+  iconEdit,
+  iconDelete,
   onClickEdit,
   onAddNewRecord,
   onRefresh,
@@ -482,7 +486,7 @@ export function AppTable({
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8"
+                      className="h-10 w-10"
                       onClick={(e) => {
                         e.stopPropagation();
                         if (onClickEdit) {
@@ -494,10 +498,10 @@ export function AppTable({
                       }}
                       disabled={isRefreshing}
                     >
-                      <Edit className="h-4 w-4" />
+                      {iconEdit ?? <Edit className="h-10 w-10" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Edit</TooltipContent>
+                  <TooltipContent>{iconEdit ? "" : "Edit"}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -507,7 +511,7 @@ export function AppTable({
                   <TooltipTrigger asChild>
                     <Button
                       variant="ghost"
-                      size="icon"
+                      size="lg"
                       className="h-8 w-8"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -515,10 +519,10 @@ export function AppTable({
                       }}
                       disabled={isRefreshing}
                     >
-                      <Trash className="h-4 w-4" />
+                      {iconDelete ?? <Trash className="h-4 w-4" />}
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Delete</TooltipContent>
+                  <TooltipContent>{iconDelete ? "" : "Delete"}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -747,7 +751,7 @@ export function AppTable({
                             setShowAddDialog(true);
                           }
 
-                          if(onAddNewRecordNavigate){
+                          if (onAddNewRecordNavigate) {
                             onAddNewRecordNavigate({});
                           }
                         }}
@@ -767,35 +771,35 @@ export function AppTable({
 
           {activeFilters.length > 0 && (
             <div className='flex gap-2 justify-end'>
-              <div className="flex gap-2 items-center flex-1"> 
-              {activeFilters.map((filter, index) => (
-                <Badge
-                  key={index}
-                  variant="secondary"
-                  className={cn(
-                    "cursor-pointer capitalize",
-                    isRefreshing && "opacity-50"
-                  )}
-                  onClick={() => !isRefreshing && handleEditFilter(filter)}
-                >
-                  {filter.column}: {filter.value}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-4 w-4 ml-2"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      !isRefreshing && handleRemoveFilter(filter);
-                    }}
-                    disabled={isRefreshing}
+              <div className="flex gap-2 items-center flex-1">
+                {activeFilters.map((filter, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className={cn(
+                      "cursor-pointer capitalize",
+                      isRefreshing && "opacity-50"
+                    )}
+                    onClick={() => !isRefreshing && handleEditFilter(filter)}
                   >
-                    <X className="h-3 w-3" />
-                  </Button>
-                </Badge>
-              ))}
-              
-            </div>
-             <Badge  variant="green">Found {table.getRowCount()} Record{table.getRowCount() > 1 ? "s":""}</Badge>
+                    {filter.column}: {filter.value}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-4 w-4 ml-2"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        !isRefreshing && handleRemoveFilter(filter);
+                      }}
+                      disabled={isRefreshing}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </Badge>
+                ))}
+
+              </div>
+              <Badge variant="green">Found {table.getRowCount()} Record{table.getRowCount() > 1 ? "s" : ""}</Badge>
             </div>
           )}
         </>
@@ -812,7 +816,7 @@ export function AppTable({
                       <TableHead
                         key={header.id}
                         className={cn(
-                          "bg-primary text-primary-foreground h-12",
+                          `${simpleView ? 'bg-muted/50 font-bold text-primary' : 'bg-primary text-primary-foreground'}  h-12`,
                           "border-[0.5px] border-primary-foreground/10",
                           "@media (max-width: 768px) {",
                           header.id === headerGroup.headers[0].id || header.id === 'actions' ? 'sticky z-10' : '',

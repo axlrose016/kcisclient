@@ -52,35 +52,35 @@ function ItemCreated() {
     };
 
     const columnsMasterlist = [
-      {
-        id: 'record_id', 
-        header: 'Shortcut',
-        accessorKey: 'id',
-        filterType: null,
-        sortable: false,
-        align: "center",
-        cell: (value: any) => 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCreateDistribute(value);
-                  }}
-                  //disabled={isRefreshing}
-                >
-                  <FolderInput className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>Create Item Distribution</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+      // {
+      //   id: 'record_id', 
+      //   header: 'Shortcut',
+      //   accessorKey: 'id',
+      //   filterType: null,
+      //   sortable: false,
+      //   align: "center",
+      //   cell: (value: any) => 
+      //     <TooltipProvider>
+      //       <Tooltip>
+      //         <TooltipTrigger asChild>
+      //           <Button
+      //             variant="ghost"
+      //             size="icon"
+      //             className="h-8 w-8"
+      //             onClick={(e) => {
+      //               e.stopPropagation();
+      //               handleCreateDistribute(value);
+      //             }}
+      //             //disabled={isRefreshing}
+      //           >
+      //             <FolderInput className="h-4 w-4" />
+      //           </Button>
+      //         </TooltipTrigger>
+      //         <TooltipContent>Create Item Distribution</TooltipContent>
+      //       </Tooltip>
+      //     </TooltipProvider>
           
-      },
+      // },
       {
           id: 'item code',
           header: 'Item Code',

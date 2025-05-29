@@ -91,4 +91,5 @@ export const getOfflineLibPosition = getOfflineLibOptions('lib_position','positi
 export const getOfflineLibEmploymentStatus = getOfflineLibOptions('lib_employment_status','employment_status_description');
 export const getOfflineLibOffice = getOfflineLibOptions('lib_office','office_description');
 export const getOfflineLibDivision = getOfflineLibOptions('lib_division','division_description');
+export const getOfflineLibHiringProcedures = getOfflineLibOptions('lib_hiring_procedure','hiring_procedure_description');
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

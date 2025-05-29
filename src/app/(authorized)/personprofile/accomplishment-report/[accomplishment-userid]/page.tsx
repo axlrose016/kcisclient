@@ -3,11 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useParams, useRouter } from 'next/navigation';
-import { CalendarIcon, Download, Edit, Plus, Printer, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
 import { IAccomplishmentReport, IPersonProfile } from '@/components/interfaces/personprofile';
@@ -16,7 +11,7 @@ import { SessionPayload } from '@/types/globals';
 import { getSession } from '@/lib/sessions-client';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
-
+import Image from 'next/image';
 
 interface IData {
     id: string;
@@ -50,6 +45,20 @@ const columns = [
             }
             return "-";
         },
+    },
+    {
+        id: 'status',
+        header: 'status',
+        accessorKey: 'status_id',
+        filterType: 'text',
+        sortable: true,
+    },
+    {
+        id: 'remarks',
+        header: 'Remarks',
+        accessorKey: 'remarks',
+        filterType: 'text',
+        sortable: true,
     },
 ]
 
@@ -121,7 +130,7 @@ export default function AccomplishmentReportUsersList() {
                 <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
                     {/* Logo Section */}
                     <div className="flex-shrink-0">
-                        <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
+                        <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
                     </div>
 
                     {/* Title Section */}

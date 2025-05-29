@@ -1,3 +1,4 @@
+import { useAlert } from "@/components/general/alert-modal";
 import { financeDb } from "@/db/offline/Dexie/databases/financeDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { IAllocation, IAllocationUacs, IMonthlyObligationPlan } from "@/db/offline/Dexie/schema/finance-service";
@@ -8,6 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 const _session = await getSession() as SessionPayload;
 
 export class FinanceService {
+    
     async getOfflineAllocationById(id: any): Promise<IAllocation | undefined> {
       try {
         const result = await financeDb.transaction('r', [financeDb.allocation], async () => {
@@ -180,6 +182,20 @@ export class FinanceService {
         }catch(error){
             console.error('Transaction failed: ', error);
             return undefined;
+        }
+    }
+    async checkDuplicateAllocation(allocation:any):Promise<boolean | false>{
+        const hasExist = await financeDb.allocation
+            .where("date_allocation")
+            .equals(allocation.date_allocation)
+            .and(item => item.budget_year_id === allocation.budget_year_id && item.region_code === allocation.region_code && item.pap_id === allocation.pap_id 
+                && item.appropriation_source_id === allocation.appropriation_source_id && item.appropriation_type_id === allocation.appropriation_type_id
+            ).count();
+        
+        if(hasExist > 0){
+            return true;
+        }else{
+            return false;
         }
     }
     async saveOfflineAllocationUacs(uacs:any):Promise<any | undefined>{

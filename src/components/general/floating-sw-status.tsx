@@ -135,7 +135,7 @@ export default function FloatingPWAStatusAvatar() {
         </TooltipProvider>
 
         {/* Expanded status panel (optional) */}
-        {isOpen && (
+        {/* {isOpen && (
           <div className="absolute bottom-14 right-0 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-3 w-64 border">
             <div className="text-sm font-medium mb-2">PWA Offline Status</div>
 
@@ -167,7 +167,7 @@ export default function FloatingPWAStatusAvatar() {
               )}
             </div>
           </div>
-        )}
+        )} */}
       </div>
     </SyncSummaryDrawer>
   )

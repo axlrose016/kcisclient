@@ -5,6 +5,7 @@ INSERT OR REPLACE INTO roles (id, role_description, created_by) VALUES
 ("17eb1f81-83d3-4642-843d-24ba3e40f45c", "Finance", "00000000-0000-0000-0000-000000000000"),
 ("1c99504f-ad53-4151-9a88-52e0cffdbb6d", "Engineer", "00000000-0000-0000-0000-000000000000"),
 ("37544f59-f3ba-45df-ae0b-c8fa4e4ce446", "CFW", "00000000-0000-0000-0000-000000000000");
+("7e5d9d82-101a-4c5c-ab4e-86bd2169c348", "ODNPM", "00000000-0000-0000-0000-000000000000");
 `
 
 export const seedPermissions = `
@@ -12,6 +13,8 @@ INSERT OR REPLACE INTO permissions (id, permission_description, created_by) VALU
 ("f38252b5-cc46-4cc1-8353-a49a78708739", "Can Add", "00000000-0000-0000-0000-000000000000"),
 ("98747f00-76e5-497d-beac-ba4255db066f", "Can Update", "00000000-0000-0000-0000-000000000000"),
 ("5568ea7d-6f12-4ce9-b1e9-adb256e5b057", "Can Delete", "00000000-0000-0000-0000-000000000000");
+("5568ea7d-6f12-4ce9-b1e9-adb256e5b057", "Can Delete", "00000000-0000-0000-0000-000000000000");
+("7e5d9d82-101a-4c5c-ab4e-86bd2169c348", "Can Delete", "00000000-0000-0000-0000-000000000000");
 `
 
 export const seedModules = `
