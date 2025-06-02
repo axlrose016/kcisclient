@@ -362,6 +362,7 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
         }
     }
     const handleSectorRadioGroupChange = (e: any) => {
+        updateSectorData([...e]);
         console.log("Sector responses❤️:", e);
         // debugger;
         localStorage.setItem("person_sectors", JSON.stringify(e));
