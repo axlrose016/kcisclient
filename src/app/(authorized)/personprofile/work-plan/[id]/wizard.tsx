@@ -85,6 +85,18 @@ type WizardProps = {
     deploymentAreaName?: string
 
 }
+
+type WorkPlanTasksCollected = {
+    id: string;
+    work_plan_id: string;
+    category_id: string; // "General" or "Specific"
+    activities_tasks: string;
+    expected_output: string;
+    timeline_from: string;
+    timeline_to: string;
+    assigned_person_id: string;
+    assigned_person_name: string;
+};
 export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
 
@@ -102,10 +114,18 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         return {};
     });
 
-    const [workPlanTasksData, setWorkPlanTasksData] = useState<any[]>(workPlanTasks || []);
+    const [workPlanTasksData, setWorkPlanTasksData] = useState<WorkPlanTasksCollected[]>([]);
 
 
-
+    // {
+    //     "DB ID": 295,
+    //     "ID": "01f98bb8-8d91-4416-8e6d-3a35decf39ab",
+    //     "STATUS/DEPLOYED AT": "Available",
+    //     "FULL NAME": "FN33 MN3 LN33",
+    //     "SCHOOL NAME": "QUEZON CITY UNIVERSITY",
+    //     "DEPLOYMENT AREA": "Department of Social Welfare and Development - National Program Management Office",
+    //     "COURSE": "BACHELOR OF SCIENCE IN ACCOUNTANCY"
+    // }
 
 
     const steps = [
@@ -143,10 +163,105 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
 
 
 
-    // to save is work plan, tasks, selected beneficiaries
 
 
     const submitWorkPlan = async () => {
+        let workplanid = uuidv4()
+        const email = "dsentico@dswd.gov.ph";
+        const password = "Dswd@123";
+        const onlinePayload = await LoginService.onlineLogin(email, password);
+        const token = onlinePayload.token;
+
+        const workPlanTasksLS = localStorage.getItem("work_plan_tasks");
+        if (workPlanTasksLS) {
+            try {
+                const parsed = JSON.parse(workPlanTasksLS);
+                const collectedTasks: WorkPlanTasksCollected[] = Array.isArray(parsed)
+                    ? parsed.map((task: any) => ({
+                        id: task.id || "",
+                        work_plan_id: workplanid, // task.work_plan_id || "",
+                        category_id: task.category_id || "",
+                        activities_tasks: task.activities_tasks || "",
+                        expected_output: task.expected_output || "",
+                        timeline_from: task.timeline_from || "",
+                        timeline_to: task.timeline_to || "",
+                        assigned_person_id: task.assigned_person_id || "",
+                        assigned_person_name: task.assigned_person_name || "",
+                    }))
+                    : [];
+
+
+// collectedTasks.map(())
+//                 const workPlanCreate = await fetch(
+//                     `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`,
+//                     {
+//                         method: "POST",
+//                         headers: {
+//                             Authorization: `bearer ${token}`,
+//                             "Content-Type": "application/json",
+//                         },
+//                         body: JSON.stringify([{
+//                             "id": uuidv4(),
+//                             "created_date": new Date().toISOString(),
+//                             "created_by": _session.userData?.email,
+//                             "last_modified_date": null,
+//                             "last_modified_by": null,
+//                             "deleted_date": null,
+//                             "deleted_by": null,
+//                             "remarks": "Work Plan Task Created",
+//                             "is_deleted": false,
+//                             "work_plan_id": workplanid,
+//                             "work_plan_category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+//                             "assigned_person_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+//                             "activities_tasks": "string",
+//                             "expected_output": "string",
+//                             "timeline_from": "2025-06-02",
+//                             "timeline_to": "2025-06-02",
+//                             "status_id": 0,
+//                             "push_status_id": 0,
+//                             "push_date": "2025-06-02T01:03:14.590Z"
+//                         }])
+//                     }
+//                 )
+                // Work Plan tasks
+                //{
+                //   "id": "string",
+                //   "created_date": "2025-06-02T01:03:14.590Z",
+                //   "created_by": "string",
+                //   "last_modified_date": "2025-06-02T01:03:14.590Z",
+                //   "last_modified_by": "string",
+                //   "deleted_date": "2025-06-02T01:03:14.590Z",
+                //   "deleted_by": "string",
+                //   "remarks": "string",
+                //   "is_deleted": true,
+                //   "work_plan_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                //   "work_plan_category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                //   "assigned_person_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                //   "activities_tasks": "string",
+                //   "expected_output": "string",
+                //   "timeline_from": "2025-06-02",
+                //   "timeline_to": "2025-06-02",
+                //   "status_id": 0,
+                //   "push_status_id": 0,
+                //   "push_date": "2025-06-02T01:03:14.590Z"
+                // }
+
+
+
+
+                setWorkPlanTasksData(collectedTasks);
+                console.log("WPTasks", collectedTasks)
+            } catch {
+                setWorkPlanTasksData([]);
+            }
+        }
+
+
+
+
+
+        console.log("Work Plan Tasks", workPlanTasksData)
+        return
         // work_plan/create/
         // alert("WOrk Plan Title: " + workPlanData.work_plan_title)
 
@@ -154,17 +269,24 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         // alert("Submitting the work plan" + workPlanData?.id)
         const lsWP = localStorage.getItem("work_plan")
         if (lsWP) {
-            const parsedWP = JSON.parse(lsWP)
-            setWorkPlanData(parsedWP)
+            // const parsedWP = JSON.parse(lsWP)
+            // setWorkPlanData(parsedWP)
         }
 
-        debugger
-        const email = "dsentico@dswd.gov.ph";
-        const password = "Dswd@123";
 
-        const onlinePayload = await LoginService.onlineLogin(email, password);
-        const token = onlinePayload.token;
-        let workplanid = uuidv4()
+        if (!workPlanData.work_plan_title) {
+            toast({
+                title: "Saving",
+                description: "Work Plan Title is missing",
+                variant: "destructive"
+            })
+            return
+        }
+
+
+
+
+
         const workPlanCreate = await fetch(
             `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`,
             {
@@ -192,13 +314,19 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         );
 
         if (!workPlanCreate.ok) {
+            const errormsg = await workPlanCreate.json();
             const errorBody = await workPlanCreate.text(); // safer than .json() in case of non-JSON error
             console.error("❌ Failed to create work plan:", errorBody);
-            alert("Work Plan creation failed.");
+
+            // alert("Work Plan creation failed because ", errormsg.te);
             return;
         }
         const result = await workPlanCreate.json();
         console.error("❌ Failed to create work plan:", result);
+
+        // save the task details
+
+        // save benes
 
         // const personData = await workPlanCreate.json();
         console.log("🧔 work plan created", result);

@@ -471,9 +471,12 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                     </Label>
                     <FormMultiDropDown
                         options={disabilityOptions}
-                        selectedValues={disabilitiesData
-                            .filter((d) => !d.is_deleted && d.type_of_disability_id)
-                            .map((d) => d.type_of_disability_id!.toString())}
+                        selectedValues={Array.isArray(disabilitiesData)
+                            ? disabilitiesData
+                                .filter((d) => !d.is_deleted && d.type_of_disability_id)
+                                .map((d) => d.type_of_disability_id!.toString())
+                            : []
+                        }
                         onChange={handleDisabilitiesChange}
 
                     />
