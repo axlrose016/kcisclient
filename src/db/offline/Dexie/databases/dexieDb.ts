@@ -1,4 +1,6 @@
-import { ICFWPayroll, ICFWPayrollBene, ICFWPayrollLog, ISubmissionLog } from '@/components/interfaces/cfw-payroll';
+import { ICFWPayroll, ICFWPayrollBene, 
+    // ICFWPayrollLog, 
+    ISubmissionLog } from '@/components/interfaces/cfw-payroll';
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from '@/components/interfaces/iuser';
 // ICity, 
@@ -113,9 +115,9 @@ class MyDatabase extends Dexie {
             person_profile_disability: `id, person_profile_id, type_of_disability_id, ${commonFields}`,
             person_profile_family_composition: `id, person_profile_id, first_name, middle_name, last_name, extension_name_id, birthdate, age, contact_number, highest_educational_attainment_id, monthly_income, relationship_to_the_beneficiary_id, work, ${commonFields}`,
             person_profile_cfw_fam_program_details: `id, person_profile_id,family_composition_id,program_type_id, year_served_id, ${commonFields}`,
-            cfwassessment: `id, person_profile_id,deployment_area_id,deployment_area_category_id,division_office_name,assessment,number_of_days_program_engagement, area_focal_person_id,  immediate_supervisor_id,alternate_supervisor_id,cfw_category_id,status_id, ${commonFields}`,
+            cfwassessment: `id, person_profile_id,deployment_area_id,deployment_area_category_id,division_office_name,assessment,number_of_days_program_engagement, area_focal_person_id,  immediate_supervisor_id,alternate_supervisor_id,cfw_category_id,status_id,work_plan_id, ${commonFields}`,
             work_plan: `id, immediate_supervisor_id,alternate_supervisor_id,objectives, area_focal_person_id,no_of_days_program_engagement,approved_work_schedule,status_id, ${commonFields}`,
-            work_plan_tasks: `id, work_plan_id,activities_tasks,expected_output, timeline,assigned_person_id,status_id, ${commonFields}`,
+            work_plan_tasks: `id, work_plan_id,activities_tasks,expected_output, work_plan_category_id, timeline_from, timeline_to, assigned_person_id,status_id, ${commonFields}`,
             work_plan_cfw: `id, work_plan_id,cfw_id,status_id, ${commonFields}`,
             accomplishment_report: `id, person_id, period_cover_from, work_plan_id,accomplishment_actual_task, status_id, ${commonFields}`,
             accomplishment_actual_task: `id, accomplishment_report_id,task,category_id, accomplishment, mov, status_id, ${commonFields}`,

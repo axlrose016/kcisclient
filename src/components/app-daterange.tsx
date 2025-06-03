@@ -13,24 +13,29 @@ import {
 } from "@/components/ui/popover"
 
 export function DatePickerWithRange({
+    endIcon,
+    onClickEndIcon,
     className,
     value,
     onChange,
 }: {
+    endIcon?: React.ReactNode
+    onClickEndIcon?: ()=> void
     className?: string
     value: DateRange | undefined
     onChange: (range: DateRange | undefined) => void
 }) {
 
     return (
-        <div className={cn("grid gap-2", className)}>
+        <div className={cn("flex items-center gap-2", className)}>
             <Popover>
                 <PopoverTrigger asChild>
-                    <div>
+                    <div className="flex items-center g">
                         <span
+
                             id="date"
                             className={cn(
-                                "cursor-pointer py-1 rounded-md",
+                                "scursor-pointer py-1 rounded-md",
                                 !value && "text-muted-foreground"
                             )}
                         >
@@ -46,7 +51,9 @@ export function DatePickerWithRange({
                             ) : (
                                 <span>Pick a date</span>
                             )}
-                        </span>
+
+                            
+                        </span> 
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -59,7 +66,8 @@ export function DatePickerWithRange({
                         numberOfMonths={2}
                     />
                 </PopoverContent>
-            </Popover>
+            </Popover> 
+            {endIcon}
         </div>
     )
 }

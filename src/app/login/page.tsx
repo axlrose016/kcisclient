@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react";
+import React,{ useEffect, useState } from "react";
 import { seedData } from "@/db/offline/Dexie/schema/library-service";
 import { cn, hashPassword } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
@@ -510,8 +510,10 @@ export default function LoginPage() {
                 {(!verified && <Captcha verified={setVerified} />)}
 
                 <ButtonSubmit label="Login" disabled={isLoading} />
+              </div>
+            </form>
 
-                <div className="text-center text-sm">
+            <div className="text-center text-sm">
                   Don&apos;t have an account?{" "}
                   <ButtonDialog
                     dialogForm={RegistrationForm}
@@ -520,8 +522,6 @@ export default function LoginPage() {
                     css="underline underline-offset-4 cursor-pointer text-primary"
                   />
                 </div>
-              </div>
-            </form>
 
             <div className="mt-8 text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
               By clicking continue, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>

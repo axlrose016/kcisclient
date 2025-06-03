@@ -245,7 +245,9 @@ export default function SectorDetails({ errors, capturedData, sectorData, disabi
                 const storedSelectedDisabilities = localStorage.getItem("person_disabilities");
                 // alert(typeof storedSelectedDisabilities)
                 if (storedSelectedDisabilities) {
+                    
                     updateDisabilityData(JSON.parse(storedSelectedDisabilities))
+                    
                     setIsListOfDisabsEnabled(true)
                 }
                 // console.log("Disability Options: " + convertedData);

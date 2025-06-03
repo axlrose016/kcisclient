@@ -117,6 +117,17 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
         setfamilyMemberMonthlyIncome(formatNumber(value))
     }, [value])
 
+
+
+    useEffect(() => {
+        debugger
+        const lsFC = localStorage.getItem("family_composition")
+        if(lsFC){
+            const parsedFC = JSON.parse(lsFC)
+            setFamilyCompositionData(parsedFC)
+        }
+    }, [familyCompositionData])
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -175,6 +186,12 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                 }));
                 setRelationshipToFamilyMemberOptions(formattedRelationship);
 
+                debugger;
+                const lsFC = localStorage.getItem("family_composition")
+                if (lsFC) {
+                    const parsedFC = JSON.parse(lsFC)
+                    setFamilyCompositionData(parsedFC)
+                }
 
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -363,17 +380,17 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                     ...familyCompositionData, // Ensure previous data exists
                     newFamilyMember,
                 ];
-                 updatedFamComposition(updatedData, "new", "0"); //creates new family member
+                updatedFamComposition(updatedData, "new", "0"); //creates new family member
             } else {
                 const updatedData: Partial<IPersonProfileFamilyComposition>[] = [
 
                     newFamilyMember,
                 ];
-                 updatedFamComposition(updatedData, "new", "0"); //creates new family member
+                updatedFamComposition(updatedData, "new", "0"); //creates new family member
             }
- 
 
-           
+
+
             clearForm();
             setIsDialogOpen(false);
             toast({
@@ -744,40 +761,41 @@ export default function FamilyComposition({ errors, capturedeData, familyComposi
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
+                                    {/* {typeof familyCompositionData} */}
+                                    {familyCompositionData && familyCompositionData.filter((familyMember: Partial<IPersonProfileFamilyComposition>) => familyMember.first_name).length > 0 ? (
+                                    // {Array.isArray(familyCompositionData) && familyCompositionData && familyCompositionData.filter((familyMember: Partial<IPersonProfileFamilyComposition>) => familyMember.first_name).length > 0 ? (
+                                        familyCompositionData
+                                            .filter((familyMember: Partial<IPersonProfileFamilyComposition>) => familyMember.first_name)
+                                            .map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
+                                                <TableRow key={index}>
+                                                    <TableCell>{index + 1}.</TableCell>
+                                                    <TableCell>{familyMember.first_name} {familyMember.middle_name} {familyMember.last_name} {extensionNames[familyMember.extension_name_id ?? 0] || ""} </TableCell>
+                                                    <TableCell>{relationshipNames[familyMember.relationship_to_the_beneficiary_id ?? 0] || "N/A"}</TableCell>
+                                                    <TableCell>{familyMember.birthdate}</TableCell>
+                                                    <TableCell>{String(familyMember.age || "0")}</TableCell>
+                                                    <TableCell>{educationNames[familyMember.highest_educational_attainment_id ?? 0] || ""}</TableCell>
+                                                    <TableCell>{familyMember.work}</TableCell>
+                                                    <TableCell className="text-right">{String(familyMember.monthly_income || "0.00")}</TableCell>
+                                                    <TableCell>{familyMember.contact_number}</TableCell>
+                                                    <TableCell className={`text-center ${userIdViewing ? "hidden" : ""}`}>
+                                                        <div className="flex justify-center  space-x-2">
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger>
 
-                                    {Array.isArray(familyCompositionData) && familyCompositionData ? (
-                                        familyCompositionData.map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
-                                            // {Array.isArray(familyCompositionData) && familyCompositionData ? (
-                                            //     familyCompositionData.map((familyMember: Partial<IPersonProfileFamilyComposition>, index: number) => (
-                                            <TableRow key={index}>
-                                                <TableCell>{index + 1}.</TableCell>
-                                                <TableCell>{familyMember.first_name} {familyMember.middle_name} {familyMember.last_name} {extensionNames[familyMember.extension_name_id ?? 0] || ""} </TableCell>
-                                                <TableCell>{relationshipNames[familyMember.relationship_to_the_beneficiary_id ?? 0] || "N/A"}</TableCell>
-                                                <TableCell>{familyMember.birthdate}</TableCell>
-                                                <TableCell>{String(familyMember.age || "0")}</TableCell>
-                                                <TableCell>{educationNames[familyMember.highest_educational_attainment_id ?? 0] || ""}</TableCell>
-                                                <TableCell>{familyMember.work}</TableCell>
-                                                <TableCell className="text-right">{String(familyMember.monthly_income || "0.00")}</TableCell>
-                                                <TableCell>{familyMember.contact_number}</TableCell>
-                                                <TableCell className={`text-center ${userIdViewing ? "hidden" : ""}`}>
-                                                    <div className="flex justify-center  space-x-2">
-                                                        <TooltipProvider>
-                                                            <Tooltip>
-                                                                <TooltipTrigger>
+                                                                        <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(familyMember.id)} />
+                                                                        {/* <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(index)} /> */}
 
-                                                                    <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(familyMember.id)} />
-                                                                    {/* <Trash className="w-5 h-5 inline text-red-500 hover:text-red-700" onClick={() => handleDeleteFamMem(index)} /> */}
-
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p>Remove Record</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        </TooltipProvider>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Remove Record</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
                                     ) : (
                                         <TableRow>
                                             <TableCell colSpan={10} className="text-center">No Family Members available</TableCell>

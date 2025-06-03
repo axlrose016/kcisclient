@@ -47,10 +47,11 @@ import axios from 'axios';
 import LoginService from "@/app/login/LoginService";
 import { Toaster } from '@/components/ui/toaster';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { useRouter } from 'next/navigation';
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 const _session = await getSession() as SessionPayload;
 export default function PersonProfileForm({ user_id_viewing }: any) {
-
+  const router = useRouter()
   const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
   const [hasProfilePicture, setHasProfilePicture] = useState(false);
   // alert(userIdViewing)
@@ -154,7 +155,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
     setDataPrivacyOpen(true);
   }
   const updateFormFamilyCompositionData = (newData: Partial<IPersonProfileFamilyComposition>[], action: string, id: any) => {
-    // debugger
+    debugger
     console.log("The action is ", action)
     if (action == "new") {
       setFormFamilyCompositionData(newData)
@@ -705,16 +706,72 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
   const sendEmail = async (first_name: any, email: any, email_subject: any, email_body: any) => {
 
-    const res = await fetch('/api/send-email', {
-      method: 'POST',
-      // body: JSON.stringify({ first_name, email, email_subject, email_body }),
-      body: JSON.stringify({ first_name, email, email_subject, email_body }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // const res = await fetch('/api/send-email', {
+    //   method: 'POST',
+    //   // body: JSON.stringify({ first_name, email, email_subject, email_body }),
+    //   body: JSON.stringify({ first_name, email, email_subject, email_body }),
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // });
+    const sendEmailConfirmation = async (endpoint: string) => {
 
-    const data = await res.json();
+      try {
+        debugger;
+        const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
+
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            Authorization: `bearer ${onlinePayload.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            "email": email,
+            "subject": "KC IS CFW Module Beneficiary Registration",
+            "body": `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
+                  <p>Dear ${first_name.toUpperCase()},</p>
+                  <p>${email_body}</p>        
+                  <p>Best regards,</p>
+                  <p>KALAHI-CIDSS-CFWP </p>
+                </div>
+                `,
+            "cc": process.env.EMAIL_CC + ",jmgarbo@dswd.gov.ph,argvillanueva@dswd.gov.ph",
+            "bcc": "dsentico@dswd.gov.ph",
+            //            email:pcpborja@dswd.gov.ph,
+            // subject:test,
+            // body:test,
+            // cc:paulclarenceit@gmail.com,
+            // bcc:paulclrenceit2@gmail.com,
+            // cc:jmgarbo@dswd.gov.ph,
+            // cc:argvillanueva@dswd.gov.ph,
+
+          })
+        });
+
+        if (!response.ok) {
+          console.log(response);
+        } else {
+          const data = await response.json();
+          console.log("🗣️Person Profile masterlist from api ", data.data);
+
+        }
+      } catch (error: any) {
+        if (error.name === "AbortError") {
+          console.log("Request canceled", error.message);
+          alert("Request canceled" + error.message);
+        } else {
+          console.error("Error fetching data:", error);
+          alert("Error fetching data:" + error);
+        }
+      }
+    };
+    // https://kcnfms.dswd.gov.ph/kcis/api/send_email/create/
+    sendEmailConfirmation(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "send_email/create/");
+    // const res = await 
+
+    // const data = await res.json();
 
   };
 
@@ -921,6 +978,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               }
             });
 
+            debugger
             formPersonProfileFamilyComposition = Object.values(formFamilyCompositionData).map((fcd) => {
               const fcd_id = fcd.id ?? uuidv4(); // Declare the variable properly
 
@@ -1028,9 +1086,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               localStorage.removeItem("person_disabilities");
               debugger
               const response = await PersonProfileService.syncBulkData(formPersonProfile);
-              if (response.success) {
+              if (response.failed == 0) {
+                const emailData = {
+                  first_name: cfw_first_name_email,
+                  email: cfw_active_email,
+                  subject: "CFW Beneficiary Profiling",
+                  body: "Your registration has been submitted successfully."
+                }
+                localStorage.setItem("sendEmailData", JSON.stringify(emailData))
+                // sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
+                router.push("/personprofile/form/success")
 
-                sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
               } else {
                 toast({
                   variant: "green",
@@ -1155,7 +1221,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         const cleanedFormData = cleanData(formData);
         const cleanedFormSectorData = cleanData(formSectorData);
         const cleanedFormDisabilitiesData = cleanData(formDisabilitiesData);
-        const cleanedFormFamilyCompositionData = cleanData(formFamilyCompositionData);
+        const cleanedFormFamilyCompositionData = formFamilyCompositionData;
+        // const cleanedFormFamilyCompositionData = cleanData(formFamilyCompositionData);
         const cleanedFormCFWFamDetailsData = cleanData(formCFWFamDetailsData);
         const cleanedFormAttachmentsData = cleanData(formAttachmentsData);
 
@@ -1272,7 +1339,16 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         console.log("Debugging Sector")
         console.log("Sector data type is ", typeof formSectorData)
         console.log("Sector data is ", formSectorData)
-        if (Object.keys(formSectorData).length == 0) { errorToast("Sectors required!", "sector", ""); return; }
+        const lsSect = localStorage.getItem("person_sectors")
+        if (lsSect) {
+          const parseSect = JSON.parse(lsSect)
+          if (parseSect.length == 0) {
+            errorToast("Sectors required!", "sector", ""); return;
+          }
+        } else {
+          errorToast("Sectors required!", "sector", ""); return;
+        }
+        // if (Object.keys(formSectorData).length == 0) { errorToast("Sectors required!", "sector", ""); return; }
         // if (formSectorData.length == 0 || formSectorData == undefined) { errorToast("Sectors required!", "sector", ""); return; }
 
         // const parsedSectors = JSON.parse(storedSectors) as IPersonProfileSector[];
@@ -1326,12 +1402,19 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         }
 
 
-
+        debugger
         // family composition
-        console.log("For Validation")
-        console.log("Family Composition Data type is ", typeof formFamilyCompositionData)
-        console.log("Family Composition Data is ", formFamilyCompositionData)
-        if (!formFamilyCompositionData || formFamilyCompositionData.length === 0) { errorToast("Family composition is required!", "family_composition", ""); return; }
+
+        const lsFCom = localStorage.getItem("family_composition")
+        if (lsFCom) {
+          const parsedFCom = JSON.parse(lsFCom)
+          if (parsedFCom.length == 0) {
+            errorToast("Family composition is required!", "family_composition", ""); return;
+          }
+        } else {
+          errorToast("Family composition is required!", "family_composition", ""); return;
+        }
+        // if (!formFamilyCompositionData || formFamilyCompositionData.length === 0) { errorToast("Family composition is required!", "family_composition", ""); return; }
 
 
 
@@ -1543,6 +1626,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           is_deleted: false,
           remarks: "Assessment Created",
           user_id: session?.id ?? "0",
+          work_plan_id: ""
         }
 
 
@@ -2232,10 +2316,14 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
   }
+  // const handleRouteToSuccess = () => {
+  // router.push("/personprofile/form/success")
+  // }
   return (
 
     <div className='w-full'>
 
+      {/* <Button onClick={() => handleRouteToSuccess()}>Route to success</Button> */}
 
       <Dialog modal={false} open={dataPrivacyOpen} onOpenChange={setDataPrivacyOpen}>
         <DialogContent>

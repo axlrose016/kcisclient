@@ -60,7 +60,7 @@ class PersonProfileService {
 
       let success = 0;
       let failed = 0;
-
+      debugger
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         const record = unsyncedData[i];

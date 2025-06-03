@@ -196,7 +196,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                             },
                             body: JSON.stringify({
                                 "page_number": 1,
-                                "page_size": 1000
+                                "page_size": 10000
                             })
                         });
 
@@ -244,6 +244,10 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
     }
     const handleApprove = (id: string) => {
 
+    }
+
+    const handleOnRefresh = () => {
+        alert("yw")
     }
     const handleForReview = (id: string) => {
         setForReviewApprove(!forReviewApprove);
@@ -459,6 +463,7 @@ export default function PersonProfileMasterlist({ page }: { page: number }) {
                     <AppTable
                         data={profiles}
                         columns={columnsMasterlist}
+                        onRefresh={handleOnRefresh}
                         // onEdit={handleEdit}
                         // onDelete={handleDelete}
                         onRowClick={handleRowClick}

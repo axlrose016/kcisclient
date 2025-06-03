@@ -59,6 +59,7 @@ export default function CreateWorkPlanPage() {
   // Load beneficiaries from JSON
   // const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>(beneficiaries) //default using json file
   const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>([])
+  // const [beneficiariesData, setBeneficiariesData] = useState<Beneficiary[]>([])
   const [deploymentAreaName, setDeploymentAreaName] = useState("")
   const [workPlanData, setWorkPlanData] = useState<WorkPlanProps>({
     id: "",

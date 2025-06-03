@@ -95,7 +95,7 @@ export default async function RootLayout({
         <meta property="og:url" content="https://yourdomain.com" />
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
-      <body className={`${GeistSans.className} ${GeistMono.className} antialiased`} cz-shortcut-listen="true">
+      <body className={`${GeistMono.className} ${GeistSans.className} antialiased`} cz-shortcut-listen="true">
         {children}
         <ServiceWorker />
         <Toaster/>

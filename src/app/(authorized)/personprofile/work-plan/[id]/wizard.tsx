@@ -18,6 +18,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { v4 as uuidv4 } from 'uuid';
 import LoginService from "@/app/login/LoginService";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
+import { ICFWAssessment, IWorkPlan, IWorkPlanTasks } from "@/components/interfaces/personprofile"
 
 // checklist
 // deployment_area_short_name_supervisor ✅
@@ -86,17 +88,19 @@ type WizardProps = {
 
 }
 
-type WorkPlanTasksCollected = {
-    id: string;
-    work_plan_id: string;
-    category_id: string; // "General" or "Specific"
-    activities_tasks: string;
-    expected_output: string;
-    timeline_from: string;
-    timeline_to: string;
-    assigned_person_id: string;
-    assigned_person_name: string;
-};
+// type WorkPlanTasksCollected = {
+//     id: string;
+//     work_plan_id: string;
+//     expected_output: string;
+//     work_plan_category_id: string; // "General" or "Specific"
+//     activities_tasks: string;
+//     timeline_from: string;
+//     timeline_to: string;
+//     assigned_person_id: string;
+
+//     // assigned_person_name: string;
+
+// };
 export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
 
@@ -114,7 +118,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         return {};
     });
 
-    const [workPlanTasksData, setWorkPlanTasksData] = useState<WorkPlanTasksCollected[]>([]);
+    const [workPlanTasksData, setWorkPlanTasksData] = useState<IWorkPlanTasks[]>([]);
 
 
     // {
@@ -160,97 +164,335 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
             component: <SubmittedStep />,
         },
     ]
+    function totalNumberOfSelectedBenes() {
+        const lsSB = localStorage.getItem("selectedBeneficiaries");
+        if (lsSB) {
+            const parsedlsSB = JSON.parse(lsSB);
+            return parsedlsSB.length;
+        }
+        return 0;
+    }
+
+    const saveWorkPlanToDexieDb = async (workplanid: string) => {
+
+        const lsWP = localStorage.getItem("work_plan")
+        if (lsWP) {
+            const parsedWP = JSON.parse(lsWP)
+
+            // Specify only the fields you want to save
+            // parsedWP is expected to be an object, not an array
+            const workPlanToSave = [{
+                id: workplanid,
+                work_plan_title: parsedWP.work_plan_title,
+                immediate_supervisor_id: parsedWP.immediate_supervisor_id,
+                office_name: parsedWP.office_name,
+                objectives: parsedWP.objectives,
+                no_of_days_program_engagement: parsedWP.no_of_days_program_engagement,
+                approved_work_schedule_from: parsedWP.approved_work_schedule_from,
+                approved_work_schedule_to: parsedWP.approved_work_schedule_to,
+                remarks: "Work Plan created in DexieDB",
+                status_id: 0,
+                created_date: new Date().toISOString(),
+                created_by: _session?.userData?.email ?? "",
+                last_modified_date: null,
+                last_modified_by: null,
+                push_status_id: 2,
+                push_date: "",
+                deleted_date: null,
+                deleted_by: null,
+                is_deleted: false,
+                alternate_supervisor_id: "",
+                area_focal_person_id: "",
+                total_number_of_bene: totalNumberOfSelectedBenes(),
+            }];
+
+            await dexieDb.work_plan.bulkPut(workPlanToSave)
+
+              const email = "dsentico@dswd.gov.ph";
+            const password = "Dswd@123";
+            const onlinePayload = await LoginService.onlineLogin(email, password);
+            const token = onlinePayload.token;
+            const workPlanCreate = await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify([{
+                        "id": workplanid,
+                        "created_by": _session.userData?.email,
+                        "remarks": "Work Plan Created",
+                        "work_plan_title": workPlanData.work_plan_title,
+                        "immediate_supervisor_id": _session.id,
+                        "objectives": workPlanData.objectives,
+                        "no_of_days_program_engagement": workPlanData.no_of_days_program_engagement,
+                        "approved_work_schedule_from": workPlanData.approved_work_schedule_from,
+                        "approved_work_schedule_to": workPlanData.approved_work_schedule_to,
+                        "push_status_id": 2,
+                        "created_date": new Date().toISOString(),
+
+
+                    }]),
+                }
+            );
+
+            if (!workPlanCreate.ok) {
+                const errormsg = await workPlanCreate.json();
+                const errorBody = await workPlanCreate.text(); // safer than .json() in case of non-JSON error
+                console.error("❌ Failed to create work plan:", errorBody);
+
+                // alert("Work Plan creation failed because ", errormsg.te);
+                return;
+            }
+            const result = await workPlanCreate.json();
+            console.error("❌ Failed to create work plan:", result);
+
+            // save the task details
+
+            // save benes
+
+            // const personData = await workPlanCreate.json();
+            console.log("🧔 work plan created", result);
+            alert("Work Plan Created Successfully");
+        }
+    }
+    const saveWorkPlanTasksToDexieDb = async (workplanid: string) => {
+        debugger
+        const workPlanTasksLS = localStorage.getItem("work_plan_tasks");
+        if (workPlanTasksLS) {
+
+            const parsed = JSON.parse(workPlanTasksLS || "");
+            const collectedTasks: IWorkPlanTasks[] = Array.isArray(parsed)
+                ? parsed.map((task: any) => ({
+                    id: task.id || "",
+                    work_plan_id: workplanid, // task.work_plan_id || "",
+                    activities_tasks: task.activities_tasks || "",
+                    expected_output: task.expected_output || "",
+                    work_plan_category_id: task.category_id || "",
+                    timeline_from: task.timeline_from || "",
+                    timeline_to: task.timeline_to || "",
+                    assigned_person_id: task.assigned_person_id || "",
+                    created_date: new Date().toISOString(),
+                    created_by: "",
+                    last_modified_date: null,
+                    last_modified_by: null,
+                    deleted_date: null,
+                    deleted_by: null,
+                    remarks: null,
+                    is_deleted: false,
+                    status_id: 0,
+                    push_status_id: 2,
+                    push_date: "",
+                    // work_plan_category_id: task.category_id || "",
+                    // category_id: task.category_id || "",
+                    // assigned_person_name: task.assigned_person_name || "",
+                }))
+                : [];
+
+            // await db.tasks.bulkPut(collectedTasks);
+            await dexieDb.work_plan_tasks.bulkPut(collectedTasks)
+            const email = "dsentico@dswd.gov.ph";
+            const password = "Dswd@123";
+            const onlinePayload = await LoginService.onlineLogin(email, password);
+            const token = onlinePayload.token;
+            debugger
+            await fetch(
+                `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(
+                        collectedTasks.map(ct => ({
+                            id: uuidv4(),
+                            work_plan_id: workplanid,
+                            work_plan_category_id: ct.work_plan_category_id,
+                            activities_tasks: ct.activities_tasks,
+                            expected_output: ct.expected_output,
+                            timeline_from: ct.timeline_from,
+                            timeline_to: ct.timeline_to,
+                            assigned_person_id: ct.assigned_person_id === "all" ? null : ct.assigned_person_id,
+                            created_date: new Date().toISOString(),
+                            created_by: _session.userData?.email,
+                            last_modified_date: null,
+                            last_modified_by: null,
+                            deleted_date: null,
+                            deleted_by: null,
+                            remarks: "Work Plan Task Created",
+                            is_deleted: false,
+                            status_id: 0,
+                            push_status_id: 2,
+                            push_date: new Date().toISOString(),
+                        }))
+                    ),
+                }
+            );
+            console.log("All tasks saved successfully.");
+
+        }
+    }
+
+    const saveWorkPlanSelectedBenes = async (workplanid: string) => {
+        debugger
+        const workPlanSelectedBenes = localStorage.getItem("selectedBeneficiaries");
+        if (workPlanSelectedBenes) {
 
 
 
 
+            // const parsed = JSON.parse(workPlanSelectedBenes);
+            // await dexieDb.transaction("rw", [dexieDb.cfwassessment], async () => {
+            //     try {
+            //         let data: ICFWAssessment = cfwassessment;
+            //         if(cfwass)
+
+            //     }
+            //     catch (e) {
+            //         console.log(e)
+            //     }
+            // })
+
+            // const collectedSelectedBene: ICFWAssessment[] = Array.isArray(parsed)
+            //     ? parsed.map((item: any) => ({
+            //         id: uuidv4(),
+            //         person_profile_id: item.ID,
+            //         deployment_area_category_id: null,
+            //         deployment_area_id: null,
+            //         division_office_name: null,
+            //         assessment: null,
+            //         number_of_days_program_engagement: null,
+            //         area_focal_person_id: null,
+            //         immediate_supervisor_id: null,
+            //         alternate_supervisor_id: null,
+            //         cfw_category_id: null,
+            //         work_plan_id: workplanid,
+            //         status_id: null,
+            //         user_id: null,
+            //         created_date: null,
+            //         created_by: null,
+            //         last_modified_date: null,
+            //         last_modified_by: null,
+            //         push_status_id: null,
+            //         push_date: null,
+            //         deleted_date: null,
+            //         deleted_by: null,
+            //         is_deleted: null,
+            //         remarks: null,
+            //     }))
+            //     : [];
+
+            // // await db.tasks.bulkPut(collectedTasks);
+            // await dexieDb.cfwassessment.bulkPut(collectedSelectedBene)
+        }
+    }
 
     const submitWorkPlan = async () => {
         let workplanid = uuidv4()
+        saveWorkPlanToDexieDb(workplanid)
+        // saveWorkPlanTasksToDexieDb(workplanid)
+        // saveWorkPlanSelectedBenes(workplanid)
+        return
         const email = "dsentico@dswd.gov.ph";
         const password = "Dswd@123";
         const onlinePayload = await LoginService.onlineLogin(email, password);
         const token = onlinePayload.token;
 
+        // update the benes data from cfw_assessment
+        // division_office_name, number_of_days_engagement, immediate_supervisor_id where _id, updated_at, last_modified_by
+        const WorkPlanSelectedBene = localStorage.getItem("selectedBeneficiaries")
+
+
+        // save work plan details
+
+
+
         const workPlanTasksLS = localStorage.getItem("work_plan_tasks");
         if (workPlanTasksLS) {
             try {
-                const parsed = JSON.parse(workPlanTasksLS);
-                const collectedTasks: WorkPlanTasksCollected[] = Array.isArray(parsed)
-                    ? parsed.map((task: any) => ({
-                        id: task.id || "",
-                        work_plan_id: workplanid, // task.work_plan_id || "",
-                        category_id: task.category_id || "",
-                        activities_tasks: task.activities_tasks || "",
-                        expected_output: task.expected_output || "",
-                        timeline_from: task.timeline_from || "",
-                        timeline_to: task.timeline_to || "",
-                        assigned_person_id: task.assigned_person_id || "",
-                        assigned_person_name: task.assigned_person_name || "",
-                    }))
-                    : [];
+                saveWorkPlanTasksToDexieDb(workplanid)
+                await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`,
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                        // body: JSON.stringify(
+                        // collectedTasks.map(ct => ({
+                        //     id: uuidv4(),
+                        //     work_plan_id: workplanid,
+                        //     work_plan_category_id: ct.work_plan_category_id,
+                        //     activities_tasks: ct.activities_tasks,
+                        //     expected_output: ct.expected_output,
+                        //     timeline_from: ct.timeline_from,
+                        //     timeline_to: ct.timeline_to,
+                        //     assigned_person_id: ct.assigned_person_id === "all" ? null : ct.assigned_person_id,
+                        //     created_date: new Date().toISOString(),
+                        //     created_by: _session.userData?.email,
+                        //     last_modified_date: null,
+                        //     last_modified_by: null,
+                        //     deleted_date: null,
+                        //     deleted_by: null,
+                        //     remarks: "Work Plan Task Created",
+                        //     is_deleted: false,
+                        //     status_id: 0,
+                        //     push_status_id: 2,
+                        //     push_date: new Date().toISOString(),
+                        // }))
+                        // ),
+                    }
+                );
+                debugger;
+                // Save all tasks in parallel using Promise.all
+                // await Promise.all(collectedTasks.map(async (ct) => {
+                //     await fetch(
+                //         `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`,
+                //         {
+                //             method: "POST",
+                //             headers: {
+                //                 Authorization: `bearer ${token}`,
+                //                 "Content-Type": "application/json",
+                //             },
+                //             body: JSON.stringify([{
+                //                 id: uuidv4(),
+                //                 work_plan_id: workplanid,
+                //                 work_plan_category_id: ct.work_plan_category_id,
+                //                 activities_tasks: ct.activities_tasks, //
+                //                 expected_output: ct.expected_output, //
+                //                 timeline_from: ct.timeline_from,
+                //                 timeline_to: ct.timeline_to,
+                //                 assigned_person_id: ct.assigned_person_id == "all" ? null : ct.assigned_person_id,
+                //                 created_date: new Date().toISOString(),
+                //                 created_by: _session.userData?.email,
+                //                 last_modified_date: null, //
+                //                 last_modified_by: null,
+                //                 deleted_date: null,
+                //                 deleted_by: null, //
+                //                 remarks: "Work Plan Task Created",
+                //                 is_deleted: false, //
+                //                 status_id: 0,
+                //                 push_status_id: 2,
+                //                 push_date: new Date().toISOString(), //
+                //             }])
+                //         }
+                //     );
+                // }));
+
+                console.log("All tasks saved successfully.");
+                // work_plan ✅
+                // work_plan_task ✅
+                // cfw_assessment - update the immediate_supervisor_id, number_of_days_program_engagement, division_office_name
+                // work_plan_cfw
 
 
-// collectedTasks.map(())
-//                 const workPlanCreate = await fetch(
-//                     `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`,
-//                     {
-//                         method: "POST",
-//                         headers: {
-//                             Authorization: `bearer ${token}`,
-//                             "Content-Type": "application/json",
-//                         },
-//                         body: JSON.stringify([{
-//                             "id": uuidv4(),
-//                             "created_date": new Date().toISOString(),
-//                             "created_by": _session.userData?.email,
-//                             "last_modified_date": null,
-//                             "last_modified_by": null,
-//                             "deleted_date": null,
-//                             "deleted_by": null,
-//                             "remarks": "Work Plan Task Created",
-//                             "is_deleted": false,
-//                             "work_plan_id": workplanid,
-//                             "work_plan_category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-//                             "assigned_person_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-//                             "activities_tasks": "string",
-//                             "expected_output": "string",
-//                             "timeline_from": "2025-06-02",
-//                             "timeline_to": "2025-06-02",
-//                             "status_id": 0,
-//                             "push_status_id": 0,
-//                             "push_date": "2025-06-02T01:03:14.590Z"
-//                         }])
-//                     }
-//                 )
-                // Work Plan tasks
-                //{
-                //   "id": "string",
-                //   "created_date": "2025-06-02T01:03:14.590Z",
-                //   "created_by": "string",
-                //   "last_modified_date": "2025-06-02T01:03:14.590Z",
-                //   "last_modified_by": "string",
-                //   "deleted_date": "2025-06-02T01:03:14.590Z",
-                //   "deleted_by": "string",
-                //   "remarks": "string",
-                //   "is_deleted": true,
-                //   "work_plan_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                //   "work_plan_category_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                //   "assigned_person_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-                //   "activities_tasks": "string",
-                //   "expected_output": "string",
-                //   "timeline_from": "2025-06-02",
-                //   "timeline_to": "2025-06-02",
-                //   "status_id": 0,
-                //   "push_status_id": 0,
-                //   "push_date": "2025-06-02T01:03:14.590Z"
-                // }
 
-
-
-
-                setWorkPlanTasksData(collectedTasks);
-                console.log("WPTasks", collectedTasks)
+                // setWorkPlanTasksData(collectedTasks);
+                // console.log("WPTasks", collectedTasks)
             } catch {
                 setWorkPlanTasksData([]);
             }
@@ -544,7 +786,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
 
             {/* {JSON.stringify(workPlanData)} */}
             {/* {JSON.stringify(beneficiariesData)} */}
-            {/* {_session.id} */}
+            {_session.id}
             {/* Deployment Area Name: {workPlanDetails?.deployment_area_name} */}
             {/* {JSON.stringify(workPlanDetails)} */}
             <Card className="w-full">
@@ -615,6 +857,7 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
 
         }
     }, [listOfBeneficiaries])
+
     type Beneficiary = {
         id: string;
         status_name: string;
@@ -1054,7 +1297,7 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
         const taskId = Date.now().toString()
         const taskToSave = { ...newTask, id: taskId }
         // const { toast } = useToast()
-        // debugger;
+        debugger;
         const isTaskExist = tasks.some((task) => task.activities_tasks.toLowerCase().trim() === newTask.activities_tasks.toLowerCase().trim() && task.category_id.toLowerCase().trim() === newTask.category_id.toLowerCase().trim())
         if (isTaskExist) {
             toast({
@@ -1118,14 +1361,10 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
         localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
     }
 
-    const handleSubmitWorkPlan = async () => {
-
-    }
 
 
-    const submitWorkPlan = () => {
-        alert("Submitting")
-    }
+
+
     return (
         <div >
             <h2 className="text-lg font-medium">Define Tasks</h2>
@@ -1152,11 +1391,11 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
                                 <RadioGroup value={newTask.category_id} onValueChange={(value) => setNewTask({ ...newTask, category_id: value })}>
 
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="General" id="general" />
+                                        <RadioGroupItem value="1" id="general" />
                                         <Label htmlFor="general">General</Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="Specific" id="specific" />
+                                        <RadioGroupItem value="2" id="specific" />
                                         <Label htmlFor="specific">Specific</Label>
                                     </div>
                                 </RadioGroup>
@@ -1215,22 +1454,35 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
                                 <Select
                                     value={newTask.assigned_person_id}
                                     onValueChange={(value) => {
-                                        const selectedName = selectedBeneficiariesOptions.find((bene) => bene.ID === value)["FULL NAME"] || "";
+                                        if (value === "all") {
+                                            setNewTask({
+                                                ...newTask,
+                                                assigned_person_id: "all",
+                                                assigned_person_name: "All",
+                                            });
+                                            return;
+                                        }
+
+                                        const selected = selectedBeneficiariesOptions.find((bene) => bene.ID === value);
+                                        const selectedName = selected ? selected["FULL NAME"] : "";
+
                                         setNewTask({
                                             ...newTask,
                                             assigned_person_id: value,
-                                            assigned_person_name: selectedName
+                                            assigned_person_name: selectedName,
                                         });
                                     }}
+
 
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Assign to" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {newTask.category_id == "General" && (
+                                        {newTask.category_id === "1" && (
                                             <SelectItem value="all">All</SelectItem>
                                         )}
+
 
                                         {selectedBeneficiariesOptions.map((bene) => (
                                             <SelectItem key={bene.ID} value={bene.ID}>
@@ -1676,7 +1928,7 @@ function PreviewStep({ setCurrentStep }: any) {
                                 {Array.isArray(workPlanTasksData) && workPlanTasksData.length > 0 ? (
                                     workPlanTasksData.map((task: any, idx: number) => (
                                         <TableRow key={task.id || idx} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                                            <TableCell>{task.category_id || <span className="text-muted-foreground">N/A</span>}</TableCell>
+                                            <TableCell><span className="text-muted-foreground">{task.category_id == "1" ? "General" : "Specific"}</span></TableCell>
                                             <TableCell>{task.activities_tasks || <span className="text-muted-foreground">N/A</span>}</TableCell>
                                             <TableCell>{task.expected_output || <span className="text-muted-foreground">N/A</span>}</TableCell>
                                             <TableCell>{task.timeline_from || <span className="text-muted-foreground">N/A</span>}</TableCell>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { Clock, Plus, Trash2, Save, X, Printer, Download } from 'lucide-react';
+import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, SquareArrowUpRightIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { addDays, endOfMonth, format } from 'date-fns';
@@ -24,6 +24,7 @@ import { ICFWPayrollBene, ISubmissionLog } from '@/components/interfaces/cfw-pay
 import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
 import { v4 as uuidv4 } from 'uuid';
 import { v5 as uuidv5 } from 'uuid';
+import SqlPage from '@/components/sql-example';
 
 
 export const DTRcolumns = [
@@ -327,12 +328,19 @@ export default function DailyTimeRecordUser() {
                             <h2 className="text-lg font-semibold uppercase">{user?.first_name} {user?.last_name}</h2>
                             <p className="text-sm text-gray-500">{user?.school_name}</p>
                         </div>
-                        <DatePickerWithRange className={"bg-primary text-primary-foreground hover:bg-primary/90 p-[6px] rounded-md px-2"} value={date} onChange={setDate} />
-                        <Button onClick={() => console.log('enteries', null)} size="sm" className="flex items-center gap-2">
-                            <Printer className="h-4 w-4" />
+
+                        <DatePickerWithRange
+                            endIcon={<SquareArrowUpRightIcon onClick={() => console.log('onClickEndIcon')} className="scale-116 mx-2" />}
+                            className={"bg-primary text-primary-foreground hover:bg-primary/90 p-[6px] rounded-md px-2"}
+                            value={date}
+                            onChange={setDate}
+                        />
+
+                        <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
+                            <Printer />
                         </Button>
-                        <Button onClick={() => console.log('enteries', null)} size="sm" className="flex items-center gap-2">
-                            <Download className="w-4 h-4" />
+                        <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
+                            <Download />
                         </Button>
 
                     </div>

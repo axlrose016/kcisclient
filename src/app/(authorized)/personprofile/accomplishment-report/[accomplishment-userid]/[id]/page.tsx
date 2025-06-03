@@ -7,7 +7,7 @@ import { DateRange } from 'react-day-picker';
 import { SessionPayload } from '@/types/globals';
 import { getSession } from '@/lib/sessions-client';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
-import { IAccomplishmentReport, IPersonProfile } from '@/components/interfaces/personprofile';
+import { IAccomplishmentActualTask, IAccomplishmentReport, IPersonProfile } from '@/components/interfaces/personprofile';
 import { ILibSchoolProfiles, LibraryOption } from '@/components/interfaces/library-interface';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
@@ -17,6 +17,8 @@ import AppSubmitReview from '@/components/app-submit-review';
 import { AccomplishmentUser } from '@/components/accomplishment-user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Download, Edit, Printer } from 'lucide-react';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 
@@ -25,6 +27,8 @@ export default function AccomplishmentReportUser() {
     const params = useParams<{ 'accomplishment-userid': string; id: string }>()
     const [user, setUser] = useState<UserTypes>();
     const [ar, setAR] = useState<IAccomplishmentReport>()
+    const [tasks, setTasks] = useState<IAccomplishmentActualTask[]>([])
+
 
     const getInitialDateRange = (): DateRange => {
         const today = new Date();
@@ -75,6 +79,7 @@ export default function AccomplishmentReportUser() {
             const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
             setStatusesOptions(filteredStatuses);
 
+           
             setSession(_session)
             await getResults(_session)
         })();
@@ -126,6 +131,236 @@ export default function AccomplishmentReportUser() {
             is_deleted: false,
             remarks: "",
         })
+
+
+        // await dexieDb.work_plan_cfw.put({
+        //     id: uuidv4(),
+        //     work_plan_id:"6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //     cfw_id:"2192a8f9-371a-4787-9604-c2f147a05e3c", 
+        //     status_id:0,
+        //     created_date:"",
+        //     created_by:"",
+        //     deleted_date:"",
+        //     deleted_by:"",
+        //     is_deleted:false,
+        // })   
+        // await dexieDb.work_plan.put({
+        //     id: '6ae189ed-eec7-4c38-a9fa-da8a00b01f21',
+        //     immediate_supervisor_id: "23db4fc3-038d-4ebc-8688-f35a1cf5f24a",
+        //     alternate_supervisor_id: "35c1f7f3-03be-4277-99cd-3b78dad9722a",
+        //     objectives: "Sample",
+        //     area_focal_person_id: "35c1f7f3-03be-4277-99cd-3b78dad9722a",
+        //     no_of_days_program_engagement: 50,
+        //     approved_work_schedule_from: "8AN - 12PM, 1PM - 5PM",
+        //     approved_work_schedule_to: "June/1/2025",
+        //     status_id: 0,
+        //     created_date: new Date().toString(),
+        //     created_by: session.userData.email!,
+        //     last_modified_date: "",
+        //     last_modified_by: "",
+        //     push_status_id: 1,
+        //     push_date: "",
+        //     deleted_date: "",
+        //     deleted_by: "",
+        //     is_deleted: false,
+        //     remarks: "",
+        //     work_plan_title: "Sample",
+        //     total_number_of_bene: 100,
+        // })
+
+        // if ((await dexieDb.work_plan_tasks.toArray()).length == 0) {
+        //     await dexieDb.work_plan_tasks.bulkPut([
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Attend to KC-CFW related activities",
+        //             expected_output: "Document and comply with the KC-CFW instructions",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Encoding of the served CFW beneficiary profile in the database",
+        //             expected_output: "Encoded list of served beneficiaries and updaated database",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Assist in the review and validation of the beneficaires submitted documents ",
+        //             expected_output: "Validated and reviewed payment requirements of the beneficiaries and generate the list of beneficiaries with compliances ",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Assist in the computation of payroll assistance",
+        //             expected_output: "Accurate computation of the beneficiaries assistance and included on the payroll",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Data recording of the actual day rendered of the beneficiaries based on their submitted payment requirements in the database",
+        //             expected_output: "Updated monitoring tool ",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 2,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Assist during payout activity.",
+        //             expected_output: "Payout report.",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Sorting and filing of CFW documents such as but not limited to their profile forms, payment requirements and other liquidation documents ",
+        //             expected_output: "Sorted and compiled the liquidation documents",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 1,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Scanning of the liquidation payment requirements",
+        //             expected_output: "Scanned the liquidation documents",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //         {
+        //             id: uuidv4(),
+        //             work_plan_category_id: 2,
+        //             work_plan_id: "6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
+        //             activities_tasks: "Generate payroll list for the month period of February and March.",
+        //             expected_output: "Generated the payroll list covered the months of February and March. ",
+        //             timeline_from: new Date(),
+        //             timeline_to: new Date(),
+        //             assigned_person_id: "8d148ae3-83d9-4caf-84c2-39238db6a4cc",
+        //             status_id: 0,
+        //             created_date: new Date().toString(),
+        //             created_by: session.userData.email!,
+        //             last_modified_date: "",
+        //             last_modified_by: "",
+        //             push_status_id: 1,
+        //             push_date: "",
+        //             deleted_date: "",
+        //             deleted_by: "",
+        //             is_deleted: false,
+        //             remarks: "",
+        //         },
+        //     ])
+        // }
     };
 
     const handleSaveAccomplishmentReport = () => {
@@ -139,8 +374,8 @@ export default function AccomplishmentReportUser() {
                     bene_id: user!.id,
                     module: "accomplishment report",
                     created_date: new Date().toISOString(),
-                    created_by: session!.userData!.email!, 
-                    push_status_id: 0,  
+                    created_by: session!.userData!.email!,
+                    push_status_id: 0,
                 }
                 await dexieDb.submission_log.put(raw)
                 if (raw.status == "2") {
@@ -153,6 +388,9 @@ export default function AccomplishmentReportUser() {
                         accomplishment_report_reviewed_date: new Date().toISOString(),
                         period_cover_from: getInitialDateRange().from!,
                         period_cover_to: getInitialDateRange().to!,
+                        operation_reviewed_by: "",
+                        odnpm_reviewed_by: "",
+                        finance_reviewed_by: "",
                         operation_status: "",
                         operation_status_date: "",
                         odnpm_status: "",
@@ -184,6 +422,7 @@ export default function AccomplishmentReportUser() {
                 }
                 if (id) {
                     await dexieDb.accomplishment_report.put(raw, id)
+                    await dexieDb.accomplishment_actual_task.bulkPut(tasks,)
                     toast({
                         variant: "green",
                         title: "Accomplishment Report",
@@ -220,19 +459,79 @@ export default function AccomplishmentReportUser() {
                         date={date}
                         setDate={setDate}
                         session={session}
+                        onChangeTask={setTasks}
                         accomplishmentReportId={ar?.id}
                     />
 
-                    <div className="m-3 no-print">
-                        <AppSubmitReview
-                            session={session!}
-                            review_logs={submissionLogs}
-                            options={statusesOptions}
-                            review={selectedStatus}
-                            onChange={(review) => setSelectedStatus(review)}
-                            onSubmit={() => handleSaveAccomplishmentReport()}
-                        />
-                    </div>
+
+                    {session?.userData.role == "Administrator" ?
+                        <div className="m-3 no-print">
+                            <AppSubmitReview
+                                session={session!}
+                                review_logs={submissionLogs}
+                                options={statusesOptions}
+                                review={selectedStatus}
+                                onChange={(review) => setSelectedStatus(review)}
+                                onSubmit={() => handleSaveAccomplishmentReport()}
+                            />
+                        </div> : <div className="flex justify-start gap-2 m-1 no-print">
+                            <Button onClick={handleSaveAccomplishmentReport}>
+                                <Edit className="mr-1 h-4 w-4" /> Save
+                            </Button>
+                            <Button variant="outline" onClick={() => {
+                                const content = document.getElementById('print-section');
+                                if (!content) return;
+                                const style = document.createElement('style');
+                                style.innerHTML = `
+                         @media print { 
+                           @page {
+                             size: A4;
+                             margin: 0.8mm; /* Reduced margin for fitting the content */
+                           } 
+                           body {
+                              zoom: 69%;
+                             margin: 0;
+                             padding: 0;
+                             font-size: 12px; /* Keep the font-size consistent */
+                           } 
+                           #no-print{
+                            display: none;
+                           }
+                           #editable:empty:before {
+                              content: none;
+                            }
+                           /* This ensures the printed content scales without changing the original layout */
+                           .print-small {
+                             padding: 5px; /* Reduce padding to fit more content */
+                           } 
+                           /* Hide non-printable elements */
+                           .no-print {
+                             display: none;
+                           } 
+                           /* Scale content without affecting the original layout */
+                           .no-scale {
+                             transform: scale(0.45);
+                             transform-origin: top left;
+                             width: 100%; /* Use full width */
+                             overflow: hidden;
+                           }
+                         }
+                       `;
+                                document.head.appendChild(style);
+                                const clone = content.cloneNode(true) as HTMLElement;
+                                const originalContents = document.body.innerHTML;
+                                document.body.innerHTML = '';
+                                document.body.appendChild(clone);
+                                window.print();
+                                document.body.innerHTML = originalContents;
+                                window.location.reload(); // Rebind React
+                            }}>
+                                <Printer className="mr-1 h-4 w-4" /> Print
+                            </Button>
+                            <Button variant="outline" onClick={() => console.log('Downloading PDF...')}>
+                                <Download className="mr-1 h-4 w-4" /> Download
+                            </Button>
+                        </div>}
                 </CardContent>
             </div>
         </Card>

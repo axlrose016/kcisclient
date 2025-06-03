@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DateRange } from 'react-day-picker';
 import { DatePickerWithRange } from '@/components/app-daterange';
 import { cn } from '@/lib/utils';
-import { Trash2 } from 'lucide-react';
+import { Download, Printer, Trash2 } from 'lucide-react';
 import { IAccomplishmentActualTask, IPersonProfile, IWorkPlanTasks } from '@/components/interfaces/personprofile';
 import { IUser } from '@/components/interfaces/iuser';
 import { SessionPayload } from '@/types/globals';
@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { sanitizeHTML } from '@/lib/utils';
 import { ILibSchoolProfiles } from './interfaces/library-interface';
 import { EditableCell } from './editable-cell';
+import AppSubmitReview from './app-submit-review';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 interface AccomplishmentReportFormProps {
@@ -22,9 +23,11 @@ interface AccomplishmentReportFormProps {
     setDate?: (date: DateRange | undefined) => void;
     session?: SessionPayload;
     accomplishmentReportId?: string;
+    onChangeTask?: (task: IAccomplishmentActualTask[]) => void
 }
 
 export function AccomplishmentUser({
+    onChangeTask,
     disabled = false,
     user,
     date,
@@ -54,8 +57,8 @@ export function AccomplishmentUser({
 
                         // Get tasks
                         const allTasks = await dexieDb.work_plan_tasks.where("work_plan_id").equals(workPlan.id).toArray();
-                        setGeneralTasks(allTasks.filter(i => i.category_id == 1));
-                        setSpecificTask(allTasks.filter(i => i.category_id == 2));
+                        setGeneralTasks(allTasks.filter(i => i.work_plan_category_id == 1));
+                        setSpecificTask(allTasks.filter(i => i.work_plan_category_id == 2));
                     }
                 }
 
@@ -109,7 +112,10 @@ export function AccomplishmentUser({
                 is_deleted: false,
                 remarks: "",
             };
-            setTasks([...tasks, newTask]);
+
+            const r = [...tasks, newTask]
+            setTasks(r);
+            onChangeTask?.(r)
         }
     };
 
@@ -147,7 +153,7 @@ export function AccomplishmentUser({
     };
 
     return (
-        <>
+        <> 
             <div className='flex flex-col gap-2 mb-8 mt-3'>
                 <div className="grid grid-cols-1 sm:grid-cols-4  gap-2 md:grid-cols-4">
                     <div className="col-span-1 font-bold leading-none">FULL NAME (Last Name, First Name, Middle Name, Ext)</div>
@@ -188,8 +194,8 @@ export function AccomplishmentUser({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[400px] border-r min-w-[420px] font-bold text-black">Task/Deliverables based on the approved Work Plan</TableHead>
-                                <TableHead className="w-[250px] border-r min-w-[250px] text-center font-bold text-black">Accomplishments</TableHead>
+                                <TableHead className="w-[350px] border-r min-w-[320px] font-bold text-black">Task/Deliverables based on the approved Work Plan</TableHead>
+                                <TableHead className="w-[250px] border-r min-w-[350px] text-center font-bold text-black">Accomplishments</TableHead>
                                 <TableHead className="w-[250px]  min-w-[250px] text-center font-bold text-black">MOVs (if any)</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -209,13 +215,9 @@ export function AccomplishmentUser({
                                     </TableCell>
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                 </TableRow>
 
@@ -235,6 +237,7 @@ export function AccomplishmentUser({
                                         </TableCell>
 
                                         <EditableCell
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.accomplishment ?? "genAccom" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
@@ -242,6 +245,7 @@ export function AccomplishmentUser({
                                         />
 
                                         <EditableCell
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.mov ?? "genMov" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
@@ -266,13 +270,9 @@ export function AccomplishmentUser({
                                     </TableCell>
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                 </TableRow>
 
@@ -290,7 +290,7 @@ export function AccomplishmentUser({
                                             {task.activities_tasks}
                                         </TableCell>
                                         <EditableCell
-                                            disabled={!disabled}
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.accomplishment ?? "specAccom" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
@@ -298,7 +298,7 @@ export function AccomplishmentUser({
                                         />
 
                                         <EditableCell
-                                            disabled={!disabled}
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.mov ?? "specMov" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
@@ -323,13 +323,9 @@ export function AccomplishmentUser({
                                     </TableCell>
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                     <TableCell
                                         className="align-top"
-                                        contentEditable={false}
-                                        suppressContentEditableWarning={true}
                                     />
                                 </TableRow>
 
@@ -341,8 +337,8 @@ export function AccomplishmentUser({
                                         })}
                                     >
                                         <EditableCell
-                                            disabled={!disabled}
-                                            key={tasks.find(i => i.id == task.id)?.task ?? "task" + idx}
+                                            disabled={disabled}
+                                            key={tasks.find(i => i.id == task.id)?.task ?? "task" + idx + 'title'}
                                             placeholder={session?.userData.role == "Guest" ? "Write Activity or Task title" : ""}
                                             className={cn("align-top border-r w-[400px]", {
                                                 "text-primary font-semibold": isCategory(task),
@@ -353,7 +349,7 @@ export function AccomplishmentUser({
                                         />
 
                                         <EditableCell
-                                            disabled={!disabled}
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.accomplishment ?? "accomTask" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
@@ -361,13 +357,16 @@ export function AccomplishmentUser({
                                         />
 
                                         <EditableCell
-                                            disabled={!disabled}
+                                            disabled={disabled}
                                             key={tasks.find(i => i.id == task.id)?.mov ?? "movTask" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
                                             element={<div id="no-print" className={"text-right flex justify-right items-end"}>
-                                                <div onClick={() => handleDeleteOtherTask(task, idx)} className="mt-[10px] mr-[10px]">
+                                                <div onClick={() => handleDeleteOtherTask(task, idx)} className="mt-[10px] mr-[10px]" style={{
+                                                    'position': 'absolute',
+                                                    'right': 0,
+                                                }}>
                                                     <Button
                                                         variant="outline"
                                                         size="lg"
@@ -401,13 +400,10 @@ export function AccomplishmentUser({
                                 </TableCell>
                                 <TableCell
                                     className="align-top"
-                                    contentEditable={false}
-                                    suppressContentEditableWarning={true}
                                 />
                                 <TableCell
                                     className="align-top"
-                                    contentEditable={false}
-                                    suppressContentEditableWarning={true}
+
                                 />
                             </TableRow>
                         </TableBody>

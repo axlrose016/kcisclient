@@ -28,7 +28,7 @@ export interface ISummary {
   totalErrors: number;
   errorList: {
     tag: string;
-    record_id: number | string;
+    record: any;
     error_message: string;
   }[];
   overallPercentage: string;
@@ -54,7 +54,7 @@ export interface ProgressStatus {
     tag: string;
     success: number;
     failed: number;
-    errors: { record_id: number | string; error_message: string }[];
+    errors: { record: any; error_message: string }[];
     state: "in progress" | "completed" | "error";
   };
 }
@@ -225,7 +225,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
           const msg = "Internet or token error";
           failed++;
           encounteredError = true;
-          errors.push({ record_id: record.id, error_message: msg });
+          errors.push({ record: record, error_message: msg });
         } else {
           try {
             let body: BodyInit;
@@ -269,14 +269,14 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
               const msg = `HTTP ${res.status}`;
               failed++;
               encounteredError = true;
-              errors.push({ record_id: record.id, error_message: msg });
+              errors.push({ record: record, error_message: msg });
               task.onSyncRecordResult?.(record, { success: false, error: msg });
             }
           } catch (err: any) {
             const msg = err?.message || "Unknown error";
             failed++;
             encounteredError = true;
-            errors.push({ record_id: record.id, error_message: msg });
+            errors.push({ record: record, error_message: msg });
             task.onSyncRecordResult?.(record, { success: false, error: msg });
           }
         }

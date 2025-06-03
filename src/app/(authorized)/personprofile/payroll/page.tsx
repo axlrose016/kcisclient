@@ -38,7 +38,7 @@ function encodeUUID(input: string): string {
 function decodeUUID(uuid: string): string | undefined {
     return uuidToStringMap[uuid];
 }
- 
+
 const baseUrl = 'personprofile/payroll'
 
 const columns = [
@@ -103,34 +103,30 @@ export default function PayrollPage() {
     const [data, setData] = useState<ICFWPayroll[]>([]);
 
     useEffect(() => {
-        if (["Guest","CFW Beneficiary"].includes(session!.userData!.role!)) {
-            router.push(`/${baseUrl}/${session.id}`);
-        } else {
-            (async () => {
-                try {
-                    if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
-                } catch (error) {
-                    console.error('Error fetching data:', error);
-                }
-                const data = await dexieDb.cfwpayroll_bene.toArray()
-                const groupedData = data.reduce((acc: any[], curr) => {
-                    const existingGroup = acc.find(group =>
-                        group.period_cover_from.getTime() === new Date(curr.period_cover_from).getTime() &&
-                        group.period_cover_to.getTime() === new Date(curr.period_cover_to).getTime()
-                    );
+        (async () => {
+            try {
+                if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+            const data = await dexieDb.cfwpayroll_bene.toArray()
+            const groupedData = data.reduce((acc: any[], curr) => {
+                const existingGroup = acc.find(group =>
+                    group.period_cover_from.getTime() === new Date(curr.period_cover_from).getTime() &&
+                    group.period_cover_to.getTime() === new Date(curr.period_cover_to).getTime()
+                );
 
-                    if (!existingGroup) {
-                        acc.push({
-                            period_cover_from: new Date(curr.period_cover_from).toISOString(),
-                            period_cover_to: new Date(curr.period_cover_to).toISOString()
-                        });
-                    }
-                    return acc;
-                }, []);
-                setData(groupedData)
-                console.log('payroll > data', data, groupedData)
-            })();
-        }
+                if (!existingGroup) {
+                    acc.push({
+                        period_cover_from: new Date(curr.period_cover_from).toISOString(),
+                        period_cover_to: new Date(curr.period_cover_to).toISOString()
+                    });
+                }
+                return acc;
+            }, []);
+            setData(groupedData)
+            console.log('payroll > data', data, groupedData)
+        })();
     }, [])
 
     const handleEdit = (row: any) => {

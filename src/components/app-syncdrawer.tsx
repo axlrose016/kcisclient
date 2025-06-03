@@ -16,9 +16,9 @@ import {
     TooltipContent,
     TooltipProvider,
 } from '@/components/ui/tooltip';
-import { RefreshCw, Info, Loader2 } from 'lucide-react';
+import { RefreshCw, Info, Loader2, Download } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
-import { useBulkSyncStore } from '@/lib/state/bulksync-store';
+import { useBulkSyncStore, ISummary } from '@/lib/state/bulksync-store';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import { SessionPayload } from '@/types/globals';
 import { createSession, getSession } from '@/lib/sessions-client';
@@ -47,8 +47,11 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-
-
+type SyncError = {
+    tag: string;
+    record_id: number | string;
+    error_message: string;
+};
 
 export function SyncSummaryDrawer({ children }: Props) {
     const [open, setOpen] = useState(false);
@@ -172,8 +175,31 @@ export function SyncSummaryDrawer({ children }: Props) {
         }
     }
 
+    const handleExportErrors = (taskErrors: SyncError[], tag: string) => {
+        const errorData = {
+            tag,
+            timestamp: new Date().toISOString(),
+            errors: taskErrors,
+            syncStats: {
+                totalSynced: summary.totalSynced,
+                totalUnsynced: summary.totalUnsynced,
+                totalRecords: summary.totalRecords,
+                totalErrors: summary.totalErrors,
+                overallPercentage: summary.overallPercentage,
+                lastSyncedAt: summary.lastSyncedAt
+            }
+        };
 
-
+        const blob = new Blob([JSON.stringify(errorData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sync-errors-${tag}-${new Date().toISOString()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
 
     return (
         <Drawer
@@ -217,6 +243,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                                         <div className="flex-1 space-y-1 min-w-0">
                                             <div className="flex items-center gap-2">
                                                 <span className={`w-2 h-2 rounded-full ${getStateColor(state)}`} />
+
                                                 <TooltipProvider>
                                                     <Tooltip>
                                                         <TooltipTrigger asChild>
@@ -241,7 +268,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                                 <div className="text-sm text-red-500 max-w-sm">
                                                                     {taskErrors?.map((e, i) => (
                                                                         <div key={i} className="mb-2">
-                                                                            <strong>ID:</strong> {e.record_id}
+                                                                            <strong>ID:</strong> {e.record.id}
                                                                             <br />
                                                                             <strong>Error:</strong> {e.error_message}
                                                                         </div>
@@ -256,7 +283,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                                             <Progress
                                                 value={percentage}
                                                 className="bg-gray-200"
-                                                indicatorColor={
+                                                color={
                                                     percentage === 100
                                                         ? 'bg-green-400'
                                                         : taskErrors?.length
@@ -266,9 +293,29 @@ export function SyncSummaryDrawer({ children }: Props) {
                                             />
 
                                             <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                <p>
-                                                    Synced: {success} / {total} • Errors: {failed}
-                                                </p>
+                                                <div className="flex items-center gap-2  w-full">
+                                                    <p className='w-full'>
+                                                        Synced: {success} / {total} • Errors: {failed}
+                                                    </p>
+                                                    {failed > 0 && (
+                                                        <TooltipProvider>
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="ghost"
+                                                                        className="h-6 px-2"
+                                                                        onClick={() => handleExportErrors(taskErrors || [], tag)}
+                                                                    >
+                                                                        <Download className="w-3 h-3 mr-1" />
+                                                                        Export
+                                                                    </Button>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>Export error details as JSON</TooltipContent>
+                                                            </Tooltip>
+                                                        </TooltipProvider>
+                                                    )}
+                                                </div>
                                                 <span
                                                     className={`
                                                     inline-block font-medium px-2 py-0.5 rounded-full
@@ -316,7 +363,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                             <Progress
                                 value={parseInt(overallPercentage)}
                                 className="bg-gray-200"
-                                indicatorColor="bg-green-500"
+                                color="bg-green-500"
                             />
 
                             <p>

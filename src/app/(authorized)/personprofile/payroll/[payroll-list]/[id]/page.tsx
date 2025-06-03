@@ -272,7 +272,7 @@ export default function PayrollUser() {
                                 <span>Daily Time Record</span>
                                 <span className='flex items-center'>
                                     <Tooltip>
-                                        <TooltipTrigger asChild className="flex items-center">
+                                        <TooltipTrigger  asChild className="flex items-center">
                                             <CheckCircle className='h-7 w-7 mr-1 text-green-500' />
                                         </TooltipTrigger>
                                         <TooltipContent>
@@ -295,7 +295,7 @@ export default function PayrollUser() {
                         </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="item-2">
-                        <AccordionTrigger className='font-bold'>
+                        <AccordionTrigger  className='font-bold'>
                             <div className='flex justify-between items-center w-full mx-2'>
                                 <span>Accomplishment Report </span>
                                 <span className='flex items-center'>

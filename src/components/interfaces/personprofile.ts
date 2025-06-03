@@ -128,20 +128,20 @@ export interface IPersonProfile {
 }
 
 export interface IPersonProfileSector {
-  id: string;
-  person_profile_id: string;
-  sector_id: number;
-  user_id: string;
-  created_by: string;
-  created_date: string;
-  last_modified_by: string | null;
-  last_modified_date: string | null;
-  push_status_id: number;
-  push_date: string | null;
-  deleted_date: string | null;
-  deleted_by: string | null;
-  is_deleted: boolean;
-  remarks: string;
+  id: string; //
+  person_profile_id: string; //
+  sector_id: number;//
+  user_id: string;//
+  created_by: string; //
+  created_date: string; //
+  last_modified_by: string | null; //
+  last_modified_date: string | null;//
+  push_status_id: number;//
+  push_date: string | null; //
+  deleted_date: string | null; //
+  deleted_by: string | null; //
+  is_deleted: boolean; //
+  remarks: string;//
 }
 
 export interface IPersonProfileDisability {
@@ -211,7 +211,7 @@ export interface IPersonProfileCfwFamProgramDetails {
 export interface ICFWAssessment {
   id: string;
   person_profile_id: string;
-  deployment_area_category_id: number;  //✨Bago to master
+  deployment_area_category_id: number;  
   deployment_area_id: number;
   division_office_name: string;  
   assessment: string;
@@ -220,7 +220,7 @@ export interface ICFWAssessment {
   immediate_supervisor_id: string | null;
   alternate_supervisor_id: string | null;
   cfw_category_id: boolean;  
-  
+  work_plan_id: string // ✨ bago to master
   status_id: number;
   user_id: string;
   created_date: string,
@@ -238,51 +238,52 @@ export interface ICFWAssessment {
 export interface IWorkPlan {
    id: string; 
   work_plan_title: string; //✨ 
-  immediate_supervisor_id: string;
-  alternate_supervisor_id: string;
+  immediate_supervisor_id: string; // ✔️
   office_name?: string; //✨
-  objectives: string;
-  area_focal_person_id: string; //main focal person of the company i.e HEI Focal Person
-  no_of_days_program_engagement: number;
+  objectives: string; // ✔️
+  no_of_days_program_engagement: number; // ✔️
   approved_work_schedule_from: string;
   approved_work_schedule_to: string; //✨
+  status_id: number; // ✔️
+  created_date: string, // ✔️
+  created_by: string, // ✔️
+  last_modified_date?: string | null, // ✔️
+  last_modified_by?: string | null, // ✔️
+  push_status_id?: number, // ✔️
+  push_date?: string, // ✔️
+  deleted_date: string | null, // ✔️
+  deleted_by: string | null, // ✔️
+  is_deleted: boolean, // ✔️
+  remarks?: string | null, // ✔️
+  alternate_supervisor_id: string; // ✔️
+  area_focal_person_id: string; // ✔️ //main focal person of the company i.e HEI Focal Person // ✔️
   total_number_of_bene: number; //✨
-  status_id: number;
-  created_date: string,
-  created_by: string,
-  last_modified_date?: string | null,
-  last_modified_by?: string | null,
-  push_status_id?: number,
-  push_date?: string,
-  deleted_date: string | null,
-  deleted_by: string | null,
-  is_deleted: boolean,
-  remarks?: string | null,
   
 }
 
 
 export interface IWorkPlanTasks {
   id: string;  
-  work_plan_id: string;
-  category_id: number; //General, Specific, or Other
-  activities_tasks: string;
-  expected_output: string;
-  timeline_from: Date;
-  timeline_to: Date;
+  work_plan_id: string; //
+  // category_id: number; //General, Specific, or Other
+  work_plan_category_id: number//
+  activities_tasks: string; //
+  expected_output: string; //
+  timeline_from: Date; //
+  timeline_to: Date; //
+  assigned_person_id: string; //person_profile_id = record_id //
   
-  assigned_person_id: string; //person_profile_id = record_id
-  status_id: number;
-  created_date: string,
-  created_by: string,
-  last_modified_date?: string | null,
-  last_modified_by?: string | null,
-  push_status_id?: number,
-  push_date?: string,
-  deleted_date: string | null,
-  deleted_by: string | null,
-  is_deleted: boolean,
-  remarks?: string | null,
+  created_date: string,//
+  created_by: string, //
+  last_modified_date?: string | null, //
+  last_modified_by?: string | null, //
+  deleted_date: string | null, //
+  deleted_by: string | null, //
+  remarks?: string | null, //
+  is_deleted: boolean, //
+  status_id: number; //
+  push_status_id?: number,//
+  push_date?: string, //
 }
 export interface IWorkPlanCfw {
   id: string;  

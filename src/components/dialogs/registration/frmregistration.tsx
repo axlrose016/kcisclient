@@ -18,7 +18,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { useOnlineStatus } from "@/hooks/use-network"
 import UsersService from "./UsersService"
 import { datetime } from "drizzle-orm/mysql-core"
-import { useState } from "react"
+import React, { useState } from "react"
 
 const formSchema = z
   .object({
@@ -76,7 +76,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
     const formUser: IUser = {
       id: _id,
       username: data.username,
-      email: data.email,
+      email: data.email.toLowerCase(),
       password: hashedPassword,
       salt: salt,
       role_id: _role[0].id,
