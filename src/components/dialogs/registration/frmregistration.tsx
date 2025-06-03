@@ -90,6 +90,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       deleted_date: null,
       is_deleted: false,
       remarks: "",
+      level_id: 0
     }
 
     const formUserAccess: IUserAccess = {

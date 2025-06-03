@@ -19,6 +19,10 @@ import { FinanceService } from "@/app/(authorized)/finance/FinanceService"
 import { IAllocationUacs } from "@/db/offline/Dexie/schema/finance-service"
 import { NumericFormat } from 'react-number-format';
 
+type FormAllocationUascProps = {
+  _id?: string | null;
+};
+
 const formSchema = z.object({
   id: z.string(),
   allocation_id: z.string(),
@@ -39,12 +43,11 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>
 const financeService = new FinanceService();
 
-export default function FormAllocationUasc() {
+export default function FormAllocationUasc({ _id }: FormAllocationUascProps) {
   const router = useRouter();
   const params = useParams() || undefined; // for dynamic route segments
   const searchParams = useSearchParams();
   const baseUrl = 'finance/budget/allocation'
-
   const [record, setRecord] = useState<any>(null);
   const [uacs, setUacs] = useState<any>(null);
   const [region, setRegion] = useState<LibraryOption[]>([]);
@@ -90,10 +93,11 @@ export default function FormAllocationUasc() {
   useEffect(() => {
   const fetchRecord = async () => {
 
-    if (!uacsId) return;
+    if (!uacsId && !_id) return;
 
     try {
-        const fetchedRecord = await financeService.getOfflineAllocationUacsById(uacsId) as IAllocationUacs;
+        const finId = uacsId !== "" ? uacsId : _id;
+        const fetchedRecord = await financeService.getOfflineAllocationUacsById(finId) as IAllocationUacs;
         setRecord(fetchedRecord);
         form.reset(fetchedRecord as any); // ✅ Apply fetched record to form
     } catch (error) {
@@ -102,7 +106,7 @@ export default function FormAllocationUasc() {
   };
 
   fetchRecord();
-  }, [uacsId]);
+  }, [uacsId,_id]);
 
   useEffect(() => {
     if(!id) return;
@@ -124,7 +128,7 @@ export default function FormAllocationUasc() {
   // const values = form.watch();
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <Card className="max-w-full mx-auto">
         <CardHeader>
           <CardTitle>UACS</CardTitle>

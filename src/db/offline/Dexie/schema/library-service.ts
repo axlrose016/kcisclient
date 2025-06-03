@@ -1,7 +1,7 @@
 import Dexie, { EntityTable } from "dexie";
 import { dexieDb } from "../databases/dexieDb";
 import { libDb } from "../databases/libraryDb";
-import { ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibLevel, ILibModality, ILibModalitySubCategory, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibWorkPlanTaskCategory, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibCFWType, ILibCivilStatus, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibEducationalAttainment, ILibExpense, ILibExtensionName, ILibFilesToUpload, ILibIdCard, ILibIPGroup, ILibLevel, ILibModality, ILibModalitySubCategory, ILibPAP, ILibProgramTypes, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibWorkPlanTaskCategory, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess } from "@/components/interfaces/iuser";
 import { seedCFWSchedules, seedCFWTimeLogs } from "./user-service";
 
@@ -33,6 +33,15 @@ const tblLibSchoolProfiles = dexieDb.table('lib_school_profiles') as EntityTable
 const tblLibSchoolPrograms = dexieDb.table('lib_school_programs') as EntityTable<ILibSchoolPrograms, 'id'>;
 const tblLibStatuses = dexieDb.table('lib_statuses') as EntityTable<ILibStatuses, 'id'>;
 const tblLibDeploymentAreaCategories = dexieDb.table('lib_deployment_area_categories') as EntityTable<ILibDeploymentAreaCategories, 'id'>;
+
+
+//Library DB
+const tblBudgetYear = libDb.table('lib_budget_year') as EntityTable<ILibBudgetYear, 'id'>;
+const tblPAP = libDb.table('lib_pap') as EntityTable<ILibPAP, 'id'>;
+const tblAllotmentClass = libDb.table('lib_allotment_class') as EntityTable<ILibAllotmentClass, 'id'>;
+const tblAppropriationSource = libDb.table('lib_appropriation_source') as EntityTable<ILibAppropriationSource, 'id'>;
+const tblAppropriationType = libDb.table('lib_appropriation_type') as EntityTable<ILibAppropriationType,'id'>;
+const tblExpense = libDb.table('lib_expense') as EntityTable<ILibExpense, 'id'>;
 const tblLibLevel = libDb.table('lib_level') as EntityTable<ILibLevel, 'id'>;
 
 //Roles Service
@@ -292,6 +301,21 @@ export const seedModules: IModules[] = [
         "id": "866e6bcb-041f-4d58-94bf-6c54e4855f85",
         "module_description": "Settings",
         "module_path": "settings",
+        "created_by": "00000000-0000-0000-0000-000000000000",
+        "created_date": new Date().toISOString(),
+        "last_modified_by": "",
+        "last_modified_date": "",
+        "push_status_id": 2,
+        "push_date": "",
+        "deleted_by": "",
+        "deleted_date": "",
+        "is_deleted": false,
+        "remarks": "Seeded"
+    },
+    {
+        "id": "f8446068-385e-461c-9417-5caf086f103e",
+        "module_description": "Finance",
+        "module_path": "finance",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",
@@ -2086,8 +2110,57 @@ export const seedLibLevel: ILibLevel[] = [
     { id: 4, level_description: "ACT", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
 ]
 
+export const seedBudgetYear: ILibBudgetYear[] = [
+    { id: 1, budget_year_description: "2025", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedPAP: ILibPAP[] = [
+    { id: 1, pap_description: "310100-20000-2000 KKB CDD", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, pap_description: "310100-20000-2000 KKB CFW PWD", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, pap_description: "310100-20000-2000 KKB CFW SUC", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 4, pap_description: "PAGKILOS", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 5, pap_description: "310100-30000-5000 PMNP", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedAllotmentClass: ILibAllotmentClass[] = [
+    { id: 1, allotment_class_description: "MOOE", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, allotment_class_description: "CO", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, allotment_class_description: "PS", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 4, allotment_class_description: "FINEX", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedAppropriationSource: ILibAppropriationSource[] = [
+    { id: 1, appropriation_source_description: "Programmed Appropriation", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, appropriation_source_description: "Unprogrammed Appropriation", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedAppropriationType: ILibAppropriationType[] = [
+    { id: 1, appropriation_type_description: "Current Appropriation", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, appropriation_type_description: "Continuing Appropriation (CO)", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, appropriation_type_description: "Continuing Appropriation (FO)", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
+export const seedExpense: ILibExpense[] = [
+    { id: 1, expense_code: "50101010-01", expense_description: "Salaries and Wages - Regular", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 2, expense_code: "50101020-00", expense_description: "Salaries and Wages - Casual/Contractual", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 3, expense_code: "50102010-01", expense_description: "Personnel Economic Relief Allowance (PERA)", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 4, expense_code: "50102020-00", expense_description: "Representation Allowance (RA)", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 5, expense_code: "50102030-01", expense_description: "Transportation Allowance (TA)", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 6, expense_code: "50102040-01", expense_description: "Clothing/Uniform Allowance", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 7, expense_code: "50102050-03", expense_description: "Subsistence Allowance-Magna Carta Benefits for Public Social Workers under R.A. 9432", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 8, expense_code: "50102050-04", expense_description: "Public Social Workers under R.A. 9432 ", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 9, expense_code: "50102060-01", expense_description: "Laundry Allowance-Civilian", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+    { id: 10, expense_code: "50102060-04", expense_description: "Health Workers under R.A. 7305", "created_date": new Date().toISOString(), "created_by": "kcadmin@gmail.com", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded" },
+]
+
 export async function seedData() {
     try {
+        await tblBudgetYear.bulkPut(seedBudgetYear);
+        await tblPAP.bulkPut(seedPAP);
+        await tblAllotmentClass.bulkPut(seedAllotmentClass);
+        await tblAppropriationSource.bulkPut(seedAppropriationSource);
+        await tblAppropriationType.bulkPut(seedAppropriationType);
+        await tblExpense.bulkPut(seedExpense);
         await tblRoles.bulkPut(seedRoles);
         await tblModules.bulkPut(seedModules);
         await tblPermissions.bulkPut(seedPermissions);

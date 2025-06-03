@@ -103,7 +103,7 @@ export default function FormMonthlyObligationPlan() {
   }), [uacs];
 
   function onSubmit(data: FormValues){
-    if(validateAmount > grandTotal){
+    if(validateAmount != grandTotal){
       toast({
           variant:"destructive",
           title: "Error.",
@@ -145,7 +145,7 @@ export default function FormMonthlyObligationPlan() {
 
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto">
       <fieldset disabled={true}>
         <FormAllocationUasc/>
       </fieldset>

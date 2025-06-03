@@ -126,13 +126,11 @@ function MOPMasterlist() {
             <div className="flex-shrink-0">
                 <img src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
             </div>
-
             {/* Title Section */}
             <div className="text-lg font-semibold mt-2 md:mt-0">
                 Monthly Obligation Plan
             </div>
         </CardTitle>
-
     </CardHeader>
     <CardContent>
         <div className="min-h-screen">

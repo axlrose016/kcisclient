@@ -139,7 +139,6 @@ function AllocationMasterlist() {
                 />
             </div>
         </div>
-
     </CardContent>
     </Card>
   )

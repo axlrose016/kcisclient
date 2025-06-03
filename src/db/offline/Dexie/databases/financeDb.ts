@@ -11,8 +11,8 @@ class FinanceDatabase extends Dexie {
     constructor() {
         super('financeDb');
         this.version(1).stores({
-            allocation: `id, date_allocation, region_code, pap_id, budget_year_id, appropriation_source_id, appropriation_type_id, record_status_id, ${commonFields}`,
-            allocation_uacs: `id, allocation_id, allotment_class_id, component_id, expense_id, allocation_amount, ${commonFields}`,
+            allocation: `id, date_allocation, region_code, pap_id, budget_year_id, appropriation_source_id, appropriation_type_id, record_status_id, allotment_manual_id, allotment_purpose,${commonFields}`,
+            allocation_uacs: `id, allocation_id, allotment_class_id, component_id, expense_id, allocation_amount, allotment_amount, ${commonFields}`,
             monthly_obligation_plan: `id, allocation_uacs_id, amt_jan, amt_feb, amt_mar, amt_apr, amt_may, amt_jun, amt_jul, amt_aug, aug_sep, aug_oct, aug_nov, aug_dec, ${commonFields}`
         })
     }

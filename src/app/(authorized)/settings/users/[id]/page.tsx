@@ -17,6 +17,7 @@ import { IUser, IUserAccess } from "@/components/interfaces/iuser"
 import { AppTable } from "@/components/app-table"
 import { getOfflineLibLevel, getOfflineRoles } from "@/components/_dal/offline-options"
 import { FormDropDown } from "@/components/forms/form-dropdown"
+import { PushStatusBadge } from "@/components/general/push-status-badge"
 
 const formSchema = z.object({
   id: z.string(),
@@ -112,18 +113,49 @@ export default function FormModule() {
 
   const handleDelete = (row: any) => {
     console.log('Delete:', row);
-};
+  };
 
-const handleRowClick = (row: any) => {
-    console.log('Row clicked:', row);
+  const handleRowClick = (row: any) => {
+      console.log('Row clicked:', row);
+      debugger;
+      router.push(`/${baseUrl}/${row.user_id}/useraccess/${row.id}`);
+  };
+  const handleAddNewRecord = (newRecord: any) => {
     debugger;
-    router.push(`/${baseUrl}/${row.user_id}/useraccess/${row.id}`);
-};
-const handleAddNewRecord = (newRecord: any) => {
-  debugger;
-    router.push(`/${baseUrl}/${id}/useraccess/0`)
-}
+      router.push(`/${baseUrl}/${id}/useraccess/0`)
+  }
 
+  const columnsMasterlist = [
+    {
+        id: 'push status id',
+        header: 'Uploading Status',
+        accessorKey: 'push_status_id',
+        filterType: 'select',
+        filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+        sortable: true,
+        align: "center",
+        cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+
+    },
+    {
+        id: 'module description',
+        header: 'Module',
+        accessorKey: 'module_description',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+    {
+        id: 'permission description',
+        header: 'Permission',
+        accessorKey: 'permission_description',
+        filterType: 'text',
+        sortable: true,
+        align: "left",
+        cell: null,
+    },
+  ]
 
   return (
     <div className="container mx-auto py-10">
@@ -233,17 +265,7 @@ const handleAddNewRecord = (newRecord: any) => {
         <CardContent>
         <AppTable
           data={access ?? []}
-          columns={
-            access && access.length > 0
-              ? Object.keys(access[0]).map((key) => ({
-                  id: key,
-                  header: key,
-                  accessorKey: key,
-                  filterType: 'text',
-                  sortable: true,
-                }))
-              : [] // Fallback to empty columns if no data
-          }
+          columns={columnsMasterlist}
           onDelete={handleDelete}
           onRowClick={handleRowClick}
           onAddNewRecordNavigate={handleAddNewRecord}

@@ -2344,8 +2344,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         {/* <pre>{"Has pic: " + displayPic}</pre> */}
         {/* <pre>{"Token: " + _session.token}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(data.person_profile_family_composition, null, 2)}</pre> */}
-        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData.id, null, 2)}</pre>
-        <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
+        {/* <pre><h1>Person Profile</h1>{JSON.stringify(formData.id, null, 2)}</pre> */}
+        {/* <pre><h1>Sectors</h1>{JSON.stringify(formSectorData, null, 2)}</pre> */}
         {/* <pre><h1>Disabilities</h1>{JSON.stringify(formDisabilitiesData, null, 2)}</pre> */}
         {/* <pre><h1>Family Composition</h1>{JSON.stringify(formFamilyCompositionData, null, 2)}</pre> */}
         {/* <pre><h1>CFW Program Details</h1>{JSON.stringify(formCFWFamDetailsData, null, 2)}</pre> */}

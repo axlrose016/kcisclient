@@ -1,22 +1,25 @@
 "use client"
 
-import { getOfflineUsers } from "@/components/_dal/offline-users";
 import { AppTable } from "@/components/app-table";
 import LoadingScreen from "@/components/general/loading-screen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import React from "react"
+import { SettingsService } from "../SettingsService";
+import { IUser } from "@/components/interfaces/iuser";
+import { PushStatusBadge } from "@/components/general/push-status-badge";
 
 export default function Users(){
-    const [users, setUsers] = React.useState([]);
+    const [users, setUsers] = React.useState<IUser[] | undefined>(undefined);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const baseUrl = 'settings/users'
+    const settingsService = new SettingsService();
 
     React.useEffect(() => {
         async function loadUsers(){
             try{
-                const data = await getOfflineUsers();
+                const data = await settingsService.getOfflineUsers() as any;
                 setUsers(data);
             }catch(error){
                 console.error(error);
@@ -59,6 +62,67 @@ export default function Users(){
         console.log('handleAddNewRecord', newRecord)
         router.push(`/${baseUrl}/${newRecord.id}`);
     };
+
+    const handleOnRefresh = async() => {
+        const fetchedUsers = await settingsService.syncDownloadUsers();
+        setUsers(fetchedUsers);
+    }
+
+    const handleOnSync = async() => {
+        const success = await settingsService.syncBulkUserData();
+        alert("Success" + success);
+    }
+
+     const columnsMasterlist = [
+        {
+            id: 'push status id',
+            header: 'Uploading Status',
+            accessorKey: 'push_status_id',
+            filterType: 'select',
+            filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+            sortable: true,
+            align: "center",
+            cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+
+        },
+        {
+            id: 'user name',
+            header: 'UserName',
+            accessorKey: 'username',
+            filterType: 'text',
+            sortable: true,
+            align: "left",
+            cell: null,
+        },
+        {
+            id: 'email',
+            header: 'Email',
+            accessorKey: 'email',
+            filterType: 'text',
+            sortable: true,
+            align: "left",
+            cell: null,
+        },
+        {
+            id: 'role description',
+            header: 'Role',
+            accessorKey: 'role_description',
+            filterType: 'text',
+            sortable: true,
+            align: "left",
+            cell: null,
+        },
+        {
+            id: 'level description',
+            header: 'Level',
+            accessorKey: 'level_description',
+            filterType: 'text',
+            sortable: true,
+            align: "left",
+            cell: null,
+        },
+    ];
+
     return(
         <Card>
         <CardHeader>
@@ -74,26 +138,19 @@ export default function Users(){
                 </div>
             </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div className="min-h-screen">
+            <CardContent>
                 <div className="min-h-screen">
                     <AppTable
-                        data={users}
-                        columns={users[0] ? Object.keys(users[0]).map((key, idx) => ({
-                            id: key,
-                            header: key,
-                            accessorKey: key,
-                            filterType: 'text',
-                            sortable: true,
-                        })) : []}
-                        onDelete={handleDelete}
-                        onRowClick={handleRowClick}
-                        onAddNewRecord={handleAddNewRecord}
+                    data={users ?? []}
+                    columns={columnsMasterlist}
+                    onDelete={handleDelete}
+                    onRowClick={handleRowClick}
+                    onAddNewRecord={handleAddNewRecord}
+                    onRefresh={handleOnRefresh}
+                    onSync={handleOnSync}
                     />
                 </div>
-            </div>
-
-        </CardContent>
+            </CardContent>
         </Card>
     )
 }

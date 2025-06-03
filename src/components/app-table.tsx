@@ -70,7 +70,8 @@ import {
   Settings,
   Table as TableIcon,
   Trash,
-  X
+  X,
+  UploadCloudIcon
 } from 'lucide-react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -92,6 +93,7 @@ interface DataTableProps {
   onClickEdit?: (record: any) => void;
   onAddNewRecord?: (record: any) => void;
   onRefresh?: () => void;
+  onSync?: () => void;
   customActions?: {
     label: string;
     icon: any;
@@ -136,6 +138,7 @@ export function AppTable({
   onClickEdit,
   onAddNewRecord,
   onRefresh,
+  onSync,
   customActions,
   enableRowSelection = false,
   simpleView = false,
@@ -177,6 +180,7 @@ export function AppTable({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSynching, setIsSynching] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
 
@@ -274,6 +278,17 @@ export function AppTable({
       }
     }
   };
+
+  const handleSync = async () => {
+    if(onSync){
+      setIsSynching(true);
+      try {
+        await onSync();
+      }finally{
+        setIsRefreshing(false);
+      }
+    }
+  }
 
   const toggleRowSelection = (rowId: string, event?: React.MouseEvent) => {
     event?.stopPropagation();
@@ -711,6 +726,23 @@ export function AppTable({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Refresh Data</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {onSync && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={handleSync}
+                        disabled={isRefreshing}
+                      >
+                        <UploadCloudIcon className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Upload Data</TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}

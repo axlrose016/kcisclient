@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { useEffect, useState } from "react"
-import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useParams, usePathname, useRouter, useSearchParams } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { FormDropDown } from "@/components/forms/form-dropdown"
 import { LibraryOption } from "@/components/interfaces/library-interface"
@@ -23,7 +23,7 @@ import { IAllocation, IAllocationUacs } from "@/db/offline/Dexie/schema/finance-
 import { AppTable } from "@/components/app-table"
 import { FinanceService } from "../../../../FinanceService"
 import { formatPHP } from "@/components/utils/utils"
-import { useAlert } from "@/components/general/alert-modal"
+import { useAlert } from "@/components/general/use-alert"
 
 const formSchema = z.object({
   id: z.string(),
@@ -35,16 +35,28 @@ const formSchema = z.object({
   appropriation_type_id: z.coerce.number().int().positive("Appropriation Type is required"), 
 });
 
+
 type FormValues = z.infer<typeof formSchema>
 const financeService = new FinanceService();
 
 export default function FormAllocation() {
-const { showError, showWarning, showSuccess } = useAlert()
-
+  const alert = useAlert()
   const router = useRouter();
   const params = useParams() || undefined; 
   const searchParams = useSearchParams();
   const baseUrl = 'finance/budget/allocation'
+  const pathname = usePathname();
+  // const [pageType, setPageType] = useState("");
+
+  //   useEffect(() => {
+  //     if (pathname?.includes("/allocation")) {
+  //       setFormTitle("WFP Allocation")
+  //       setFormDescription("Enter or update WFP Allocation details");
+  //     } else if (pathname?.includes("/allotment")) {
+  //       setFormTitle("Allotment Received")
+  //       setFormDescription("Enter or update Allotment Received");
+  //     }
+  //   }, [pathname]);
 
   const [record, setRecord] = useState<any>(null);
   const [uacs, setUacs] = useState([]);
@@ -117,13 +129,12 @@ const { showError, showWarning, showSuccess } = useAlert()
   }, [id,form]);
 
   async function onSubmit(data: FormValues, redirect?: boolean) {
-    // debugger;
-    // const hasExist = await financeService.checkDuplicateAllocation(data);
-    // if(hasExist){
-    //     showError("Save Failed", "Unable to save allocation. Please check your data and try again.")
-    //     return;
-    // }
-
+    debugger;
+    const hasExist = await financeService.checkDuplicateAllocation(data);
+    if (hasExist) {
+        handleWarningAlert(hasExist);
+        return undefined
+      }
     financeService.saveOfflineAllocation(data).then((response:any) => {
       if (response) {
         if(redirect){
@@ -158,6 +169,16 @@ const { showError, showWarning, showSuccess } = useAlert()
       })();
     }
   };
+
+  const handleWarningAlert = async (data: any) => {
+    const confirmed = await alert.warning(
+      "Warning",
+      "Uh-oh! An existing allocation with the same details has been found. Please click 'Proceed' to redirect to the existing record.",
+    )
+    if(confirmed){
+      router.push(`/${baseUrl}/form/${data.id}`);
+    }
+  }
 
     const columnsMasterlist = [
       {
@@ -199,7 +220,7 @@ const { showError, showWarning, showSuccess } = useAlert()
     ];
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-5">
       <Card className="max-w-full mx-auto">
         <CardHeader>
           <CardTitle>WFP Allocation</CardTitle>
@@ -378,7 +399,7 @@ const { showError, showWarning, showSuccess } = useAlert()
                 <Button variant="outline" type="button" onClick={() => router.push(`/${baseUrl}/`)}>
                   Cancel
                 </Button>
-                <Button type="submit">Save Allocation</Button>
+                <Button type="submit">Save</Button>
               </CardFooter>
             </fieldset>
           </form>

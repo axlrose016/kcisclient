@@ -70,15 +70,23 @@ export class UserService{
     }
     async getOfflineUserAccessByUserId(id: any): Promise<IUserAccess[] | undefined> {
         try {
-        const result = await dexieDb.transaction('r', [dexieDb.useraccess], async () => {
-            const userAccess = await dexieDb.useraccess.where('user_id').equals(id).toArray();
-            if (userAccess) {
-            return userAccess;
-            } else {
-            console.log('No record found with the given ID.');
-            return undefined;
-            }
+
+        const moduleList = await dexieDb.modules.toArray();
+        const moduleMap = new Map(moduleList.map(m => [m.id, m.module_description || ""]));
+
+        const permissionList = await dexieDb.permissions.toArray();
+        const permissionMap = new Map(permissionList.map(p => [p.id, p.permission_description || ""]));
+
+        const userAccess = await dexieDb.transaction('r', [dexieDb.useraccess], async () => {
+            return await dexieDb.useraccess.where('user_id').equals(id).toArray();
         });
+
+        const result = userAccess.map(ua => ({
+          ...ua,
+          module_description: moduleMap.get(ua.module_id),
+          permission_description: permissionMap.get(ua.permission_id),
+        }));
+
         return result;
         } catch (error) {
         console.error('Fetch Record Failed: ', error);

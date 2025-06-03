@@ -2,7 +2,7 @@
 import { AppTable } from '@/components/app-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { IPositionItem } from '@/db/offline/Dexie/schema/hr-service';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react'
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -15,20 +15,19 @@ function AllotmentMasterlist() {
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const financeService = new FinanceService();
-
-    React.useEffect(() => {
-        async function loadAllocations() {
-          try {
-            const data = await financeService.getOfflineAllocations() as any;
-            setData(data);
-          } catch (error) {
-            console.error(error);
-          } finally {
-            setLoading(false);
+      React.useEffect(() => {
+          async function loadAllocations() {
+            try {
+              const data = await financeService.getOfflineAllocations() as any;
+              setData(data);
+            } catch (error) {
+              console.error(error);
+            } finally {
+              setLoading(false);
+            }
           }
-        }
-        loadAllocations();
-      }, []);
+          loadAllocations();
+        }, []);
 
 
     const baseUrl = 'finance/budget/allotment/'
@@ -43,19 +42,10 @@ function AllotmentMasterlist() {
 
     const handleRowClick = (row: any) => {
       console.log('Row clicked:', row);
-      router.push(`/${baseUrl}/form/${row.id}`);
+      router.push(`/${baseUrl}/form/${row.id}?uacsId=${row.uacs_id}`);
     };
 
-    const columnsMasterlist = [
-      {
-        id: 'record id', 
-        header: 'Record ID',
-        accessorKey: 'id',
-        filterType: null,
-        sortable: false,
-        align: "center",
-        cell: null
-      },
+   const columnsMasterlist = [
       {
           id: 'region',
           header: 'Region',
@@ -66,42 +56,61 @@ function AllotmentMasterlist() {
           cell: null,
       },
       {
-          id: 'pap id',
+          id: 'pap descriotion',
           header: 'PAP',
-          accessorKey: 'pap_id',
+          accessorKey: 'pap_description',
           filterType: 'text',
           sortable: true,
           align: "left",
           cell: null,
       },
       {
-          id: 'budget year id',
+          id: 'budget year description',
           header: 'Budget Year',
-          accessorKey: 'budget_year_id',
+          accessorKey: 'budget_year_description',
           filterType: 'text',
           sortable: true,
-          align: "left",
+          align: "right",
           cell: null,
       },
       {
-          id: 'appropriation source id',
+          id: 'appropriation source description',
           header: 'Appropriation Source',
-          accessorKey: 'appropriation_source_id',
+          accessorKey: 'appropriation_source_description',
           filterType: 'text',
           sortable: true,
           align: "left",
           cell: null,
       },
       {
-          id: 'appropration type id',
+          id: 'appropration type description',
           header: 'Appropriation Type',
-          accessorKey: 'appropriation_type_id',
+          accessorKey: 'appropriation_type_description',
           filterType: 'text',
           sortable: true,
           align: "left",
+          cell: null,
+      },
+      {
+          id: 'expense description',
+          header: 'Expense',
+          accessorKey: 'expense_description',
+          filterType: 'text',
+          sortable: true,
+          align: "left",
+          cell: null,
+      },
+      {
+          id: 'allocation amount',
+          header: 'Amount',
+          accessorKey: 'allocation_amount',
+          filterType: 'number',
+          sortable: true,
+          align: "right",
           cell: null,
       },
     ];
+
 
   return (
     <Card>
@@ -123,12 +132,11 @@ function AllotmentMasterlist() {
     <CardContent>
         <div className="min-h-screen">
             <div className="min-h-screen">
-                <AppTable
+               <AppTable
                     data={data}
                     columns={columnsMasterlist}
                     onDelete={handleDelete}
                     onRowClick={handleRowClick}
-                    onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}
                 />
             </div>
         </div>

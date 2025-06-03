@@ -142,3 +142,15 @@ export async function hasOnlineAccess(
     return false;
   }
 }
+
+function removeEmptyValues(obj: Record<string, any>): Record<string, any> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(
+      ([_, value]) => value !== null && value !== ''
+    )
+  );
+}
+
+export function cleanArray(data: Record<string, any>[]): Record<string, any>[] {
+  return data.map(removeEmptyValues);
+}
