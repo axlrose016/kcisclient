@@ -171,85 +171,72 @@ export default function WorkPlanMasterList({ page }: { page: number }) {
         router.push(baseUrl + "/new");
     }
 
-    const fetchDataWorkPlanFromDexieDb = async () => {
-        const supervisorId = _session.id;
-        // alert(supervisorId)
-        const workPlans = await dexieDb.work_plan
-            .where('immediate_supervisor_id')
-            .equals(supervisorId)
-            .toArray();
-        setDataWorkPlan(workPlans)
-        console.log("Work Plan list", workPlans);
-    }
     useEffect(() => {
-        setLoading(false)
-        fetchDataWorkPlanFromDexieDb()
-        // Array of matching work plans
 
+        
+        async function loadWorkPlan() {
+            try {
+                const fetchData = async (endpoint: string) => {
+                    const cacheKey = `${endpoint}_page_${page}`;
+                    if (cache[cacheKey]) {
+                        console.log("Using cached data for:", cacheKey);
+                        setDataWorkPlan(cache[cacheKey]);
+                        return;
+                    }
 
-        // async function loadWorkPlan() {
-        //     try {
-        //         const fetchData = async (endpoint: string) => {
-        //             const cacheKey = `${endpoint}_page_${page}`;
-        //             if (cache[cacheKey]) {
-        //                 console.log("Using cached data for:", cacheKey);
-        //                 setDataWorkPlan(cache[cacheKey]);
-        //                 return;
-        //             }
+                    const signal = newAbortSignal(5000);
+                    try {
+                        debugger;
+                        const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
-        //             const signal = newAbortSignal(5000);
-        //             try {
-        //                 debugger;
-        //                 const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
+                        const response = await fetch(endpoint, {
+                            method: "GET",
+                            headers: {
+                                Authorization: `bearer ${onlinePayload.token}`,
+                                "Content-Type": "application/json",
+                            },
+                            // body: JSON.stringify({
+                            //     "page_number": 1,
+                            //     "page_size": 1000
+                            // })
+                        });
 
-        //                 const response = await fetch(endpoint, {
-        //                     method: "GET",
-        //                     headers: {
-        //                         Authorization: `bearer ${onlinePayload.token}`,
-        //                         "Content-Type": "application/json",
-        //                     },
-        //                     // body: JSON.stringify({
-        //                     //     "page_number": 1,
-        //                     //     "page_size": 1000
-        //                     // })
-        //                 });
+                        if (!response.ok) {
+                            console.log(response);
+                        } else {
+                            debugger;
+                            const data = await response.json();
 
-        //                 if (!response.ok) {
-        //                     console.log(response);
-        //                 } else {
-        //                     debugger;
-        //                     const data = await response.json();
+                            console.log("🗣️Work Plan from API ", data?.data);
+                            console.log("🗣️Work Plan from API ", data.length);
 
-        //                     console.log("🗣️Work Plan from API ", data?.data);
-        //                     console.log("🗣️Work Plan from API ", data.length);
+                            cache[cacheKey] = data?.data; // Cache the data
+                            if (data.length == 0 || data == undefined) {
+                                setDataWorkPlan([])
+                            } else {
 
-        //                     cache[cacheKey] = data?.data; // Cache the data
-        //                     if (data.length == 0 || data == undefined) {
-        //                         setDataWorkPlan([])
-        //                     } else {
+                                setDataWorkPlan(data?.data);
+                            }
+                        }
+                    } catch (error: any) {
+                        if (error.name === "AbortError") {
+                            console.log("Request canceled", error.message);
+                            alert("Request canceled" + error.message);
+                        } else {
+                            console.error("Error fetching data:", error);
+                            alert("Error fetching data:" + error);
+                        }
+                    }
+                };
 
-        //                         setDataWorkPlan(data?.data);
-        //                     }
-        //                 }
-        //             } catch (error: any) {
-        //                 if (error.name === "AbortError") {
-        //                     console.log("Request canceled", error.message);
-        //                     alert("Request canceled" + error.message);
-        //                 } else {
-        //                     console.error("Error fetching data:", error);
-        //                     alert("Error fetching data:" + error);
-        //                 }
-        //             }
-        //         };
-
-        //         fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/");
-        //     } catch (error) {
-        //         console.error(error);
-        //     } finally {
-        //         setLoading(false);
-        //     }
-        // }
-        // loadWorkPlan();
+                fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/");
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadWorkPlan();
     }, []);
 
     if (loading) {
@@ -477,8 +464,8 @@ export default function WorkPlanMasterList({ page }: { page: number }) {
                     {/* <Button onClick={(e) => fetchData("http://10.10.10.162:9000/api/person_profiles/view/pages/")}>Test</Button> */}
 
                     <AppTable
-                        // data={[]}
-                        data={dataWorkPlan != undefined ? dataWorkPlan : []}
+                        data={[]}
+                        // data={dataWorkPlan != undefined ? dataWorkPlan : []}
                         columns={columnsWorkPlan}
                         onEditRecord={handleEdit}
                         onClickAddNew={handleCreateNewWorkPlan}

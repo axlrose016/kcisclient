@@ -112,22 +112,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
 
     console.log('formUserAccess', formUserAccess)
 
-    //OFFLINE
-    const saveUser = async () => {
-      try {
-        await dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async () => {
-          await Promise.all([
-            dexieDb.users.add(formUser),
-            dexieDb.useraccess.add(formUserAccess),
-          ]);
-          console.log("User: ", formUser);
-          console.log("Access: ", formUserAccess);
-        });
-      } catch (error) {
-        console.error('Transaction failed: ', error);
-      }
-    };
-
+    //OFFLINE 
     const isExist = await checkUserExists(data.email, data.username);
     if (isExist) {
       toast({
@@ -138,18 +123,26 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       return;
     }
 
-    saveUser();
+    try {
+      await dexieDb.users.put(formUser)
+      await dexieDb.useraccess.put(formUserAccess)
+    } catch (error) {
+      console.error('Transaction failed: ', error);
+      toast({
+        variant: "destructive",
+        title: "Error.",
+        description: "Account cannot be saved at this time error:" + JSON.stringify(error),
+      });
+    }
+
 
     //TRY TO SYNC 
     if (isOnline) {
-      const uploaded = await UsersService.syncUserData(formUser, Array(formUserAccess));
+      await UsersService.syncUserData(formUser, Array(formUserAccess));
       debugger;
-      if (uploaded) {
-        saveUser();
-      }
     }
 
-    
+
     //ONLINE
     //DITO ILALAGAY YUNG FUNCTIONS FOR ONLINE SYNC
     toast({

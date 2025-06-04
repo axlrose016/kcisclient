@@ -83,7 +83,8 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
     const addProgramDetail = (newRecord: any) => {
         setProgramDetails((prev) => {
             const updatedList = [...prev, newRecord]; // ✅ Add new data properly
-            localStorage.setItem("programDetails", JSON.stringify(updatedList)); // ✅ Update localStorage
+            localStorage.setItem("person_cfw_program_details", JSON.stringify(updatedList)); // ✅ Update localStorage
+            // localStorage.setItem("programDetails", JSON.stringify(updatedList)); // ✅ Update localStorage
             return updatedList;
         });
     };
@@ -107,11 +108,15 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                 // }
                 // setCFWTypeOptions(cfw_type);
 
-                const storedHasProgramDetails = localStorage.getItem("cfwHasProgramDetails");
-                if (storedHasProgramDetails !== null) {
-                    setHasProgramDetails(storedHasProgramDetails);
+                // const storedHasProgramDetails = localStorage.getItem("cfwHasProgramDetails");
+                const storedHasProgramDetails = localStorage.getItem("person_profile");
+                if(storedHasProgramDetails){
+                    const parsHPD = JSON.parse(storedHasProgramDetails)
+                    setHasProgramDetails(parsHPD);
                     console.log("has Program Details? " + storedHasProgramDetails);
                 }
+                // if (storedHasProgramDetails !== null) {
+                // }
 
                 loadProgramDetails();
 
@@ -183,11 +188,12 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
 
 
     const handleIsCFWFamBene = (event: React.ChangeEvent<HTMLInputElement>) => {
-        updateFormData({ hasprogramdetails: JSON.parse(event.target.value) }); // Proper boolean conversion
+        updateFormData({ has_program_details: JSON.parse(event.target.value) }); // Proper boolean conversion
+        // updateFormData({ hasprogramdetails: JSON.parse(event.target.value) }); // Proper boolean conversion
     };
 
     useEffect(() => {
-        const storedValue = localStorage.getItem("hasProgramDetails");
+        const storedValue = localStorage.getItem("has_program_details");
         if (storedValue) {
             setHasProgramDetails(storedValue);
         }
@@ -280,7 +286,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                 person_profile_id: capturedData.id,
             };
             console.log("CFW Fam Composition type is ", typeof cfwFamComposition)
-            const isExist = cfwFamComposition.some(record =>
+            const isExist = Array.isArray(cfwFamComposition) && cfwFamComposition.some(record =>
                 record.family_composition_id === newRecord.family_composition_id &&
                 record.program_type_id === newRecord.program_type_id &&
                 record.year_served_id === newRecord.year_served_id
@@ -288,7 +294,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
 
             if (!isExist) {
                 // Insert new recordz
-                const updatedCFWProgramDetails = [...cfwFamComposition, newRecord];
+                const updatedCFWProgramDetails = Array.isArray(cfwFamComposition) ? [...cfwFamComposition, newRecord] : [newRecord];
 
                 // Update form data with the new list
                 localStorage.setItem("person_cfw_program_details", JSON.stringify(updatedCFWProgramDetails));
@@ -361,13 +367,13 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
         <div id="program_details_form">
             <div className="w-full">
                 <Label htmlFor="cfw_program_details" className="block text-sm font-medium p-2">
-                    Have you/or member/s of your family ever been a beneficiary of the Cash-for-Work Programs of the DSWD?
+                    Have you/or member/s of your family ever been a beneficiary of the Cash-for-Work Programs of the DSWD? {capturedData.has_program_details}
                 </Label>
                 <div className="mt-2 ml-2 flex items-center space-x-6">
                     {radioOptions.map((option) => (
                         <div key={option.id} className="flex items-center">
                             <input
-                                checked={capturedData.hasprogramdetails === option.value}
+                                checked={capturedData.has_program_details === option.value}
                                 onChange={handleIsCFWFamBene}
                                 id={option.id}
                                 name="cfw_program_details"
@@ -388,7 +394,7 @@ export default function CFWProgramDetails({ errors, capturedData, cfwFamComposit
                     <p className="mt-2 text-sm text-red-500">{errors.cfw_program_details[0]}</p>
                 )}
             </div>
-            {capturedData.hasprogramdetails && (
+            {capturedData.has_program_details && (
                 <div className="mt-4">
 
                     <div className="flex justify-start mt-5 overflow-y-auto">

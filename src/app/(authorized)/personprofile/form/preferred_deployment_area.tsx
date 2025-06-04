@@ -209,11 +209,11 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
         parsedlsAssignedDeploymentArea.assigned_deployment_area_id = deploymentAreaId;
         localStorage.setItem("assigned_deployment_area", JSON.stringify(parsedlsAssignedDeploymentArea));
         setSelectedAssignedDeploymentAreaId(deploymentAreaId);
-        if (deploymentAreaId == 1) {
-            setIsSchoolAsDeploymentArea(false)
-        } else {
-            setIsSchoolAsDeploymentArea(true)
-        }
+        // if (deploymentAreaId == 1) {
+        //     setIsSchoolAsDeploymentArea(false)
+        // } else {
+        //     setIsSchoolAsDeploymentArea(true)
+        // }
 
     }
     const updateAssignedDeploymentAreaCategoryId = (deploymentAreaCategoryId: number) => {
@@ -287,7 +287,7 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                         id="assigned_deployment_area_category_id"
                         options={deploymentAreaCategoriesOptions}
                         selectedOption={selectedAssignedDeploymentAreaCategoryId ?? null}
-                        onChange={(e) => updateAssignedDeploymentAreaCategoryId(e)}
+                        onChange={(id) => updateAssignedDeploymentAreaCategoryId(id)}
                     // selectedOption={Number(capturedData.assigned_deployment_area_id) || 0}
                     // onChange={(value) => updateFormData({ assigned_deployment_area_id: value.target.value })}
                     />
@@ -298,14 +298,27 @@ export default function PrefferedDeploymentArea({ errors, capturedData, updateFo
                     {/* <p>Is School Selected?: {isSchoolAsDeploymentArea} Why</p> */}
                     {/* <p>{selectedAssignedDeploymentAreaCategoryId}</p> */}
                     <Label htmlFor="assigned_deployment_area_id" className="block text-sm font-medium mb-1">Assigned Deployment Area <span className='text-red-500'> *</span></Label>
-                    <FormDropDown
-                        id="assigned_deployment_area_id"
-                        options={isSchoolAsDeploymentArea ? schoolOptions : deploymentAreaOptions}
-                        selectedOption={selectedAssignedDeploymentAreaId ?? null}
-                        onChange={(e) => updateAssignedDeploymentArea(e)}
-                    // disabled={true}
-                    // disabled={selectedAssignedDeploymentAreaCategoryId == 0}
-                    />
+                    {!isSchoolAsDeploymentArea ? (
+                        <FormDropDown
+                            // id="assigned_deployment_area_id_company"
+                            options={deploymentAreaOptions}
+                            selectedOption={selectedAssignedDeploymentAreaId}
+                            onChange={(e) => updateAssignedDeploymentArea(e)}
+                        // disabled={true}
+                        // disabled={selectedAssignedDeploymentAreaCategoryId == 0}
+                        />
+                    ) : (
+                        <FormDropDown
+                            // id="assigned_deployment_area_id"
+                            options={schoolOptions}
+                            selectedOption={selectedAssignedDeploymentAreaId}
+                            onChange={(e) => updateAssignedDeploymentArea(e)}
+                        // disabled={true}
+                        // disabled={selectedAssignedDeploymentAreaCategoryId == 0}
+                        />
+                    )}
+
+
                 </div>
             </div>
             <div className={`flex grid sm:col-span-3 sm:grid-cols-3 hidden`}>

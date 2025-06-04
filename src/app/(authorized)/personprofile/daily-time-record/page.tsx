@@ -97,7 +97,7 @@ export default function DailyTimeRecordPage() {
     useEffect(() => {
         console.log('DTR: session', _session)
         debugger;
-        if (_session.userData.role != "Administrator") {
+        if (["CFW Beneficiary", "Guest"].includes(_session?.userData?.role || "")) {
             router.push(`/${baseUrl}/${_session.id}`);
         } else {
             (async () => {

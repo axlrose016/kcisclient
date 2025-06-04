@@ -188,6 +188,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   }
 
   const updateFormAttachments = (newData: Partial<IAttachments>[]) => {
+    console.log("✨New Data", newData)
     setFormAttachmentsData(() => {
       const validNewData = Array.isArray(newData) ? newData : [];
 
@@ -720,36 +721,41 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         debugger;
         const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
+        const formData = new FormData();
+        formData.append("email", email);
+        formData.append("subject", "KC IS CFW Module Beneficiary Registration");
+        formData.append(
+          "body",
+          `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
+              <p>Dear ${first_name.toUpperCase()},</p>
+              <p>${email_body}</p>        
+              <p>Best regards,</p>
+              <p>KALAHI-CIDSS-CFWP </p>
+            </div>
+          `
+        );
+        if (process.env.EMAIL_CC) formData.append("cc", process.env.EMAIL_CC);
+        formData.append("bcc", "dsentico@dswd.gov.ph");
+
         const response = await fetch(endpoint, {
           method: "POST",
           headers: {
             Authorization: `bearer ${onlinePayload.token}`,
-            "Content-Type": "application/json",
+            // Do not set Content-Type, browser will set it for FormData
           },
-          body: JSON.stringify({
-            "email": email,
-            "subject": "KC IS CFW Module Beneficiary Registration",
-            "body": `
-                <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
-                  <p>Dear ${first_name.toUpperCase()},</p>
-                  <p>${email_body}</p>        
-                  <p>Best regards,</p>
-                  <p>KALAHI-CIDSS-CFWP </p>
-                </div>
-                `,
-            "cc": process.env.EMAIL_CC + ",jmgarbo@dswd.gov.ph,argvillanueva@dswd.gov.ph",
-            "bcc": "dsentico@dswd.gov.ph",
-            //            email:pcpborja@dswd.gov.ph,
-            // subject:test,
-            // body:test,
-            // cc:paulclarenceit@gmail.com,
-            // bcc:paulclrenceit2@gmail.com,
-            // cc:jmgarbo@dswd.gov.ph,
-            // cc:argvillanueva@dswd.gov.ph,
-
-          })
+          body: formData,
         });
+        //            email:pcpborja@dswd.gov.ph,
+        // subject:test,
+        // body:test,
+        // cc:paulclarenceit@gmail.com,
+        // bcc:paulclrenceit2@gmail.com,
+        // cc:jmgarbo@dswd.gov.ph,
+        // cc:argvillanueva@dswd.gov.ph,
 
+
+        debugger
         if (!response.ok) {
           console.log(response);
         } else {
@@ -892,7 +898,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               others: null,
               relationship_to_family_member_id: null,
               family_member_name_id: null,
-              hasprogramdetails: false,
+              has_program_details: false,
 
               //CFW Representative
               representative_last_name: formData?.representative_last_name ?? null,
@@ -1076,15 +1082,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
               await dexieDb.person_profile_disability.bulkPut(formPersonProfileDisability);
               await dexieDb.person_profile_family_composition.bulkPut(formPersonProfileFamilyComposition);
               await dexieDb.person_profile_cfw_fam_program_details.bulkPut(formPersonCFWFamDetails);
+
               // await dexieDb.attachments.bulkAdd(formAttachments);
               // await dexieDb.attachments.put(formAttachments[11]);
               console.log("Person Profile added to IndexedDB");
-              localStorage.removeItem("person_profile");
-              localStorage.removeItem("person_sectors");
-              localStorage.removeItem("family_composition");
-              localStorage.removeItem("person_cfw_program_details");
-              localStorage.removeItem("person_disabilities");
+              // localStorage.removeItem("person_profile");
+              // localStorage.removeItem("person_sectors");
+              // localStorage.removeItem("family_composition");
+              // localStorage.removeItem("person_cfw_program_details");
+              // localStorage.removeItem("person_disabilities");
               debugger
+              
               const response = await PersonProfileService.syncBulkData(formPersonProfile);
               if (response.failed == 0) {
                 const emailData = {
@@ -1095,6 +1103,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 }
                 localStorage.setItem("sendEmailData", JSON.stringify(emailData))
                 // sendEmail(cfw_first_name_email, cfw_active_email, "CFW Beneficiary Profiling", "Your registration has been submitted successfully.");
+                console.log("Email sent person profile")
                 router.push("/personprofile/form/success")
 
               } else {
@@ -1122,6 +1131,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         };
       }
     }
+
     saveData();
   }, [confirmed])
 
@@ -1220,11 +1230,12 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
         const cleanedFormData = cleanData(formData);
         const cleanedFormSectorData = cleanData(formSectorData);
-        const cleanedFormDisabilitiesData = cleanData(formDisabilitiesData);
+        const cleanedFormDisabilitiesData = formDisabilitiesData
         const cleanedFormFamilyCompositionData = formFamilyCompositionData;
         // const cleanedFormFamilyCompositionData = cleanData(formFamilyCompositionData);
-        const cleanedFormCFWFamDetailsData = cleanData(formCFWFamDetailsData);
-        const cleanedFormAttachmentsData = cleanData(formAttachmentsData);
+        const cleanedFormCFWFamDetailsData = formCFWFamDetailsData;
+        // const cleanedFormCFWFamDetailsData = cleanData(formCFWFamDetailsData);
+        const cleanedFormAttachmentsData = formAttachmentsData;
 
         setFormData(cleanedFormData);
         setFormSectorData(cleanedFormSectorData);
@@ -1408,9 +1419,17 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
         const lsFCom = localStorage.getItem("family_composition")
         if (lsFCom) {
           const parsedFCom = JSON.parse(lsFCom)
-          if (parsedFCom.length == 0) {
-            errorToast("Family composition is required!", "family_composition", ""); return;
+          if (parsedFCom.length > 0) {
+            // Check if any family composition record belongs to the current session user
+            const hasCurrentUser = parsedFCom.some((fc: any) => fc.user_id === _session.id);
+            if (!hasCurrentUser) {
+              errorToast("Family composition must include at least one record for the current user.", "family_composition", "");
+              return;
+            }
           }
+          // if (parsedFCom.length == 0) {
+          //   errorToast("Family composition is required!", "family_composition", ""); return;
+          // }
         } else {
           errorToast("Family composition is required!", "family_composition", ""); return;
         }
@@ -1418,16 +1437,16 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
 
-        const storedHasProgramDetails = localStorage.getItem("hasProgramDetails");
-
-        if (formData?.hasprogramdetails == undefined) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+        const storedHasProgramDetails = localStorage.getItem("has_program_details");
+        if (formData?.push_status_id == 0 && formData?.has_program_details == null) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+        // if (formData?.hasprogramdetails == undefined ) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
         // const parsedHasProgramDetails = JSON.parse(storedHasProgramDetails);
-        if (formData?.hasprogramdetails) {
-          if (formCFWFamDetailsData.length == 0) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
-          //const parsedProgramDetails = JSON.parse(storedProgramDetails);
-          //appendData("program_details", parsedProgramDetails);
+        // if (formData?.hasprogramdetails) {
+        //   if (formCFWFamDetailsData.length == 0) { errorToast("CFW Program details required!", "cash_for_work", ""); return; }
+        //   //const parsedProgramDetails = JSON.parse(storedProgramDetails);
+        //   //appendData("program_details", parsedProgramDetails);
 
-        }
+        // }
 
 
         // console.log(parsedFamilyComposition.family_composition.length);
@@ -1729,7 +1748,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
 
-
+            debugger
             // email the assessment
             if (parsedlsAssessment.status_id == 1) { //meaning eligible
 
@@ -1905,6 +1924,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
 
 
   useEffect(() => {
+    debugger
     const fetchData = async () => {
       try {
 
@@ -1955,6 +1975,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           setHasProfilePicture(false);
           // alert("0");
         }
+        debugger
         await Promise.all(
           files_upload.map(async (file) => {
             const fid = file.id;
@@ -1983,7 +2004,8 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                       last_modified_by: null,
                       push_status_id: 0,
                       push_date: null,
-                      user_id: session?.id ?? "",
+                      user_id: _session?.id ?? "",
+                      // user_id: session?.id ?? "",
                       deleted_date: null,
                       deleted_by: null,
                       is_deleted: false,
@@ -1993,6 +2015,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                   ))
               }
             }
+
           })
         );
 
@@ -2261,12 +2284,13 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
   }, [formData])
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    debugger;
     const file = e.target.files?.[0]; // Get the selected file
     if (!file) return;
     try {
       const blob = new Blob([file], { type: file.type });
       if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
-      const exists = await dexieDb.attachments.where("file_id").equals(13).first();
+      const exists = await dexieDb.attachments.where("file_id").equals(13).and((record) => record.user_id === _session.id).first(); // Add criteria for user_id
       if (exists) {
         // Update if exists
         await dexieDb.attachments.update(exists.id, {

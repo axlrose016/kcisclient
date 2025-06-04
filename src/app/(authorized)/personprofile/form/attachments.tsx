@@ -133,6 +133,9 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
             const existingRecord = await dexieDb.attachments
                 .where("file_id") // Search by indexed field
                 .equals(id)
+                .and(record =>
+                    record.user_id === _session.id 
+                )
                 .first();
             // alert("Existing type is " + existingRecord);
             if (existingRecord) {
@@ -182,21 +185,21 @@ export default function Attachments({ errors, capturedData, updateFormData, sess
         }
     };
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // const files_upload = await getOfflineLibFilesToUpload(); //await getFileToUploadLibraryOptions();
-                // setfilesToUploadOptions(files_upload);
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             // const files_upload = await getOfflineLibFilesToUpload(); //await getFileToUploadLibraryOptions();
+    //             // setfilesToUploadOptions(files_upload);
 
-                if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
+    //             if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open
 
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
+    //         } catch (error) {
+    //             console.error('Error fetching data:', error);
+    //         }
+    //     };
 
-        fetchData();
-    }, []);
+    //     fetchData();
+    // }, []);
     type UploadedFile = {
         id: number; // or number
         file_to_upload: string;

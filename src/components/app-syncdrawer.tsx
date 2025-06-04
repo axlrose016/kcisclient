@@ -175,7 +175,7 @@ export function SyncSummaryDrawer({ children }: Props) {
         }
     }
 
-    const handleExportErrors = (taskErrors: SyncError[], tag: string) => {
+    const handleExportErrors = (taskErrors: any[], tag: string) => {
         const errorData = {
             tag,
             timestamp: new Date().toISOString(),

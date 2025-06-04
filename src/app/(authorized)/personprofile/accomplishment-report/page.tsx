@@ -100,7 +100,7 @@ export default function AccomplishmentReport() {
 
 
     useEffect(() => {
-        if (_session.userData.role != "Administrator") {
+        if (["CFW Beneficiary", "Guest"].includes(_session?.userData?.role || "")) {
             router.push(`/${baseUrl}/${_session.id}`);
         } else {
             (async () => {

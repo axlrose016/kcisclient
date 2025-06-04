@@ -65,7 +65,7 @@ export default function LoginPage() {
     email: "",
     birthdate: new Date(),
   });
-
+  const [showPassword, setShowPassword] = useState(false); // State for show password
   const [isShowReloginButton, setShowReloginButton] = useState(false)
 
   useEffect(() => {
@@ -504,6 +504,13 @@ export default function LoginPage() {
                     </a>
                   </div>
                   <Input id="password" type="password" {...register("password")} name="password" required />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {/* {showPassword ? "Hide" : "Show"} */}
+                  </button>
                   {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
                 </div>
 
@@ -548,8 +555,8 @@ export default function LoginPage() {
             <DialogTitle className="mb-3">Forgot Password {isShowReloginButton}</DialogTitle>
             <Alert variant="default" className="mb-2 mt-5 text-center bg-muted">
               <DialogDescription>
-                {forgotPassword.email}
-                {forgotPassword.birthdate?.toString()}
+                {/* {forgotPassword.email}
+                {forgotPassword.birthdate?.toString()} */}
                 <span className="flex justify-center mb-2">
 
                   <Info className="h-10 w-10 text-muted-foreground" />

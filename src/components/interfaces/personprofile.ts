@@ -88,7 +88,8 @@ export interface IPersonProfile {
   is_pwd: boolean | false;
   is_pwd_representative: boolean | null;
   profile_picture: string;
-  hasprogramdetails: boolean | false;
+  has_program_details: boolean | false;
+  // hasprogramdetails: boolean | false;
 
   //CFW Representative
   representative_last_name: string | null;
@@ -255,8 +256,8 @@ export interface IWorkPlan {
   deleted_by: string | null, // ✔️
   is_deleted: boolean, // ✔️
   remarks?: string | null, // ✔️
-  alternate_supervisor_id: string; // ✔️
-  area_focal_person_id: string; // ✔️ //main focal person of the company i.e HEI Focal Person // ✔️
+  alternate_supervisor_id: string | null; // ✔️
+  area_focal_person_id: string | null; // ✔️ //main focal person of the company i.e HEI Focal Person // ✔️
   total_number_of_bene: number; //✨
   
 }

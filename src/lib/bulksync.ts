@@ -3,6 +3,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { IBulkSync } from "./state/bulksync-store";
 
 export const syncTask: IBulkSync[] = [
+  
   {
     tag: "Person Profile",
     url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `person_profile/create/`,
@@ -48,6 +49,7 @@ export const syncTask: IBulkSync[] = [
     force: true,
   },
   {
+   
     tag: "Person Profile > attachments",
     url: process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + `attachments/create/`,
     module: await dexieDb.attachments,
@@ -97,6 +99,30 @@ export const syncTask: IBulkSync[] = [
       process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
       `accomplishment_report_task/create/`,
     module: await dexieDb.accomplishment_actual_task,
+    force: true,
+  },
+  {
+    tag: "CFW Immediate Supervisor > Work Plan",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `work_plan/create/`,
+    module: await dexieDb.work_plan,
+    force: true,
+  },
+  {
+    tag: "CFW Immediate Supervisor > Work Plan Tasks",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `work_plan_task/create/`,
+    module: await dexieDb.work_plan_tasks,
+    force: true,
+  },
+  {
+    tag: "CFW Immediate Supervisor > Work Plan Selected Beneficiaries",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `cfw_assessment/work_plan/update`,
+    module: await dexieDb.cfwassessment,
     force: true,
   },
 ];

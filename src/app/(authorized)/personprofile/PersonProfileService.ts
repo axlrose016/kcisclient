@@ -24,6 +24,7 @@ class PersonProfileService {
   private apiUrlCFWAssessmentPatch = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/status/patch/'
   // Method to sync data in bulk
   async syncBulkData(formPersonProfile: IPersonProfile): Promise<{ success: number; failed: number }> {
+    debugger
     try {
       const unsyncedData = await dexieDb.person_profile
         .where("id")
@@ -49,7 +50,7 @@ class PersonProfileService {
 
           console.log("Syncing record:", formattedRecord);
           debugger;
-          return axios.post(this.apiUrl, formattedRecord, {
+          return axios.post(this.apiUrl, [formattedRecord], {
             headers: {
               Authorization: `bearer ${_session.token}`,
               "Content-Type": "application/json",
@@ -61,21 +62,55 @@ class PersonProfileService {
       let success = 0;
       let failed = 0;
       debugger
-      for (let i = 0; i < results.length; i++) {
-        const result = results[i];
-        const record = unsyncedData[i];
+      await dexieDb.transaction('rw', dexieDb.person_profile, async (tx) => {
+        const personProfile = tx.table("person_profile");
 
-        if (result.status === "fulfilled") {
-          success++;
-          // mark as synced
-          await dexieDb.person_profile.update(record.id, { push_status_id: 1 });
-        } else {
-          failed++;
-          console.error("Failed to sync record:", record.id, result.reason);
+        for (let i = 0; i < results.length; i++) {
+          const result = results[i];
+          const record = unsyncedData[i];
+
+          if (result.status === "fulfilled") {
+            try {
+              const updated = await dexieDb.person_profile.update(record.id, {
+                push_status_id: 1,
+              });
+
+              if (updated === 0) {
+                console.warn("No record was updated for id", record.id);
+              } else {
+                success++;
+              }
+            } catch (err) {
+              console.error("Update error:", err);
+              failed++;
+            }
+          } else {
+            failed++;
+            console.error("Failed to sync record:", record.id, result.reason);
+          }
         }
-      }
+      })
 
-      return { success, failed };
+
+        // await dexieDb.transaction('rw', dexieDb.person_profile, async () => {
+        //   for (let i = 0; i < results.length; i++) {
+        //     const result = results[i];
+        //     const record = unsyncedData[i];
+
+        //     if (result.status === "fulfilled") {
+        //       success++;
+        //       // mark as synced
+        //      await dexieDb.person_profile.update(record.id, { push_status_id: 1 });
+
+
+        //       // await dexieDb.person_profile.update(record.id, { push_status_id: 1 });
+        //     } else {
+        //       failed++;
+        //       console.error("Failed to sync record:", record.id, result.reason);
+        //     }
+        //   }
+        // })
+        return { success, failed };
     } catch (error) {
       console.error("Error syncing bulk data:", error);
       throw error;
@@ -228,7 +263,7 @@ class PersonProfileService {
       .where("push_status_id")
       .equals(2)
       .toArray();
-
+    debugger
     try {
       if (unsyncedData.length === 0) {
         console.log("No data to sync.");

@@ -20,7 +20,8 @@ import { v4 as uuidv4 } from 'uuid';
 import LoginService from "@/app/login/LoginService";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { ICFWAssessment, IWorkPlan, IWorkPlanTasks } from "@/components/interfaces/personprofile"
-
+import { useRouter } from "next/navigation"
+import { cleanArray } from "@/lib/utils";
 // checklist
 // deployment_area_short_name_supervisor ✅
 // deployment_area_supervisor ✅
@@ -103,7 +104,7 @@ type WizardProps = {
 // };
 export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName }: WizardProps) {
     const [currentStep, setCurrentStep] = useState(0)
-
+    const router = useRouter()
     const [totalNoOfTasks, setTotalNoOfTasks] = useState(0)
 
     const [deploymentAreaNameSup, setDeploymentAreaNameSup] = useState(deploymentAreaName)
@@ -174,41 +175,52 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
     }
 
     const saveWorkPlanToDexieDb = async (workplanid: string) => {
-
         const lsWP = localStorage.getItem("work_plan")
         if (lsWP) {
             const parsedWP = JSON.parse(lsWP)
 
+            const { immediate_supervisor_id, work_plan_title } = parsedWP;
             // Specify only the fields you want to save
             // parsedWP is expected to be an object, not an array
-            const workPlanToSave = [{
-                id: workplanid,
-                work_plan_title: parsedWP.work_plan_title,
-                immediate_supervisor_id: parsedWP.immediate_supervisor_id,
+            const existing = await dexieDb.work_plan
+                .where('immediate_supervisor_id')
+                .equals(parsedWP.immediate_supervisor_id)
+                .filter(wp => wp.work_plan_title === parsedWP.work_plan_title)
+                .first();
+
+
+            const workPlanToSave = {
+                id: existing?.id || workplanid, // reuse ID if updating
+                work_plan_title,
+                immediate_supervisor_id,
                 office_name: parsedWP.office_name,
                 objectives: parsedWP.objectives,
                 no_of_days_program_engagement: parsedWP.no_of_days_program_engagement,
                 approved_work_schedule_from: parsedWP.approved_work_schedule_from,
                 approved_work_schedule_to: parsedWP.approved_work_schedule_to,
-                remarks: "Work Plan created in DexieDB",
+                remarks: existing ? "Work Plan updated in DexieDB" : "Work Plan created in DexieDB",
                 status_id: 0,
-                created_date: new Date().toISOString(),
+                created_date: existing?.created_date || new Date().toISOString(),
                 created_by: _session?.userData?.email ?? "",
-                last_modified_date: null,
-                last_modified_by: null,
+                last_modified_date: new Date().toISOString(),
+                last_modified_by: _session?.userData?.email ?? "",
                 push_status_id: 2,
-                push_date: "",
+                push_date: new Date().toISOString(),
                 deleted_date: null,
                 deleted_by: null,
                 is_deleted: false,
-                alternate_supervisor_id: "",
-                area_focal_person_id: "",
+                alternate_supervisor_id: null,
+                area_focal_person_id: null,
                 total_number_of_bene: totalNumberOfSelectedBenes(),
-            }];
+            };
 
-            await dexieDb.work_plan.bulkPut(workPlanToSave)
+            const wpres = await dexieDb.work_plan.put(workPlanToSave)
+            // await dexieDb.work_plan.clear();
+            // const data = await wpres.json()
+            console.log("🧔 work plan created", wpres);
 
-              const email = "dsentico@dswd.gov.ph";
+            return
+            const email = "dsentico@dswd.gov.ph";
             const password = "Dswd@123";
             const onlinePayload = await LoginService.onlineLogin(email, password);
             const token = onlinePayload.token;
@@ -266,25 +278,25 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
             const parsed = JSON.parse(workPlanTasksLS || "");
             const collectedTasks: IWorkPlanTasks[] = Array.isArray(parsed)
                 ? parsed.map((task: any) => ({
-                    id: task.id || "",
+                    id: uuidv4(),
                     work_plan_id: workplanid, // task.work_plan_id || "",
                     activities_tasks: task.activities_tasks || "",
                     expected_output: task.expected_output || "",
                     work_plan_category_id: task.category_id || "",
                     timeline_from: task.timeline_from || "",
                     timeline_to: task.timeline_to || "",
-                    assigned_person_id: task.assigned_person_id || "",
+                    assigned_person_id: task.assigned_person_id == "all" ? null : task.assigned_person_id,
                     created_date: new Date().toISOString(),
-                    created_by: "",
+                    created_by: _session.userData.email || "",
                     last_modified_date: null,
                     last_modified_by: null,
                     deleted_date: null,
                     deleted_by: null,
-                    remarks: null,
+                    remarks: "Work Plan Tasks has been created",
                     is_deleted: false,
                     status_id: 0,
                     push_status_id: 2,
-                    push_date: "",
+                    push_date: new Date().toISOString(),
                     // work_plan_category_id: task.category_id || "",
                     // category_id: task.category_id || "",
                     // assigned_person_name: task.assigned_person_name || "",
@@ -292,45 +304,46 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
                 : [];
 
             // await db.tasks.bulkPut(collectedTasks);
+            // await dexieDb.work_plan_tasks.clear();
             await dexieDb.work_plan_tasks.bulkPut(collectedTasks)
-            const email = "dsentico@dswd.gov.ph";
-            const password = "Dswd@123";
-            const onlinePayload = await LoginService.onlineLogin(email, password);
-            const token = onlinePayload.token;
-            debugger
-            await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`,
-                {
-                    method: "POST",
-                    headers: {
-                        Authorization: `bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(
-                        collectedTasks.map(ct => ({
-                            id: uuidv4(),
-                            work_plan_id: workplanid,
-                            work_plan_category_id: ct.work_plan_category_id,
-                            activities_tasks: ct.activities_tasks,
-                            expected_output: ct.expected_output,
-                            timeline_from: ct.timeline_from,
-                            timeline_to: ct.timeline_to,
-                            assigned_person_id: ct.assigned_person_id === "all" ? null : ct.assigned_person_id,
-                            created_date: new Date().toISOString(),
-                            created_by: _session.userData?.email,
-                            last_modified_date: null,
-                            last_modified_by: null,
-                            deleted_date: null,
-                            deleted_by: null,
-                            remarks: "Work Plan Task Created",
-                            is_deleted: false,
-                            status_id: 0,
-                            push_status_id: 2,
-                            push_date: new Date().toISOString(),
-                        }))
-                    ),
-                }
-            );
+            // const email = "dsentico@dswd.gov.ph";
+            // const password = "Dswd@123";
+            // const onlinePayload = await LoginService.onlineLogin(email, password);
+            // const token = onlinePayload.token;
+            // debugger
+            // await fetch(
+            //     `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`,
+            //     {
+            //         method: "POST",
+            //         headers: {
+            //             Authorization: `bearer ${token}`,
+            //             "Content-Type": "application/json",
+            //         },
+            //         body: JSON.stringify(
+            //             collectedTasks.map(ct => ({
+            //                 id: uuidv4(),
+            //                 work_plan_id: workplanid,
+            //                 work_plan_category_id: ct.work_plan_category_id,
+            //                 activities_tasks: ct.activities_tasks,
+            //                 expected_output: ct.expected_output,
+            //                 timeline_from: ct.timeline_from,
+            //                 timeline_to: ct.timeline_to,
+            //                 assigned_person_id: ct.assigned_person_id === "all" ? null : ct.assigned_person_id,
+            //                 created_date: new Date().toISOString(),
+            //                 created_by: _session.userData?.email,
+            //                 last_modified_date: null,
+            //                 last_modified_by: null,
+            //                 deleted_date: null,
+            //                 deleted_by: null,
+            //                 remarks: "Work Plan Task Created",
+            //                 is_deleted: false,
+            //                 status_id: 0,
+            //                 push_status_id: 2,
+            //                 push_date: new Date().toISOString(),
+            //             }))
+            //         ),
+            //     }
+            // );
             console.log("All tasks saved successfully.");
 
         }
@@ -340,10 +353,126 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         debugger
         const workPlanSelectedBenes = localStorage.getItem("selectedBeneficiaries");
         if (workPlanSelectedBenes) {
+            const email = "dsentico@dswd.gov.ph";
+            const password = "Dswd@123";
+            const onlinePayload = await LoginService.onlineLogin(email, password);
+            const token = onlinePayload.token;
+            debugger
+            const parsedWPSB = JSON.parse(workPlanSelectedBenes)
+            // get the bene data from api
+            // save it to dexiedb
+            // update the data immediate_supervisor_id, division_office_name, work_plan_id
+            // /cfw_assessment/view/01f98bb8-8d91-4416-8e6d-3a35decf39ab/
+            localStorage.removeItem("selected_benes_cfw_assessment")
+
+            const lsWP = localStorage.getItem("work_plan")
+            let newImmediateSupervisorId = ""
+            let newDivisionOfficeName = "";
+            let newRemarks = "Bene has been tagged in Work Plan";
+            let number_of_days_program_engagement = ""
+            if (lsWP) {
+                const parsedWP = JSON.parse(lsWP)
+                newImmediateSupervisorId = parsedWP.immediate_supervisor_id
+                newDivisionOfficeName = parsedWP.office_name
+                number_of_days_program_engagement = parsedWP.no_of_days_program_engagement
+            }
+
+            const newWorkPlanId = workplanid;
+            const resultsArray: any[] = [];
+            await Promise.all(
+                parsedWPSB.map(async (sb: any) => {
+                    try {
+                        const res = await fetch(
+                            `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}cfw_assessment/view/${sb.ID}/`,
+                            {
+                                method: "GET",
+                                headers: {
+                                    Authorization: `bearer ${token}`,
+                                    "Content-Type": "application/json",
+                                },
+                            }
+                        );
+
+                        if (!res.ok) {
+                            console.error(`Failed to fetch data for ID ${sb.ID}`);
+                            return;
+                        }
 
 
+                        // "division_office_name": "Compliance",
+                        // "immediate_supervisor_id": "02af6e24-1bec-4568-b9bf-8133e7faa3dc",
+                        // "last_modified_by": null,
+                        // last_modified_date //✨ pls add
+                        // "number_of_days_program_engagement": null,
+
+                        // "area_focal_person_id": null, 
+                        // "assessment": null, 
+                        // "cfw_category_id": null, 
+                        // "created_by": "server",
+                        // "deleted_by": null,
+                        // "deleted date": null,
+                        // "deployment_area_category_id": 1,
+                        // "deployment_area_id": 21,
+                        // "division_office_name": "Compliance",
+                        // id //✨ pls add
+                        // "immediate_supervisor_id": "02af6e24-1bec-4568-b9bf-8133e7faa3dc",
+                        // "is_deleted": null,
+                        // "last_modified_by": null,
+                        // last_modified_date //✨ pls add
+                        // log type ❌
+                        // "number_of_days_program_engagement": null,
+                        // "person_profile_id": "951128ca-6295-4ba6-9562-30e59b7cfc6a",
+                        // "push_date": null
+                        // "push_status_id": null,
+                        // raw_id❌
+                        // "remarks": "Bene tagged in Work Plan",
+                        // "status_id": 1,
+                        // user_id //✨ pls add
+                        // created_date //✨ pls add
+                        // "work_plan_id": "59ee36fa-a194-4f63-88e9-c7f74b210cc4",
+                        // alternate_supervisor_id//✨ pls add
 
 
+                        const result = await res.json();
+                        // ✅ Inject new values here
+                        const modifiedResult = {
+                            ...result,
+                            id: uuidv4(),
+                            immediate_supervisor_id: newImmediateSupervisorId,
+                            division_office_name: newDivisionOfficeName,
+                            work_plan_id: workplanid,
+                            remarks: newRemarks,
+                            push_status_id: 2,
+                            push_date: new Date().toISOString(),
+                            last_modified_by: newImmediateSupervisorId,
+                            last_modified_date: new Date().toISOString(),
+                            number_of_days_program_engagement: number_of_days_program_engagement
+
+                        };
+
+                        resultsArray.push(modifiedResult);
+
+                    } catch (err) {
+                        console.error(`Error fetching ID ${sb.ID}:`, err);
+                    }
+                })
+            );
+
+            // Save all results at once
+            localStorage.setItem("selected_benes_cfw_assessment", JSON.stringify(resultsArray));
+
+
+            const localData = localStorage.getItem("selected_benes_cfw_assessment");
+            if (!localData) {
+                console.error("No data found in localStorage for selected_benes_cfw_assessment");
+                return;
+            }
+            const parsedData = JSON.parse(localData);
+
+
+            await dexieDb.cfwassessment.bulkPut(parsedData);
+            console.log("cfw_assessment updated in Dexie successfully.");
+            console.log("All tasks saved successfully.");
             // const parsed = JSON.parse(workPlanSelectedBenes);
             // await dexieDb.transaction("rw", [dexieDb.cfwassessment], async () => {
             //     try {
@@ -393,8 +522,15 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
     const submitWorkPlan = async () => {
         let workplanid = uuidv4()
         saveWorkPlanToDexieDb(workplanid)
-        // saveWorkPlanTasksToDexieDb(workplanid)
-        // saveWorkPlanSelectedBenes(workplanid)
+        saveWorkPlanTasksToDexieDb(workplanid)
+        saveWorkPlanSelectedBenes(workplanid)
+        const timer = setTimeout(() => {
+            router.push("/personprofile/work-plan"); // Relative path
+            // or use full URL: router.push("http://localhost:3000/personprofile/work-plan");
+        }, 3000);
+
+        // synch
+
         return
         const email = "dsentico@dswd.gov.ph";
         const password = "Dswd@123";
@@ -786,7 +922,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
 
             {/* {JSON.stringify(workPlanData)} */}
             {/* {JSON.stringify(beneficiariesData)} */}
-            {_session.id}
+            {/* {_session.id} */}
             {/* Deployment Area Name: {workPlanDetails?.deployment_area_name} */}
             {/* {JSON.stringify(workPlanDetails)} */}
             <Card className="w-full">
@@ -2026,3 +2162,45 @@ function SubmittedStep() {
         </div>
     )
 }
+
+
+// {
+//   "cfw_category_id": null, //✨
+//   "deleted_date": null,//✨
+//   "deployment_area_id": 21,//✨
+// user_id - add
+//   "deleted_by": null,//✨
+//   "push_status_id": null,//✨
+//   "created_by": "server",//✨
+//   "area_focal_person_id": null,//✨
+//   "is_deleted": null,//✨
+//   "last_modified_by": null,//✨
+//   "deployment_area_category_id": 1,//✨
+//   "division_office_name": "Compliance",//✨
+// last_modified_date - add
+//   "assessment": null,//✨
+// created_date - add
+//   "number_of_days_program_engagement": null,//✨
+//   "push_date": null//✨
+// alternate_supervisor_id - add
+//   "status_id": 1,//✨
+//   "remarks": "Bene tagged in Work Plan",//✨
+//   "person_profile_id": "951128ca-6295-4ba6-9562-30e59b7cfc6a",//✨
+//   "work_plan_id": "59ee36fa-a194-4f63-88e9-c7f74b210cc4",//✨
+//   "immediate_supervisor_id": "02af6e24-1bec-4568-b9bf-8133e7faa3dc",//✨
+
+//   "raw_id": 1188,//🙉
+//   "log_type": null,//🙉
+
+
+
+// mga ilalagay
+// id
+// user_id
+// last_modified_date
+// created_date
+// alternate_supervisor_id
+
+
+// }
+// 23

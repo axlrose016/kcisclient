@@ -90,7 +90,7 @@ export default function AccomplishmentReportUsersList() {
 
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('user_id')
-            .equals(params?.['accomplishment-userid']!).first();
+            .equals(params!['accomplishment-userid']!).first();
 
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
@@ -99,7 +99,7 @@ export default function AccomplishmentReportUsersList() {
 
         console.log('getResults', { session, merge });
         setUser(merge);
-        setARList(await dexieDb.accomplishment_report.where("person_id").equals(params?.['accomplishment-userid']!).toArray())
+        setARList(await dexieDb.accomplishment_report.where("person_id").equals(params!['accomplishment-userid']!).toArray())
 
         const results = await dexieDb.cfwtimelogs.where('created_by')
             .equals(user?.email ?? "")

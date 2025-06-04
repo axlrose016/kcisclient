@@ -68,7 +68,9 @@ export function AccomplishmentUser({
                         category_id: "99",
                         accomplishment_report_id: accomplishmentReportId
                     }).toArray());
-                    setTasks(await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray());
+                    const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
+                    setTasks(alltask);
+                    onChangeTask?.(alltask)
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -95,7 +97,7 @@ export function AccomplishmentUser({
         } else {
             const newTask: IAccomplishmentActualTask = {
                 id: task.id,
-                category_id: task.category_id.toString(),
+                category_id: task?.category_id?.toString() || "",
                 accomplishment_report_id: accomplishmentReportId || "",
                 accomplishment: type == "accomplishment" ? sanitizedValue : "",
                 mov: type == "movs" ? sanitizedValue : "",
@@ -153,7 +155,7 @@ export function AccomplishmentUser({
     };
 
     return (
-        <> 
+        <>
             <div className='flex flex-col gap-2 mb-8 mt-3'>
                 <div className="grid grid-cols-1 sm:grid-cols-4  gap-2 md:grid-cols-4">
                     <div className="col-span-1 font-bold leading-none">FULL NAME (Last Name, First Name, Middle Name, Ext)</div>
@@ -238,7 +240,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.accomplishment ?? "genAccom" + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "genAccom") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
@@ -246,7 +248,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.mov ?? "genMov" + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "genMov") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
@@ -291,7 +293,7 @@ export function AccomplishmentUser({
                                         </TableCell>
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.accomplishment ?? "specAccom" + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "specAccom") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
@@ -299,7 +301,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.mov ?? "specMov" + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "specMov") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
@@ -338,7 +340,7 @@ export function AccomplishmentUser({
                                     >
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.task ?? "task" + idx + 'title'}
+                                            key={(tasks.find(i => i.id == task.id)?.task ?? "task") + idx + 'title'}
                                             placeholder={session?.userData.role == "Guest" ? "Write Activity or Task title" : ""}
                                             className={cn("align-top border-r w-[400px]", {
                                                 "text-primary font-semibold": isCategory(task),
@@ -350,7 +352,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.accomplishment ?? "accomTask" + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "accomTask") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
@@ -358,7 +360,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={tasks.find(i => i.id == task.id)?.mov ?? "movTask" + idx}
+                                            key={((tasks.find(i => i.id == task.id)?.mov)?.toString() ?? "movTask") + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}

@@ -79,7 +79,7 @@ export default function AccomplishmentReportUser() {
             const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
             setStatusesOptions(filteredStatuses);
 
-           
+
             setSession(_session)
             await getResults(_session)
         })();
@@ -88,6 +88,7 @@ export default function AccomplishmentReportUser() {
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('user_id')
             .equals(params!['accomplishment-userid']).first();
+        console.log('p', { user,params, p: params!['accomplishment-userid'] })
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
@@ -131,8 +132,7 @@ export default function AccomplishmentReportUser() {
             is_deleted: false,
             remarks: "",
         })
-
-
+ 
         // await dexieDb.work_plan_cfw.put({
         //     id: uuidv4(),
         //     work_plan_id:"6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
@@ -462,8 +462,7 @@ export default function AccomplishmentReportUser() {
                         onChangeTask={setTasks}
                         accomplishmentReportId={ar?.id}
                     />
-
-
+ 
                     {session?.userData.role == "Administrator" ?
                         <div className="m-3 no-print">
                             <AppSubmitReview
@@ -508,6 +507,9 @@ export default function AccomplishmentReportUser() {
                            .no-print {
                              display: none;
                            } 
+                           .ql-container.ql-snow {
+                              border: none;
+                            }
                            /* Scale content without affecting the original layout */
                            .no-scale {
                              transform: scale(0.45);

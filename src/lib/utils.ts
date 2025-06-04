@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import DOMPurify from "dompurify";
-import { HeaderData } from "@/app/(authorized)/report/designer/HeaderSettings";
+// import { HeaderData } from "@/app/(authorized)/report/designer/HeaderSettings";
 
 const encode = new TextEncoder();
 

@@ -5,7 +5,7 @@ import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, Sq
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { addDays, endOfMonth, format } from 'date-fns';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
@@ -96,8 +96,7 @@ type IUser = IPersonProfile & ILibSchoolProfiles;
 
 export default function DailyTimeRecordUser() {
     const params = useParams<{ id: string }>()
-
-
+    const router = useRouter()
 
     const [data, setData] = useState<any[]>([]);
     const [user, setUser] = useState<IUser | any>();
@@ -275,6 +274,9 @@ export default function DailyTimeRecordUser() {
                         finance_status_date: "",
                         date_released: "",
                         date_received: "",
+                        operation_reviewed_by: "",
+                        odnpm_reviewed_by: "",
+                        finance_reviewed_by: ""
                     }
                     console.log('review', rev)
                     await dexieDb.cfwpayroll_bene.put(rev)
@@ -330,7 +332,10 @@ export default function DailyTimeRecordUser() {
                         </div>
 
                         <DatePickerWithRange
-                            endIcon={<SquareArrowUpRightIcon onClick={() => console.log('onClickEndIcon')} className="scale-116 mx-2" />}
+                            endIcon={<SquareArrowUpRightIcon onClick={() => {
+                                const period_cover = format(new Date(date!.from!)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(date!.to!)!.toISOString(), 'yyyyMMdd')
+                                router.push(`/personprofile/accomplishment-report/${user?.user_id}/${period_cover}`)
+                            }} className="scale-116 mx-2 cursor-pointer" />}
                             className={"bg-primary text-primary-foreground hover:bg-primary/90 p-[6px] rounded-md px-2"}
                             value={date}
                             onChange={setDate}
@@ -342,14 +347,12 @@ export default function DailyTimeRecordUser() {
                         <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
                             <Download />
                         </Button>
-
                     </div>
-
                     <div className="rounded-lg mb-6">
                         <AppTable
                             data={data}
                             columns={DTRcolumns}
-                            onEditRecord={session?.userData.role !== "CFW Beneficiary" ? handleEdit : undefined}
+                            onEditRecord={!["CFW Beneficiary", "Guest"].includes(session?.userData?.role || "") ? handleEdit : undefined}
                         />
                     </div>
 
