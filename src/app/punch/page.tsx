@@ -14,7 +14,7 @@ import {
     AlertTriangle,
     LogIn,
     LogOut,
-    Calendar,
+    Calendar,_
     Building2,
     ShieldCheck,
     Fingerprint,
@@ -455,7 +455,7 @@ export default function ClockInOut() {
                                     id="username"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="mt-1 pl-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
+                                    className="mt-1 pl-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color normal-case"
                                     placeholder="Enter your Email"
                                     disabled={isLoading}
                                 />
@@ -472,7 +472,7 @@ export default function ClockInOut() {
                                         id="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="mt-1 pl-10 pr-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
+                                        className="mt-1 pl-10 pr-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color normal-case"
                                         placeholder="Enter your Password"
                                         disabled={isLoading}
                                     />
