@@ -482,7 +482,7 @@ export default function LoginPage() {
                     {...register("email")}
                     name="email"
                     placeholder="m@example.com"
-                    className="lowercase"
+                    className="normal-case"
                     required
                   />
                   {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
