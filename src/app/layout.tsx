@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import ServiceWorker from "@/components/service-workers";
-import ClientSessionCheck from "./clientSession";
-import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
+import ServiceWorker from "@/components/service-workers"; 
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import React from 'react'
 
 // Constants for the app metadata
 const APP_NAME = "KALAHI-CIDSS Information System";
@@ -95,11 +94,10 @@ export default async function RootLayout({
         <meta property="og:url" content="https://yourdomain.com" />
         <meta property="og:image" content="https://yourdomain.com/icons/apple-touch-icon.png" />
       </head>
-      <body className={`${GeistMono.className} ${GeistSans.className} antialiased`} cz-shortcut-listen="true">
+      <body className={`${GeistMono.className} ${GeistSans.className} antialiased`}>
         {children}
         <ServiceWorker />
-        <Toaster/>
-        <FloatingPWAStatusAvatar />
+        <Toaster /> 
       </body>
     </html>
   );

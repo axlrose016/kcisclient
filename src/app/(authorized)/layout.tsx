@@ -1,8 +1,8 @@
-import type { Metadata } from "next"; 
-import "../globals.css"; 
+import type { Metadata } from "next";
+import "../globals.css";
 import ClientSessionCheck from "../clientSession";
 import React from 'react'
-import { AlertProvider } from "@/components/general/use-alert";
+import { AlertProvider } from "@/components/general/use-alert"; 
 
 // Constants for the app metadata
 const APP_NAME = "KALAHI-CIDSS Information System";
@@ -46,11 +46,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+
+
   return (
     <ClientSessionCheck>
       <AlertProvider>

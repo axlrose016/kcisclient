@@ -573,7 +573,7 @@ export default function LoginPage() {
                 <Input
                   id="email_forgot_password"
                   type="email"
-                  className="mt-2 lowercase"
+                  className="mt-2 normal-case"
                   value={forgotPassword.email}
                   onChange={(e) => {
                     setForgotPassword({ ...forgotPassword, email: e.target.value })

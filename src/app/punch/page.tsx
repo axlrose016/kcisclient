@@ -23,7 +23,9 @@ import {
     CalendarClock,
     Wifi,
     WifiOff,
-    RefreshCw
+    RefreshCw,
+    Eye,
+    EyeOff
 } from "lucide-react";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -34,6 +36,13 @@ import { toZonedTime } from "date-fns-tz";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import { hasOnlineAccess } from "@/lib/utils";
+import { useBulkSyncStore } from "@/lib/state/bulksync-store";
+import { syncTask } from "@/lib/bulksync";
+import FloatingPWAStatusAvatar from "@/components/general/floating-sw-status";
+import { AnimatedBackground } from "@/components/ui/animated-background";
+import { getSession } from "@/lib/sessions-client";
+import { SessionPayload } from "@/types/globals";
+
 
 interface User {
     id: string;
@@ -45,6 +54,13 @@ interface User {
 
 export default function ClockInOut() {
 
+
+    const {
+        setTasks,
+        resetAllTasks,
+        startSync
+    } = useBulkSyncStore();
+
     const [currentTime, setCurrentTime] = useState(new Date());
     const [isInternetTime, setIsInternetTime] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -55,7 +71,8 @@ export default function ClockInOut() {
     const [activeLog, setActiveLog] = useState<ICFWTimeLogs | null>(null);
     const [isOpen, setIsOpen] = useState(false);
     const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const [password, setPassword] = useState(""); 
+    const [showPassword, setShowPassword] = useState(false);
     const [isTimeBtnDisabled, setIsTimeBtnDisabled] = useState(false);
     const [isConfirmBtnDisabled, setIsConfirmBtnDisabled] = useState(true);
     const usernameRef = useRef<HTMLInputElement>(null);
@@ -98,6 +115,13 @@ export default function ClockInOut() {
     };
 
     useEffect(() => {
+        resetAllTasks()
+        setTasks(syncTask.filter(i => i.tag == 'Person Profile > CFW attendance log'))
+    }, [setTasks, resetAllTasks])
+
+     
+
+    useEffect(() => {
         // Initial update with local time
         setCurrentTime(new Date());
 
@@ -118,6 +142,8 @@ export default function ClockInOut() {
         const handleOnline = async () => {
             setIsOnline(true);
             wasOfflineRef.current = true;
+            const session = await getSession() as SessionPayload; 
+            await startSync(session!, "Person Profile > CFW attendance log")
             await updateTime(true);
         };
 
@@ -342,179 +368,133 @@ export default function ClockInOut() {
 
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200">
-            <div className="p-8 rounded-2xl shadow-2xl bg-white w-full max-w-6xl border border-gray-100 backdrop-blur-sm">
-                <div className="w-full flex justify-center mb-6">
-                    <Image width={300} height={300} src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-24 w-auto hover:scale-105 transition-transform duration-300" />
-                </div>
+        <>
+            <AnimatedBackground />
+            <div className="flex flex-col items-center justify-center min-h-screen">
+                <div className="p-8 rounded-2xl shadow-2xl bg-white/90 w-full max-w-6xl border border-gray-100 backdrop-blur-sm">
+                    <div className="w-full flex justify-center mb-6">
+                        <Image width={300} height={300} src="/images/logos.png" alt="DSWD KC BAGONG PILIPINAS" className="h-24 w-auto hover:scale-105 transition-transform duration-300" />
+                    </div>
 
-                <h1 className="text-2xl font-bold text-center text-gray-800 mb-2 flex items-center justify-center gap-2">
-                    <Building2 className="h-8 w-8 text-cfw_bg_color" />
-                    KAPIT BISIG LABAN SA KAHIRAPAN
-                </h1>
-                <h2 className="text-xl font-semibold text-center text-gray-700 mb-6 flex items-center justify-center gap-2">
-                    <CalendarClock className="h-6 w-6 text-cfw_bg_color" />
-                    TIME IN/OUT
-                </h2>
+                    <h1 className="text-2xl font-bold text-center text-gray-800 mb-2 flex items-center justify-center gap-2">
+                        <Building2 className="h-8 w-8 text-cfw_bg_color" />
+                        KAPIT BISIG LABAN SA KAHIRAPAN
+                    </h1>
+                    <h2 className="text-xl font-semibold text-center text-gray-700 mb-6 flex items-center justify-center gap-2">
+                        <CalendarClock className="h-6 w-6 text-cfw_bg_color" />
+                        TIME IN/OUT
+                    </h2>
 
-                <div className="text-center mb-8 bg-gradient-to-r from-gray-50 to-gray-100 p-8 rounded-xl border border-gray-200 shadow-inner">
-                    <p className="text-4xl font-mono text-cfw_bg_color flex items-center justify-center gap-3">
-                        <Timer className="h-10 w-10" />
-                        {formatDateTime(currentTime)}
-                    </p>
-                    <div className="flex flex-col items-center justify-center gap-3 mt-4">
-                        <div className="flex items-center gap-4">
-                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isOnline
+                    <div className="text-center mb-8 bg-gradient-to-r from-gray-50 to-gray-100 p-8 rounded-xl border border-gray-200 shadow-inner">
+                        <p className="text-4xl font-mono text-cfw_bg_color flex items-center justify-center gap-3">
+                            <Timer className="h-10 w-10" />
+                            {formatDateTime(currentTime)}
+                        </p>
+                        <div className="flex flex-col items-center justify-center gap-3 mt-4">
+                            <div className="flex items-center gap-4">
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${isOnline
                                     ? 'bg-green-50 text-green-700 border border-green-200'
                                     : 'bg-red-50 text-red-700 border border-red-200'
-                                }`}>
-                                {isOnline ? (
-                                    <Wifi className="h-5 w-5 text-green-500" />
-                                ) : (
-                                    <WifiOff className="h-5 w-5 text-red-500" />
-                                )}
-                                <span className="text-sm font-medium">
-                                    {isOnline ? 'Online' : 'Offline'}
-                                </span>
-                            </div>
-                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${syncStatus === 'synced'
+                                    }`}>
+                                    {isOnline ? (
+                                        <Wifi className="h-5 w-5 text-green-500" />
+                                    ) : (
+                                        <WifiOff className="h-5 w-5 text-red-500" />
+                                    )}
+                                    <span className="text-sm font-medium">
+                                        {isOnline ? 'Online' : 'Offline'}
+                                    </span>
+                                </div>
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${syncStatus === 'synced'
                                     ? 'bg-green-50 text-green-700 border border-green-200'
                                     : syncStatus === 'syncing'
                                         ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                         : 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                                }`}>
-                                {syncStatus === 'synced' && (
-                                    <ShieldCheck className="h-5 w-5 text-green-500" />
-                                )}
-                                {syncStatus === 'syncing' && (
-                                    <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />
-                                )}
-                                {(!isOnline || syncStatus === 'error') && (
-                                    <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                )}
-                                <span className="text-sm font-medium">
-                                    {syncStatus === 'synced' && 'Time Synchronized'}
-                                    {syncStatus === 'syncing' && 'Syncing Time...'}
-                                    {(!isOnline || syncStatus === 'error') && 'Using Local Time'}
-                                </span>
-                            </div>
-                        </div>
-                        {lastSyncTime && isOnline && syncStatus === 'synced' && (
-                            <div className="text-xs text-gray-500 flex items-center gap-1">
-                                <Clock4 className="h-3 w-3" />
-                                Last synchronized: {lastSyncTime.toLocaleTimeString()}
-                            </div>
-                        )}
-                        {!isOnline && (
-                            <div className="text-xs text-yellow-600 flex items-center gap-1">
-                                <AlertTriangle className="h-3 w-3" />
-                                Time may not be accurate while offline
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <div className="max-w-md mx-auto">
-                    <div className="space-y-6">
-                        <div className="relative">
-                            <Label htmlFor="username" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                <Fingerprint className="h-4 w-4 text-cfw_bg_color" />
-                                Username<span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                ref={usernameRef}
-                                type="text"
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                className="mt-1 pl-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
-                                placeholder="Enter your username"
-                                disabled={isLoading}
-                            />
-                            <User className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
-                        </div>
-
-                        <div className="relative">
-                            <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                <Lock className="h-4 w-4 text-cfw_bg_color" />
-                                Password<span className="text-red-500">*</span>
-                            </Label>
-                            <Input
-                                type="password"
-                                id="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 pl-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
-                                placeholder="Enter your password"
-                                disabled={isLoading}
-                            />
-                            <Lock className="absolute left-3 top-9 h-5 w-5 text-gray-400" />
-                        </div>
-
-                        <Button
-                            onClick={handleTimeClick}
-                            disabled={isTimeBtnDisabled || isLoading}
-                            className="w-full bg-cfw_bg_color hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-xl"
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="h-6 w-6 animate-spin" />
-                                    Processing...
-                                </>
-                            ) : (
-                                <>
-                                    <Clock4 className="h-6 w-6" />
-                                    Record Time
-                                </>
-                            )}
-                        </Button>
-                    </div>
-                </div>
-
-                <Dialog modal={false} open={isOpen} onOpenChange={(open) => {
-                    setIsOpen(open);
-                    if (!open) {
-                        setTimeout(() => {
-                            usernameRef.current?.focus();
-                        }, 100);
-                        setIsTimeBtnDisabled(false);
-                        setIsConfirmBtnDisabled(true);
-                    }
-                }}>
-                    <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader>
-                            <DialogTitle className="text-center text-2xl font-bold text-cfw_bg_color mb-4 flex items-center justify-center gap-2">
-                                <Calendar className="h-7 w-7" />
-                                Confirm Time Record
-                            </DialogTitle>
-                            <DialogDescription className="text-center mt-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-md flex items-center gap-2">
-                                <AlertTriangle className="h-5 w-5 flex-shrink-0" />
-                                <div>
-                                    <strong>Verification Required:</strong> Please confirm your identity before proceeding with the time record.
+                                    }`}>
+                                    {syncStatus === 'synced' && (
+                                        <ShieldCheck className="h-5 w-5 text-green-500" />
+                                    )}
+                                    {syncStatus === 'syncing' && (
+                                        <RefreshCw className="h-5 w-5 text-blue-500 animate-spin" />
+                                    )}
+                                    {(!isOnline || syncStatus === 'error') && (
+                                        <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                                    )}
+                                    <span className="text-sm font-medium">
+                                        {syncStatus === 'synced' && 'Time Synchronized'}
+                                        {syncStatus === 'syncing' && 'Syncing Time...'}
+                                        {(!isOnline || syncStatus === 'error') && 'Using Local Time'}
+                                    </span>
                                 </div>
-                            </DialogDescription>
-                        </DialogHeader>
-
-                        <div className="flex flex-col items-center justify-center gap-4 mt-6">
-                            <Avatar className="h-36 w-36 border-4 border-cfw_bg_color hover:scale-105 transition-transform duration-300 shadow-lg">
-                                <AvatarImage src={user?.userData.name} alt={user?.userData.name} />
-                                <AvatarFallback className="text-4xl bg-cfw_bg_color text-white">
-                                    {user?.userData.name.charAt(0)}
-                                </AvatarFallback>
-                            </Avatar>
-                            <div className="text-center">
-                                <p className="text-xl font-bold text-gray-800">{user?.userData.name}</p>
-                                <p className="text-sm text-gray-500 flex items-center gap-1">
-                                    CFW ID: {user?.id}
-                                </p>
                             </div>
+                            {lastSyncTime && isOnline && syncStatus === 'synced' && (
+                                <div className="text-xs text-gray-500 flex items-center gap-1">
+                                    <Clock4 className="h-3 w-3" />
+                                    Last synchronized: {lastSyncTime.toLocaleTimeString()}
+                                </div>
+                            )}
+                            {!isOnline && (
+                                <div className="text-xs text-yellow-600 flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Time may not be accurate while offline
+                                </div>
+                            )}
                         </div>
+                    </div>
 
-                        <DialogFooter className="flex flex-col gap-3 mt-6">
+                    <div className="max-w-md mx-auto">
+                        <div className="space-y-6">
+                            <div className="relative">
+                                <Label htmlFor="username" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <Fingerprint className="h-4 w-4 text-cfw_bg_color" />
+                                    Email<span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    ref={usernameRef}
+                                    type="text"
+                                    id="username"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    className="mt-1 pl-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
+                                    placeholder="Enter your Email"
+                                    disabled={isLoading}
+                                />
+                            </div>
+
+                            <div className="relative">
+                                <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                                    <Lock className="h-4 w-4 text-cfw_bg_color" />
+                                    Password<span className="text-red-500">*</span>
+                                </Label>
+                                <div className="relative">
+                                    <Input
+                                        type={showPassword ? "text" : "password"}
+                                        id="password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="mt-1 pl-10 pr-10 bg-gray-50 border-gray-200 focus:border-cfw_bg_color focus:ring-cfw_bg_color"
+                                        placeholder="Enter your Password"
+                                        disabled={isLoading}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                                        tabIndex={-1}
+                                    >
+                                        {showPassword ? (
+                                            <EyeOff className="h-5 w-5" />
+                                        ) : (
+                                            <Eye className="h-5 w-5" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+
                             <Button
-                                onClick={() => handleTimeInOut("in")}
-                                disabled={activeLog ? activeLog.log_in !== "" && activeLog.log_out === "" : isConfirmBtnDisabled}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3"
+                                onClick={handleTimeClick}
+                                disabled={isTimeBtnDisabled || isLoading}
+                                className="w-full bg-cfw_bg_color hover:bg-green-700 text-white font-semibold py-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 text-lg shadow-lg hover:shadow-xl"
                             >
                                 {isLoading ? (
                                     <>
@@ -523,33 +503,95 @@ export default function ClockInOut() {
                                     </>
                                 ) : (
                                     <>
-                                        <LogIn className="h-6 w-6" />
-                                        Time In
+                                        <Clock4 className="h-6 w-6" />
+                                        Record Time
                                     </>
                                 )}
                             </Button>
+                        </div>
+                    </div>
 
-                            <Button
-                                onClick={() => handleTimeInOut("out")}
-                                disabled={activeLog ? activeLog.log_in !== "" && activeLog.log_out !== "" : true}
-                                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <Loader2 className="h-6 w-6 animate-spin" />
-                                        Processing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <LogOut className="h-6 w-6" />
-                                        Time Out
-                                    </>
-                                )}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
+                    <Dialog modal={false} open={isOpen} onOpenChange={(open) => {
+                        setIsOpen(open);
+                        if (!open) {
+                            setTimeout(() => {
+                                usernameRef.current?.focus();
+                            }, 100);
+                            setIsTimeBtnDisabled(false);
+                            setIsConfirmBtnDisabled(true);
+                        }
+                    }}>
+                        <DialogContent className="sm:max-w-[425px]">
+                            <DialogHeader>
+                                <DialogTitle className="text-center text-2xl font-bold text-cfw_bg_color mb-4 flex items-center justify-center gap-2">
+                                    <Calendar className="h-7 w-7" />
+                                    Confirm Time Record
+                                </DialogTitle>
+                                <DialogDescription className="text-center mt-3 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-4 rounded-md flex items-center gap-2">
+                                    <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                                    <div>
+                                        <strong>Verification Required:</strong> Please confirm your identity before proceeding with the time record.
+                                    </div>
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="flex flex-col items-center justify-center gap-4 mt-6">
+                                <Avatar className="h-36 w-36 border-4 border-cfw_bg_color hover:scale-105 transition-transform duration-300 shadow-lg">
+                                    <AvatarImage src={user?.userData.name} alt={user?.userData.name} />
+                                    <AvatarFallback className="text-4xl bg-cfw_bg_color text-white">
+                                        {user?.userData.name.charAt(0)}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="text-center">
+                                    <p className="text-xl font-bold text-gray-800">{user?.userData.name}</p>
+                                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                                        CFW ID: {user?.id}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <DialogFooter className="flex flex-col gap-3 mt-6">
+                                <Button
+                                    onClick={() => handleTimeInOut("in")}
+                                    disabled={activeLog ? activeLog.log_in !== "" && activeLog.log_out === "" : isConfirmBtnDisabled}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <LogIn className="h-6 w-6" />
+                                            Time In
+                                        </>
+                                    )}
+                                </Button>
+
+                                <Button
+                                    onClick={() => handleTimeInOut("out")}
+                                    disabled={activeLog ? activeLog.log_in !== "" && activeLog.log_out !== "" : true}
+                                    className="w-full bg-red-600 hover:bg-red-700 text-white font-bold text-lg py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-3"
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="h-6 w-6 animate-spin" />
+                                            Processing...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <LogOut className="h-6 w-6" />
+                                            Time Out
+                                        </>
+                                    )}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                </div>
             </div>
-        </div>
+            <FloatingPWAStatusAvatar />
+        </>
     );
 }

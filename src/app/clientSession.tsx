@@ -11,6 +11,8 @@ import { SessionPayload } from '@/types/globals';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { useBulkSyncStore } from '@/lib/state/bulksync-store';
+import { syncTask } from '@/lib/bulksync';
+import FloatingPWAStatusAvatar from '@/components/general/floating-sw-status';
 
 const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -18,7 +20,12 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true); // Add loading state
   const router = useRouter();
 
-  const { startSync, state, summary } = useBulkSyncStore();
+  const { startSync, state, summary, setTasks, resetAllTasks } = useBulkSyncStore();
+
+  useEffect(() => {
+    resetAllTasks()
+    setTasks(syncTask)
+  }, [setTasks, resetAllTasks])
 
   useEffect(() => {
     if (session) {
@@ -69,16 +76,19 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
 
   // Render based on authentication state
   return isAuthenticated ? (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset className="overflow-x-hidden">
-        <header className="flex h-16 items-center border-b px-4 no-print">
-          <SidebarTrigger className="mr-2" />
-          {/* <h1 className="text-lg font-medium">Beneficiary Profile Form</h1> */}
-        </header>
-        <main className="flex-1 overflow-x-hidden p-4">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
+    <>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset className="overflow-x-hidden">
+          <header className="flex h-16 items-center border-b px-4 no-print">
+            <SidebarTrigger className="mr-2" />
+            {/* <h1 className="text-lg font-medium">Beneficiary Profile Form</h1> */}
+          </header>
+          <main className="flex-1 overflow-x-hidden p-4">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+      <FloatingPWAStatusAvatar />
+    </>
   ) : (
     <LoginPage />
   );
