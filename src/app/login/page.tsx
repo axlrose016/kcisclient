@@ -503,7 +503,7 @@ export default function LoginPage() {
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" {...register("password")} name="password" required />
+                  <Input id="password" type="password" {...register("password")} name="password" className="normal-case" required />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
