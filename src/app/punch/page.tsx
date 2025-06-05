@@ -14,7 +14,7 @@ import {
     AlertTriangle,
     LogIn,
     LogOut,
-    Calendar,_
+    Calendar,
     Building2,
     ShieldCheck,
     Fingerprint,
