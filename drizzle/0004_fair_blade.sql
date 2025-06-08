@@ -1,1 +1,0 @@
-ALTER TABLE `person_profile` ADD `ip_group_id` integer;
