@@ -4,7 +4,7 @@ import { cache } from "react";
 export const getOfflineListData = (table:string) : () => Promise<any> => {
     return cache(async () => {
         await dexieDb.open();
-        const results = await dexieDb.table(table).toArray();
+        const results = await dexieDb.table(table).filter(item => item.is_deleted !== true).toArray();
         return results;
     })
 }

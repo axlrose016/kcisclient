@@ -1,5 +1,5 @@
 "use client"
-
+import { Pencil, FilePlus, Cross, FilePlus2 } from "lucide-react";
 import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -21,7 +21,7 @@ import LoginService from "@/app/login/LoginService";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { ICFWAssessment, IWorkPlan, IWorkPlanTasks } from "@/components/interfaces/personprofile"
 import { useRouter } from "next/navigation"
-import { cleanArray } from "@/lib/utils";
+import { cleanArray, cn } from "@/lib/utils";
 // checklist
 // deployment_area_short_name_supervisor ✅
 // deployment_area_supervisor ✅
@@ -86,6 +86,7 @@ type WizardProps = {
     noOfSelectedBeneficiaries?: number
     noOfTasks?: number
     deploymentAreaName?: string
+    mode?: any
 
 }
 
@@ -102,7 +103,9 @@ type WizardProps = {
 //     // assigned_person_name: string;
 
 // };
-export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName }: WizardProps) {
+export default function Wizard({ title, description, beneficiariesData, workPlanDetails, workPlanTasks, noOfSelectedBeneficiaries, noOfTasks, deploymentAreaName, mode }: WizardProps) {
+    const [formMode, setFormMode] = useState(mode)
+
     const [currentStep, setCurrentStep] = useState(0)
     const router = useRouter()
     const [totalNoOfTasks, setTotalNoOfTasks] = useState(0)
@@ -444,7 +447,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
                             remarks: newRemarks,
                             push_status_id: 2,
                             push_date: new Date().toISOString(),
-                            last_modified_by: newImmediateSupervisorId,
+                            last_modified_by: _session.userData.email,
                             last_modified_date: new Date().toISOString(),
                             number_of_days_program_engagement: number_of_days_program_engagement
 
@@ -519,7 +522,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
         }
     }
 
-    const submitWorkPlan = async () => {
+    const submitWorkPlanWPTaskSelectedBenes = async () => {
         let workplanid = uuidv4()
         saveWorkPlanToDexieDb(workplanid)
         saveWorkPlanTasksToDexieDb(workplanid)
@@ -895,7 +898,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
 
         if (currentStep == 3) {
             // getWorkPlan_Tasks_Benes_data() //get everything or prepare before sending to the database
-            submitWorkPlan()
+            submitWorkPlanWPTaskSelectedBenes()
 
 
 
@@ -919,7 +922,7 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
     // }, [currentStep])
     return (
         <div className="mx-auto px-0 py-8 mt-0">
-
+            {/* Mode: {formMode} */}
             {/* {JSON.stringify(workPlanData)} */}
             {/* {JSON.stringify(beneficiariesData)} */}
             {/* {_session.id} */}
@@ -927,8 +930,41 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
             {/* {JSON.stringify(workPlanDetails)} */}
             <Card className="w-full">
                 <CardHeader>
-                    <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
-                    <CardDescription className="mb-5">{description}</CardDescription>
+                    <div className="flex flex-row justify-between items-start">
+
+
+                        {/* Left side: title and description stacked vertically */}
+                        <div className="flex flex-col">
+                            <CardTitle className="text-xl md:text-2xl">{title}</CardTitle>
+                            <CardDescription className="mt-1 text-sm text-muted-foreground">
+                                {description}
+                            </CardDescription>
+                        </div>
+
+                        {/* Right side: mode label */}
+
+                        <div className="flex items-center">
+                            <span
+                                className={cn(
+                                    "flex items-center gap-1 text-sm font-medium px-2 py-1 rounded-md",
+                                    formMode === "editing"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : formMode === "viewing" || formMode === "new"
+                                            ? "bg-green-100 text-green-800"
+                                            : "bg-gray-100 text-gray-800"
+                                )}
+                            >
+                                {formMode === "draft" && <FilePlus2 size={16} className="text-black-800" />}
+                                {formMode === "editing" && <Pencil size={16} className="text-blue-800" />}
+                                {formMode === "viewing" && <Eye size={16} className="text-green-800" />}
+                                {!["editing", "viewing", "draft"].includes(formMode) && (
+                                    <FilePlus size={16} className="text-gray-800" />
+                                )}
+                                {formMode.toUpperCase()}
+                            </span>
+                        </div>
+
+                    </div>
                     <br />
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mt-8 gap-y-6"><div className="w-full flex items-center">
                         {steps.map((step, index) => (
@@ -1079,8 +1115,13 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
     //     localStorage.setItem("selectedBeneficiaries", JSON.stringify(selectedBeneficiaries));
 
     // }, [selectedBeneficiaries])
+    const handleRemoveBene = (e: any) => {
+        // alert(e)
+        console.log("Selected BENE", e)
+    }
     return (
         <div >
+
             <div className="mb-4">
                 <div className="flex items-start  bg-blue-50 border-l-4 border-yellow-400 p-4 rounded-md">
                     <span className="mr-3 mt-1 text-yellow-600">
@@ -1107,7 +1148,7 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
                 {selectedBeneficiaries.map((bene) => {
                     return (
                         <div key={bene.ID} className="inline-flex items-center mr-2 mb-2">
-                            <Badge variant="green" className="flex items-center gap-2 pr-2">
+                            <Badge variant="green" className="flex items-center gap-2 pr-2" onClick={(e) => handleRemoveBene(bene)}>
                                 {bene["FULL NAME"]}
                                 <Button
                                     size="icon"

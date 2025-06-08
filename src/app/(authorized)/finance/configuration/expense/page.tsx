@@ -1,7 +1,11 @@
 "use client"
 import { LibrariesService } from "@/app/(authorized)/library/LibrariesService";
+import { SettingsService } from "@/app/(authorized)/settings/SettingsService";
 import { AppTable } from "@/components/app-table";
+import { PushStatusBadge } from "@/components/general/push-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
+import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -10,18 +14,19 @@ function ListExpense() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const libService = new LibrariesService();
+    const settingsService = new SettingsService();
 
-    useEffect(() => {
-        async function loadExpense(){
-            try{
-                const data = await libService.getOfflineExpense() as any;
-                setData(data);
-            }catch(error){
-                console.error(error);
-            }finally{
-                setLoading(false);
-            }
+    async function loadExpense(){
+        try{
+            const data = await libService.getOfflineExpense() as any;
+            setData(data);
+        }catch(error){
+            console.error(error);
+        }finally{
+            setLoading(false);
         }
+    }
+    useEffect(() => {
         loadExpense();
     }, []);
 
@@ -31,8 +36,16 @@ function ListExpense() {
         console.log('Edit:', row);
     };
 
-    const handleDelete = (row: any) => {
-        console.log('Delete:', row);
+    const handleDelete = async(row: any) => {
+    const success = await settingsService.deleteData(libDb, "lib_expense", row);
+        if (success) {
+        toast({
+            variant: "green",
+            title: "Success.",
+            description: "Record successfully deleted!",
+        })
+        loadExpense();
+    }
     };
 
     const handleRowClick = (row: any) => {
@@ -41,6 +54,16 @@ function ListExpense() {
     };
 
     const columnsMasterlist =[
+        {
+                id: 'push status id',
+                header: 'Uploading Status',
+                accessorKey: 'push_status_id',
+                filterType: 'select',
+                filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+                sortable: true,
+                align: "center",
+                cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+            },
          {
           id: 'expense code',
           header: 'Code',

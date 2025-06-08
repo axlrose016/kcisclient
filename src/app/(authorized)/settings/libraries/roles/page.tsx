@@ -18,24 +18,30 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppTable } from "@/components/app-table";
 import { useRouter } from "next/navigation";
 import { getOfflineLibRoles } from "@/components/_dal/offline-libraries";
+import { PushStatusBadge } from "@/components/general/push-status-badge";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { SettingsService } from "../../SettingsService";
+import { toast } from "@/hooks/use-toast";
 
 export default function Roles() {
   const [roles, setRoles] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const router = useRouter();
   const baseUrl = 'settings/libraries/roles'
+  const settingsService = new SettingsService();
+
+  async function loadRoles() {
+    try {
+      const data = await getOfflineLibRoles();
+      setRoles(data);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   React.useEffect(() => {
-    async function loadRoles() {
-      try {
-        const data = await getOfflineLibRoles();
-        setRoles(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
     loadRoles();
   }, []);
 
@@ -57,8 +63,16 @@ export default function Roles() {
     console.log('Edit:', row);
   };
 
-  const handleDelete = (row: any) => {
-      console.log('Delete:', row);
+  const handleDelete = async (row: any) => {
+    const success = await settingsService.deleteData(dexieDb, "roles", row);
+    if (success) {
+      toast({
+        variant: "green",
+        title: "Success.",
+        description: "Record successfully deleted!",
+      })
+      loadRoles();
+    }
   };
 
   const handleRowClick = (row: any) => {
@@ -69,6 +83,29 @@ export default function Roles() {
   const handleAddNewRecord = (newRecord: any) => {
       console.log('handleAddNewRecord', newRecord)
   };
+
+  const columnsMasterlist =[
+        {
+            id: 'push status id',
+            header: 'Uploading Status',
+            accessorKey: 'push_status_id',
+            filterType: 'select',
+            filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+            sortable: true,
+            align: "center",
+            cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+
+        },
+        {
+          id: 'role description',
+          header: 'Description',
+          accessorKey: 'role_description',
+          filterType: 'text',   
+          sortable: true,
+          align: "left",
+          cell: null,
+        },
+    ];
 return(
     <Card>
     <CardHeader>
@@ -91,13 +128,7 @@ return(
             <div className="min-h-screen">
                 <AppTable
                     data={roles}
-                    columns={roles[0] ? Object.keys(roles[0]).map((key, idx) => ({
-                        id: key,
-                        header: key,
-                        accessorKey: key,
-                        filterType: 'text',
-                        sortable: true,
-                    })) : []}
+                    columns={columnsMasterlist}
                     onDelete={handleDelete}
                     onRowClick={handleRowClick}
                     onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}

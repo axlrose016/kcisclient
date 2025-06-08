@@ -20,7 +20,7 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true); // Add loading state
   const router = useRouter();
 
-  const { startSync, state, summary, setTasks, resetAllTasks } = useBulkSyncStore();
+  const { state, summary, setTasks, resetAllTasks } = useBulkSyncStore();
 
   useEffect(() => {
     resetAllTasks()
@@ -28,15 +28,8 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   }, [setTasks, resetAllTasks])
 
   useEffect(() => {
-    if (session) {
-      startSync(session!)
-    }
-  }, [session])
-
-  useEffect(() => {
     console.log('summary', summary)
   }, [state])
-
 
   useEffect(() => {
     const checkSession = async () => {

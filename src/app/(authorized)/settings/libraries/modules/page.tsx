@@ -9,24 +9,31 @@ import LoadingScreen from "@/components/general/loading-screen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { SettingsService } from "../../SettingsService";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { toast } from "@/hooks/use-toast";
+import { PushStatusBadge } from "@/components/general/push-status-badge";
 
 export default function Module(){
     const [modules, setModules] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const baseUrl = 'settings/libraries/modules'
+    const settingsService = new SettingsService();
+
+
+    async function loadModules() {
+    try{
+            const data = await getOfflineLibModules();
+            setModules(data);
+        } catch(error){
+            console.error(error);
+        } finally{
+            setLoading(false);
+        }
+    }
 
     React.useEffect(() => {
-      async function loadModules() {
-        try{
-                const data = await getOfflineLibModules();
-                setModules(data);
-            } catch(error){
-                console.error(error);
-            } finally{
-                setLoading(false);
-            }
-        }
         loadModules();
     }, []);
 
@@ -44,14 +51,44 @@ export default function Module(){
         </div>
     }
 
-  const handleDelete = (row: any) => {
-      console.log('Delete:', row);
+  const handleDelete = async (row: any) => {
+    const success = await settingsService.deleteData(dexieDb, "modules", row);
+        if (success) {
+        toast({
+            variant: "green",
+            title: "Success.",
+            description: "Record successfully deleted!",
+        })
+        loadModules();
+    }
   };
 
   const handleRowClick = (row: any) => {
       console.log('Row clicked:', row);
       router.push(`/${baseUrl}/form/${row.id}`);
   };
+
+     const columnsMasterlist =[
+              {
+                  id: 'push status id',
+                  header: 'Uploading Status',
+                  accessorKey: 'push_status_id',
+                  filterType: 'select',
+                  filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+                  sortable: true,
+                  align: "center",
+                  cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+              },
+              {
+              id: 'module description',
+              header: 'Description',
+              accessorKey: 'module_description',
+              filterType: 'text',   
+              sortable: true,
+              align: "left",
+              cell: null,
+              },
+      ];
 
     return (
       <Card>
@@ -74,13 +111,7 @@ export default function Module(){
               <div className="min-h-screen">
                   <AppTable
                       data={modules}
-                      columns={modules[0] ? Object.keys(modules[0]).map((key, idx) => ({
-                          id: key,
-                          header: key,
-                          accessorKey: key,
-                          filterType: 'text',
-                          sortable: true,
-                      })) : []}
+                      columns={columnsMasterlist}
                       onDelete={handleDelete}
                       onRowClick={handleRowClick}
                       onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/0`)}

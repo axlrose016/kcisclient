@@ -76,7 +76,10 @@ export class HRService {
       try {
         let savedItem: IPositionItem | undefined;
   
-        await hrDb.transaction('rw', [hrDb.position_item], async () => {
+        await hrDb.transaction('rw', [hrDb.position_item], async trans => {
+        trans.meta = {
+            needsAudit: true,
+        };
 
           let data: IPositionItem = positionItem;
 
@@ -119,7 +122,10 @@ export class HRService {
     async saveOfflinePositionDistribution(postionDistribution: any): Promise<any | undefined> {
       try{
         let savedItem: IPositionItemDistribution | undefined;
-        await hrDb.transaction('rw', [hrDb.position_item_distribution], async () => {
+        await hrDb.transaction('rw', [hrDb.position_item_distribution], async trans => {
+          trans.meta = {
+            needsAudit: true,
+          };
           let data: IPositionItemDistribution = postionDistribution;
 
           if (postionDistribution.id === "") {
@@ -226,7 +232,10 @@ export class HRService {
     async saveOfflineHiringProcedure(hiringProcedure: any): Promise<any | undefined> {
       try {
         let savedItem: any | undefined;
-        await hrDb.transaction('rw', [hrDb.hiring_procedure], async () => {
+        await hrDb.transaction('rw', [hrDb.hiring_procedure], async trans => {
+          trans.meta = {
+            needsAudit: true,
+          };
           let data: IHiringProcedure = hiringProcedure;
           if (hiringProcedure.id === "" || hiringProcedure.id === undefined) {
             data = {
@@ -259,100 +268,103 @@ export class HRService {
       console.error('Transaction failed: ', error);
       return undefined;
     }
-  }
-
-  async getOfflineApplicantById(id: any): Promise<IApplicant | undefined> {
-    try{
-      const result = await hrDb.transaction('r', [hrDb.applicant], async () => {
-        const applicant = await hrDb.applicant.where('id').equals(id).first();
-        if (applicant) {
-          return applicant;
-        } else {
-          console.log('No record found with the given ID.');
-          return undefined;
-        }
-      });
-      return result;
-    }catch(error){
-      console.error('Fetch Record Failed: ', error);
-      return undefined;
     }
-  }
 
-  async getOfflineApplicantsByDistributionId(distributionId: string): Promise<IApplicant[] | undefined> {
-    try{
-      const result = await hrDb.transaction('r', [hrDb.applicant], async () => {
-        const applicants = await hrDb.applicant.where('position_item_distribution_id').equals(distributionId).toArray();
-        if (applicants.length > 0) {
-          return applicants;
-        } else {
-          console.log('No records found for the given distribution ID.');
-          return [];
-        }
-      });
-      return result;
-    }catch(error){
-      console.error('Fetch Records Failed: ', error);
-      return undefined;
-    }
-  }
-
-  async getOfflineApplicants(): Promise<any[] | undefined> {
-    await hrDb.open();
-    await dexieDb.open();
-
-    const data = await hrDb.applicant.toArray();
-    const resolvedData = await Promise.all(
-      data.map(async (item: any) => {
-        const extension_name = await dexieDb.lib_extension_name.get(item.extension_name_id);
-        const sex = await dexieDb.lib_sex.get(item.sex_id);
-        const civil_status = await dexieDb.lib_civil_status.get(item.civil_status_id);
-        return {
-          ...item,
-          extension_name: extension_name ? extension_name.extension_name : null,
-          sex: sex ? sex.sex_description : null,
-          civil_status: civil_status ? civil_status.civil_status_description : null,
-        };
-      })
-    );
-    return resolvedData;
-  }
-
-  async saveOfflineApplicant(applicant: any): Promise<any | undefined> {
-    try {
-      let savedItem: any | undefined;
-      await hrDb.transaction('rw', [hrDb.applicant], async () => {
-        let data: IApplicant = applicant;
-        if(applicant.id === "" || applicant.id === undefined) {
-          data = {
-            ...applicant,
-            id: uuidv4(),
-            created_date: new Date().toISOString(),
-            created_by: _session.userData.email,
-            push_status_id: 2,
-            remarks: "Record Created by " + _session.userData.email,
-          };
-        }else{
-          const existing = await hrDb.applicant.get(applicant.id);
-          if (!existing) {
-            throw new Error("Record not found for update.");
+    async getOfflineApplicantById(id: any): Promise<IApplicant | undefined> {
+      try{
+        const result = await hrDb.transaction('r', [hrDb.applicant], async () => {
+          const applicant = await hrDb.applicant.where('id').equals(id).first();
+          if (applicant) {
+            return applicant;
+          } else {
+            console.log('No record found with the given ID.');
+            return undefined;
           }
-          data = {
-            ...existing,
-            ...applicant,
-            last_modified_date: new Date().toISOString(),
-            last_modified_by: _session.userData.email,
-            push_status_id: 2,
-            remarks: "Record Updated by " + _session.userData.email,
-          };
-        }
-        await hrDb.applicant.put(data);
-        savedItem = data;
-      });
-      return savedItem;
-    }catch(error){
-      console.error('Transaction failed: ', error);
-      return undefined;
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
     }
-  }
+
+    async getOfflineApplicantsByDistributionId(distributionId: string): Promise<IApplicant[] | undefined> {
+      try{
+        const result = await hrDb.transaction('r', [hrDb.applicant], async () => {
+          const applicants = await hrDb.applicant.where('position_item_distribution_id').equals(distributionId).toArray();
+          if (applicants.length > 0) {
+            return applicants;
+          } else {
+            console.log('No records found for the given distribution ID.');
+            return [];
+          }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Records Failed: ', error);
+        return undefined;
+      }
+    }
+
+    async getOfflineApplicants(): Promise<any[] | undefined> {
+      await hrDb.open();
+      await dexieDb.open();
+
+      const data = await hrDb.applicant.toArray();
+      const resolvedData = await Promise.all(
+        data.map(async (item: any) => {
+          const extension_name = await dexieDb.lib_extension_name.get(item.extension_name_id);
+          const sex = await dexieDb.lib_sex.get(item.sex_id);
+          const civil_status = await dexieDb.lib_civil_status.get(item.civil_status_id);
+          return {
+            ...item,
+            extension_name: extension_name ? extension_name.extension_name : null,
+            sex: sex ? sex.sex_description : null,
+            civil_status: civil_status ? civil_status.civil_status_description : null,
+          };
+        })
+      );
+      return resolvedData;
+    }
+
+    async saveOfflineApplicant(applicant: any): Promise<any | undefined> {
+      try {
+        let savedItem: any | undefined;
+        await hrDb.transaction('rw', [hrDb.applicant], async trans => {
+          trans.meta = {
+            needsAudit: true,
+          };
+          let data: IApplicant = applicant;
+          if(applicant.id === "" || applicant.id === undefined) {
+            data = {
+              ...applicant,
+              id: uuidv4(),
+              created_date: new Date().toISOString(),
+              created_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Created by " + _session.userData.email,
+            };
+          }else{
+            const existing = await hrDb.applicant.get(applicant.id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+            data = {
+              ...existing,
+              ...applicant,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session.userData.email,
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session.userData.email,
+            };
+          }
+          await hrDb.applicant.put(data);
+          savedItem = data;
+        });
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
 }

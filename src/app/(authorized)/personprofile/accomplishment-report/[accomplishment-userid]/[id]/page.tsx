@@ -26,6 +26,7 @@ export default function AccomplishmentReportUser() {
     const { toast } = useToast()
     const params = useParams<{ 'accomplishment-userid': string; id: string }>()
     const [user, setUser] = useState<UserTypes>();
+    const [supervisor, setSupervisor] = useState<any>();
     const [ar, setAR] = useState<IAccomplishmentReport>()
     const [tasks, setTasks] = useState<IAccomplishmentActualTask[]>([])
 
@@ -52,6 +53,19 @@ export default function AccomplishmentReportUser() {
     const [statusesOptions, setStatusesOptions] = useState<LibraryOption[]>([]);
     const [payrollbene, setCFWPayrollBene] = useState<ICFWPayrollBene>()
     const [submissionLogs, setSubmissionLogs] = useState<ISubmissionLog[]>([]);
+
+    const [lastStatus, setLastStatus] = useState<ISubmissionLog>({
+        id: "",
+        record_id: "",
+        bene_id: "",
+        module: "",
+        comment: "",
+        status: "",
+        status_date: "",
+        created_date: "",
+        created_by: ""
+    });
+
     const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
@@ -88,7 +102,7 @@ export default function AccomplishmentReportUser() {
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('user_id')
             .equals(params!['accomplishment-userid']).first();
-        console.log('p', { user,params, p: params!['accomplishment-userid'] })
+        console.log('p', { user, params, p: params!['accomplishment-userid'] })
         const merge = {
             ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
@@ -103,6 +117,7 @@ export default function AccomplishmentReportUser() {
 
         setSubmissionLogs(logs)
         setSelectedStatus(logslast ?? selectedStatus)
+        setLastStatus(logslast ?? selectedStatus)
 
         const ar = await dexieDb.accomplishment_report.where("id").equals(arId).first()
 
@@ -132,7 +147,7 @@ export default function AccomplishmentReportUser() {
             is_deleted: false,
             remarks: "",
         })
- 
+
         // await dexieDb.work_plan_cfw.put({
         //     id: uuidv4(),
         //     work_plan_id:"6ae189ed-eec7-4c38-a9fa-da8a00b01f21",
@@ -461,8 +476,10 @@ export default function AccomplishmentReportUser() {
                         session={session}
                         onChangeTask={setTasks}
                         accomplishmentReportId={ar?.id}
+                        onSupervisorTypeChange={(user) => setSupervisor(user)}
+                        supervisorType={supervisor}
                     />
- 
+
                     {session?.userData.role == "Administrator" ?
                         <div className="m-3 no-print">
                             <AppSubmitReview
@@ -477,62 +494,67 @@ export default function AccomplishmentReportUser() {
                             <Button onClick={handleSaveAccomplishmentReport}>
                                 <Edit className="mr-1 h-4 w-4" /> Save
                             </Button>
-                            <Button variant="outline" onClick={() => {
-                                const content = document.getElementById('print-section');
-                                if (!content) return;
-                                const style = document.createElement('style');
-                                style.innerHTML = `
-                         @media print { 
-                           @page {
-                             size: A4;
-                             margin: 0.8mm; /* Reduced margin for fitting the content */
-                           } 
-                           body {
-                              zoom: 69%;
-                             margin: 0;
-                             padding: 0;
-                             font-size: 12px; /* Keep the font-size consistent */
-                           } 
-                           #no-print{
-                            display: none;
-                           }
-                           #editable:empty:before {
-                              content: none;
-                            }
-                           /* This ensures the printed content scales without changing the original layout */
-                           .print-small {
-                             padding: 5px; /* Reduce padding to fit more content */
-                           } 
-                           /* Hide non-printable elements */
-                           .no-print {
-                             display: none;
-                           } 
-                           .ql-container.ql-snow {
-                              border: none;
-                            }
-                           /* Scale content without affecting the original layout */
-                           .no-scale {
-                             transform: scale(0.45);
-                             transform-origin: top left;
-                             width: 100%; /* Use full width */
-                             overflow: hidden;
-                           }
-                         }
-                       `;
-                                document.head.appendChild(style);
-                                const clone = content.cloneNode(true) as HTMLElement;
-                                const originalContents = document.body.innerHTML;
-                                document.body.innerHTML = '';
-                                document.body.appendChild(clone);
-                                window.print();
-                                document.body.innerHTML = originalContents;
-                                window.location.reload(); // Rebind React
-                            }}>
-                                <Printer className="mr-1 h-4 w-4" /> Print
-                            </Button>
-                            <Button variant="outline" onClick={() => console.log('Downloading PDF...')}>
-                                <Download className="mr-1 h-4 w-4" /> Download
-                            </Button>
+                            {lastStatus.status == "2" &&
+                                <>
+                                    <Button variant="outline" onClick={() => {
+                                        const content = document.getElementById('print-section');
+                                        if (!content) return;
+                                        const style = document.createElement('style');
+                                        style.innerHTML = `
+                                            @media print { 
+                                            @page {
+                                                size: A4;
+                                                margin: 0.8mm; /* Reduced margin for fitting the content */
+                                            } 
+                                            body {
+                                                zoom: 69%;
+                                                margin: 0;
+                                                padding: 0;
+                                                font-size: 12px; /* Keep the font-size consistent */
+                                            } 
+                                            #no-print{
+                                                display: none;
+                                            }
+                                            #editable:empty:before {
+                                                content: none;
+                                                }
+                                            /* This ensures the printed content scales without changing the original layout */
+                                            .print-small {
+                                                padding: 5px; /* Reduce padding to fit more content */
+                                            } 
+                                            /* Hide non-printable elements */
+                                            .no-print {
+                                                display: none;
+                                            } 
+                                            .ql-container.ql-snow {
+                                                border: none;
+                                                }
+                                            /* Scale content without affecting the original layout */
+                                            .no-scale {
+                                                transform: scale(0.45);
+                                                transform-origin: top left;
+                                                width: 100%; /* Use full width */
+                                                overflow: hidden;
+                                            }
+                                            }
+                                        `;
+                                        document.head.appendChild(style);
+                                        const clone = content.cloneNode(true) as HTMLElement;
+                                        const originalContents = document.body.innerHTML;
+                                        document.body.innerHTML = '';
+                                        document.body.appendChild(clone);
+                                        window.print();
+                                        document.body.innerHTML = originalContents;
+                                        window.location.reload(); // Rebind React
+                                    }}>
+                                        <Printer className="mr-1 h-4 w-4" /> Print
+                                    </Button>
+                                    <Button variant="outline" onClick={() => console.log('Downloading PDF...')}>
+                                        <Download className="mr-1 h-4 w-4" /> Download
+                                    </Button>
+                                </>}
+
+
                         </div>}
                 </CardContent>
             </div>

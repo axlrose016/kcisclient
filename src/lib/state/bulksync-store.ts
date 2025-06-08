@@ -2,17 +2,17 @@ import { create } from "zustand";
 import { SessionPayload } from "@/types/globals";
 import { toast } from "@/hooks/use-toast";
 import { syncTask } from "../bulksync";
-import { hasOnlineAccess, isValidTokenString } from "../utils";
+import { cleanArray, hasOnlineAccess, isValidTokenString } from "../utils";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 
 export interface ISummary {
   state:
-    | "idle"
-    | "in progress"
-    | "completed"
-    | `error: ${string}`
-    | "error"
-    | "failed";
+  | "idle"
+  | "in progress"
+  | "completed"
+  | `error: ${string}`
+  | "error"
+  | "failed";
   tasks: {
     tag: string;
     url: string;
@@ -162,7 +162,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
     const isUserGoodToSync = (await dexieDb.person_profile
       .where("email")
       .equals(session!.userData!.email!)
-      .first())?.push_status_id == 1 ;
+      .first())?.push_status_id == 1;
     // alert(JSON.stringify({ hasToken, hasNetAccess }));
 
     if (!hasNetAccess) return;
@@ -172,8 +172,8 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
     const { tasks, setProgressStatus } = get();
     const filteredTasks = tags
       ? tasks.filter((task) =>
-          Array.isArray(tags) ? tags.includes(task.tag) : task.tag === tags
-        )
+        Array.isArray(tags) ? tags.includes(task.tag) : task.tag === tags
+      )
       : tasks;
 
     set({
@@ -194,6 +194,8 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
       const records = task.force
         ? await task.module.toArray()
         : await task.module.where("push_status_id").notEqual(1).toArray();
+      // ? await cleanArray(task.module.toArray())
+      // : await cleanArray(task.module.where("push_status_id").notEqual(1).toArray());
       taskRecordMap[task.tag] = task.cleanup
         ? records.map(task.cleanup)
         : records;

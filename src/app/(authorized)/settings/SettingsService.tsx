@@ -1,15 +1,18 @@
 import { IUser, IUserAccess } from "@/components/interfaces/iuser";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
+import { softDelete } from "@/db/utils/softDelete";
 import { getSession } from "@/lib/sessions-client";
 import { cleanArray } from "@/lib/utils";
 import { SessionPayload } from "@/types/globals";
 import axios from 'axios';
+import Dexie from "dexie";
 
 const _session = await getSession() as SessionPayload;
 const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS;
 
 export class SettingsService {
+    
     async getOfflineUsers(): Promise<IUser[]>{
         try{
             const roleList = await dexieDb.roles.toArray();
@@ -20,7 +23,7 @@ export class SettingsService {
 
             const userList = await dexieDb.transaction('r', [dexieDb.users],
                 async () => {
-                    return await dexieDb.users.toArray();
+                    return await dexieDb.users.filter(f => f.is_deleted !== true).toArray();
                 }
             );
 
@@ -41,14 +44,14 @@ export class SettingsService {
         try {
         const user_response = await axios.get<IUser[]>(apiUrl+'/auth_users/view/', {
             headers: {
-            'Authorization': `bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZDAyMTBjYjktNzc2NS00MWUxLWJhZWItODVhOTFmMTkxOTYwIiwiZW1haWwiOiJheGxyb3NlLnZpbGxhbnVldmEuMDQxNkBnbWFpbC5jb20iLCJiaXJ0aGRhdGUiOiIxOTgwLTEyLTI4IiwiZXhwIjoxNzQ4OTk2ODk1LCJpYXQiOjE3NDg5MTQ0NzZ9.YNdw3pAIy1zBP-4nuGWTw5h4DgHS482AUE5lsxM8dl8`,
+            'Authorization': `bearer ${_session.token}`,
             'Content-Type': 'application/json',
             },
         });
         
         const access_response = await axios.get<IUserAccess[]>(apiUrl+'/auth_user_access/view/', {
               headers: {
-            'Authorization': `bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZDAyMTBjYjktNzc2NS00MWUxLWJhZWItODVhOTFmMTkxOTYwIiwiZW1haWwiOiJheGxyb3NlLnZpbGxhbnVldmEuMDQxNkBnbWFpbC5jb20iLCJiaXJ0aGRhdGUiOiIxOTgwLTEyLTI4IiwiZXhwIjoxNzQ4OTk2ODk1LCJpYXQiOjE3NDg5MTQ0NzZ9.YNdw3pAIy1zBP-4nuGWTw5h4DgHS482AUE5lsxM8dl8`,
+            'Authorization': `bearer ${_session.token}`,
             'Content-Type': 'application/json',
             },
         })
@@ -89,7 +92,7 @@ export class SettingsService {
 
         try {
         const headers = {
-            "Authorization": `bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZDAyMTBjYjktNzc2NS00MWUxLWJhZWItODVhOTFmMTkxOTYwIiwiZW1haWwiOiJheGxyb3NlLnZpbGxhbnVldmEuMDQxNkBnbWFpbC5jb20iLCJiaXJ0aGRhdGUiOiIxOTgwLTEyLTI4IiwiZXhwIjoxNzQ4OTk2ODk1LCJpYXQiOjE3NDg5MTQ0NzZ9.YNdw3pAIy1zBP-4nuGWTw5h4DgHS482AUE5lsxM8dl8`,
+            "Authorization": `bearer ${_session.token}`,
             "Content-Type": "application/json",
         };
 
@@ -107,20 +110,26 @@ export class SettingsService {
         if (userResponse.status === 200) {
             const today = new Date().toISOString().split("T")[0];
 
+            await dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async (trans) => {
+            trans.meta = {
+                needsAudit: true,
+            };
+
             await Promise.all([
-            ...unsynchedData.map((record) =>
+                ...unsynchedData.map((record) =>
                 dexieDb.users.update(record.id, {
-                push_status_id: 1,
-                push_date: today,
+                    push_status_id: 1,
+                    push_date: today,
                 })
-            ),
-            ...unsynchedAccessData.map((record) =>
+                ),
+                ...unsynchedAccessData.map((record) =>
                 dexieDb.useraccess.update(record.id, {
-                push_status_id: 1,
-                push_date: today,
+                    push_status_id: 1,
+                    push_date: today,
                 })
-            ),
+                ),
             ]);
+        });
         }
 
         return true;
@@ -128,5 +137,9 @@ export class SettingsService {
         console.error("Sync error:", error);
         return false;
         }
+    }
+
+    async deleteData(db: Dexie,tableName: string,row: any, child?: any): Promise<boolean> {
+        return await softDelete(db, tableName, row, child);
     }
 }

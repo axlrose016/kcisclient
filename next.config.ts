@@ -82,6 +82,10 @@ module.exports = withPWA({
         source: '/api-libs/:path*',
         destination: 'https://dxcloud.dswd.gov.ph/api/:path*',
       },
+      {
+        source: '/api-kcis/:path*',
+        destination: 'https://kcnfms.dswd.gov.ph/kcis/api/:path*',
+      },
     ];
   },
 });

@@ -12,8 +12,10 @@ export class LibrariesService{
         try {
             let savedItem: IRoles | undefined;
       
-            await dexieDb.transaction('rw', [dexieDb.roles], async () => {
-    
+            await dexieDb.transaction('rw', [dexieDb.roles], async (trans) => {
+            trans.meta = {
+              needsAudit: true,
+            };
               let data: IRoles = role;
             
               if (role.id === "") {
@@ -84,8 +86,10 @@ export class LibrariesService{
         try {
             let savedItem: IPermissions | undefined;
       
-            await dexieDb.transaction('rw', [dexieDb.permissions], async () => {
-    
+            await dexieDb.transaction('rw', [dexieDb.permissions], async (trans) => {
+            trans.meta = {
+              needsAudit: true,
+            };
               let data: IPermissions = permission;
             
               if (permission.id === "") {
@@ -156,8 +160,10 @@ export class LibrariesService{
         try {
             let savedItem: IModules | undefined;
       
-            await dexieDb.transaction('rw', [dexieDb.modules], async () => {
-    
+            await dexieDb.transaction('rw', [dexieDb.modules], async (trans) => {
+            trans.meta = {
+              needsAudit: true,
+            };
               let data: IModules = module;
             
               if (module.id === "") {
@@ -385,7 +391,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibEmploymentStatus | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_employment_status], async () => {
+        await libDb.transaction('rw',[libDb.lib_employment_status], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibEmploymentStatus = emp;
 
           if(!emp.id || emp.id === ""){
@@ -426,7 +435,10 @@ export class LibrariesService{
       try
       {
         let savedItem: ILibOffice | undefined;
-        await libDb.transaction('rw', [libDb.lib_office], async () => {
+        await libDb.transaction('rw', [libDb.lib_office], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibOffice = office;
 
           if(!office.id || office.id === ""){
@@ -465,7 +477,10 @@ export class LibrariesService{
       try
       {
         let savedItem: ILibDivision | undefined;
-        await libDb.transaction('rw', [libDb.lib_division], async () => {
+        await libDb.transaction('rw', [libDb.lib_division], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibDivision = division;
 
           if(!division.id || division.id === ""){
@@ -503,7 +518,10 @@ export class LibrariesService{
     async saveOfflineLibHiringProcedure(hiring_procedure: any): Promise<any | undefined>{
       try{
         let savedItem: ILibHiringProcedure | undefined;
-        await libDb.transaction('rw', [libDb.lib_hiring_procedure], async () => {
+        await libDb.transaction('rw', [libDb.lib_hiring_procedure], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibHiringProcedure = hiring_procedure;
 
           if(!hiring_procedure.id || hiring_procedure.id === ""){
@@ -538,12 +556,15 @@ export class LibrariesService{
         return undefined;
       }
     }
-
     async saveOfflinePosition(pos: any): Promise<any | undefined>{
       try{
         let savedItem: ILibPosition | undefined;
-        await libDb.transaction('rw', [libDb.lib_position], async () => {
+        await libDb.transaction('rw', [libDb.lib_position], async (trans) => {
+          trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibPosition = pos;
+          
 
           if(!pos.id || pos.id === ""){
             data = {
@@ -585,7 +606,7 @@ export class LibrariesService{
         try {
             await libDb.open();
             const result = await libDb.transaction('r', [libDb.lib_budget_year], async () => {
-                const budget_years = await libDb.lib_budget_year.toArray();
+                const budget_years = await libDb.lib_budget_year.filter(f => f.is_deleted !== true).toArray();
                 return budget_years;
             });
             return result;
@@ -616,7 +637,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibBudgetYear | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_budget_year], async () => {
+        await libDb.transaction('rw',[libDb.lib_budget_year], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibBudgetYear = budget_year;
 
           if(!budget_year.id || budget_year.id === ""){
@@ -657,7 +681,7 @@ export class LibrariesService{
         try {
             await libDb.open();
             const result = await libDb.transaction('r', [libDb.lib_pap], async () => {
-                const paps = await libDb.lib_pap.toArray();
+                const paps = await libDb.lib_pap.filter(f => f.is_deleted !== true).toArray();
                 return paps;
             });
             return result;
@@ -688,7 +712,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibPAP | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_pap], async () => {
+        await libDb.transaction('rw',[libDb.lib_pap], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibPAP = pap;
 
           if(!pap.id || pap.id === ""){
@@ -729,7 +756,7 @@ export class LibrariesService{
       try {
           await libDb.open();
           const result = await libDb.transaction('r', [libDb.lib_appropriation_source], async () => {
-              const app_source = await libDb.lib_appropriation_source.toArray();
+              const app_source = await libDb.lib_appropriation_source.filter(f => f.is_deleted !== true).toArray();
               return app_source;
           });
           return result;
@@ -760,7 +787,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibAppropriationSource | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_appropriation_source], async () => {
+        await libDb.transaction('rw',[libDb.lib_appropriation_source], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibAppropriationSource = app_source;
 
           if(!app_source.id || app_source.id === ""){
@@ -801,7 +831,7 @@ export class LibrariesService{
       try {
           await libDb.open();
           const result = await libDb.transaction('r', [libDb.lib_appropriation_type], async () => {
-              const app_type = await libDb.lib_appropriation_type.toArray();
+              const app_type = await libDb.lib_appropriation_type.filter(f => f.is_deleted !== true).toArray();
               return app_type;
           });
           return result;
@@ -832,7 +862,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibAppropriationType | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_appropriation_type], async () => {
+        await libDb.transaction('rw',[libDb.lib_appropriation_type], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibAppropriationType = app_type;
 
           if(!app_type.id || app_type.id === ""){
@@ -873,7 +906,7 @@ export class LibrariesService{
       try {
           await libDb.open();
           const result = await libDb.transaction('r', [libDb.lib_expense], async () => {
-              const expenses = await libDb.lib_expense.toArray();
+              const expenses = await libDb.lib_expense.filter(f => f.is_deleted !== true).toArray();
               return expenses;
           });
           return result;
@@ -904,7 +937,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibExpense | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_expense], async () => {
+        await libDb.transaction('rw',[libDb.lib_expense], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibExpense = expense;
 
           if(!expense.id || expense.id === ""){
@@ -945,7 +981,7 @@ export class LibrariesService{
       try {
           await libDb.open();
           const result = await libDb.transaction('r', [libDb.lib_allotment_class], async () => {
-              const allotment_class = await libDb.lib_allotment_class.toArray();
+              const allotment_class = await libDb.lib_allotment_class.filter(f => f.is_deleted !== true).toArray();
               return allotment_class;
           });
           return result;
@@ -976,7 +1012,10 @@ export class LibrariesService{
       try{
         let savedItem: ILibAllotmentClass | undefined;
 
-        await libDb.transaction('rw',[libDb.lib_allotment_class], async () => {
+        await libDb.transaction('rw',[libDb.lib_allotment_class], async (trans) => {
+           trans.meta = {
+            needsAudit: true,
+          };
           let data: ILibAllotmentClass = allotment_class;
 
           if(!allotment_class.id || allotment_class.id === ""){

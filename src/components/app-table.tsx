@@ -79,6 +79,7 @@ import { cn } from '@/lib/utils';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from "react-hook-form";
 import { AppTableDialogForm } from './app-table-dialog';
+import { PushStatusBadge } from './general/push-status-badge';
 interface DataTableProps {
   iconEdit?: ReactNode;
   iconDelete?: ReactNode;
@@ -124,6 +125,19 @@ const isValidUrl = (string: string) => {
     return false;
   }
 };
+
+const defaultColumns = [
+  {
+    id: 'push status id',
+    header: 'Uploading Status',
+    accessorKey: 'push_status_id',
+    filterType: 'select',
+    filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+    sortable: true,
+    align: 'center',
+    cell: (value: any) => <PushStatusBadge push_status_id={value} size="md" />,
+  },
+];
 
 export function AppTable({
   data,
@@ -280,11 +294,11 @@ export function AppTable({
   };
 
   const handleSync = async () => {
-    if(onSync){
+    if (onSync) {
       setIsSynching(true);
       try {
         await onSync();
-      }finally{
+      } finally {
         setIsRefreshing(false);
       }
     }
@@ -473,7 +487,7 @@ export function AppTable({
             "transition-opacity duration-200",
             isRefreshing && "opacity-50"
           )}>
-            {col.cell ? col.cell(value) : value}
+            {col.cell ? col.cell(value) : col.cellRow ? col.cellRow(row.original) : value}
           </div>
         );
       },

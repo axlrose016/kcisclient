@@ -255,7 +255,7 @@ export const seedModules: IModules[] = [
     {
         "id": "19a18164-3a26-4ec3-ac6d-755df1d3b980",
         "module_description": "Human Resource and Development",
-        "module_path": "hrdevelopment",
+        "module_path": "hr-development",
         "created_by": "00000000-0000-0000-0000-000000000000",
         "created_date": new Date().toISOString(),
         "last_modified_by": "",

@@ -251,7 +251,7 @@ export interface IWorkPlan {
   last_modified_date?: string | null, // ✔️
   last_modified_by?: string | null, // ✔️
   push_status_id?: number, // ✔️
-  push_date?: string, // ✔️
+  push_date?: string | null, // ✔️
   deleted_date: string | null, // ✔️
   deleted_by: string | null, // ✔️
   is_deleted: boolean, // ✔️
@@ -284,7 +284,7 @@ export interface IWorkPlanTasks {
   is_deleted: boolean, //
   status_id: number; //
   push_status_id?: number,//
-  push_date?: string, //
+  push_date?: string | null, //
 }
 export interface IWorkPlanCfw {
   id: string;  
@@ -296,7 +296,7 @@ export interface IWorkPlanCfw {
   last_modified_date?: string | null,
   last_modified_by?: string | null,
   push_status_id?: number,
-  push_date?: string,
+  push_date?: string | null,
   deleted_date: string | null,
   deleted_by: string | null,
   is_deleted: boolean,
@@ -315,7 +315,7 @@ export interface IAccomplishmentReport {
   last_modified_date?: string | null,
   last_modified_by?: string | null,
   push_status_id?: number,
-  push_date?: string,
+  push_date?: string | null,
   deleted_date: string | null,
   deleted_by: string | null,
   is_deleted: boolean,
@@ -334,7 +334,7 @@ export interface IAccomplishmentActualTask {
   last_modified_date?: string | null,
   last_modified_by?: string | null,
   push_status_id?: number,
-  push_date?: string,
+  push_date?: string | null,
   deleted_date: string | null,
   deleted_by: string | null,
   is_deleted: boolean,

@@ -1,7 +1,11 @@
 "use client"
 import { LibrariesService } from "@/app/(authorized)/library/LibrariesService";
+import { SettingsService } from "@/app/(authorized)/settings/SettingsService";
 import { AppTable } from "@/components/app-table";
+import { PushStatusBadge } from "@/components/general/push-status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
+import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -10,18 +14,20 @@ function ListAppropriationType() {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
     const libService = new LibrariesService();
+    const settingsService = new SettingsService();
+
+    async function loadAppropriationType(){
+        try{
+            const data = await libService.getOfflineAppropriationType() as any;
+            setData(data);
+        }catch(error){
+            console.error(error);
+        }finally{
+            setLoading(false);
+        }
+    }
 
     useEffect(() => {
-        async function loadAppropriationType(){
-            try{
-                const data = await libService.getOfflineAppropriationType() as any;
-                setData(data);
-            }catch(error){
-                console.error(error);
-            }finally{
-                setLoading(false);
-            }
-        }
         loadAppropriationType();
     }, []);
 
@@ -31,8 +37,16 @@ function ListAppropriationType() {
         console.log('Edit:', row);
     };
 
-    const handleDelete = (row: any) => {
-        console.log('Delete:', row);
+    const handleDelete = async (row: any) => {
+        const success = await settingsService.deleteData(libDb, "lib_appropriation_type", row);
+        if (success) {
+        toast({
+            variant: "green",
+            title: "Success.",
+            description: "Record successfully deleted!",
+        })
+        loadAppropriationType();
+    }
     };
 
     const handleRowClick = (row: any) => {
@@ -41,6 +55,16 @@ function ListAppropriationType() {
     };
 
     const columnsMasterlist =[
+        {
+            id: 'push status id',
+            header: 'Uploading Status',
+            accessorKey: 'push_status_id',
+            filterType: 'select',
+            filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+            sortable: true,
+            align: "center",
+            cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+        },
         {
           id: 'appropriation type id',
           header: 'Description',

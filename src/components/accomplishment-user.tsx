@@ -23,7 +23,9 @@ interface AccomplishmentReportFormProps {
     setDate?: (date: DateRange | undefined) => void;
     session?: SessionPayload;
     accomplishmentReportId?: string;
-    onChangeTask?: (task: IAccomplishmentActualTask[]) => void
+    onChangeTask?: (task: IAccomplishmentActualTask[]) => void;
+    supervisorType?: 'supervisor' | 'alternate';
+    onSupervisorTypeChange?: (type: 'supervisor' | 'alternate') => void;
 }
 
 export function AccomplishmentUser({
@@ -33,7 +35,9 @@ export function AccomplishmentUser({
     date,
     setDate,
     session,
-    accomplishmentReportId
+    accomplishmentReportId,
+    supervisorType = 'supervisor',
+    onSupervisorTypeChange
 }: AccomplishmentReportFormProps) {
     const [supervisor, setSupervisor] = useState<IUser>();
     const [alternateSupervisor, setAlternateSupervisor] = useState<IUser>();
@@ -420,10 +424,24 @@ export function AccomplishmentUser({
                         <p className='mt-8'>{user?.first_name} {user?.last_name}</p>
                         <p className='font-bold'>Beneficiary</p>
                     </div>
-                    <div className="col-span-1 ">
+                    <div className="col-span-1">
                         <p className='font-bold'>Signed and Approved by:</p>
-                        <p className='mt-8'>{supervisor?.username}</p>
-                        <p className='font-bold'>Immediate Supervisor/Alternate</p>
+                        <p className='mt-8'>{supervisorType === 'supervisor' ? supervisor?.username : alternateSupervisor?.username}</p>
+                        <div className="flex items-center gap-2">
+                            <select 
+                                className="border rounded py-1 font-bold print:border-0 print:appearance-none print:hidden"
+                                value={supervisorType}
+                                onChange={(e) => {
+                                    onSupervisorTypeChange?.(e.target.value as 'supervisor' | 'alternate');
+                                }}
+                            >
+                                <option value="supervisor">Immediate Supervisor</option>
+                                <option value="alternate">Alternate Supervisor</option>
+                            </select>
+                            <span className="hidden print:block font-bold">
+                                {supervisorType === 'supervisor' ? 'Immediate Supervisor' : 'Alternate Supervisor'}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

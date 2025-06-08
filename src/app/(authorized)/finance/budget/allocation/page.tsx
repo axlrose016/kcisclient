@@ -4,24 +4,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation';
 import React from 'react'
 import { FinanceService } from '../../FinanceService';
+import { SettingsService } from '@/app/(authorized)/settings/SettingsService';
+import { PushStatusBadge } from '@/components/general/push-status-badge';
+import { financeDb } from '@/db/offline/Dexie/databases/financeDb';
+import { toast } from '@/hooks/use-toast';
 
 function AllocationMasterlist() {
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const financeService = new FinanceService();
+    const settingsService = new SettingsService();
 
-    React.useEffect(() => {
-        async function loadAllocations() {
-          try {
-            const data = await financeService.getOfflineAllocations() as any;
-            setData(data);
-          } catch (error) {
-            console.error(error);
-          } finally {
-            setLoading(false);
-          }
+    async function loadAllocations() {
+        try {
+          const data = await financeService.getOfflineAllocations() as any;
+          setData(data);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
         }
+      }
+    React.useEffect(() => {
         loadAllocations();
       }, []);
 
@@ -32,8 +37,24 @@ function AllocationMasterlist() {
         console.log('Edit:', row);
     };
 
-    const handleDelete = (row: any) => {
-        console.log('Delete:', row);
+    const handleDelete =async(row: any) => {
+      const child: Record<string, {table: string; foreignKey: string}[]> = {
+        "allocation":[
+          {table: 'allocation_uacs', foreignKey:'allocation_id'},
+        ],
+        "allocation_uacs":[
+          {table: 'monthly_obligation_plan', foreignKey:'allocation_uacs_id'}
+        ]
+      };
+      const success = await settingsService.deleteData(financeDb, "allocation",row, child);
+      if(success){
+        toast({
+          variant:"green",
+          title: "Success.",
+          description: "Record successfully deleted!",
+        });
+        loadAllocations();
+      }
     };
 
     const handleRowClick = (row: any) => {
@@ -46,6 +67,16 @@ function AllocationMasterlist() {
     };
 
     const columnsMasterlist = [
+      {
+          id: 'push status id',
+          header: 'Uploading Status',
+          accessorKey: 'push_status_id',
+          filterType: 'select',
+          filterOptions: ['Unknown', 'Uploaded', 'For Upload'],
+          sortable: true,
+          align: "center",
+          cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
+      },
       {
           id: 'region',
           header: 'Region',

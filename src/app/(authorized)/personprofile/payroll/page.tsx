@@ -100,7 +100,7 @@ const columns = [
 export default function PayrollPage() {
 
     const router = useRouter();
-    const [data, setData] = useState<ICFWPayroll[]>([]);
+    const [data, setData] = useState<ICFWPayroll[] | any[]>([]);
 
     useEffect(() => {
         (async () => {
@@ -125,7 +125,7 @@ export default function PayrollPage() {
                 return acc;
             }, []);
             setData(groupedData)
-            console.log('payroll > data', data, groupedData)
+            console.log('payroll > data', data)
         })();
     }, [])
 

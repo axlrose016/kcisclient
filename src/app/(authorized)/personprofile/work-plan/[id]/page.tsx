@@ -73,7 +73,7 @@ export default function CreateWorkPlanPage() {
     objectives: "",
 
   })
-  
+
   useEffect(() => {
 
     // Fetch task management data from local storage or server if needed
@@ -304,13 +304,14 @@ export default function CreateWorkPlanPage() {
       <div className="w-full mx-auto px-4 pt-0 mt-0 py-0">
         {/* Workplan Details {JSON.stringify(workPlanData)} */}
         <Wizard
+          mode='draft'
           title='Work Plan Creation'
           description='Create a work plan for the beneficiaries'
           beneficiariesData={beneficiariesData}
           workPlanDetails={workPlanData}
           workPlanTasks={tasks}
           deploymentAreaName={workPlanData.deployment_area_name}
-          
+
         />
         {/* {beneficiariesData.map((beneficiary) => (
           <div key={beneficiary.id} className="mb-4">

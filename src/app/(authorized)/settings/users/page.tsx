@@ -8,6 +8,8 @@ import React from "react"
 import { SettingsService } from "../SettingsService";
 import { IUser } from "@/components/interfaces/iuser";
 import { PushStatusBadge } from "@/components/general/push-status-badge";
+import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
+import { toast } from "@/hooks/use-toast";
 
 export default function Users(){
     const [users, setUsers] = React.useState<IUser[] | undefined>(undefined);
@@ -16,17 +18,18 @@ export default function Users(){
     const baseUrl = 'settings/users'
     const settingsService = new SettingsService();
 
-    React.useEffect(() => {
-        async function loadUsers(){
-            try{
-                const data = await settingsService.getOfflineUsers() as any;
-                setUsers(data);
-            }catch(error){
-                console.error(error);
-            }finally{
-                setLoading(false);
-            }
+    async function loadUsers(){
+        try{
+            const data = await settingsService.getOfflineUsers() as any;
+            setUsers(data);
+        }catch(error){
+            console.error(error);
+        }finally{
+            setLoading(false);
         }
+    }
+
+    React.useEffect(() => {
         loadUsers();
     }, []);
 
@@ -49,8 +52,21 @@ export default function Users(){
         console.log('Edit:', row);
     };
 
-    const handleDelete = (row: any) => {
-        console.log('Delete:', row);
+    const handleDelete = async (row: any) => {
+        const child: Record<string, { table: string; foreignKey: string }[]> = {
+            "users": [
+                { table: 'useraccess', foreignKey: 'user_id' },
+            ],
+        };
+        const success = await settingsService.deleteData(dexieDb, "users", row,child);
+        if(success){
+            toast({
+                variant: "green",
+                title: "Success.",
+                description: "Record successfully deleted!",
+            })
+            loadUsers();
+        }
     };
 
     const handleRowClick = (row: any) => {
@@ -83,7 +99,6 @@ export default function Users(){
             sortable: true,
             align: "center",
             cell: (value: any) =>  <PushStatusBadge push_status_id={value} size="md" />
-
         },
         {
             id: 'user name',

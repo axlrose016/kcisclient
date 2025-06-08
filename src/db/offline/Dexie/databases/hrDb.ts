@@ -1,7 +1,11 @@
 import Dexie, { Table } from 'dexie';
 import { IApplicant, IHiringProcedure, IPositionItem, IPositionItemDistribution } from "../schema/hr-service";
+import { _registerAuditHooks } from '@/hooks/use-audit';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
 
 const commonFields = 'user_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks';
+const _session = await getSession() as SessionPayload;
 
 class HRDatabase extends Dexie {
     position_item!: Table<IPositionItem, string>;
@@ -17,6 +21,7 @@ class HRDatabase extends Dexie {
             hiring_procedure: `id, hiring_procedure_id, position_item_distribution_id, date_target_from, date_target_to, date_actual_from, date_actual_to, reason_for_variance, ${commonFields}`,
             applicant: `id,position_item_id, position_item_distribution_id, first_name, middle_name, last_name, extension_name_id, display_picture, sex_id, civil_status_id, birthdate, age, philsys_id_no, birthplace, status_id, overall_rating, ${commonFields}`
         })
+        _registerAuditHooks(this, "HR", _session?.userData.email || "unknown");
     }
 }
 export const hrDb = new HRDatabase();

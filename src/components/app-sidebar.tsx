@@ -33,6 +33,22 @@ import { roles } from "@/db/schema/libraries"
 import { permission } from "process"
 import path from "path"
 
+const roleHierarchy = [
+  "Administrator",
+  "CFW Administrator",
+  "CFW Supervisor",
+  "CFW Beneficiary",
+  "Guest"
+];
+
+function hasSufficientRole(userRole: string, requiredRoles: string[]): boolean {
+  const userRank = roleHierarchy.indexOf(userRole);
+  return requiredRoles.some(requiredRole => {
+    const requiredRank = roleHierarchy.indexOf(requiredRole);
+    return userRank <= requiredRank; // user has higher or equal privilege
+  });
+}
+
 const data = {
   user: {
     name: "",
@@ -83,7 +99,8 @@ const data = {
         {
           title: "Masterlist",
           url: "/subproject/geotagging",
-          permission: ["Can View", "Can Delete"]
+          permission: ["Can View", "Can Delete"],
+          roles:["*"]
         }
       ],
       modules: ["Sub-Project"],
@@ -97,7 +114,8 @@ const data = {
         {
           title: "Masterlist",
           url: "/subproject/tasks",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         }
       ],
       modules: ["Sub-Project"],
@@ -112,17 +130,20 @@ const data = {
         {
           title: "Roles",
           url: "/settings/libraries/roles",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "Permissions",
           url: "/settings/libraries/permissions",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "Modules",
           url: "/settings/libraries/modules",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         }
       ],
       modules: ["Settings"],
@@ -137,7 +158,8 @@ const data = {
         {
           title: "Masterlist",
           url: "/settings/users",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         }
       ],
       modules: ["Settings"],
@@ -153,32 +175,32 @@ const data = {
         {
           title: "My Profile",
           url: "/personprofile/form",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "Masterlist",
           url: "/personprofile/masterlist",
-          permission: ["Can View", "Can Delete"]
-        },
-        {
-          title: "User Masterlist",
-          url: "/personprofile/user-masterlist",
-          permission: ["Can View", "Can Delete"]
+          permission: ["Can View", "Can Delete"],
+          roles:["CFW Beneficiary"]
         },
         {
           title: "Daily Time Record",
           url: "/personprofile/daily-time-record",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["CFW Beneficiary"]
         },
         {
           title: "Accomplishment Report",
           url: "/personprofile/accomplishment-report",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["CFW Beneficiary"]
         },
         {
           title: "Payroll",
           url: "/personprofile/payroll",
-          permission: ["Can Add", "Can View", "Can Delete"]
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["CFW Beneficiary"]
         }
       ],
       modules: ["Person Profile"],
@@ -194,6 +216,7 @@ const data = {
           title: "Work Plans",
           url:"/personprofile/work-plan",
           permission:["Can Add","Can View","Can Delete"],
+          roles:["*"]
         },
 
       ],
@@ -209,11 +232,13 @@ const data = {
           title: "Designer",
           url: "/report/designer",
           permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "CFW",
           url: "/report/cfw",
           permission: ["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
 
       ],
@@ -229,17 +254,20 @@ const data = {
         {
           title:"Item Created",
           url:"/hr-development/hiring-and-deployment/item-created",
-          permission:["Can Add", "Can View", "Can Delete"]
+          permission:["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
          {
           title:"Item Distribution",
           url:"/hr-development/hiring-and-deployment/item-distribution",
           permission:["Can Add", "Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title:"Applicants",
           url:"/hr-development/hiring-and-deployment/applicants",
           permission:["Can View", "Can Delete"],
+          roles:["*"]
         }
       ],
       modules: ["Human Resource and Development"],
@@ -254,17 +282,20 @@ const data = {
          {
           title: "Allocation",
           url: "/finance/budget/allocation",
-          permission: ["Can View", "Can Delete"]
+          permission: ["Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "Monthly Obligation Plan",
           url: "/finance/budget/mop",
-          permission: ["Can View", "Can Delete"]
+          permission: ["Can View", "Can Delete"],
+          roles:["*"]
         },
         {
           title: "Allotment",
           url: "/finance/budget/allotment",
-          permission: ["Can View", "Can Delete"]
+          permission: ["Can View", "Can Delete"],
+          roles:["*"]
         },
       ],
       modules: ["Finance"],
@@ -350,25 +381,40 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           nav.modules.includes(activeTeam?.name) // Filter based on active team
       );
 
-      // debugger;
+      debugger;
       const filteredSubModule = data.navMain.filter(item =>
         item.modules.includes(activeTeam?.name) &&
         (
-          item.roles?.includes("*") || // Allow all roles
-          item.roles?.some(role => userTeam?.role?.includes(role))
+          !item.roles || // Allow if no roles defined
+          item.roles.includes("*") ||
+          hasSufficientRole(userTeam?.role ?? "", item.roles)
         )
       );
 
       const filteredChildModule = filteredSubModule
-        .map(module => ({
-          ...module,
-          items: module.items?.filter(permissions =>
+        .map(module => {
+          // Step 1: Filter items by permission
+          const permissionFilteredItems = module.items?.filter(item =>
             userTeam?.userAccess?.some(access =>
-              access.permission && permissions.permission.includes(access.permission)
+              access.permission && item.permission.includes(access.permission)
             )
-          )
-        }))
+          );
+
+          // Step 2: Filter items by role hierarchy
+          const roleFilteredItems = permissionFilteredItems?.filter(item =>
+            !item.roles || // Allow if no roles defined
+            item.roles.includes("*") ||
+            hasSufficientRole(userTeam?.role ?? "", item.roles)
+          );
+
+          return {
+            ...module,
+            items: roleFilteredItems,
+          };
+        })
         .filter(module => module.items && module.items.length > 0);
+
+
 
       setFilteredNavMain(navMain);
       setFilteredSub(filteredChildModule)

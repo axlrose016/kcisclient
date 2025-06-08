@@ -115,7 +115,7 @@ export const syncTask: IBulkSync[] = [
     tag: "CFW Immediate Supervisor > Work Plan Selected Beneficiaries",
     url:
       process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
-      `cfw_assessment/work_plan/update`,
+      `cfw_assessment/update/`,
     module: await dexieDb.cfwassessment,
     force: true,
   },

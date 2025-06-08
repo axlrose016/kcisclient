@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, SquareArrowUpRightIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { addDays, endOfMonth, format } from 'date-fns';
+import { addDays, differenceInMinutes, endOfMonth, format } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
@@ -25,6 +25,7 @@ import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
 import { v4 as uuidv4 } from 'uuid';
 import { v5 as uuidv5 } from 'uuid';
 import SqlPage from '@/components/sql-example';
+import { DTRService } from '../service';
 
 
 export const DTRcolumns = [
@@ -83,6 +84,33 @@ export const DTRcolumns = [
         className: "text-center"
     },
     {
+        id: 'duration',
+        header: 'Duration',
+        accessorKey: 'log_out',
+        filterType: 'text',
+        sortable: true,
+        cellRow: (row: any) => {
+            if (["-", "", null].includes(row.log_out) || !(new Date(row.log_out) instanceof Date)) {
+                return "-";
+            }
+            const minutes = differenceInMinutes(row.log_out, row.log_in);
+            if (minutes < 0) {
+                return "-";
+            } else if (minutes < 60) {
+                return `${minutes} min`;
+            } else if (minutes < 1440) { // Less than 24 hours
+                const hours = Math.floor(minutes / 60);
+                const remainingMinutes = minutes % 60;
+                return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+            } else {
+                const days = Math.floor(minutes / 1440);
+                const remainingHours = Math.floor((minutes % 1440) / 60);
+                return `${days}d ${remainingHours}h`;
+            }
+        },
+        className: "text-center"
+    },
+    {
         id: 'remarks',
         header: 'Remarks',
         accessorKey: 'remarks',
@@ -95,6 +123,9 @@ export const DTRcolumns = [
 type IUser = IPersonProfile & ILibSchoolProfiles;
 
 export default function DailyTimeRecordUser() {
+
+    const dtrservice = new DTRService();
+
     const params = useParams<{ id: string }>()
     const router = useRouter()
 
@@ -105,6 +136,19 @@ export default function DailyTimeRecordUser() {
     const [statusesOptions, setStatusesOptions] = useState<LibraryOption[]>([]);
     const [payrollbene, setCFWPayrollBene] = useState<ICFWPayrollBene>()
     const [submissionLogs, setSubmissionLogs] = useState<ISubmissionLog[]>([]);
+
+    const [lastStatus, setLastStatus] = useState<ISubmissionLog>({
+        id: "",
+        record_id: "",
+        bene_id: "",
+        module: "",
+        comment: "",
+        status: "",
+        status_date: "",
+        created_date: "",
+        created_by: ""
+    });
+
     const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
@@ -147,9 +191,9 @@ export default function DailyTimeRecordUser() {
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
-
             const statuses = await getOfflineLibStatuses();
             const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
+            console.log('filteredStatuses', filteredStatuses)
             setStatusesOptions(filteredStatuses);
 
             const user = await dexieDb.person_profile.where('user_id')
@@ -167,6 +211,7 @@ export default function DailyTimeRecordUser() {
 
             setSubmissionLogs(logs)
             setSelectedStatus(logslast ?? selectedStatus)
+            setLastStatus(logslast ?? selectedStatus)
 
             const pb = await dexieDb.cfwpayroll_bene.where({
                 period_cover_from: date!.from!,
@@ -181,7 +226,6 @@ export default function DailyTimeRecordUser() {
                 ...user
             };
             setUser(merge);
-
         })();
     }, [])
 
@@ -203,6 +247,8 @@ export default function DailyTimeRecordUser() {
             })
             .sortBy("created_date"); // Ascending: oldest → latest  
         console.log('getResults', results)
+
+        setTimeout(() => handleOnRefresh(), 100)
         return results;
     };
 
@@ -299,6 +345,14 @@ export default function DailyTimeRecordUser() {
     }
 
 
+    const handleOnRefresh = async () => {
+        const results = await dtrservice.syncDownload({
+            "person_profile_id": user.user_id
+        })
+        setData(results as any);
+    }
+
+
     return (
 
         <Card>
@@ -341,18 +395,26 @@ export default function DailyTimeRecordUser() {
                             onChange={setDate}
                         />
 
-                        <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
-                            <Printer />
-                        </Button>
-                        <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
-                            <Download />
-                        </Button>
+
+                        {lastStatus.status == "2" &&
+                            <>
+                                <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
+                                    <Printer />
+                                </Button>
+
+                                <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2">
+                                    <Download />
+                                </Button>
+                            </>}
+
+
                     </div>
                     <div className="rounded-lg mb-6">
                         <AppTable
                             data={data}
                             columns={DTRcolumns}
                             onEditRecord={!["CFW Beneficiary", "Guest"].includes(session?.userData?.role || "") ? handleEdit : undefined}
+                            onRefresh={handleOnRefresh}
                         />
                     </div>
 

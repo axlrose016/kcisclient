@@ -77,27 +77,27 @@ export class FinanceService {
     }
     async getOfflineAllocations(): Promise<IAllocation[]> {
     try {
-        const papList = await libDb.lib_pap.toArray();
+        const papList = await libDb.lib_pap.filter(f => f.is_deleted !== true).toArray();
         const papMap = new Map(papList.map(p => [p.id, p.pap_description || ""]));
 
-        const budgetYearList = await libDb.lib_budget_year.toArray();
+        const budgetYearList = await libDb.lib_budget_year.filter(f => f.is_deleted !== true).toArray();
         const budgetYearMap = new Map(budgetYearList.map(b => [b.id, b.budget_year_description || ""]));
 
-        const appropriationSourceList = await libDb.lib_appropriation_source.toArray();
+        const appropriationSourceList = await libDb.lib_appropriation_source.filter(f => f.is_deleted !== true).toArray();
         const appropriationSourceMap = new Map(appropriationSourceList.map(a => [a.id, a.appropriation_source_description || ""]));
 
-        const appropriationTypeList = await libDb.lib_appropriation_type.toArray();
+        const appropriationTypeList = await libDb.lib_appropriation_type.filter(f => f.is_deleted !== true).toArray();
         const appropriationTypeMap = new Map(appropriationTypeList.map(a => [a.id, a.appropriation_type_description || ""]));
 
-        const expenseList = await libDb.lib_expense.toArray();
+        const expenseList = await libDb.lib_expense.filter(f => f.is_deleted !== true).toArray();
         const expenseMap = new Map(expenseList.map(e => [e.id, e.expense_description || ""]));
 
         const allocationsWithComponents = await financeDb.transaction(
         'r',
         [financeDb.allocation, financeDb.allocation_uacs],
         async () => {
-            const allocations = await financeDb.allocation.toArray();
-            const allocationUacs = await financeDb.allocation_uacs.toArray();
+            const allocations = await financeDb.allocation.filter(f => f.is_deleted !== true).toArray();
+            const allocationUacs = await financeDb.allocation_uacs.filter(f => f.is_deleted !== true).toArray();
 
             // Left join: for each allocation, include all matching UACS rows (or a single row with null UACS)
             const result: any[] = [];
@@ -147,7 +147,11 @@ export class FinanceService {
         try{
             let savedItem: IAllocation | undefined;
 
-            await financeDb.transaction('rw', [financeDb.allocation], async () => {
+            await financeDb.transaction('rw', [financeDb.allocation], async trans => {
+                trans.meta = {
+                    needsAudit: true,
+                };
+
                 let data: IAllocation = allocation;
                 debugger;
                 if(allocation.id === ""){
@@ -198,7 +202,10 @@ export class FinanceService {
         try{
             let savedItem: IAllocationUacs | undefined;
 
-            await financeDb.transaction('rw', [financeDb.allocation_uacs], async () => {
+            await financeDb.transaction('rw', [financeDb.allocation_uacs], async trans => {
+                trans.meta = {
+                    needsAudit: true,
+                };
                 let data: IAllocationUacs = uacs;
 
                 if(uacs.id === ""){
@@ -258,7 +265,11 @@ export class FinanceService {
         try{
             let savedItem: IMonthlyObligationPlan | undefined;
 
-            await financeDb.transaction('rw', [financeDb.monthly_obligation_plan], async () => {
+            await financeDb.transaction('rw', [financeDb.monthly_obligation_plan], async trans => {
+                trans.meta = {
+                    needsAudit: true,
+                };
+                
                 let data: IMonthlyObligationPlan = mop;
 
                 if(mop.id === ""){

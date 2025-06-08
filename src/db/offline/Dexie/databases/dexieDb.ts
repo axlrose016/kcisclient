@@ -9,10 +9,14 @@ import { IAccomplishmentActualTask, IAccomplishmentReport, ICFWAssessment, IPers
 import { IReportColumn, IReportDesigner } from '@/components/interfaces/reportdesigner';
 import { lib_deployment_area_categories } from '@/db/schema/libraries';
 import { person_profile_disability, person_profile_family_composition } from '@/db/schema/personprofile';
+import { _registerAuditHooks } from '@/hooks/use-audit';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
 import Dexie, { Table } from 'dexie';
 
 // Extend Dexie to include table definitions
 const commonFields = 'user_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks';
+const _session = await getSession() as SessionPayload;
 
 class MyDatabase extends Dexie {
     users!: Table<IUser, string>;
@@ -127,6 +131,7 @@ class MyDatabase extends Dexie {
             cfwpayroll_bene: `id ,bene_id,daily_time_record_id ,daily_time_record_reviewed_date,accomplishment_report_id ,accomplishment_report_reviewed_date ,period_cover_from, period_cover_to, operation_status,operation_reviewed_by, operation_status_date, odnpm_status, odnpm_reviewed_by, odnpm_status_date, finance_status,finance_reviewed_by ,finance_status_date,date_released,date_received,${commonFields}`,
             submission_log: `id, record_id ,bene_id ,module ,comment,status , status_date,${commonFields}`,
         }); 
+        _registerAuditHooks(this, "Person Profile", _session?.userData.email || "unknown");
     } 
 }
  

@@ -12,8 +12,10 @@ export class UserService{
         try {
             let savedItem: IUser | undefined;
     
-            await dexieDb.transaction('rw', [dexieDb.users], async () => {
-    
+            await dexieDb.transaction('rw', [dexieDb.users], async (trans) => {
+            trans.meta = {
+                needsAudit: true,
+            };
               let data: IUser = user;
              
               if (user.id === "") {
@@ -115,8 +117,10 @@ export class UserService{
         try {
             let savedItem: IUserAccess | undefined;
     
-            await dexieDb.transaction('rw', [dexieDb.useraccess], async () => {
-    
+            await dexieDb.transaction('rw', [dexieDb.useraccess], async (trans) => {
+            trans.meta = {
+                needsAudit: true,
+            };
               let data: IUserAccess = userAccess;
              
               if (userAccess.id === "") {

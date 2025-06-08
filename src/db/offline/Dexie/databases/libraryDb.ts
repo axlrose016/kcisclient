@@ -1,7 +1,11 @@
 import Dexie, { Table } from 'dexie';
 import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibComponent, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibHiringProcedure, ILibLevel, ILibOffice, ILibPAP, ILibPosition } from '@/components/interfaces/library-interface';
+import { _registerAuditHooks } from '@/hooks/use-audit';
+import { getSession } from '@/lib/sessions-client';
+import { SessionPayload } from '@/types/globals';
 
 const commonFields = 'user_id, created_date, created_by, last_modified_date, last_modified_by, push_status_id, push_date, deleted_date, deleted_by, is_deleted, remarks';
+const _session = await getSession() as SessionPayload;
 
 class LibDatabase extends Dexie {
     lib_level!: Table<ILibLevel, string>;
@@ -35,6 +39,7 @@ class LibDatabase extends Dexie {
             lib_division: `++id, division_description, ${commonFields}`,
             lib_hiring_procedure: `++id, hiring_procedure_description, ${commonFields}`,
         })
+        _registerAuditHooks(this, "Library", _session?.userData.email || "unknown");
     }
 }
 export const libDb = new LibDatabase();
