@@ -482,7 +482,7 @@ export default function LoginPage() {
                     {...register("email")}
                     name="email"
                     placeholder="m@example.com"
-                    className="lowercase"
+                    className="normal-case"
                     required
                   />
                   {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
@@ -503,7 +503,7 @@ export default function LoginPage() {
                       Forgot your password?
                     </a>
                   </div>
-                  <Input id="password" type="password" {...register("password")} name="password" required />
+                  <Input id="password" type="password" {...register("password")} name="password" className="normal-case" required />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
