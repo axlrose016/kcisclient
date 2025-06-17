@@ -14,18 +14,27 @@ const withPWA = require("@ducanh2912/next-pwa").default({
 });
 
 const securityHeaders = [
+  // {
+  //   key: "Content-Security-Policy",
+  //   value: `
+  //     default-src 'self';
+  //     script-src https://www.google.com;
+  //     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  //     font-src 'self' https://fonts.gstatic.com;
+  //     img-src 'self' data: https://api.gravserver.com https://www.w3.org/2000/svg;
+  //     frame-src 'self' https://www.google.com;
+  //     object-src 'none';
+  //     frame-ancestors https://www.google.com 'self';
+  //   `.replace(/\s{2,}/g, " ").trim(),
+  // },
   {
     key: "Content-Security-Policy",
-    value: `
-      default-src 'self';
-      script-src https://www.google.com;
-      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-      font-src 'self' https://fonts.gstatic.com;
-      img-src 'self' data: https://api.gravserver.com https://www.w3.org/2000/svg;
-      frame-src 'self' https://www.google.com;
-      object-src 'none';
-      frame-ancestors https://www.google.com 'self';
-    `.replace(/\s{2,}/g, " ").trim(),
+    value: [
+      "default-src 'self';",
+      "img-src 'self' data:;",
+      "script-src 'self';",
+      "style-src 'self' 'unsafe-inline';",
+    ].join(" "),
   },
   {
     key: "X-Frame-Options",
