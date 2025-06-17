@@ -17,6 +17,7 @@ export default function SuccessPage({
   email_body,
 }: SuccessPageProps) {
   const sendAnEmailConfirmation = () => {
+    
     // Implement actual email logic here
     console.log(`Email sent to ${email}: ${email_subject} - ${email_body}`);
   };

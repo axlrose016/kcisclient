@@ -23,7 +23,8 @@ const getOfflineLibraryOptions = (library: string, descriptionField: string, p0?
             id: row.id,
             name: row[descriptionField],
             label: row[descriptionField],
-            short_name: row.short_name // 👈 add this field            
+            short_name: row.short_name, // 👈 add this field    
+            // icon: row[iconField || ""],
         }));
     });
 }
@@ -36,7 +37,8 @@ export const getOfflineLibOptions = (library: string, descriptionField: string, 
             id: row.id,
             name: row[descriptionField],
             label: row[descriptionField],
-            short_name: row.short_name // 👈 add this field            
+            short_name: row.short_name, // 👈 add this field            
+
         }));
     });
 }
@@ -72,12 +74,12 @@ export const getOfflineLibBudgetYear = getOfflineLibOptions('lib_budget_year', '
 // export const getOfflineLibPAP = getOfflineLibOptions('lib_pap', 'pap_description');
 export const getOfflineLibAppropriationSource = getOfflineLibOptions('lib_appropriation_source','appropriation_source_description');
 export const getOfflineLibAppropriationType = getOfflineLibOptions('lib_appropriation_type', 'appropriation_type_description');
-export const getOfflineLibComponent = getOfflineLibOptions('lib_component','component_description');
+export const getOfflineLibComponent = getOfflineLibOptions('lib_component', 'component_description');
 export const getOfflineLibAllotmentClass = getOfflineLibOptions('lib_allotment_class', 'allotment_class_description');
-export const getOfflineLibExpense = getOfflineLibOptions('lib_expense','expense_description');
-export const getOfflineLibPosition = getOfflineLibOptions('lib_position','position_description');
-export const getOfflineLibEmploymentStatus = getOfflineLibOptions('lib_employment_status','employment_status_description');
-export const getOfflineLibOffice = getOfflineLibOptions('lib_office','office_description');
-export const getOfflineLibDivision = getOfflineLibOptions('lib_division','division_description');
-export const getOfflineLibHiringProcedures = getOfflineLibOptions('lib_hiring_procedure','hiring_procedure_description');
+export const getOfflineLibExpense = getOfflineLibOptions('lib_expense', 'expense_description');
+export const getOfflineLibPosition = getOfflineLibOptions('lib_position', 'position_description');
+export const getOfflineLibEmploymentStatus = getOfflineLibOptions('lib_employment_status', 'employment_status_description');
+export const getOfflineLibOffice = getOfflineLibOptions('lib_office', 'office_description');
+export const getOfflineLibDivision = getOfflineLibOptions('lib_division', 'division_description');
+export const getOfflineLibHiringProcedures = getOfflineLibOptions('lib_hiring_procedure', 'hiring_procedure_description');
 // export const getOfflineLibIPGroup = getOfflineLibraryOptions('lib_i','file_name');

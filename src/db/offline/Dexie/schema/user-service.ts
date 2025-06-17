@@ -58,7 +58,7 @@ export async function getUserById(id: string) {
 
 export async function getUserByEmail(email: string) {
     try {
-        return await tblUsers.where("email").equals(email).first();
+        return await tblUsers.where("email").equalsIgnoreCase(email.toLowerCase()).first();
     } catch (error) {
         return null;
     }

@@ -19,6 +19,7 @@ import { IPersonProfile } from '@/components/interfaces/personprofile';
 import { v5 as uuidv5 } from 'uuid';
 import { Badge } from '@/components/ui/badge';
 import { ILibSchoolProfiles, ILibStatuses } from '@/components/interfaces/library-interface';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
 const KeyToken = process.env.NEXT_PUBLIC_DXCLOUD_KEY;
 const session = await getSession() as SessionPayload;
@@ -102,7 +103,7 @@ function PayrollAdmin() {
     // console.log('params!.list!', { period_cover_from, period_cover_to }) 
     useEffect(() => {
         (async () => {
-            setOptionStatus(await dexieDb.lib_statuses.toArray());
+            setOptionStatus(await libDb.lib_statuses.toArray());
 
             const response = await fetch("/api-libs/psgc/regions", {
                 headers: {
@@ -152,7 +153,7 @@ function PayrollAdmin() {
                             //     .equals(region!.region_code)
                             //     .first();
 
-                            const school = await dexieDb.lib_school_profiles
+                            const school = await libDb.lib_school_profiles
                                 .where("id")
                                 .equals(parseInt(personProfile!.school_id!.toString()))
                                 .first();
@@ -382,7 +383,7 @@ function PayrollBene() {
             .equals(params!.id).first();
 
         const merge = {
-            ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+            ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         }; 
         // console.log('getResults > user', { user, dtr, id: params!.id })

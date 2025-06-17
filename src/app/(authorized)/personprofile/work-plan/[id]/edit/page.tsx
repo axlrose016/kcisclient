@@ -50,9 +50,12 @@ type Beneficiary = {
 import LoginService from "@/app/login/LoginService";
 import { SessionPayload } from '@/types/globals';
 import { getSession } from '@/lib/sessions-client'
+import { useParams } from "next/navigation"
 const _session = await getSession() as SessionPayload;
 export default function CreateWorkPlanPage() {
-
+    const params = useParams();
+    const idParam = params && 'id' in params ? params.id : undefined;
+    const stringWorkPlanId = Array.isArray(idParam) ? idParam[0] : idParam || '';
     const [personProfileId, setPersonProfileId] = useState<string>("")
     const [deploymentAreaId, setDeploymentAreaId] = useState(0)
     const [deploymentAreaCategoryId, setDeploymentAreaCategoryId] = useState<string>("")

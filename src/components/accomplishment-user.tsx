@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DateRange } from 'react-day-picker';
 import { DatePickerWithRange } from '@/components/app-daterange';
 import { cn } from '@/lib/utils';
-import { Download, Printer, Trash2 } from 'lucide-react';
+import { Download, ExternalLinkIcon, File, Printer, Trash2 } from 'lucide-react';
 import { IAccomplishmentActualTask, IPersonProfile, IWorkPlanTasks } from '@/components/interfaces/personprofile';
 import { IUser } from '@/components/interfaces/iuser';
 import { SessionPayload } from '@/types/globals';
@@ -14,8 +14,14 @@ import { sanitizeHTML } from '@/lib/utils';
 import { ILibSchoolProfiles } from './interfaces/library-interface';
 import { EditableCell } from './editable-cell';
 import AppSubmitReview from './app-submit-review';
+import { IAttachments } from './interfaces/general/attachments';
+import { toast } from '@/hooks/use-toast';
+import Image from 'next/image';
+import RichTextEditor from './editor';
+import { v5 as uuidv5 } from 'uuid';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5
 interface AccomplishmentReportFormProps {
     disabled?: boolean
     user: UserTypes | any;
@@ -24,12 +30,14 @@ interface AccomplishmentReportFormProps {
     session?: SessionPayload;
     accomplishmentReportId?: string;
     onChangeTask?: (task: IAccomplishmentActualTask[]) => void;
+    onChangeAttachments?: (attachment: IAttachments[]) => void;
     supervisorType?: 'supervisor' | 'alternate';
     onSupervisorTypeChange?: (type: 'supervisor' | 'alternate') => void;
 }
 
 export function AccomplishmentUser({
     onChangeTask,
+    onChangeAttachments,
     disabled = false,
     user,
     date,
@@ -44,20 +52,46 @@ export function AccomplishmentUser({
     const [generalTasks, setGeneralTasks] = useState<IWorkPlanTasks[]>([]);
     const [specificTask, setSpecificTask] = useState<IWorkPlanTasks[]>([]);
     const [otherTask, setOtherTask] = useState<IAccomplishmentActualTask[]>([]);
+    const [tasksLoder, setTaskLoader] = useState<IAccomplishmentActualTask[]>([]);
     const [tasks, setTasks] = useState<IAccomplishmentActualTask[]>([]);
+
+    const [attachments, setAttachments] = useState<IAttachments[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 if (!dexieDb.isOpen()) await dexieDb.open();
+                // Get other tasks and actual tasks 
+                if (accomplishmentReportId) {
+                    setOtherTask(await dexieDb.accomplishment_actual_task.where({
+                        category_id: "99",
+                        accomplishment_report_id: accomplishmentReportId
+                    }).toArray());
+                    const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
+                    console.log('AccomplishmentUser > alltask', { alltask })
+                    setTasks(alltask);
+                    setTaskLoader(alltask);
+                    onChangeTask?.(alltask)
+
+                    const attachments = await dexieDb.attachments
+                        .where("record_id")
+                        .equals(accomplishmentReportId)
+                        .and(attachment => !attachment.is_deleted)
+                        .toArray()
+
+                    console.log('AccomplishmentUser > attachments', { attachments })
+                    setAttachments(attachments)
+                    onChangeAttachments?.(attachments)
+                }
+
                 // Get work plan for the user
-                const userWorkPlan = await dexieDb.work_plan_cfw.where("cfw_id").equals(user?.id || "").first();
+                const userWorkPlan = await dexieDb.cfwassessment.where("person_profile_id").equals(user?.id || "").first();
                 if (userWorkPlan) {
                     const workPlan = await dexieDb.work_plan.where("id").equals(userWorkPlan.work_plan_id).first();
                     if (workPlan) {
                         // Get supervisors
-                        setSupervisor(await dexieDb.users.where("id").equals(workPlan.immediate_supervisor_id).first());
-                        setAlternateSupervisor(await dexieDb.users.where("id").equals(workPlan.alternate_supervisor_id).first());
+                        setSupervisor(await dexieDb.users.where("id").equals(userWorkPlan?.immediate_supervisor_id || "").first());
+                        setAlternateSupervisor(await dexieDb.users.where("id").equals(workPlan?.alternate_supervisor_id || "").first());
 
                         // Get tasks
                         const allTasks = await dexieDb.work_plan_tasks.where("work_plan_id").equals(workPlan.id).toArray();
@@ -75,6 +109,10 @@ export function AccomplishmentUser({
                     const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
                     setTasks(alltask);
                     onChangeTask?.(alltask)
+                    const attachments = await dexieDb.attachments.where("record_id").equals(accomplishmentReportId).toArray()
+                    console.log('AccomplishmentUser > attachments', { attachments })
+                    setAttachments(attachments)
+                    onChangeAttachments?.(attachments)
                 }
             } catch (error) {
                 console.error('Error fetching data:', error);
@@ -85,8 +123,13 @@ export function AccomplishmentUser({
     }, [user?.id, accomplishmentReportId]);
 
     const handleContentEdit = (task: IAccomplishmentActualTask | any, value: string, type: string) => {
+
+
         const sanitizedValue = sanitizeHTML(value);
-        const index = tasks.findIndex(i => i.id == task.id);
+        const index = tasks.findIndex(i => i.remarks == task.remarks);
+
+        console.log('handleContentEdit', task, value, type)
+
 
         if (index > -1) {
             const item = tasks[index];
@@ -97,10 +140,14 @@ export function AccomplishmentUser({
                 mov: type == "movs" ? sanitizedValue : item.mov,
                 task: type == "task" ? sanitizedValue : item.task,
             };
-            setTasks(tasks.map((t, i) => i === index ? updates : t));
+            console.log('handleContentEdit > updates', { updates })
+            const r = [...tasks.map((t, i) => i === index ? updates : t)]
+            setTasks(r)
+            onChangeTask?.(r)
+            onChangeAttachments?.(attachments)
         } else {
             const newTask: IAccomplishmentActualTask = {
-                id: task.id,
+                id: uuidv5(accomplishmentReportId || "", task.id),
                 category_id: task?.category_id?.toString() || "",
                 accomplishment_report_id: accomplishmentReportId || "",
                 accomplishment: type == "accomplishment" ? sanitizedValue : "",
@@ -116,12 +163,15 @@ export function AccomplishmentUser({
                 deleted_date: "",
                 deleted_by: "",
                 is_deleted: false,
-                remarks: "",
+                remarks: task.id,
             };
 
             const r = [...tasks, newTask]
+
+            console.log('handleContentEdit > newTask', { newTask, r })
             setTasks(r);
             onChangeTask?.(r)
+            onChangeAttachments?.(attachments)
         }
     };
 
@@ -146,7 +196,117 @@ export function AccomplishmentUser({
             remarks: "",
         };
         setOtherTask([...otherTask, newTask]);
+        onChangeTask?.(otherTask)
+        onChangeAttachments?.(attachments)
     };
+
+    const handleOpenFileOnNewTab = (task: any, idx: number, e: any) => {
+        const attachment = attachments.find(i => i.remarks == task.id)
+        console.log('handleOpenFileOnNewTab', { e, attachment, attachments, task, idx });
+        if (attachment) {
+            if (attachment.file_path instanceof Blob) {
+                window.open(URL.createObjectURL(attachment.file_path), '_blank')
+            } else {
+                window.open(attachment.file_path as string, '_blank')
+            }
+        }
+    }
+
+    const handleDeleteAttachment = (task: any, idx: number, e: any) => {
+
+
+        (async () => {
+
+            const updatedTasks = [...tasks];
+            const attachment = attachments.find(i => i.remarks == task.id)
+            console.log('handleDeleteAttachment > attachment', { task, idx, attachment })
+            if (attachment) {
+                await dexieDb.attachments.put({
+                    ...attachment,
+                    is_deleted: true,
+                    deleted_date: new Date().toISOString(),
+                    deleted_by: session!.userData!.email!,
+                    last_modified_date: new Date().toISOString(),
+                    last_modified_by: session!.userData!.email!,
+                    push_status_id: 0,
+                })
+            }
+
+            const taskIndex = updatedTasks.findIndex(t => t.id === task.id);
+            if (taskIndex !== -1) {
+                updatedTasks[taskIndex] = {
+                    ...updatedTasks[taskIndex],
+                    mov: "",
+                }
+            }
+            setTasks(updatedTasks)
+            onChangeTask?.(updatedTasks)
+            setAttachments(attachments.filter(i => i.remarks != task.id))
+            onChangeAttachments?.(attachments)
+        })();
+    }
+
+
+    const handleAddAttachment = (task: any, idx: number, e: any) => {
+        console.log('handleAddAttachment', e);
+        (async () => {
+            if (e && e.target.files && e.target.files[0]) {
+                const file = e.target.files[0];
+
+                if (file.size > MAX_FILE_SIZE) {
+                    toast({
+                        title: "File size must be less than 5MB",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+
+                // Create a Blob for the file
+                const fileBlob = new Blob([file], { type: file.type });
+                const taskId = task.id;
+
+                const raw: IAttachments = {
+                    id: uuidv4(),
+                    record_id: accomplishmentReportId!,
+                    file_name: file.name,
+                    file_type: file.type,
+                    file_path: fileBlob,
+                    file_id: 100,
+                    module_path: "accomplishment-report",
+                    user_id: session!.id,
+                    created_date: new Date().toISOString(),
+                    created_by: session!.userData.email ?? "",
+                    last_modified_date: null,
+                    last_modified_by: null,
+                    push_status_id: 0,
+                    push_date: null,
+                    deleted_date: null,
+                    deleted_by: null,
+                    is_deleted: false,
+                    remarks: taskId,
+                }
+
+                // Remove any existing attachment for this task
+                const filteredAttachments = attachments.filter(a => a.remarks !== taskId);
+                const newAttachments = [...filteredAttachments, raw];
+
+                setAttachments(newAttachments);
+                onChangeAttachments?.(newAttachments);
+                setTasks(tasks);
+                onChangeTask?.(tasks);
+            }
+        })();
+    }
+
+    const checkImageAttachment = (task: IWorkPlanTasks | IAccomplishmentActualTask, idx: number) => {
+        const attachment = attachments.find(i => i.remarks === task.id);
+        if (!attachment?.file_path) return null;
+
+        if (attachment.file_path instanceof Blob) {
+            return URL.createObjectURL(attachment.file_path);
+        }
+        return null;
+    }
 
     const handleDeleteOtherTask = (task: IAccomplishmentActualTask, idx: number) => {
         setOtherTask(otherTask.filter((_, i) => i !== idx));
@@ -166,7 +326,7 @@ export function AccomplishmentUser({
                     <div className="col-span-1 text-gray-900 leading-none">{user?.first_name} {user?.last_name}</div>
                     <div className="col-span-1 font-bold leading-none">Period Cover:<span className='text-red-600'>*</span></div>
                     <div className="col-span-1 text-gray-900 leading-none">
-                        <DatePickerWithRange value={date} onChange={setDate} />
+                        <DatePickerWithRange value={date} onChange={setDate!} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 md:grid-cols-4">
@@ -200,9 +360,9 @@ export function AccomplishmentUser({
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead className="w-[350px] border-r min-w-[320px] font-bold text-black">Task/Deliverables based on the approved Work Plan</TableHead>
-                                <TableHead className="w-[250px] border-r min-w-[350px] text-center font-bold text-black">Accomplishments</TableHead>
-                                <TableHead className="w-[250px]  min-w-[250px] text-center font-bold text-black">MOVs (if any)</TableHead>
+                                <TableHead className="w-[275px] border-r font-bold text-black">Task/Deliverables based on the approved Work Plan</TableHead>
+                                <TableHead className="w-[300px] border-r min-w-[450px] text-center font-bold text-black">Accomplishments</TableHead>
+                                <TableHead className="w-[300px] min-w-[300px] text-center font-bold text-black">MOVs (if any)</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -213,7 +373,7 @@ export function AccomplishmentUser({
                                         "bg-muted/50 font-semibold": true,
                                     })}
                                 >
-                                    <TableCell className={cn("align-top w-[400px]", {
+                                    <TableCell className={cn("align-top!w-[275px]", {
                                         "text-primary font-semibold": true,
                                         "text-muted-foreground": false,
                                     })}>
@@ -235,27 +395,91 @@ export function AccomplishmentUser({
                                         })}
                                     >
                                         <TableCell
-                                            className={cn("align-top border-r w-[400px]", {
+                                            className={cn("align-top border-r w-[275px]", {
                                                 "text-primary font-semibold": isCategory(task),
                                                 "text-muted-foreground": false,
                                             })}>
                                             {task.activities_tasks}
                                         </TableCell>
 
+
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "genAccom") + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
+                                            key={(tasksLoder.find(i => i.remarks == task.id)?.id ?? "genAccom2") + "genAccom" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Actual Tasks..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "genMov") + idx}
+                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "genMov2") + "genMov" + idx}
                                             placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
                                             value={tasks.find(i => i.id == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
+                                            beforeInput={<div className='flex flex-row gap-2'>
+                                                {checkImageAttachment(task, idx) && (
+                                                    <div className="relative">
+                                                        <Image
+                                                            className='my-2'
+                                                            src={checkImageAttachment(task, idx) || ""}
+                                                            alt="attachment"
+                                                            width={300}
+                                                            height={300}
+                                                        />
+
+                                                        <div className='absolute top-2 right-2'>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e)}
+                                                            >
+                                                                <ExternalLinkIcon className="h-4 w-4" />
+                                                                <span className="sr-only">open attachment</span>
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span className="sr-only">Delete attachment</span>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>}
+                                            element={<div id="no-print" className="text-right flex justify-right items-end">
+                                                <div className="items-center">
+                                                    <input
+                                                        id={`gen-file-input-${task.id}`}
+                                                        type="file"
+                                                        className="hidden"
+                                                        onChange={(e: any) => handleAddAttachment(task, idx, e)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        accept="image/*"
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="lg"
+                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const fileInput = document.getElementById(`gen-file-input-${task.id}`) as HTMLInputElement;
+                                                            if (fileInput) {
+                                                                fileInput.value = '';
+                                                                fileInput.click();
+                                                            }
+                                                        }}
+                                                    >
+                                                        <File className="h-6 w-6" />
+                                                        <span className="sr-only">Upload</span>
+                                                    </Button>
+                                                </div>
+                                            </div>}
                                         />
                                     </TableRow>
                                 ))}
@@ -268,7 +492,7 @@ export function AccomplishmentUser({
                                         "bg-muted/50 font-semibold": true,
                                     })}
                                 >
-                                    <TableCell className={cn("align-top w-[400px]", {
+                                    <TableCell className={cn("align-top w-[275px]", {
                                         "text-primary font-semibold": true,
                                         "text-muted-foreground": false,
                                     })}>
@@ -289,26 +513,90 @@ export function AccomplishmentUser({
                                             "bg-muted/50 font-semibold": false,
                                         })}
                                     >
-                                        <TableCell className={cn("align-top border-r w-[400px]", {
+                                        <TableCell className={cn("align-top border-r w-[275px]", {
                                             "text-primary font-semibold": isCategory(task),
                                             "text-muted-foreground": false,
                                         })}>
                                             {task.activities_tasks}
                                         </TableCell>
+
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "specAccom") + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
+                                            key={(tasksLoder.find(i => i.remarks == task.id)?.id ?? "specAccom2") + "specAccom" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Actual Tasks..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "specMov") + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.mov ?? ""}
+                                            key={(tasksLoder.find(i => i.remarks == task.id)?.mov ?? "specMov2") + "specMov" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Attachments Link here..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
+                                            beforeInput={<div className='flex flex-row gap-2'>
+                                                {checkImageAttachment(task, idx) && (
+                                                    <div className="relative">
+                                                        <Image
+                                                            className='my-2'
+                                                            src={checkImageAttachment(task, idx) || ""}
+                                                            alt="attachment"
+                                                            width={300}
+                                                            height={300}
+                                                        />
+
+                                                        <div className='absolute top-2 right-2'>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e)}
+                                                            >
+                                                                <ExternalLinkIcon className="h-4 w-4" />
+                                                                <span className="sr-only">open attachment</span>
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span className="sr-only">Delete attachment</span>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>}
+                                            element={<div id="no-print" className="text-right flex justify-right items-end">
+                                                <div className="items-center">
+                                                    <input
+                                                        id={`spec-file-input-${task.id}`}
+                                                        type="file"
+                                                        className="hidden"
+                                                        onChange={(e: any) => handleAddAttachment(task, idx, e)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        accept="image/*"
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="lg"
+                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const fileInput = document.getElementById(`spec-file-input-${task.id}`) as HTMLInputElement;
+                                                            if (fileInput) {
+                                                                fileInput.value = '';
+                                                                fileInput.click();
+                                                            }
+                                                        }}
+                                                    >
+                                                        <File className="h-6 w-6" />
+                                                        <span className="sr-only">Upload</span>
+                                                    </Button>
+                                                </div>
+                                            </div>}
                                         />
                                     </TableRow>
                                 ))}
@@ -321,7 +609,7 @@ export function AccomplishmentUser({
                                         "bg-muted/50 font-semibold": true,
                                     })}
                                 >
-                                    <TableCell className={cn("align-top w-[400px]", {
+                                    <TableCell className={cn("align-top w-[275px]", {
                                         "text-primary font-semibold": true,
                                         "text-muted-foreground": false,
                                     })}>
@@ -344,35 +632,92 @@ export function AccomplishmentUser({
                                     >
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.task ?? "task") + idx + 'title'}
-                                            placeholder={session?.userData.role == "Guest" ? "Write Activity or Task title" : ""}
-                                            className={cn("align-top border-r w-[400px]", {
+                                            key={'act' + (tasksLoder.find(i => i.remarks == task.id)?.id ?? "task2") + "task" + idx + 'title'}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Activity or Task title" : ""}
+                                            className={cn("align-top border-r w-[250px]", {
                                                 "text-primary font-semibold": isCategory(task),
                                                 "text-muted-foreground": false,
                                             })}
-                                            value={tasks.find(i => i.id == task.id)?.task ?? ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.task ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "task")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.accomplishment ?? "accomTask") + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Write Actual Tasks..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.accomplishment ?? ""}
+                                            key={'task' + (tasksLoder.find(i => i.remarks == task.id)?.id ?? "accomTask2") + "accomTask" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Actual Tasks..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.accomplishment ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={((tasks.find(i => i.id == task.id)?.mov)?.toString() ?? "movTask") + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.mov ?? ""}
+                                            key={'mov' + ((tasksLoder.find(i => i.remarks == task.id)?.mov)?.toString() ?? "movTask2") + "movTask" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Attachments Link here..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
-                                            element={<div id="no-print" className={"text-right flex justify-right items-end"}>
-                                                <div onClick={() => handleDeleteOtherTask(task, idx)} className="mt-[10px] mr-[10px]" style={{
-                                                    'position': 'absolute',
-                                                    'right': 0,
-                                                }}>
+                                            beforeInput={<div className='flex flex-row gap-2'>
+                                                {checkImageAttachment(task, idx) && (
+                                                    <div className="relative">
+                                                        <Image
+                                                            className='my-2'
+                                                            src={checkImageAttachment(task, idx) || ""}
+                                                            alt="attachment"
+                                                            width={300}
+                                                            height={300}
+                                                        />
+
+                                                        <div className='absolute top-2 right-2'>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e)}
+                                                            >
+                                                                <ExternalLinkIcon className="h-4 w-4" />
+                                                                <span className="sr-only">open attachment</span>
+                                                            </Button>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                                <span className="sr-only">Delete attachment</span>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>}
+                                            element={<div id="no-print" className="text-right flex justify-right items-end">
+                                                <div onClick={() => handleDeleteOtherTask(task, idx)} className="flex gap-2 items-center">
+                                                    <input
+                                                        id={`other-file-input-${task.id}`}
+                                                        type="file"
+                                                        className="hidden"
+                                                        onChange={(e: any) => handleAddAttachment(task, idx, e)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        accept="image/*"
+                                                    />
+                                                    <Button
+                                                        variant="outline"
+                                                        size="lg"
+                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const fileInput = document.getElementById(`other-file-input-${task.id}`) as HTMLInputElement;
+                                                            if (fileInput) {
+                                                                fileInput.value = '';
+                                                                fileInput.click();
+                                                            }
+                                                        }}
+                                                    >
+                                                        <File className="h-6 w-6" />
+                                                        <span className="sr-only">Del</span>
+                                                    </Button>
+
                                                     <Button
                                                         variant="outline"
                                                         size="lg"
@@ -395,7 +740,7 @@ export function AccomplishmentUser({
                                     "bg-muted/50 font-semibold h-6 cursor-pointer": true,
                                 })}
                             >
-                                <TableCell className={cn("align-top w-[400px] text-center flex justify-center items-center", {
+                                <TableCell className={cn("align-top w-[275px] text-center flex justify-center items-center", {
                                     "text-primary font-semibold": true,
                                     "text-muted-foreground": false,
                                 })}
@@ -428,7 +773,7 @@ export function AccomplishmentUser({
                         <p className='font-bold'>Signed and Approved by:</p>
                         <p className='mt-8'>{supervisorType === 'supervisor' ? supervisor?.username : alternateSupervisor?.username}</p>
                         <div className="flex items-center gap-2">
-                            <select 
+                            <select
                                 className="border rounded py-1 font-bold print:border-0 print:appearance-none print:hidden"
                                 value={supervisorType}
                                 onChange={(e) => {

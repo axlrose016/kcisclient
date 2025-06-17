@@ -183,19 +183,19 @@ const data = {
           title: "Masterlist",
           url: "/personprofile/masterlist",
           permission: ["Can View", "Can Delete"],
-          roles:["CFW Beneficiary"]
+          roles:["CFW Beneficiary","CFW Immediate Supervisor"]
         },
         {
           title: "Daily Time Record",
           url: "/personprofile/daily-time-record",
           permission: ["Can Add", "Can View", "Can Delete"],
-          roles:["CFW Beneficiary"]
+          roles:["CFW Beneficiary","CFW Immediate Supervisor"]
         },
         {
           title: "Accomplishment Report",
           url: "/personprofile/accomplishment-report",
           permission: ["Can Add", "Can View", "Can Delete"],
-          roles:["CFW Beneficiary"]
+          roles:["CFW Beneficiary","CFW Immediate Supervisor"]
         },
         {
           title: "Payroll",
@@ -216,6 +216,12 @@ const data = {
         {
           title: "Work Plans",
           url:"/personprofile/work-plan",
+          permission:["Can Add","Can View","Can Delete"],
+          roles:["*"]
+        },
+        {
+          title: "Beneficiaries",
+          url:"/personprofile/beneficiaries",
           permission:["Can Add","Can View","Can Delete"],
           roles:["*"]
         },
@@ -358,7 +364,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       //const session = (await response.json()) as SessionPayload;
       console.log("SideBar Session: ", _session);
       if (_session != null) {
-        debugger;
+        // debugger;
         user.email = _session.userData.email!;
         user.name = _session.userData.name!;
         user.role = _session.userData.role!;
@@ -389,7 +395,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           nav.modules.includes(activeTeam?.name) // Filter based on active team
       );
 
-      debugger;
+      // debugger;
       const filteredSubModule = data.navMain.filter(item =>
         item.modules.includes(activeTeam?.name) &&
         (

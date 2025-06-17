@@ -67,11 +67,11 @@ const columnsWorkPlan = [
         variant={
           value == 2
             ? "green"
-            : value == null
-            ? "warning"
-            : value == 15
-            ? "destructive"
-            : "default"
+            : value == null || value == 0
+              ? "warning"
+              : value == 15
+                ? "destructive"
+                : "default"
         }
       >
         {value == 0 || value == null ? "Pending" : "Approved"}
@@ -116,6 +116,15 @@ const columnsWorkPlan = [
     id: "approved_work_schedule_to",
     header: "Approved Work Schedule To",
     accessorKey: "approved_work_schedule_to",
+    filterType: "text",
+    sortable: true,
+    align: "center",
+    cell: null,
+  },
+  {
+    id: "no_of_beneficiaries",
+    header: "Number of Beneficiaries",
+    accessorKey: "no_of_beneficiaries",
     filterType: "text",
     sortable: true,
     align: "center",
@@ -191,11 +200,42 @@ export default function WorkPlanMasterList() {
   const [pageNo, setPageNo] = useState(1);
   const router = useRouter();
   // const [data, setData] = useState([]);
-  const handleEligible = (selectedCFWID?: string) => {};
+  const handleEligible = (selectedCFWID?: string) => { };
 
   const handleCreateNewWorkPlan = () => {
     router.push(baseUrl + "/new");
   };
+
+  function mapApiToDexieWorkPlan(data: any): IWorkPlan {
+    debugger
+    return {
+      id: data.id,
+      work_plan_title: data.work_plan_title,
+      immediate_supervisor_id: data.immediate_supervisor_id,
+      office_name: data.division_office_name ?? "",
+      objectives: data.objectives,
+      no_of_days_program_engagement: data.no_of_days_program_engagement,
+      approved_work_schedule_from: data.approved_work_schedule_from,
+      approved_work_schedule_to: data.approved_work_schedule_to,
+      status_id: data.status_id ?? null,
+      created_date: data.created_date,
+      created_by: data.created_by,
+      last_modified_date: data.last_modified_date ?? null,
+      last_modified_by: data.last_modified_by ?? null,
+      push_status_id: data.push_status_id,
+      push_date: data.push_date ?? null,
+      deleted_date: data.deleted_date ?? null,
+      deleted_by: data.deleted_by ?? null,
+      is_deleted: data.is_deleted ?? null,
+      remarks: data.remarks ?? null,
+      alternate_supervisor_id: data.alternate_supervisor_id,
+      area_focal_person_id: data.area_focal_person_id,
+      total_number_of_bene: data.total_of_beneficiaries ?? 0,
+    }
+  }
+
+
+
   const loadWorkPlan = async () => {
     try {
       const fetchData = async (endpoint: string) => {
@@ -207,7 +247,7 @@ export default function WorkPlanMasterList() {
           );
 
           const response = await fetch(endpoint, {
-            method: "POST",
+            method: "GET",
             headers: {
               Authorization: `bearer ${onlinePayload.token}`,
               "Content-Type": "application/json",
@@ -219,16 +259,19 @@ export default function WorkPlanMasterList() {
           } else {
             debugger;
             const data = await response.json();
+
+            const workPlans: IWorkPlan[] = data.map(mapApiToDexieWorkPlan);
+            await dexieDb.work_plan.bulkPut(workPlans);
+
             setDataWorkPlan(data);
 
-            
-            console.log("🗣️Work Plan from API ", data?.data);
+            console.log("🗣️Work Plan from API ", data);
             console.log("🗣️Work Plan from API ", data.length);
 
             if (data.length == 0 || data == undefined) {
               setDataWorkPlan([]);
             } else {
-              setDataWorkPlan(data?.data);
+              setDataWorkPlan(data);
             }
           }
         } catch (error: any) {
@@ -241,8 +284,8 @@ export default function WorkPlanMasterList() {
           }
         }
       };
-// alert(_session.id)
-      fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/by_id/" + _session.id);
+      // alert(_session.id)
+      fetchData(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/by_id/" + _session.id + "/");
     } catch (error) {
       console.error(error);
     } finally {
@@ -347,7 +390,9 @@ export default function WorkPlanMasterList() {
       </>
     );
   }
-
+  const handleRefresh = async () => {
+    loadWorkPlan()
+  }
   const handleRowClick = (row: any) => {
     // check if mayroon sa dexiedb n record ng supervisor
     // if yes, load it
@@ -489,6 +534,8 @@ export default function WorkPlanMasterList() {
 
   return (
     <div className="p-2">
+      {/* Person Profile ID{_session.id}  */}
+      {/* //02af6e24-1bec-4568-b9bf-8133e7faa3dc */}
       {/* Work Plans: {JSON.stringify(dataWorkPlan)} */}
       <Dialog open={forReviewApprove} onOpenChange={setForReviewApprove}>
         <DialogContent className="w-[400px] shadow-lg z-50 pb-[50px]">
@@ -544,6 +591,7 @@ export default function WorkPlanMasterList() {
             // onEditRecord={handleEdit}
             onClickAddNew={handleCreateNewWorkPlan}
             onRowClick={handleRowClick}
+            onRefresh={handleRefresh}
           />
         </div>
       </div>

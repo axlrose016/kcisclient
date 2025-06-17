@@ -53,11 +53,16 @@ export const syncTask: IBulkSync[] = [
     module: await dexieDb.attachments,
     force: true,
     formdata: (record) => {
-      console.log("Person Profile > attachments > record", record);
-      return {
-        [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id == "" ? record.record_id : record.user_id}##${record.created_by == "" ? "error" : record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]:
-          record.file_path, // should be a File or Blob
-      };
+      console.log("Person Profile > attachments > record", record);  
+      if(!(record.file_path instanceof Blob) && record.file_path){
+        // Skip this record by returning empty object, it will be counted as success
+        return {};
+      }else{
+        return {
+          [`${record.record_id}##${record.file_id}##${record.module_path}##${record.user_id == "" ? record.record_id : record.user_id}##${record.created_by == "" ? "error" : record.created_by}##${record.created_date}##${record.remarks}##${record.file_type}`]:
+            record.file_path, // should be a File or Blob
+        };
+      } 
     },
     onSyncRecordResult: (record, result) => {
       if (result.success) {
@@ -117,6 +122,30 @@ export const syncTask: IBulkSync[] = [
       process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
       `cfw_assessment/update/`,
     module: await dexieDb.cfwassessment,
+    force: true,
+  },
+  {
+    tag: "Person Profile > CFW Assessment",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `cfw_assessment/create/`,
+    module: await dexieDb.cfwassessment,
+    force: true,
+  },
+  {
+    tag: "CFW Person Profile > Update User Role",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `/auth_users/update/user_bulk/`,
+    module: await dexieDb.users,
+    force: true,
+  },
+  {
+    tag: "CFW Person Profile > Update User Access",
+    url:
+      process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
+      `auth_user_access/update/`,
+    module: await dexieDb.useraccess,
     force: true,
   },
 ];

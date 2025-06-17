@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, SquareArrowUpRightIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,8 +24,8 @@ import { ICFWPayrollBene, ISubmissionLog } from '@/components/interfaces/cfw-pay
 import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
 import { v4 as uuidv4 } from 'uuid';
 import { v5 as uuidv5 } from 'uuid';
-import SqlPage from '@/components/sql-example';
 import { DTRService } from '../service';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
 
 export const DTRcolumns = [
@@ -37,7 +37,7 @@ export const DTRcolumns = [
         sortable: true,
         cell: (value: Date | undefined) => {
             if (value) {
-                return formatInTimeZone(value, 'UTC', 'MMM dd');
+                return format(value, 'MMM dd');
             }
             return "-";
         },
@@ -124,7 +124,7 @@ type IUser = IPersonProfile & ILibSchoolProfiles;
 
 export default function DailyTimeRecordUser() {
 
-    const dtrservice = new DTRService();
+    const service = new DTRService();
 
     const params = useParams<{ id: string }>()
     const router = useRouter()
@@ -192,7 +192,7 @@ export default function DailyTimeRecordUser() {
                 console.error('Error fetching data:', error);
             }
             const statuses = await getOfflineLibStatuses();
-            const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
+            const filteredStatuses = statuses.filter(status => [2, 10].includes(status.id));
             console.log('filteredStatuses', filteredStatuses)
             setStatusesOptions(filteredStatuses);
 
@@ -222,20 +222,23 @@ export default function DailyTimeRecordUser() {
             console.log('ar', { params, pb })
 
             const merge = {
-                ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+                ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
                 ...user
             };
             setUser(merge);
+
+
         })();
     }, [])
 
 
     useEffect(() => {
         (async () => {
-            setData(await getResults())
+            await getResults()
+            handleOnRefresh()
             console.log('date', date)
         })();
-    }, [date, user])
+    }, [date, user, session])
 
     const getResults = async () => {
         const results = await dexieDb.cfwtimelogs
@@ -246,11 +249,15 @@ export default function DailyTimeRecordUser() {
                 return logDate >= date!.from! && logDate <= date!.to!;
             })
             .sortBy("created_date"); // Ascending: oldest → latest  
-        console.log('getResults', results)
 
-        setTimeout(() => handleOnRefresh(), 100)
+        setData(results)
+        // console.log('getResults', {results,user:user?.email,date: date!.from! , date2:date!.to! })
         return results;
     };
+
+    useEffect(() => {
+        console.log('data', data)
+    }, [data])
 
 
     const handleEdit = (row: ICFWTimeLogs) => {
@@ -346,15 +353,48 @@ export default function DailyTimeRecordUser() {
 
 
     const handleOnRefresh = async () => {
-        const results = await dtrservice.syncDownload({
-            "person_profile_id": user.user_id
-        })
-        setData(results as any);
-    }
+        try {
+            if (!user?.user_id) {
+                console.log('handleOnRefresh > user is loading or invalid');
+                return;
+            }
+
+            if (!session) {
+                console.log('handleOnRefresh > session is not available');
+                return;
+            }
+
+            const results = ["CFW Beneficiary", "Guest", "Administrator"].includes(session.userData.role!)
+                ? await service.syncDLTimeLogs('/cfwtimelogs/view/multiple/', {
+                    "person_profile_id": user.user_id
+                })
+                : await service.syncDLTimeLogs('cfwtimelogs/view/per_super_visor/', {
+                    "immediate_super_visor_id": session.id
+                });
+
+
+            console.log('results', results)
+
+            if (!results) {
+                console.log('Failed to fetch time records');
+                return;
+            }
+
+            await getResults();
+        } catch (error) {
+            console.error('Error syncing time records:', error);
+            toast({
+                variant: "warning",
+                title: "Unable to Fetch Latest Data",
+                description: error instanceof Error
+                    ? `Error: ${error.message}`
+                    : "Unable to sync DTR records. Please try logging out and back in to refresh your session.",
+            });
+        }
+    };
 
 
     return (
-
         <Card>
             <CardHeader>
                 <CardTitle className="mb-2 flex flex-col md:flex-row items-center md:justify-between text-center md:text-left">
@@ -375,7 +415,7 @@ export default function DailyTimeRecordUser() {
 
                 <div className="min-h-screen">
 
-                    <div className="flex items-center space-x-4 mb-6">
+                    <div className="flex items-center space-x-4 mb-6 flex-wrap gap-2">
                         <Avatar>
                             <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" alt="User name" />
                             <AvatarFallback>{user?.first_name.charAt(0)}</AvatarFallback>

@@ -12,6 +12,8 @@ import { getSession } from '@/lib/sessions-client';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
 import Image from 'next/image';
+import { ARService } from '../service';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
 interface IData {
     id: string;
@@ -69,8 +71,10 @@ const baseUrl = 'personprofile/accomplishment-report'
 export default function AccomplishmentReportUsersList() {
 
     const router = useRouter();
+    const service = new ARService()
+
     const [user, setUser] = useState<IUser | any>();
-    const [, setSession] = useState<SessionPayload>();
+    const [session, setSession] = useState<SessionPayload>();
     const params = useParams<{ 'accomplishment-userid': string; id: string }>()
     const [data, setARList] = useState<IAccomplishmentReport[]>([])
 
@@ -88,12 +92,41 @@ export default function AccomplishmentReportUsersList() {
     }, [])
 
 
+
+    useEffect(() => {
+        console.log('')
+        const fetchWorkPlan = async () => {
+            if (!user?.id || !session?.token) {
+                console.log('Worlplan: Missing required user or session data');
+                return null;
+            }
+
+            try {
+
+                const results = await service.syncDLWorkplan(`work_plan/view/by_bene/${user.id}/`);
+                if (!results) {
+                    console.log('Failed to fetch time records');
+                    return;
+                }
+
+                console.log('Worlplan:   data:', results);
+                return data;
+            } catch (error) {
+                console.error('Worlplan: Error fetching work plan:', error);
+                return null;
+            }
+        };
+
+        fetchWorkPlan();
+    }, [user])
+
+
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('user_id')
             .equals(params!['accomplishment-userid']!).first();
 
         const merge = {
-            ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+            ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         };
 
@@ -161,7 +194,7 @@ export default function AccomplishmentReportUsersList() {
                         columns={columns}
                         onDelete={handleDelete}
                         onRowClick={handleRowClick}
-                        onClickAddNew={handleClickAddNew}
+                        onClickAddNew={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleClickAddNew : undefined}
                     />
                 </div>
 

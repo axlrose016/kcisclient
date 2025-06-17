@@ -18,7 +18,9 @@ import { AccomplishmentUser } from '@/components/accomplishment-user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Download, Edit, Printer } from 'lucide-react';
+import { Download, Edit, Printer } from 'lucide-react'; 
+import { IAttachments } from '@/components/interfaces/general/attachments';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 
@@ -28,6 +30,7 @@ export default function AccomplishmentReportUser() {
     const [user, setUser] = useState<UserTypes>();
     const [supervisor, setSupervisor] = useState<any>();
     const [ar, setAR] = useState<IAccomplishmentReport>()
+    const [attachments, setAttachments] = useState<IAttachments[]>([])
     const [tasks, setTasks] = useState<IAccomplishmentActualTask[]>([])
 
 
@@ -76,9 +79,7 @@ export default function AccomplishmentReportUser() {
         status_date: "",
         created_date: "",
         created_by: ""
-    });
-
-
+    }); 
 
     useEffect(() => {
         (async () => {
@@ -90,7 +91,7 @@ export default function AccomplishmentReportUser() {
             }
 
             const statuses = await getOfflineLibStatuses();
-            const filteredStatuses = statuses.filter(status => [2, 10, 11, 10, 5, 17].includes(status.id));
+            const filteredStatuses = statuses.filter(status => [2, 10].includes(status.id));
             setStatusesOptions(filteredStatuses);
 
 
@@ -104,7 +105,7 @@ export default function AccomplishmentReportUser() {
             .equals(params!['accomplishment-userid']).first();
         console.log('p', { user, params, p: params!['accomplishment-userid'] })
         const merge = {
-            ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+            ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         };
         setUser(merge as UserTypes);
@@ -147,6 +148,10 @@ export default function AccomplishmentReportUser() {
             is_deleted: false,
             remarks: "",
         })
+
+        const attachments = await dexieDb.attachments.where("record_id").equals(arId).toArray()
+        console.log('attachments', { attachments })
+        setAttachments(attachments)
 
         // await dexieDb.work_plan_cfw.put({
         //     id: uuidv4(),
@@ -438,6 +443,7 @@ export default function AccomplishmentReportUser() {
                 if (id) {
                     await dexieDb.accomplishment_report.put(raw, id)
                     await dexieDb.accomplishment_actual_task.bulkPut(tasks,)
+                    await dexieDb.attachments.bulkPut(attachments)
                     toast({
                         variant: "green",
                         title: "Accomplishment Report",
@@ -477,7 +483,8 @@ export default function AccomplishmentReportUser() {
                         onChangeTask={setTasks}
                         accomplishmentReportId={ar?.id}
                         onSupervisorTypeChange={(user) => setSupervisor(user)}
-                        supervisorType={supervisor}
+                        supervisorType={supervisor} 
+                        onChangeAttachments={setAttachments}
                     />
 
                     {session?.userData.role == "Administrator" ?

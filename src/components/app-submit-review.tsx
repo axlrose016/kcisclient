@@ -99,16 +99,16 @@ function AppSubmitReview(props: IAppSubmitReviewProps) {
     const hasStatus = Boolean(currentReview.status);
     // console.log('Appsubmission > session', session, !session, activeSession?.userData.role == "Guest", showHistory)
 
-    if (!session || (activeSession?.userData.role == "Guest" && review_logs.length == 0)) {
+    if (!session || !activeSession?.userData?.role || (["Guest", "CFW Beneficiary"].includes(activeSession.userData.role) && review_logs.length === 0)) {
         return <></>
-    }
+    }   
 
     return (
         <div className="space-y-3 animate-in gap-0 fade-in-50 duration-500">
             <hr className='h-1/5 my-6 bg-black' />
             <div className="flex justify-between items-start md:items-center">
                 <div className="flex flex-col md:flex-row items-center gap-3">
-                    <h3 className="text-lg self-start font-semibold">{title}</h3> 
+                    <h3 className="text-lg self-start font-semibold">{title}</h3>
                 </div>
 
 

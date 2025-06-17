@@ -248,7 +248,7 @@ function FormAllotment() {
     <div className="container mx-auto">
         <Card className="max-w-full mx-auto">
             <Form {...form}>
-                <pre>{JSON.stringify(allValues, null, 2)}</pre>
+                {/* <pre>{JSON.stringify(allValues, null, 2)}</pre> */}
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
                 <CardTitle>Allotment Received</CardTitle>

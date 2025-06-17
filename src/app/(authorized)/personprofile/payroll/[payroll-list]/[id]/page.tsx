@@ -24,6 +24,7 @@ import { toast } from '@/hooks/use-toast';
 import { v5 as uuidv5, v4 as uuidv4 } from 'uuid';
 import { Tooltip, TooltipContent } from '@/components/ui/tooltip';
 import { TooltipTrigger } from '@radix-ui/react-tooltip';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
 export interface dataI {
     id: string;
@@ -137,7 +138,7 @@ export default function PayrollUser() {
             .equals(params!.id).first();
 
         const merge = {
-            ...await dexieDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
+            ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         };
 

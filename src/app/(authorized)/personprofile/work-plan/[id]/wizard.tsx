@@ -112,7 +112,11 @@ export default function Wizard({ title, description, beneficiariesData, workPlan
 
     const [deploymentAreaNameSup, setDeploymentAreaNameSup] = useState(deploymentAreaName)
     const [workPlanTitle, setWorkPlanTitle] = useState<string>("")
-    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<any[]>(beneficiariesData || []);
+    const [selectedBeneficiaries, setSelectedBeneficiaries] = useState<any[]>(
+        (beneficiariesData || []).filter(
+            (b) => b?.["FULL NAME"]?.trim() !== ""
+        )
+    );
     // const [workPlanData, setWorkPlanData] = useState<any>(workPlanDetails || {});
     const [workPlanData, setWorkPlanData] = useState(() => {
         if (typeof window !== "undefined") {
@@ -1117,7 +1121,21 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
     // }, [selectedBeneficiaries])
     const handleRemoveBene = (e: any) => {
         // alert(e)
-        console.log("Selected BENE", e)
+        console.log("👪Selected BENE", e)
+
+
+        // remove from the database
+
+
+        const updated = selectedBeneficiaries.filter((b: any) => b.ID !== e.ID);
+        setSelectedBeneficiaries(updated);
+        localStorage.setItem("selectedBeneficiaries", JSON.stringify(updated));
+        totalNumberOfSelectedBeneficiaries = updated.length
+        toast({
+            title: "Beneficiary removed",
+            description: `${e["FULL NAME"]} has been removed from the selected beneficiaries.`,
+            variant: "destructive",
+        });
     }
     return (
         <div >
@@ -1148,23 +1166,24 @@ function BeneficiariesStep({ beneficiariesData }: WizardProps) {
                 {selectedBeneficiaries.map((bene) => {
                     return (
                         <div key={bene.ID} className="inline-flex items-center mr-2 mb-2">
-                            <Badge variant="green" className="flex items-center gap-2 pr-2" onClick={(e) => handleRemoveBene(bene)}>
+                            <Badge variant="green" className="flex items-center gap-2 pr-2"  >
                                 {bene["FULL NAME"]}
                                 <Button
                                     size="icon"
                                     variant="ghost"
                                     className="ml-1 h-4 w-4 p-0"
                                     onClick={() => {
+                                        handleRemoveBene(bene)
                                         // Remove this beneficiary from selectedBeneficiaries and localStorage
-                                        const updated = selectedBeneficiaries.filter((b: any) => b.ID !== bene.ID);
-                                        setSelectedBeneficiaries(updated);
-                                        localStorage.setItem("selectedBeneficiaries", JSON.stringify(updated));
-                                        totalNumberOfSelectedBeneficiaries = updated.length
-                                        toast({
-                                            title: "Beneficiary removed",
-                                            description: `${bene["FULL NAME"]} has been removed from the selected beneficiaries.`,
-                                            variant: "destructive",
-                                        });
+                                        // const updated = selectedBeneficiaries.filter((b: any) => b.ID !== bene.ID);
+                                        // setSelectedBeneficiaries(updated);
+                                        // localStorage.setItem("selectedBeneficiaries", JSON.stringify(updated));
+                                        // totalNumberOfSelectedBeneficiaries = updated.length
+                                        // toast({
+                                        //     title: "Beneficiary removed",
+                                        //     description: `${bene["FULL NAME"]} has been removed from the selected beneficiaries.`,
+                                        //     variant: "destructive",
+                                        // });
 
                                     }}
                                 >
@@ -1471,7 +1490,8 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
             return // Basic validation
         }
 
-        const taskId = Date.now().toString()
+        const taskId = uuidv4()
+        // const taskId = Date.now().toString()
         const taskToSave = { ...newTask, id: taskId }
         // const { toast } = useToast()
         debugger;
