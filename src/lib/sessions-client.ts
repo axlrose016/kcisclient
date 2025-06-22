@@ -22,12 +22,11 @@ const encodedKey = new TextEncoder().encode(secretKey);
 // Function to create session
 export async function createSession(id: string, userData: IUserData, token: string): Promise<void> {
   const sessionExpiration = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day expiration
+
   const session = await encrypt({ id, userData, sessionExpiration, token });
 
-  const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000); // 1 day in ms
-
   Cookie.set('session', session, {
-    expires: expirationTime,
+    expires: sessionExpiration, // ⏰ 1 day expiration
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'Strict',
   });
@@ -47,7 +46,7 @@ export async function encrypt(payload: SessionPayload): Promise<string> {
   return new SignJWT(payload)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
-    .setExpirationTime('24h') // Token expires in 24 hours
+    .setExpirationTime('12h') // Token expires in 24 hours
     .sign(encodedKey);
 }
 

@@ -1,8 +1,6 @@
 import { useCallback } from 'react';
 import Dexie from 'dexie';
-import CryptoJS from 'crypto-js';
-
-const SECRET_KEY = 'your-static-encryption-key-123';
+import { decryptJsonAsync, encryptJsonAsync } from '@/lib/utils';
 
 export const useExportImport = (dbs: Dexie[]) => {
   const exportToJSON = useCallback(async () => {
@@ -18,7 +16,7 @@ export const useExportImport = (dbs: Dexie[]) => {
       }
 
       const json = JSON.stringify(fullData);
-      const encrypted = CryptoJS.AES.encrypt(json, SECRET_KEY).toString();
+      const encrypted = await encryptJsonAsync(json);
 
       const blob = new Blob([encrypted], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -37,15 +35,14 @@ export const useExportImport = (dbs: Dexie[]) => {
 
   const importFromJSON = useCallback(async (file: File) => {
     try {
-      const encryptedText = await file.text();
-      const bytes = CryptoJS.AES.decrypt(encryptedText, SECRET_KEY);
-      const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+        const encryptedText = await file.text(); // Read file as string
+        const decrypted = await decryptJsonAsync(encryptedText); // Decrypt string
 
-      if (!decryptedText) {
-        throw new Error('Decryption failed or empty.');
-      }
+        if (!decrypted) {
+          throw new Error("Decryption failed or empty.");
+        }
 
-      const parsedData = JSON.parse(decryptedText);
+        const parsedData = JSON.parse(decrypted); // Convert JSON string to object
 
       for (const db of dbs) {
         const dbData = parsedData[db.name];

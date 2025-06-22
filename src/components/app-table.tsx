@@ -104,7 +104,8 @@ interface DataTableProps {
   simpleView?: boolean;
   initialFilters?: Filter[];
   onFilterChange?: (filters: Filter[]) => void;
-
+  onUseFields?: (columns: any[]) => any[];
+  columnProps?: Record<string, any>;
 }
 
 interface Filter {
@@ -112,8 +113,8 @@ interface Filter {
   value: string;
 }
 
-const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
-const DEFAULT_PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [15, 25, 50, 100];
+const DEFAULT_PAGE_SIZE = 15;
 
 type ViewMode = 'table' | 'grid';
 
@@ -158,6 +159,8 @@ export function AppTable({
   simpleView = false,
   initialFilters = [],
   onFilterChange,
+  onUseFields,
+  columnProps
 }: DataTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -245,6 +248,13 @@ export function AppTable({
       filterable: true
     }));
   }, [data, providedColumns]);
+
+  const formColumns = useMemo(() => {
+    if (onUseFields) {
+      return onUseFields(columns);
+    }
+    return columns;
+  }, [columns, onUseFields]);
 
   useEffect(() => {
     setLoading(true)
@@ -1157,10 +1167,11 @@ export function AppTable({
             <DialogTitle>{editingRow ? 'Edit Record' : 'Add New Record'}</DialogTitle>
           </DialogHeader>
           <AppTableDialogForm
-            columns={columns}
+            columns={formColumns}
             initialData={editingRow}
             onSubmit={handleSubmitNewRecord}
             onCancel={() => setShowAddDialog(false)}
+            columnProps={columnProps}
           />
         </DialogContent>
       </Dialog>

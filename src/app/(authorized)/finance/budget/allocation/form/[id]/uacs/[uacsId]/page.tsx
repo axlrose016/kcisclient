@@ -15,7 +15,7 @@ import { FormDropDown } from "@/components/forms/form-dropdown"
 import { LibraryOption } from "@/components/interfaces/library-interface"
 import { getOfflineLibAllotmentClass, getOfflineLibComponent, getOfflineLibExpense, getOfflineLibLevel } from "@/components/_dal/offline-options"
 import { dxFetchData } from "@/components/_dal/external-apis/dxcloud"
-import { FinanceService } from "@/app/(authorized)/finance/FinanceService"
+import { FinanceService } from "@/components/services/FinanceService"
 import { IAllocationUacs } from "@/db/offline/Dexie/schema/finance-service"
 import { NumericFormat } from 'react-number-format';
 import { useAlert } from "@/components/general/use-alert"

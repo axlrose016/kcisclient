@@ -18,7 +18,7 @@ import { AppTable } from "@/components/app-table"
 import { getOfflineLibLevel, getOfflineRoles } from "@/components/_dal/offline-options"
 import { FormDropDown } from "@/components/forms/form-dropdown"
 import { PushStatusBadge } from "@/components/general/push-status-badge"
-import { SettingsService } from "../../SettingsService"
+import { SettingsService } from "../../../../../components/services/SettingsService"
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 
 const formSchema = z.object({

@@ -652,3 +652,53 @@ export interface ILibAllotmentClass{
   is_deleted: boolean,
   remarks?: string | null,
 }
+
+export interface ILibRegion{
+  reg_id: number,
+  code_correspondence: string | null,
+  name: string | null,
+  altName: string | null,
+  code: string | null,
+  geo_level: string | null
+}
+
+export interface ILibProvince {
+  prov_id: number,
+  code_correspondence: string | null,
+  name: string | null,
+  code: string | null,
+  geo_level: string | null,
+  old_name: string | null,
+  income_classification: string | null,
+  region: string | null,
+  region_correspondence: string | null,
+  reg_id: number
+}
+
+export interface ILibCity {
+  city_id: number,
+  code_correspondence: string | null,
+  name: string | null,
+  code: string | null,
+  classification: string | null,
+  old_name: string | null,
+  city_class: string | null,
+  income_classification: string | null,
+  province: string | null,
+  province_correspondence: string | null,
+  prov_id: number
+}
+
+export interface ILibBrgy {
+  brgy_id: number,
+  code_correspondence: string | null,
+  name: string | null,
+  code: string | null,
+  geo_level: string | null,
+  old_name: string | null,
+  city_class: string | null,
+  urb_rur: string | null,
+  city: string | null,
+  city_correspondence: string | null,
+  city_id: number
+}

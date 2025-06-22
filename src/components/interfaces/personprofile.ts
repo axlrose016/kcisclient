@@ -237,7 +237,7 @@ export interface ICFWAssessment {
 }
 
 export interface IWorkPlan {
-   id: string; //✔️
+  id: string; //✔️
   work_plan_title: string;  //✔️
   immediate_supervisor_id: string; //✔️
   office_name?: string;  
@@ -258,7 +258,7 @@ export interface IWorkPlan {
   remarks?: string | null,  //✔️
   alternate_supervisor_id: string | null;  //✔️
   area_focal_person_id: string | null;  //✔️//main focal person of the company i.e HEI Focal Person 
-  total_number_of_bene?: number;  
+  // total_number_of_bene?: number;  
   
 }
 
@@ -304,9 +304,9 @@ export interface IWorkPlanCfw {
 }
 export interface IAccomplishmentReport {
   id: string;  
-  person_id: string;
-  period_cover_from: Date;
-  period_cover_to: Date;
+  person_profile_id: string;
+  period_cover_from: Date | string;
+  period_cover_to: Date | string ;
   work_plan_id: string;
   accomplishment_actual_task: string;
   status_id: number;

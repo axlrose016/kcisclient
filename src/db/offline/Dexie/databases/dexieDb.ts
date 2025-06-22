@@ -71,7 +71,7 @@ class MyDatabase extends Dexie {
             work_plan: `id, immediate_supervisor_id,alternate_supervisor_id,objectives, area_focal_person_id,no_of_days_program_engagement,approved_work_schedule,status_id, ${commonFields}`,
             work_plan_tasks: `id, work_plan_id,activities_tasks,expected_output, work_plan_category_id, timeline_from, timeline_to, assigned_person_id,status_id, ${commonFields}`,
             work_plan_cfw: `id, work_plan_id,cfw_id,status_id, ${commonFields}`,
-            accomplishment_report: `id, person_id, period_cover_from, work_plan_id,accomplishment_actual_task, status_id, ${commonFields}`,
+            accomplishment_report: `id, person_profile_id, period_cover_from, work_plan_id,accomplishment_actual_task, status_id, ${commonFields}`,
             accomplishment_actual_task: `id, accomplishment_report_id,task,category_id, accomplishment, mov, status_id, ${commonFields}`,
             report_designer: `id, name, columns, ${commonFields}`,
             report_column: `id, report_designer_id, label, value, type, description, visible, options,${commonFields}`,

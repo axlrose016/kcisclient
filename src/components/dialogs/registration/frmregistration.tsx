@@ -16,7 +16,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { redirect, useRouter } from "next/navigation"
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { useOnlineStatus } from "@/hooks/use-network"
-import UsersService from "./UsersService"
+import UsersService from "../../services/UsersService"
 import { datetime } from "drizzle-orm/mysql-core"
 import React, { useState } from "react"
 

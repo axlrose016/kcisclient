@@ -5,7 +5,7 @@ import { DateRange } from 'react-day-picker';
 import { DatePickerWithRange } from '@/components/app-daterange';
 import { cn } from '@/lib/utils';
 import { Download, ExternalLinkIcon, File, Printer, Trash2 } from 'lucide-react';
-import { IAccomplishmentActualTask, IPersonProfile, IWorkPlanTasks } from '@/components/interfaces/personprofile';
+import { IAccomplishmentActualTask, ICFWAssessment, IPersonProfile, IWorkPlan, IWorkPlanTasks } from '@/components/interfaces/personprofile';
 import { IUser } from '@/components/interfaces/iuser';
 import { SessionPayload } from '@/types/globals';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
@@ -17,12 +17,12 @@ import AppSubmitReview from './app-submit-review';
 import { IAttachments } from './interfaces/general/attachments';
 import { toast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import RichTextEditor from './editor';
 import { v5 as uuidv5 } from 'uuid';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5
 interface AccomplishmentReportFormProps {
+    assessment: ICFWAssessment;
     disabled?: boolean
     user: UserTypes | any;
     date: DateRange | undefined;
@@ -36,6 +36,7 @@ interface AccomplishmentReportFormProps {
 }
 
 export function AccomplishmentUser({
+    assessment,
     onChangeTask,
     onChangeAttachments,
     disabled = false,
@@ -47,8 +48,8 @@ export function AccomplishmentUser({
     supervisorType = 'supervisor',
     onSupervisorTypeChange
 }: AccomplishmentReportFormProps) {
-    const [supervisor, setSupervisor] = useState<IUser>();
-    const [alternateSupervisor, setAlternateSupervisor] = useState<IUser>();
+    const [supervisor, setSupervisor] = useState<IPersonProfile>();
+    const [alternateSupervisor, setAlternateSupervisor] = useState<IPersonProfile>();
     const [generalTasks, setGeneralTasks] = useState<IWorkPlanTasks[]>([]);
     const [specificTask, setSpecificTask] = useState<IWorkPlanTasks[]>([]);
     const [otherTask, setOtherTask] = useState<IAccomplishmentActualTask[]>([]);
@@ -61,56 +62,42 @@ export function AccomplishmentUser({
         const fetchData = async () => {
             try {
                 if (!dexieDb.isOpen()) await dexieDb.open();
-                // Get other tasks and actual tasks 
-                if (accomplishmentReportId) {
-                    setOtherTask(await dexieDb.accomplishment_actual_task.where({
-                        category_id: "99",
-                        accomplishment_report_id: accomplishmentReportId
-                    }).toArray());
-                    const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
-                    console.log('AccomplishmentUser > alltask', { alltask })
-                    setTasks(alltask);
-                    setTaskLoader(alltask);
-                    onChangeTask?.(alltask)
-
-                    const attachments = await dexieDb.attachments
-                        .where("record_id")
-                        .equals(accomplishmentReportId)
-                        .and(attachment => !attachment.is_deleted)
-                        .toArray()
-
-                    console.log('AccomplishmentUser > attachments', { attachments })
-                    setAttachments(attachments)
-                    onChangeAttachments?.(attachments)
-                }
-
                 // Get work plan for the user
-                const userWorkPlan = await dexieDb.cfwassessment.where("person_profile_id").equals(user?.id || "").first();
-                if (userWorkPlan) {
-                    const workPlan = await dexieDb.work_plan.where("id").equals(userWorkPlan.work_plan_id).first();
+
+                if (assessment) {
+                    const workPlan = await dexieDb.work_plan.where("id").equals(assessment?.work_plan_id || "").first();
                     if (workPlan) {
                         // Get supervisors
-                        setSupervisor(await dexieDb.users.where("id").equals(userWorkPlan?.immediate_supervisor_id || "").first());
-                        setAlternateSupervisor(await dexieDb.users.where("id").equals(workPlan?.alternate_supervisor_id || "").first());
+                        const supervisor = await dexieDb.person_profile.where("user_id").equals(assessment?.immediate_supervisor_id || "").first();
+                        const alternateSupervisor = await dexieDb.person_profile.where("user_id").equals(workPlan?.alternate_supervisor_id || "").first();
+                        setSupervisor(supervisor);
+                        setAlternateSupervisor(alternateSupervisor);
 
                         // Get tasks
                         const allTasks = await dexieDb.work_plan_tasks.where("work_plan_id").equals(workPlan.id).toArray();
                         setGeneralTasks(allTasks.filter(i => i.work_plan_category_id == 1));
                         setSpecificTask(allTasks.filter(i => i.work_plan_category_id == 2));
+
+                        console.log('AccomplishmentUser > ', { supervisor_id: assessment?.immediate_supervisor_id, alternate_supervisor_id: workPlan?.alternate_supervisor_id, workPlan, supervisor, alternateSupervisor })
                     }
                 }
 
                 // Get other tasks and actual tasks 
                 if (accomplishmentReportId) {
-                    setOtherTask(await dexieDb.accomplishment_actual_task.where({
-                        category_id: "99",
+                    const otherTask = await dexieDb.accomplishment_actual_task.where({
+                        category_id: '99',
                         accomplishment_report_id: accomplishmentReportId
-                    }).toArray());
+                    }).toArray();
+
+                    setOtherTask(otherTask);
                     const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
+                    console.log('AccomplishmentUser > alltask', { alltask, otherTask, accomplishmentReportId })
                     setTasks(alltask);
+                    setTaskLoader(alltask);
                     onChangeTask?.(alltask)
+
                     const attachments = await dexieDb.attachments.where("record_id").equals(accomplishmentReportId).toArray()
-                    console.log('AccomplishmentUser > attachments', { attachments })
+
                     setAttachments(attachments)
                     onChangeAttachments?.(attachments)
                 }
@@ -126,9 +113,9 @@ export function AccomplishmentUser({
 
 
         const sanitizedValue = sanitizeHTML(value);
-        const index = tasks.findIndex(i => i.remarks == task.remarks);
+        const index = tasks.findIndex(i => i.remarks == task.id);
 
-        console.log('handleContentEdit', task, value, type)
+        console.log('handleContentEdit', task, value, type, tasks, index)
 
 
         if (index > -1) {
@@ -148,7 +135,7 @@ export function AccomplishmentUser({
         } else {
             const newTask: IAccomplishmentActualTask = {
                 id: uuidv5(accomplishmentReportId || "", task.id),
-                category_id: task?.category_id?.toString() || "",
+                category_id: task?.category_id || 0,
                 accomplishment_report_id: accomplishmentReportId || "",
                 accomplishment: type == "accomplishment" ? sanitizedValue : "",
                 mov: type == "movs" ? sanitizedValue : "",
@@ -156,11 +143,11 @@ export function AccomplishmentUser({
                 status_id: 0,
                 created_date: new Date().toString(),
                 created_by: session!.userData!.email!,
-                last_modified_date: "",
+                last_modified_date: null,
                 last_modified_by: "",
                 push_status_id: 0,
-                push_date: "",
-                deleted_date: "",
+                push_date: null,
+                deleted_date: null,
                 deleted_by: "",
                 is_deleted: false,
                 remarks: task.id,
@@ -178,7 +165,7 @@ export function AccomplishmentUser({
     const handleOtherTask = () => {
         const newTask: IAccomplishmentActualTask = {
             id: uuidv4(),
-            category_id: "99",
+            category_id: '99',
             accomplishment_report_id: accomplishmentReportId || "",
             accomplishment: "",
             mov: "",
@@ -186,11 +173,11 @@ export function AccomplishmentUser({
             status_id: 0,
             created_date: new Date().toString(),
             created_by: session!.userData!.email!,
-            last_modified_date: "",
+            last_modified_date: null,
             last_modified_by: "",
             push_status_id: 0,
-            push_date: "",
-            deleted_date: "",
+            push_date: null,
+            deleted_date: null,
             deleted_by: "",
             is_deleted: false,
             remarks: "",
@@ -200,9 +187,9 @@ export function AccomplishmentUser({
         onChangeAttachments?.(attachments)
     };
 
-    const handleOpenFileOnNewTab = (task: any, idx: number, e: any) => {
-        const attachment = attachments.find(i => i.remarks == task.id)
-        console.log('handleOpenFileOnNewTab', { e, attachment, attachments, task, idx });
+    const handleOpenFileOnNewTab = (task: any, idx: number, e: any   , key = 'remarks' , idKey = 'id') => {
+        const attachment = attachments.find((i: any) => i[key] == task[idKey])
+        // console.log('handleOpenFileOnNewTab', { e, attachment, attachments, task, idx });
         if (attachment) {
             if (attachment.file_path instanceof Blob) {
                 window.open(URL.createObjectURL(attachment.file_path), '_blank')
@@ -212,14 +199,12 @@ export function AccomplishmentUser({
         }
     }
 
-    const handleDeleteAttachment = (task: any, idx: number, e: any) => {
-
-
+    const handleDeleteAttachment = (task: any, idx: number, e: any , key = 'remarks' , idKey = 'id') => { 
         (async () => {
 
             const updatedTasks = [...tasks];
-            const attachment = attachments.find(i => i.remarks == task.id)
-            console.log('handleDeleteAttachment > attachment', { task, idx, attachment })
+            const attachment = attachments.find((i: any) => i[key] == task[idKey])
+            // console.log('handleDeleteAttachment > attachment', { task, idx, attachment })
             if (attachment) {
                 await dexieDb.attachments.put({
                     ...attachment,
@@ -247,8 +232,8 @@ export function AccomplishmentUser({
     }
 
 
-    const handleAddAttachment = (task: any, idx: number, e: any) => {
-        console.log('handleAddAttachment', e);
+    const handleAddAttachment = (task: any, idx: number, e: any , key = 'remarks' , idKey = 'id') => {
+        // console.log('handleAddAttachment', { e, task, idx });
         (async () => {
             if (e && e.target.files && e.target.files[0]) {
                 const file = e.target.files[0];
@@ -264,15 +249,17 @@ export function AccomplishmentUser({
                 // Create a Blob for the file
                 const fileBlob = new Blob([file], { type: file.type });
                 const taskId = task.id;
-
+                const module_path = "accomplishment report";
+                const attachmentId = uuidv5(module_path + "-" + taskId, accomplishmentReportId || "");
+                console.log('handleAddAttachment > attachmentId', { taskId, attachmentId, accomplishmentReportId })
                 const raw: IAttachments = {
-                    id: uuidv4(),
+                    id: attachmentId,
                     record_id: accomplishmentReportId!,
                     file_name: file.name,
                     file_type: file.type,
                     file_path: fileBlob,
                     file_id: 100,
-                    module_path: "accomplishment-report",
+                    module_path: module_path,
                     user_id: session!.id,
                     created_date: new Date().toISOString(),
                     created_by: session!.userData.email ?? "",
@@ -287,7 +274,7 @@ export function AccomplishmentUser({
                 }
 
                 // Remove any existing attachment for this task
-                const filteredAttachments = attachments.filter(a => a.remarks !== taskId);
+                const filteredAttachments = attachments.filter((a: any) => a[key] !== task[idKey]);
                 const newAttachments = [...filteredAttachments, raw];
 
                 setAttachments(newAttachments);
@@ -298,8 +285,9 @@ export function AccomplishmentUser({
         })();
     }
 
-    const checkImageAttachment = (task: IWorkPlanTasks | IAccomplishmentActualTask, idx: number) => {
-        const attachment = attachments.find(i => i.remarks === task.id);
+    const checkImageAttachment = (task: IWorkPlanTasks | IAccomplishmentActualTask | any, idx: number, key = 'remarks' , idKey = 'id') => {
+        const attachment = attachments.find((i: any) => i[key] === task[idKey]);
+        console.log('checkImageAttachment', { attachment, task, key , attachments   })
         if (!attachment?.file_path) return null;
 
         if (attachment.file_path instanceof Blob) {
@@ -326,7 +314,7 @@ export function AccomplishmentUser({
                     <div className="col-span-1 text-gray-900 leading-none">{user?.first_name} {user?.last_name}</div>
                     <div className="col-span-1 font-bold leading-none">Period Cover:<span className='text-red-600'>*</span></div>
                     <div className="col-span-1 text-gray-900 leading-none">
-                        <DatePickerWithRange value={date} onChange={setDate!} />
+                        <DatePickerWithRange className='cursor-pointer' value={date} onChange={setDate!} />
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 md:grid-cols-4">
@@ -343,13 +331,13 @@ export function AccomplishmentUser({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 md:grid-cols-4">
                     <div className="col-span-1 font-bold leading-none">NAME OF IMMEDIATE SUPERVISOR:</div>
-                    <div className="col-span-1 text-gray-900 leading-none">{supervisor?.username}</div>
+                    <div className="col-span-1 text-gray-900 leading-none">{supervisor?.first_name} {supervisor?.last_name}</div>
                     <div className="col-span-1 font-bold leading-none"></div>
                     <div className="col-span-1 text-gray-900 leading-none"></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 md:grid-cols-4">
                     <div className="col-span-1 font-bold leading-none">NAME OF ALTERNATE IMMEDIATE SUPERVISOR:</div>
-                    <div className="col-span-1 text-gray-900 leading-none">{alternateSupervisor?.username}</div>
+                    <div className="col-span-1 text-gray-900 leading-none">{alternateSupervisor?.first_name} {alternateSupervisor?.last_name}</div>
                     <div className="col-span-1 font-bold leading-none"></div>
                     <div className="col-span-1 text-gray-900 leading-none"></div>
                 </div>
@@ -413,9 +401,9 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasks.find(i => i.id == task.id)?.mov ?? "genMov2") + "genMov" + idx}
-                                            placeholder={session?.userData.role == "Guest" ? "Attachments Link here..." : ""}
-                                            value={tasks.find(i => i.id == task.id)?.mov ?? ""}
+                                            key={task.id + "genMov" + idx}
+                                            placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Attachment Links here..." : ""}
+                                            value={tasksLoder.find(i => i.remarks == task.id)?.mov || ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
                                             beforeInput={<div className='flex flex-row gap-2'>
                                                 {checkImageAttachment(task, idx) && (
@@ -438,15 +426,17 @@ export function AccomplishmentUser({
                                                                 <ExternalLinkIcon className="h-4 w-4" />
                                                                 <span className="sr-only">open attachment</span>
                                                             </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                                <span className="sr-only">Delete attachment</span>
-                                                            </Button>
+                                                            {session?.userData.role == "CFW Beneficiary" &&
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                    onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                    <span className="sr-only">Delete attachment</span>
+                                                                </Button>
+                                                            }
                                                         </div>
                                                     </div>
                                                 )}
@@ -461,23 +451,25 @@ export function AccomplishmentUser({
                                                         onClick={(e) => e.stopPropagation()}
                                                         accept="image/*"
                                                     />
-                                                    <Button
-                                                        variant="outline"
-                                                        size="lg"
-                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            const fileInput = document.getElementById(`gen-file-input-${task.id}`) as HTMLInputElement;
-                                                            if (fileInput) {
-                                                                fileInput.value = '';
-                                                                fileInput.click();
-                                                            }
-                                                        }}
-                                                    >
-                                                        <File className="h-6 w-6" />
-                                                        <span className="sr-only">Upload</span>
-                                                    </Button>
+                                                    {session?.userData.role == "CFW Beneficiary" &&
+                                                        <Button
+                                                            variant="outline"
+                                                            size="lg"
+                                                            className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                const fileInput = document.getElementById(`gen-file-input-${task.id}`) as HTMLInputElement;
+                                                                if (fileInput) {
+                                                                    fileInput.value = '';
+                                                                    fileInput.click();
+                                                                }
+                                                            }}
+                                                        >
+                                                            <File className="h-6 w-6" />
+                                                            <span className="sr-only">Upload</span>
+                                                        </Button>
+                                                    }
                                                 </div>
                                             </div>}
                                         />
@@ -487,7 +479,7 @@ export function AccomplishmentUser({
 
                             {specificTask.length !== 0 ? <>
                                 <TableRow
-                                    key={"general"}
+                                    key={"specific"}
                                     className={cn({
                                         "bg-muted/50 font-semibold": true,
                                     })}
@@ -530,7 +522,7 @@ export function AccomplishmentUser({
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={(tasksLoder.find(i => i.remarks == task.id)?.mov ?? "specMov2") + "specMov" + idx}
+                                            key={task.id + "specMov" + idx}
                                             placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Attachments Link here..." : ""}
                                             value={tasksLoder.find(i => i.remarks == task.id)?.mov ?? ""}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
@@ -555,15 +547,17 @@ export function AccomplishmentUser({
                                                                 <ExternalLinkIcon className="h-4 w-4" />
                                                                 <span className="sr-only">open attachment</span>
                                                             </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                                <span className="sr-only">Delete attachment</span>
-                                                            </Button>
+                                                            {session?.userData.role == "CFW Beneficiary" &&
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                    onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                    <span className="sr-only">Delete attachment</span>
+                                                                </Button>
+                                                            }
                                                         </div>
                                                     </div>
                                                 )}
@@ -578,33 +572,35 @@ export function AccomplishmentUser({
                                                         onClick={(e) => e.stopPropagation()}
                                                         accept="image/*"
                                                     />
-                                                    <Button
-                                                        variant="outline"
-                                                        size="lg"
-                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            const fileInput = document.getElementById(`spec-file-input-${task.id}`) as HTMLInputElement;
-                                                            if (fileInput) {
-                                                                fileInput.value = '';
-                                                                fileInput.click();
-                                                            }
-                                                        }}
-                                                    >
-                                                        <File className="h-6 w-6" />
-                                                        <span className="sr-only">Upload</span>
-                                                    </Button>
+                                                    {session?.userData.role == "CFW Beneficiary" &&
+                                                        <Button
+                                                            variant="outline"
+                                                            size="lg"
+                                                            className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                const fileInput = document.getElementById(`spec-file-input-${task.id}`) as HTMLInputElement;
+                                                                if (fileInput) {
+                                                                    fileInput.value = '';
+                                                                    fileInput.click();
+                                                                }
+                                                            }}
+                                                        >
+                                                            <File className="h-6 w-6" />
+                                                            <span className="sr-only">Upload</span>
+                                                        </Button>
+                                                    }
                                                 </div>
                                             </div>}
                                         />
                                     </TableRow>
                                 ))}
                             </> : null}
-
+ 
                             {otherTask.length !== 0 ? <>
                                 <TableRow
-                                    key={"general"}
+                                    key={"othertask"}
                                     className={cn({
                                         "bg-muted/50 font-semibold": true,
                                     })}
@@ -632,36 +628,33 @@ export function AccomplishmentUser({
                                     >
                                         <EditableCell
                                             disabled={disabled}
-                                            key={'act' + (tasksLoder.find(i => i.remarks == task.id)?.id ?? "task2") + "task" + idx + 'title'}
                                             placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Activity or Task title" : ""}
                                             className={cn("align-top border-r w-[250px]", {
                                                 "text-primary font-semibold": isCategory(task),
                                                 "text-muted-foreground": false,
                                             })}
-                                            value={tasksLoder.find(i => i.remarks == task.id)?.task ?? ""}
+                                            value={task.task}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "task")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={'task' + (tasksLoder.find(i => i.remarks == task.id)?.id ?? "accomTask2") + "accomTask" + idx}
                                             placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Write Actual Tasks..." : ""}
-                                            value={tasksLoder.find(i => i.remarks == task.id)?.accomplishment ?? ""}
+                                            value={task.accomplishment}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "accomplishment")}
                                         />
 
                                         <EditableCell
                                             disabled={disabled}
-                                            key={'mov' + ((tasksLoder.find(i => i.remarks == task.id)?.mov)?.toString() ?? "movTask2") + "movTask" + idx}
                                             placeholder={["CFW Beneficiary", "Guest"].includes(session?.userData.role!) ? "Attachments Link here..." : ""}
-                                            value={tasksLoder.find(i => i.remarks == task.id)?.mov ?? ""}
+                                            value={task.mov}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
                                             beforeInput={<div className='flex flex-row gap-2'>
-                                                {checkImageAttachment(task, idx) && (
+                                                {checkImageAttachment(task, idx , 'remarks' , 'remarks') && (
                                                     <div className="relative">
                                                         <Image
                                                             className='my-2'
-                                                            src={checkImageAttachment(task, idx) || ""}
+                                                            src={checkImageAttachment(task, idx , 'remarks' , 'remarks' ) || ""}
                                                             alt="attachment"
                                                             width={300}
                                                             height={300}
@@ -672,20 +665,22 @@ export function AccomplishmentUser({
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e)}
+                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e , 'remarks' , 'remarks')}
                                                             >
                                                                 <ExternalLinkIcon className="h-4 w-4" />
                                                                 <span className="sr-only">open attachment</span>
                                                             </Button>
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="icon"
-                                                                className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                onClick={(e: any) => handleDeleteAttachment(task, idx, e)}
-                                                            >
-                                                                <Trash2 className="h-4 w-4" />
-                                                                <span className="sr-only">Delete attachment</span>
-                                                            </Button>
+                                                            {session?.userData.role == "CFW Beneficiary" &&
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
+                                                                    onClick={(e: any) => handleDeleteAttachment(task, idx, e , 'remarks' , 'remarks')}
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                    <span className="sr-only">Delete attachment</span>
+                                                                </Button>
+                                                            }
                                                         </div>
                                                     </div>
                                                 )}
@@ -700,32 +695,36 @@ export function AccomplishmentUser({
                                                         onClick={(e) => e.stopPropagation()}
                                                         accept="image/*"
                                                     />
-                                                    <Button
-                                                        variant="outline"
-                                                        size="lg"
-                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            const fileInput = document.getElementById(`other-file-input-${task.id}`) as HTMLInputElement;
-                                                            if (fileInput) {
-                                                                fileInput.value = '';
-                                                                fileInput.click();
-                                                            }
-                                                        }}
-                                                    >
-                                                        <File className="h-6 w-6" />
-                                                        <span className="sr-only">Del</span>
-                                                    </Button>
+                                                    {session?.userData.role == "CFW Beneficiary" &&
+                                                        <>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="lg"
+                                                                className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                                onClick={(e) => {
+                                                                    e.preventDefault();
+                                                                    e.stopPropagation();
+                                                                    const fileInput = document.getElementById(`other-file-input-${task.id}`) as HTMLInputElement;
+                                                                    if (fileInput) {
+                                                                        fileInput.value = '';
+                                                                        fileInput.click();
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <File className="h-6 w-6" />
+                                                                <span className="sr-only">Del</span>
+                                                            </Button>
 
-                                                    <Button
-                                                        variant="outline"
-                                                        size="lg"
-                                                        className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
-                                                    >
-                                                        <Trash2 className="h-6 w-6" />
-                                                        <span className="sr-only">Del</span>
-                                                    </Button>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="lg"
+                                                                className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"
+                                                            >
+                                                                <Trash2 className="h-6 w-6" />
+                                                                <span className="sr-only">Del</span>
+                                                            </Button>
+                                                        </>
+                                                    }
                                                 </div>
                                             </div>}
                                         />
@@ -771,7 +770,40 @@ export function AccomplishmentUser({
                     </div>
                     <div className="col-span-1">
                         <p className='font-bold'>Signed and Approved by:</p>
-                        <p className='mt-8'>{supervisorType === 'supervisor' ? supervisor?.username : alternateSupervisor?.username}</p>
+
+                        {supervisorType === 'supervisor' ? (
+                            <p className='mt-8'>
+                                {supervisor ? (
+                                    <>
+                                        {supervisor.first_name} {supervisor.last_name}
+                                    </>
+                                ) : (
+                                    <span style={{
+                                        display: 'inline-block',
+                                        borderBottom: '2px solid #000',
+                                        minWidth: '220px',
+                                        height: '1.2em',
+                                        verticalAlign: 'bottom'
+                                    }}>&nbsp;</span>
+                                )}
+                            </p>
+                        ) : (
+                            <p className='mt-8'>
+                                {alternateSupervisor ? (
+                                    <>
+                                        {alternateSupervisor.first_name} {alternateSupervisor.last_name}
+                                    </>
+                                ) : (
+                                    <span style={{
+                                        display: 'inline-block',
+                                        borderBottom: '2px solid #000',
+                                        minWidth: '220px',
+                                        height: '1.2em',
+                                        verticalAlign: 'bottom'
+                                    }}>&nbsp;</span>
+                                )}
+                            </p>
+                        )}
                         <div className="flex items-center gap-2">
                             <select
                                 className="border rounded py-1 font-bold print:border-0 print:appearance-none print:hidden"

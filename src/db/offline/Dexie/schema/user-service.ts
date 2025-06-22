@@ -2,7 +2,7 @@ import { EntityTable } from 'dexie';
 import { dexieDb } from '../databases/dexieDb'; // Assuming dexieDb is properly initialized elsewhere
 import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess, IUserData, IUserDataAccess } from '@/components/interfaces/iuser';
 import { toast } from '@/hooks/use-toast';
-import { hashPassword } from '@/lib/utils';
+import { encryptJson, encryptJsonAsync, hashPassword } from '@/lib/utils';
 import { libDb } from '../databases/libraryDb';
 
 // Ensure you're using a single instance for interacting with the users table

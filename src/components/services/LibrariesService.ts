@@ -1,4 +1,4 @@
-import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBudgetYear, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibFundSource, ILibHiringProcedure, ILibModality, ILibOffice, ILibPAP, ILibPosition, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
+import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBrgy, ILibBudgetYear, ILibCity, ILibDivision, ILibEmploymentStatus, ILibExpense, ILibFundSource, ILibHiringProcedure, ILibModality, ILibOffice, ILibPAP, ILibPosition, ILibProvince, ILibRegion, IModules, IPermissions, IRoles } from "@/components/interfaces/library-interface";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
 import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { getSession } from "@/lib/sessions-client";
@@ -23,9 +23,9 @@ export class LibrariesService{
                   ...role,
                   id: uuidv4(),
                   created_date: new Date().toISOString(),
-                  created_by: _session.userData.email,
+                  created_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Created by " + _session.userData.email,
+                  remarks: "Record Created by " + _session?.userData?.email,
                 };
               } else {
                 const existing = await libDb.roles.get(role.id);
@@ -37,9 +37,9 @@ export class LibrariesService{
                   ...existing,
                   ...role,
                   last_modified_date: new Date().toISOString(),
-                  last_modified_by: _session.userData.email,
+                  last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Updated by " + _session.userData.email,
+                  remarks: "Record Updated by " + _session?.userData?.email,
                 };
               }
       
@@ -97,9 +97,9 @@ export class LibrariesService{
                   ...permission,
                   id: uuidv4(),
                   created_date: new Date().toISOString(),
-                  created_by: _session.userData.email,
+                  created_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Created by " + _session.userData.email,
+                  remarks: "Record Created by " + _session?.userData?.email,
                 };
               } else {     
                 const existing = await libDb.permissions.get(permission.id);
@@ -111,9 +111,9 @@ export class LibrariesService{
                   ...existing,
                   ...permission,
                   last_modified_date: new Date().toISOString(),
-                  last_modified_by: _session.userData.email,
+                  last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Updated by " + _session.userData.email,
+                  remarks: "Record Updated by " + _session?.userData?.email,
                 };
               }
       
@@ -171,9 +171,9 @@ export class LibrariesService{
                   ...module,
                   id: uuidv4(),
                   created_date: new Date().toISOString(),
-                  created_by: _session.userData.email,
+                  created_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Created by " + _session.userData.email,
+                  remarks: "Record Created by " + _session?.userData?.email,
                 };
               } else {
                 const existing = await libDb.modules.get(module.id);
@@ -185,9 +185,9 @@ export class LibrariesService{
                   ...existing,
                   ...module,
                   last_modified_date: new Date().toISOString(),
-                  last_modified_by: _session.userData.email,
+                  last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
-                  remarks: "Record Updated by " + _session.userData.email,
+                  remarks: "Record Updated by " + _session?.userData?.email,
                 };
               }
       
@@ -401,9 +401,9 @@ export class LibrariesService{
             data = {
               ...emp,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_employment_status.get(emp.id);
@@ -415,9 +415,9 @@ export class LibrariesService{
               ...existing,
               ...emp,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -445,9 +445,9 @@ export class LibrariesService{
             data = {
               ...office,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_office.get(office.id);
@@ -459,9 +459,9 @@ export class LibrariesService{
               ...existing,
               ...office,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
           await libDb.lib_office.put(data);
@@ -487,9 +487,9 @@ export class LibrariesService{
             data = {
               ...division,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_division.get(division.id);
@@ -501,9 +501,9 @@ export class LibrariesService{
               ...existing,
               ...division,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
           await libDb.lib_division.put(data);
@@ -528,9 +528,9 @@ export class LibrariesService{
             data = {
               ...hiring_procedure,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_hiring_procedure.get(hiring_procedure.id);
@@ -542,9 +542,9 @@ export class LibrariesService{
               ...existing,
               ...hiring_procedure,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
           await libDb.lib_hiring_procedure.put(data);
@@ -570,9 +570,9 @@ export class LibrariesService{
             data = {
               ...pos,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_position.get(pos.id);
@@ -584,9 +584,9 @@ export class LibrariesService{
               ...existing,
               ...pos, 
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -647,9 +647,9 @@ export class LibrariesService{
             data = {
               ...budget_year,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_budget_year.get(budget_year.id);
@@ -661,9 +661,9 @@ export class LibrariesService{
               ...existing,
               ...budget_year,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -722,9 +722,9 @@ export class LibrariesService{
             data = {
               ...modality,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_modality.get(modality.id);
@@ -736,9 +736,9 @@ export class LibrariesService{
               ...existing,
               ...modality,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -797,9 +797,9 @@ export class LibrariesService{
             data = {
               ...app_source,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_appropriation_source.get(app_source.id);
@@ -811,9 +811,9 @@ export class LibrariesService{
               ...existing,
               ...app_source,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -872,9 +872,9 @@ export class LibrariesService{
             data = {
               ...app_type,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_appropriation_type.get(app_type.id);
@@ -886,9 +886,9 @@ export class LibrariesService{
               ...existing,
               ...app_type,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -947,9 +947,9 @@ export class LibrariesService{
             data = {
               ...expense,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_appropriation_type.get(expense.id);
@@ -961,9 +961,9 @@ export class LibrariesService{
               ...existing,
               ...expense,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -1022,9 +1022,9 @@ export class LibrariesService{
             data = {
               ...allotment_class,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email,
+              created_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_allotment_class.get(allotment_class.id);
@@ -1036,9 +1036,9 @@ export class LibrariesService{
               ...existing,
               ...allotment_class,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email,
+              last_modified_by: _session?.userData?.email,
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -1097,9 +1097,9 @@ export class LibrariesService{
             data = {
               ...fund_source,
               created_date: new Date().toISOString(),
-              created_by: _session.userData.email ?? "unknown",
+              created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
-              remarks: "Record Created by " + _session.userData.email,
+              remarks: "Record Created by " + _session?.userData?.email,
             };
           }else{
             const existing = await libDb.lib_fund_source.get(fund_source.id);
@@ -1111,9 +1111,9 @@ export class LibrariesService{
               ...existing,
               ...fund_source,
               last_modified_date: new Date().toISOString(),
-              last_modified_by: _session.userData.email ?? "unknown",
+              last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
-              remarks: "Record Updated by " + _session.userData.email,
+              remarks: "Record Updated by " + _session?.userData?.email,
             }
           }
 
@@ -1124,6 +1124,468 @@ export class LibrariesService{
         return savedItem;
       }catch(error){
         console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+
+
+    //AREA 
+    async getOfflineLibRegion(): Promise<ILibRegion[]>{
+       try {
+          await libDb.open();
+          const result = await libDb.transaction('r', [libDb.lib_region], async () => {
+              const region = await libDb.lib_region.toArray();
+              return region;
+          });
+          return result;
+      } catch (error) {
+      console.error('Fetch Records Failed: ', error);
+      return [];
+      }
+    }
+    async getOfflineLibRegionByCodeCorrespondence(code:string): Promise<ILibRegion | undefined>{
+    try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_region], async () => {
+            const region = await libDb.lib_region.where('code_correspondence').equals(code).first();
+            if(region){
+              return region;
+            }else{
+              console.log('No record found with the given ID.');
+              return undefined;
+            }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibRegion(region: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibRegion | undefined;
+
+        await libDb.transaction('rw',[libDb.lib_region], async (trans) => {
+      
+          let data: ILibRegion = region;
+
+          if(!region.reg_id || region.reg_id === 0){
+            data = {
+              ...region,
+              created_date: new Date().toISOString(),
+              created_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Created by " + _session?.userData?.email,
+            };
+          }else{
+            const existing = await libDb.lib_fund_source.get(region.reg_id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
+            data = {
+              ...existing,
+              ...region,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session?.userData?.email,
+            }
+          }
+
+          await libDb.lib_region.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibRegionBulk(regions: any[]): Promise<ILibRegion[] | undefined> {
+      try {
+        const savedItems: ILibRegion[] = [];
+
+        await libDb.transaction('rw', [libDb.lib_region], async () => {
+          for (let region of regions) {
+            let data: ILibRegion = region;
+
+            const existing = await libDb.lib_region.get(region.reg_id);
+            if (!existing) {
+               data = {
+                  ...region,
+                  created_date: new Date().toISOString(),
+                  created_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Created by " + _session?.userData?.email,
+              };
+            }else{
+                data = {
+                  ...existing,
+                  ...region,
+                  last_modified_date: new Date().toISOString(),
+                  last_modified_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Updated by " + _session?.userData?.email,
+              };
+            }
+            savedItems.push(data);
+          }
+
+          if (savedItems.length > 0) {
+            await libDb.lib_region.bulkPut(savedItems);
+          }
+        });
+
+        return savedItems;
+      } catch (error) {
+        console.error('Bulk transaction failed:', error);
+        return undefined;
+      }
+    }
+
+    async getOfflineLibProvince(): Promise<ILibProvince[]>{
+       try {
+          await libDb.open();
+          const result = await libDb.transaction('r', [libDb.lib_province], async () => {
+              const province = await libDb.lib_province.toArray();
+              return province;
+          });
+          return result;
+      } catch (error) {
+      console.error('Fetch Records Failed: ', error);
+      return [];
+      }
+    }
+    async getOfflineLibProvinceByCodeCorrespondence(code:string): Promise<ILibProvince | undefined>{
+    try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_province], async () => {
+            const province = await libDb.lib_province.where('code_correspondence').equals(code).first();
+            if(province){
+              return province;
+            }else{
+              console.log('No record found with the given ID.');
+              return undefined;
+            }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibProvince(province: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibProvince | undefined;
+
+        await libDb.transaction('rw',[libDb.lib_province], async (trans) => {
+       
+          let data: ILibProvince = province;
+
+          if(!province.prov_id || province.prov_id === 0){
+            data = {
+              ...province,
+              created_date: new Date().toISOString(),
+              created_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Created by " + _session?.userData?.email,
+            };
+          }else{
+            const existing = await libDb.lib_fund_source.get(province.prov_id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
+            data = {
+              ...existing,
+              ...province,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session?.userData?.email,
+            }
+          }
+
+          await libDb.lib_province.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibProvinceBulk(provinces: any[]): Promise<ILibProvince[] | undefined> {
+      try {
+        const savedItems: ILibProvince[] = [];
+
+        await libDb.transaction('rw', [libDb.lib_province], async () => {
+          for (let province of provinces) {
+            let data: ILibProvince = province;
+
+            const existing = await libDb.lib_province.get(province.prov_id);
+            if (!existing) {
+               data = {
+                  ...province,
+                  created_date: new Date().toISOString(),
+                  created_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Created by " + _session?.userData?.email,
+              };
+            }else{
+                data = {
+                  ...existing,
+                  ...province,
+                  last_modified_date: new Date().toISOString(),
+                  last_modified_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Updated by " + _session?.userData?.email,
+              };
+            }
+            savedItems.push(data);
+          }
+
+          if (savedItems.length > 0) {
+            await libDb.lib_province.bulkPut(savedItems);
+          }
+        });
+
+        return savedItems;
+      } catch (error) {
+        console.error('Bulk transaction failed:', error);
+        return undefined;
+      }
+    }
+
+    async getOfflineLibCity(): Promise<ILibCity[]>{
+       try {
+          await libDb.open();
+          const result = await libDb.transaction('r', [libDb.lib_city], async () => {
+              const city = await libDb.lib_city.toArray();
+              return city;
+          });
+          return result;
+      } catch (error) {
+      console.error('Fetch Records Failed: ', error);
+      return [];
+      }
+    }
+    async getOfflineLibCityByCodeCorrespondence(code:string): Promise<ILibCity | undefined>{
+    try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_city], async () => {
+            const city = await libDb.lib_city.where('code_correspondence').equals(code).first();
+            if(city){
+              return city;
+            }else{
+              console.log('No record found with the given ID.');
+              return undefined;
+            }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibCity(city: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibCity | undefined;
+
+        await libDb.transaction('rw',[libDb.lib_city], async (trans) => {
+       
+          let data: ILibCity = city;
+
+          if(!city.city_id || city.city_id === 0){
+            data = {
+              ...city,
+              created_date: new Date().toISOString(),
+              created_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Created by " + _session?.userData?.email,
+            };
+          }else{
+            const existing = await libDb.lib_city.get(city.city_id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
+            data = {
+              ...existing,
+              ...city,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session?.userData?.email,
+            }
+          }
+
+          await libDb.lib_city.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibCityBulk(cities: any[]): Promise<ILibCity[] | undefined> {
+      try {
+        const savedItems: ILibCity[] = [];
+
+        await libDb.transaction('rw', [libDb.lib_city], async () => {
+          for (let city of cities) {
+            let data: ILibCity = city;
+
+            const existing = await libDb.lib_city.get(city.city_id);
+            if (!existing) {
+               data = {
+                  ...city,
+                  created_date: new Date().toISOString(),
+                  created_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Created by " + _session?.userData?.email,
+              };
+            }else{
+                data = {
+                  ...existing,
+                  ...city,
+                  last_modified_date: new Date().toISOString(),
+                  last_modified_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Updated by " + _session?.userData?.email,
+              };
+            }
+            savedItems.push(data);
+          }
+
+          if (savedItems.length > 0) {
+            await libDb.lib_city.bulkPut(savedItems);
+          }
+        });
+
+        return savedItems;
+      } catch (error) {
+        console.error('Bulk transaction failed:', error);
+        return undefined;
+      }
+    }
+
+     async getOfflineLibBrgy(): Promise<ILibBrgy[]>{
+       try {
+          await libDb.open();
+          const result = await libDb.transaction('r', [libDb.lib_brgy], async () => {
+              const brgy = await libDb.lib_brgy.toArray();
+              return brgy;
+          });
+          return result;
+      } catch (error) {
+      console.error('Fetch Records Failed: ', error);
+      return [];
+      }
+    }
+    async getOfflineLibBrgyByCodeCorrespondence(code:string): Promise<ILibBrgy | undefined>{
+    try{
+        await libDb.open();
+        const result = await libDb.transaction('r', [libDb.lib_brgy], async () => {
+            const brgy = await libDb.lib_brgy.where('code_correspondence').equals(code).first();
+            if(brgy){
+              return brgy;
+            }else{
+              console.log('No record found with the given ID.');
+              return undefined;
+            }
+        });
+        return result;
+      }catch(error){
+        console.error('Fetch Record Failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibBrgy(brgy: any): Promise<any | undefined>{
+      try{
+        let savedItem: ILibBrgy | undefined;
+
+        await libDb.transaction('rw',[libDb.lib_brgy], async (trans) => {
+       
+          let data: ILibBrgy = brgy;
+
+          if(!brgy.city_id || brgy.city_id === 0){
+            data = {
+              ...brgy,
+              created_date: new Date().toISOString(),
+              created_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Created by " + _session?.userData?.email,
+            };
+          }else{
+            const existing = await libDb.lib_brgy.get(brgy.city_id);
+            if (!existing) {
+              throw new Error("Record not found for update.");
+            }
+
+            data = {
+              ...existing,
+              ...brgy,
+              last_modified_date: new Date().toISOString(),
+              last_modified_by: _session?.userData?.email ?? "unknown",
+              push_status_id: 2,
+              remarks: "Record Updated by " + _session?.userData?.email,
+            }
+          }
+
+          await libDb.lib_brgy.put(data);
+          savedItem = data;
+        });
+
+        return savedItem;
+      }catch(error){
+        console.error('Transaction failed: ', error);
+        return undefined;
+      }
+    }
+    async saveOfflineLibBrgyBulk(brgys: any[]): Promise<ILibBrgy[] | undefined> {
+      try {
+        const savedItems: ILibBrgy[] = [];
+
+        await libDb.transaction('rw', [libDb.lib_brgy], async () => {
+          for (let brgy of brgys) {
+            let data: ILibBrgy = brgy;
+
+            const existing = await libDb.lib_brgy.get(brgy.brgy_id);
+            if (!existing) {
+               data = {
+                  ...brgy,
+                  created_date: new Date().toISOString(),
+                  created_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Created by " + _session?.userData?.email,
+              };
+            }else{
+                data = {
+                  ...existing,
+                  ...brgy,
+                  last_modified_date: new Date().toISOString(),
+                  last_modified_by: _session?.userData?.email ?? "unknown",
+                  push_status_id: 2,
+                  remarks: "Record Updated by " + _session?.userData?.email,
+              };
+            }
+            savedItems.push(data);
+          }
+
+          if (savedItems.length > 0) {
+            await libDb.lib_brgy.bulkPut(savedItems);
+          }
+        });
+
+        return savedItems;
+      } catch (error) {
+        console.error('Bulk transaction failed:', error);
         return undefined;
       }
     }

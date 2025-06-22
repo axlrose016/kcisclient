@@ -54,7 +54,7 @@ import { IAttachments } from "@/components/interfaces/general/attachments";
 import { ConfirmSave } from "@/types/globals";
 import { getSession } from "@/lib/sessions-client";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
-import PersonProfileService from "../PersonProfileService";
+import PersonProfileService from "../../../../components/services/PersonProfileService";
 // import GeneratePDF from './pdf'
 import {
   Dialog,
@@ -66,9 +66,9 @@ import {
 } from "@/components/ui/dialog";
 import Assessment from "../masterlist/[record]/assessment";
 import { SessionPayload } from "@/types/globals";
-import LoginService from "@/app/login/LoginService";
+import LoginService from "@/components/services/LoginService";
 import { Toaster } from "@/components/ui/toaster";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import RoleSelectionComponent from "@/components/forms/role-selection";
 import { IUser } from "@/components/interfaces/iuser";
 import { seedModules } from "@/db/offline/Dexie/schema/library-service";
@@ -76,6 +76,8 @@ import SectorDetailsOld from "./sectors";
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 const _session = (await getSession()) as SessionPayload;
 export default function PersonProfileForm({ user_id_viewing }: any) {
+  const params = useParams();
+  const idParam = params && 'record' in params ? params.id : undefined;
   const router = useRouter();
   const [userIdViewing, setUserIdViewing] = useState(user_id_viewing);
   const [hasProfilePicture, setHasProfilePicture] = useState(false);
@@ -823,7 +825,7 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           "body",
           `
             <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">          
-              <p>Dear ${first_name.toUpperCase()},</p>
+              <p>Dear ${first_name},</p>
               <p>${email_body}</p>        
               <p>Best regards,</p>
               <p>KALAHI-CIDSS-CFWP </p>
@@ -2235,6 +2237,10 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             );
             // debugger
             try {
+
+
+
+
               const res = await fetch(
                 process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
                 "cfw_assessment/status/patch/",
@@ -2261,29 +2267,41 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
                 const data = await res.json();
                 console.log("CFW Assessment has been patched ", data);
 
+                debugger
+
+                // alert(idParam)
                 // change the role to CFW Beneficiary
+                const record = await dexieDb.person_profile.get(userIdViewing);
+                const userId = record?.user_id
+                const email = record?.email
                 const lsPP = localStorage.getItem("person_profile");
-                // debugger
                 if (lsPP) {
                   const parsedPP = JSON.parse(lsPP);
-
+                  console.log("Form data before changing user role", formData)
+                  const userData = JSON.stringify([{
+                    id: userId,
+                    // id: formData.user_id,
+                    // id: userIdViewing,
+                    // id: parsedPP.user_id,
+                    last_modified_by: session?.userData.email,
+                    synced_date: new Date().toISOString(),
+                    role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446",
+                    push_status_id: 2,
+                    email: email
+                    // remarks: "Role has been changed",
+                  }])
+                  console.log("User Data", userData)
+                  // alert("user data" + typeof userData)
                   const resUserRole = await fetch(
                     process.env.NEXT_PUBLIC_API_BASE_URL_KCIS +
-                    "auth_users/update",
+                    "auth_users/update/user_role/",
                     {
                       method: "POST",
                       headers: {
                         Authorization: `bearer ${onlinePayload.token}`,
                         "Content-Type": "application/json",
                       },
-                      body: JSON.stringify({
-                        id: parsedPP.user_id,
-                        last_modified_by: session?.userData.email,
-                        remarks: "Role has been changed",
-                        synced_date: new Date().toISOString(),
-                        role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446",
-                        push_status_id: 2,
-                      }),
+                      body: userData,
                     }
                   );
                   // role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446", //cfw beneficiary
@@ -2307,31 +2325,34 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
             }
 
             debugger;
+            const record = await dexieDb.person_profile.get(userIdViewing);
+            const userId = record?.user_id
+            const email = record?.email
             // email the assessment
             if (parsedlsAssessment.status_id == 1) {
               //meaning eligible
               sendEmail(
-                formData.first_name,
+                formData.first_name || record?.first_name,
                 // "dwightentico@gmail.com",
-                formData.email,
+                formData.email || email,
                 "CFW Beneficiary Eligibility Assessment",
                 `Congratulations! You have been assessed as <strong>ELIGIBLE</strong> under the KALAHI-CIDSS Cash-for-Work Program. We look forward to your participation in the program.`
               );
             } else if (parsedlsAssessment.status_id == 20) {
 
               sendEmail(
-                formData.first_name,
+                formData.first_name || record?.first_name,
                 // "dwightentico@gmail.com",
-                formData.email,
+                formData.email || email,
                 "CFW Beneficiary Eligibility Assessment",
                 `We regret to inform you that you have not been selected as a Cash-for-Work Beneficiary at this time due to ${parsedlsAssessment.assessment}. Thank you for your interest and participation in the program.`
               );
             } else if (parsedlsAssessment.status_id == 10) {
               //meaning for compliance
               sendEmail(
-                formData.first_name,
+                formData.first_name || record?.first_name,
                 // "dwightentico@gmail.com",
-                formData.email,
+                formData.email || email,
                 "CFW Beneficiary Eligibility Assessment",
                 `Your application is currently under review for compliance. Please ensure that all required documents and information are submitted promptly to avoid delays in the assessment process.<br/><br/>Assessment Notes:<br/><br/> ${parsedlsAssessment.assessment}`
               );
@@ -2624,11 +2645,11 @@ export default function PersonProfileForm({ user_id_viewing }: any) {
           .first();
 
         if (result) {
-          const lsPP = localStorage.getItem("person_profile")
+          const lsPP = result;
           if (lsPP) {
-            const parsedLsPP = JSON.parse(lsPP)
-            if (parsedLsPP.first_name) {
+            if (lsPP.first_name) {
               setIsNewRegister(false)
+              setFormData(lsPP);
             }
             else {
               setIsNewRegister(true)

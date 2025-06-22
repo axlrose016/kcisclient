@@ -47,7 +47,7 @@ type Beneficiary = {
     status_name: string
     // is_selected: string
 }
-import LoginService from "@/app/login/LoginService";
+import LoginService from "@/components/services/LoginService";
 import { SessionPayload } from '@/types/globals';
 import { getSession } from '@/lib/sessions-client'
 import { useParams } from "next/navigation"

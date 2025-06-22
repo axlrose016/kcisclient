@@ -96,7 +96,7 @@ export default function AccomplishmentReport() {
                         ...a   // fields from tableA
                     };
                 }
-                return null;
+                return a;
             })
         );
         return merged
@@ -196,8 +196,7 @@ export default function AccomplishmentReport() {
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
-                            columns={columns}
-                            onDelete={handleDelete}
+                            columns={columns} 
                             onRowClick={handleRowClick}
                             onRefresh={handleOnRefresh}
                         />

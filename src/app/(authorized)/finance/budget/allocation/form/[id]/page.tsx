@@ -21,7 +21,7 @@ import { getOfflineLibAppropriationSource, getOfflineLibAppropriationType, getOf
 import { dxFetchData } from "@/components/_dal/external-apis/dxcloud"
 import { IAllocation, IAllocationUacs } from "@/db/offline/Dexie/schema/finance-service"
 import { AppTable } from "@/components/app-table"
-import { FinanceService } from "../../../../FinanceService"
+import { FinanceService } from "../../../../../../../components/services/FinanceService"
 import { formatPHP } from "@/components/utils/utils"
 import { useAlert } from "@/components/general/use-alert"
 import { PushStatusBadge } from "@/components/general/push-status-badge"

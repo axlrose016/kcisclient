@@ -3,8 +3,8 @@ import { AppTable } from '@/components/app-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from 'next/navigation';
 import React from 'react'
-import { FinanceService } from '../../FinanceService';
-import { SettingsService } from '@/app/(authorized)/settings/SettingsService';
+import { FinanceService } from '../../../../../components/services/FinanceService';
+import { SettingsService } from '@/components/services/SettingsService';
 import { PushStatusBadge } from '@/components/general/push-status-badge';
 import { financeDb } from '@/db/offline/Dexie/databases/financeDb';
 import { toast } from '@/hooks/use-toast';

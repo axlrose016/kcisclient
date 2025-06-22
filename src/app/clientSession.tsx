@@ -27,9 +27,11 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
 
   // Setup bulk sync task
   useEffect(() => {
-    resetAllTasks();
-    setTasks(syncTask);
-  }, [setTasks, resetAllTasks]);
+    if (session!) {  
+      setTasks(syncTask);
+      resetAllTasks();
+    }
+  }, [session]);
 
   // Log summary state changes
   useEffect(() => {
@@ -50,7 +52,7 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
         if (valid) {
           setSessionCount(prev => prev + 1); // Only increment if session is valid
         }
-        else{
+        else {
           setSessionCount(0);
         }
       } catch (error) {

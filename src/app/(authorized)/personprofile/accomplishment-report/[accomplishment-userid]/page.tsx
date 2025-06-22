@@ -14,6 +14,7 @@ import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
 import Image from 'next/image';
 import { ARService } from '../service';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
+import { toast } from '@/hooks/use-toast';
 
 interface IData {
     id: string;
@@ -101,14 +102,12 @@ export default function AccomplishmentReportUsersList() {
                 return null;
             }
 
-            try {
-
+            try { 
                 const results = await service.syncDLWorkplan(`work_plan/view/by_bene/${user.id}/`);
                 if (!results) {
                     console.log('Failed to fetch time records');
                     return;
                 }
-
                 console.log('Worlplan:   data:', results);
                 return data;
             } catch (error) {
@@ -119,6 +118,40 @@ export default function AccomplishmentReportUsersList() {
 
         fetchWorkPlan();
     }, [user])
+
+    useEffect(() => {
+        (async () => { 
+            handleOnRefresh()
+        })();
+    }, [session])
+
+
+    const handleOnRefresh = async () => {
+        try {
+
+            if (!session) {
+                console.log('handleOnRefresh > session is not available');
+                return;
+            }
+
+            const results = await service.syncDLARs(`accomplishment_report/view/${params!['accomplishment-userid']}/`);
+            if (!results) {
+                console.log('Failed to fetch time records');
+                return;
+            }
+
+            await getResults(session);
+        } catch (error) {
+            console.error('Error syncing time records:', error);
+            toast({
+                variant: "warning",
+                title: "Unable to Fetch Latest Data",
+                description: error instanceof Error
+                    ? `Error: ${error.message}`
+                    : "Unable to sync DTR records. Please try logging out and back in to refresh your session.",
+            });
+        }
+    };
 
 
     const getResults = async (session: SessionPayload) => {
@@ -132,7 +165,7 @@ export default function AccomplishmentReportUsersList() {
 
         console.log('getResults', { session, merge });
         setUser(merge);
-        setARList(await dexieDb.accomplishment_report.where("person_id").equals(params!['accomplishment-userid']!).toArray())
+        setARList(await dexieDb.accomplishment_report.where("person_profile_id").equals(params!['accomplishment-userid']!).toArray())
 
         const results = await dexieDb.cfwtimelogs.where('created_by')
             .equals(user?.email ?? "")
@@ -191,8 +224,7 @@ export default function AccomplishmentReportUsersList() {
 
                     <AppTable
                         data={data}
-                        columns={columns}
-                        onDelete={handleDelete}
+                        columns={columns} 
                         onRowClick={handleRowClick}
                         onClickAddNew={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleClickAddNew : undefined}
                     />

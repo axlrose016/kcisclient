@@ -93,7 +93,7 @@ export default function DailyTimeRecordPage() {
                         ...a   // fields from tableA
                     };
                 }
-                return null;
+                return a;
             })
         );
         return merged
@@ -110,6 +110,7 @@ export default function DailyTimeRecordPage() {
 
     const getResults = async () => {
         const result = await getUsers()
+        console.log('getResults > result', result)
         setData(result)
         return result;
     };
@@ -205,11 +206,8 @@ export default function DailyTimeRecordPage() {
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
-                            columns={columns}
-                            onEditRecord={handleEdit}
-                            onDelete={handleDelete}
-                            onRowClick={handleRowClick}
-                            onAddNewRecord={handleAddNewRecord}
+                            columns={columns} 
+                            onRowClick={handleRowClick} 
                             onRefresh={handleOnRefresh}
                         />
                     </div>

@@ -54,7 +54,7 @@ import { IAttachments } from "@/components/interfaces/general/attachments";
 import { ConfirmSave } from "@/types/globals";
 import { getSession } from "@/lib/sessions-client";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
-import PersonProfileService from "../PersonProfileService";
+import PersonProfileService from "../../../../components/services/PersonProfileService";
 // import GeneratePDF from './pdf'
 import {
   Dialog,
@@ -66,7 +66,7 @@ import {
 } from "@/components/ui/dialog";
 import Assessment from "../masterlist/[record]/assessment";
 import { SessionPayload } from "@/types/globals";
-import LoginService from "@/app/login/LoginService";
+import LoginService from "@/components/services/LoginService";
 import { Toaster } from "@/components/ui/toaster";
 import { useRouter } from "next/navigation";
 import RoleSelectionComponent from "@/components/forms/role-selection";

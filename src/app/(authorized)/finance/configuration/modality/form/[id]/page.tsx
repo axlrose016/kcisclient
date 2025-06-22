@@ -19,7 +19,7 @@ import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { ILibBudgetYear, ILibEmploymentStatus, ILibModality, ILibPAP } from "@/components/interfaces/library-interface"
-import { LibrariesService } from "@/app/(authorized)/library/LibrariesService"
+import { LibrariesService } from "@/components/services/LibrariesService"
 import { financeDb } from "@/db/offline/Dexie/databases/financeDb"
 import { useExportImport } from "@/hooks/use-export-import"
 

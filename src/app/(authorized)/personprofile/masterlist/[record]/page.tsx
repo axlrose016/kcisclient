@@ -16,7 +16,7 @@ function newAbortSignal(timeoutMs: number) {
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
-import LoginService from "@/app/login/LoginService";
+import LoginService from "@/components/services/LoginService";
 import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileFamilyComposition, IPersonProfileSector } from "@/components/interfaces/personprofile";
 
 import { ILibSectors } from "@/components/interfaces/library-interface";
@@ -25,6 +25,8 @@ import { IAttachments } from "@/components/interfaces/general/attachments";
 import SectorDetails from "../../form/sectors_new";
 import FamilyComposition from "../../form/family_composition";
 import Attachments from "../../form/attachments";
+// import PersonProfileForm from "../../form/page";
+// import PersonProfileForm_ from "../../form/page_";
 export default function person_profile() {
     const [profiles, setProfiles] = useState<IPersonProfile[]>([]);
     const [profilesSector, setProfilesSector] = useState<IPersonProfileSector[]>([]);

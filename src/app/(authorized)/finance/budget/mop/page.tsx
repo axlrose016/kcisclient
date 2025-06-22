@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { FolderInput, PlusCircle } from 'lucide-react';
-import { FinanceService } from '../../FinanceService';
+import { FinanceService } from '../../../../../components/services/FinanceService';
 import { PushStatusBadge } from '@/components/general/push-status-badge';
 
 function MOPMasterlist() {
