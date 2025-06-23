@@ -96,6 +96,7 @@ function FormAllotment() {
             if(fetchedRecord !== undefined){
                 debugger;
                 if(fetchedRecord.id !== id){
+                    fetchedRecord.allocation_uacs_id = uacsId ?? "";
                     fetchedRecord.id = "";
                 }
                 setRecord(fetchedRecord);
@@ -248,7 +249,6 @@ function FormAllotment() {
     <div className="container mx-auto">
         <Card className="max-w-full mx-auto">
             <Form {...form}>
-                {/* <pre>{JSON.stringify(allValues, null, 2)}</pre> */}
                 <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
                 <CardTitle>Allotment Received</CardTitle>
