@@ -9,6 +9,8 @@ import {
   GalleryVerticalEnd,
   HandCoinsIcon,
   Library,
+  MountainIcon,
+  MountainSnow,
   SettingsIcon,
   User2Icon,
 } from "lucide-react"
@@ -33,6 +35,7 @@ import LoadingScreen from "./general/loading-screen"
 import { roles } from "@/db/schema/libraries"
 import { permission } from "process"
 import path from "path"
+import { url } from "inspector"
 
 const roleHierarchy = [
   "Administrator",
@@ -88,8 +91,16 @@ const data = {
       logo: HandCoinsIcon,
       plan: "Finance",
       url: "/finance",
+    },
+    {
+      name: "Activity and Capability Building Monitoring",
+      logo: MountainIcon,
+      plan: "Capbuild",
+      url: "/capbuild",
     }
   ],
+  // teams: [
+
   navMain: [
     {
       title: "Geotagging",
@@ -189,7 +200,7 @@ const data = {
           title: "Daily Time Record",
           url: "/personprofile/daily-time-record",
           permission: ["Can Add", "Can View", "Can Delete"],
-          roles: ["CFW Beneficiary", "CFW Immediate Supervisor"]
+          roles: ["CFW Beneficiary", "CFW Immediate Supervisor","CFW Administrator","Administrator"]
         },
         {
           title: "Accomplishment Report",
@@ -313,7 +324,113 @@ const data = {
       ],
       modules: ["Finance"],
       roles: ["Administrator"]
+    },    
+    {
+      title: "Activity Plan",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "Activity Plan",
+          url: "/capbuild/activityplan",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
     },
+    {
+      title: "Resources",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "source",
+          url: "/capbuild/resources",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Actual Activity Details",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "Details",
+          url: "/capbuild/details",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Communication/KM",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "KM",
+          url: "/capbuild/km",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Grievance/PINCOs",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "PINCO",
+          url: "/capbuild/pinco",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Pre & Post Activity Evaluation and Follow Through Activities",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "evaluation",
+          url: "/capbuild/evaluation",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+    {
+      title: "Data Quality Assessment and Activity History",
+      url: "#",
+      icon: MountainSnow,
+      items: [
+        {
+          title: "Data Assessment",
+          url: "/capbuild/data",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ["*"]
+        }
+      ],
+      modules: ["Activity and Capability Building Monitoring"],
+      roles: ["Administrator"]
+    },
+
   ],
   projects: [
     // {

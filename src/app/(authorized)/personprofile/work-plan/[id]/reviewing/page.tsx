@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation"
 interface WorkPlanTasks {
     id: string
     work_plan_id: string
-    category_id: string //task type: 1 general, 2 specific
+    work_plan_category_id: string //task type: 1 general, 2 specific
     activities_tasks: string
     expected_output: string
     timeline_from: string
@@ -74,7 +74,7 @@ export default function ReviewingWorkPlanPage() {
     const [lastStatus, setLastStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
         module: "",
         comment: "",
         status_id: 0,
@@ -85,7 +85,7 @@ export default function ReviewingWorkPlanPage() {
     const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
         module: "",
         comment: "",
         status_id: 0,
@@ -126,12 +126,13 @@ export default function ReviewingWorkPlanPage() {
 
 
     const handleStatusChange = (review: any) => {
-        setStatusId(review.status)
+        setStatusId(review.status_id)
+        // localStorage.setItem("comment_status", review)
         // setRemarks(JSON.stringify(review))
         setRemarks(
-            review.status === 2 ? "Work Plan has been approved." :
-                review.status === 10 ? "Work Plan is for compliance." :
-                    review.status === 15 ? "Work Plan has been rejected." : "Work Plan has been updated"
+            review.status_id === 2 ? "Work Plan has been approved." :
+                review.status_id === 10 ? "Work Plan is for compliance." :
+                    review.status_id === 15 ? "Work Plan has been rejected." : "Work Plan has been updated"
         )
         // console.log("review data" , review)
         // alert(review.status)
@@ -140,7 +141,7 @@ export default function ReviewingWorkPlanPage() {
     useEffect(() => {
         localStorage.removeItem("selectedBeneficiaries")
 
-        const fetchLib = async () => {
+        const fetchLibStatuses = async () => {
 
             const statuses = await getOfflineLibStatuses();
             const filteredStatuses = statuses.filter(status => [2, 10, 15].includes(status.id));
@@ -149,16 +150,19 @@ export default function ReviewingWorkPlanPage() {
 
         }
 
-        fetchLib()
+        fetchLibStatuses()
         let supervisorId = ""
         const lsWorkPlanData = localStorage.getItem("work_plan")
         if (lsWorkPlanData) {
             const parsedTM = JSON.parse(lsWorkPlanData) as WorkPlanProps
             supervisorId = parsedTM.immediate_supervisor_id
+            console.log("IS", supervisorId)
+            localStorage.setItem("current_work_plan_id", parsedTM.id)
             setImmediateSupervisorId(parsedTM.immediate_supervisor_id)
             setWorkPlanData(parsedTM)
         } else {
             localStorage.setItem("work_plan", JSON.stringify(workPlanData))
+            console.log("No work plan")
         }
 
 
@@ -169,7 +173,7 @@ export default function ReviewingWorkPlanPage() {
 
 
                     try {
-                        debugger;
+                        // debugger;
                         const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
                         const response = await fetch(endpoint, {
@@ -187,7 +191,7 @@ export default function ReviewingWorkPlanPage() {
                             console.log("Error message ", data)
                             toast({
                                 variant: "destructive",
-                                title: "Invalid Password",
+                                title: "Error fetching",
                                 description: data.error,
                             });
                             // setIsLoading(false)
@@ -200,12 +204,12 @@ export default function ReviewingWorkPlanPage() {
 
 
                             localStorage.removeItem("work_plan_tasks")
-                            let person_profile_id_sample = ""
+                            let person_profile_id_from_api = ""
                             // Helper to fetch person info
                             async function fetchPersonName(id: string) {
-                                debugger
+                                // debugger
                                 if (!id) return null;
-                                person_profile_id_sample = id
+                                person_profile_id_from_api = id
                                 const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
                                 const resPersonProf = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "person_profile/view/" + id + "/", {
@@ -247,7 +251,7 @@ export default function ReviewingWorkPlanPage() {
                             let deployment_category_area_id = 0
 
                             async function fetchDeploymentAreaAndOfficeName(id: string) {
-                                debugger
+                                // debugger
                                 if (!id) return null;
                                 const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
@@ -261,10 +265,12 @@ export default function ReviewingWorkPlanPage() {
                                 });
 
                                 const resDeploymentAreaIdCatIdOfficeName = await resDepAreaCatIdOffName.json();
-                                setOfficeName(resDeploymentAreaIdCatIdOfficeName.division_office_name)
+                                console.log("ID")
+                                console.log("🙉Work Plan details ", resDeploymentAreaIdCatIdOfficeName)
+                                setOfficeName(resDeploymentAreaIdCatIdOfficeName[0].division_office_name)
 
-                                deployment_area_id = resDeploymentAreaIdCatIdOfficeName.deployment_area_id
-                                deployment_category_area_id = resDeploymentAreaIdCatIdOfficeName.deployment_area_category_id
+                                deployment_area_id = resDeploymentAreaIdCatIdOfficeName[0].deployment_area_id
+                                deployment_category_area_id = resDeploymentAreaIdCatIdOfficeName[0].deployment_area_category_id
 
                                 const resDepAreaName = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "cfw_assessment/view/cfw_assessment_by_deployment_category/", {
                                     method: "POST",
@@ -285,7 +291,7 @@ export default function ReviewingWorkPlanPage() {
                                 console.log("Dep area", depAreaName)
                                 console.log("Deployment Area ID, Category ID, Office name ", deployment_area_id, " dep cat id ", deployment_category_area_id)
 
-
+                                debugger;
                                 const resSelectedBenes = await fetch(process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "work_plan/view/by_supervisor_and_work_plan/" + supervisorId + "/" + stringWorkPlanId + "/", {
                                     method: "GET",
                                     headers: {
@@ -302,10 +308,12 @@ export default function ReviewingWorkPlanPage() {
                                 const resSelBenes = await resSelectedBenes.json();
 
                                 localStorage.setItem("selectedBeneficiaries", JSON.stringify(resSelBenes))
+                                setBeneficiariesData(resSelBenes)
+                                console.log("Fetch list of bene ", JSON.stringify(resSelBenes))
                                 // return `${person.first_name} ${person.last_name}`;
                             }
 
-                            fetchDeploymentAreaAndOfficeName(person_profile_id_sample)
+                            fetchDeploymentAreaAndOfficeName(person_profile_id_from_api)
 
 
 
@@ -335,7 +343,7 @@ export default function ReviewingWorkPlanPage() {
         }
         fetchDataWorkPlanTasks();
 
-
+        getSubmissionLogsFromDexieDB()
         // const lsWPTasks = localStorage.getItem("work_plan_tasks")
         // if (lsWPTasks) {
         //     const parsedTasks = JSON.parse(lsWPTasks) as WorkPlanTasks[]
@@ -345,12 +353,12 @@ export default function ReviewingWorkPlanPage() {
         //     setTasks([])
         // }
 
-
-        const lsWPChosenBenes = localStorage.getItem("selectedBeneficiaries")
-        if (lsWPChosenBenes) {
-            const parsedChosenBene = JSON.parse(lsWPChosenBenes)
-            setBeneficiariesData(parsedChosenBene)
-        }
+        // // debugger
+        // const lsWPChosenBenes = localStorage.getItem("selectedBeneficiaries")
+        // if (lsWPChosenBenes) {
+        //     const parsedChosenBene = JSON.parse(lsWPChosenBenes)
+        //     setBeneficiariesData(parsedChosenBene)
+        // }
 
 
 
@@ -359,13 +367,13 @@ export default function ReviewingWorkPlanPage() {
 
 
 
-    useEffect(() => {
-        const lsWPChosenBenes = localStorage.getItem("selectedBeneficiaries")
-        if (lsWPChosenBenes) {
-            const parsedChosenBene = JSON.parse(lsWPChosenBenes)
-            setBeneficiariesData(parsedChosenBene)
-        }
-    }, [])
+    // useEffect(() => {
+    //     const lsWPChosenBenes = localStorage.getItem("selectedBeneficiaries")
+    //     if (lsWPChosenBenes) {
+    //         const parsedChosenBene = JSON.parse(lsWPChosenBenes)
+    //         setBeneficiariesData(parsedChosenBene)
+    //     }
+    // }, [])
     const { toast } = useToast()
 
 
@@ -385,7 +393,38 @@ export default function ReviewingWorkPlanPage() {
     //     assigned_person_id: "",
     // })
 
+
+    const getSubmissionLogsFromDexieDB = async () => {
+        const submissionLogContextId = localStorage.getItem("work_plan");
+        debugger
+        if (submissionLogContextId) {
+            const parsedWP = JSON.parse(submissionLogContextId);
+            const logRecordId = parsedWP.id;
+
+            if (logRecordId) {
+                try {
+                    const matchingLogs = await dexieDb.submission_log
+                        .where("record_id")
+                        .equals(logRecordId)
+                        .toArray();
+
+                    console.log("📄 Submission Logs:", matchingLogs);
+                    setSubmissionLogs(matchingLogs)
+                    return matchingLogs;
+                } catch (error) {
+                    console.error("❌ Error querying Dexie submission_log:", error);
+                }
+            } else {
+                console.warn("⚠️ No record_id found in parsed work_plan.");
+            }
+        } else {
+            console.warn("⚠️ No work_plan found in localStorage.");
+        }
+
+        return [];
+    };
     // State to track which task is being edited
+
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
     const handleSubmitUpdateStatusOfWorkPlan = (data: any) => {
         // const ss = JSON.stringify(selectedStatus)
@@ -399,7 +438,7 @@ export default function ReviewingWorkPlanPage() {
 
         // alert(stringWorkPlanId) 
         // 2 = approved, 10 = for compliance, 15 = rejected
-
+        debugger
         if (
             data.status_id == null || data.status_id == undefined
         ) {
@@ -411,6 +450,7 @@ export default function ReviewingWorkPlanPage() {
             });
             return;
         }
+        console.log("Comment status is ", statusId)
         if (statusId == 10 || statusId == 15) {
             if (!data.comment) {
                 toast({
@@ -427,20 +467,25 @@ export default function ReviewingWorkPlanPage() {
             // update dexiedb
             let updatedCount = 0;
             // alert(stringWorkPlanId)
+            debugger
+
+            const localISO = format(new Date(), 'yyyy-MM-dd HH:mm:ss');
             const saveToDexieDb = async () => {
 
                 updatedCount = await dexieDb.work_plan.update(stringWorkPlanId, {
                     status_id: 2,
-                    push_date: new Date().toISOString(),
+                    // push_date: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
+                    push_date: localISO,
                     last_modified_by: _session.userData.email,
-                    last_modified_date: new Date().toISOString(),
+                    last_modified_date: localISO,
+                    // last_modified_date: format(new Date(), "yyyy-MM-dd HH:mm:ss"),
                     remarks: remarks
 
                 });
             }
             saveToDexieDb()
             // alert("Dexie saved")
-            // debugger    
+            // // debugger    
             // directly synch the updated data
             async function syncUpUpdatedWorkPlan() {
                 try {
@@ -448,7 +493,7 @@ export default function ReviewingWorkPlanPage() {
 
 
                         try {
-                            debugger;
+                            // debugger;
                             const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
 
                             const response = await fetch(endpoint, {
@@ -460,8 +505,10 @@ export default function ReviewingWorkPlanPage() {
                                 body: JSON.stringify([{
                                     "id": stringWorkPlanId,
                                     "last_modified_by": _session.userData.email,
-                                    "last_modified_date": new Date().toISOString(),
-                                    "push_date": new Date().toISOString(),
+                                    "last_modified_date": localISO,
+                                    // "last_modified_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+                                    "push_date": localISO,
+                                    // "push_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                                     "push_status_id": "1",
                                     remarks: remarks,
                                     "status_id": statusId,
@@ -493,17 +540,17 @@ export default function ReviewingWorkPlanPage() {
                                 const submissionLog: ISubmissionLog = {
                                     id: uuidv4(),
                                     record_id: stringWorkPlanId,
-                                    bene_id: null,
+                                    person_profile_id: null,
                                     module: "Work Plan",
                                     comment: data.comment,
                                     status_id: data.status_id,
-                                    status_date: new Date().toISOString(),
-                                    created_date: new Date().toISOString(),
+                                    status_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                                    created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                                     created_by: _session.userData.email || "",
-                                    last_modified_date: new Date().toISOString(),
+                                    last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                                     last_modified_by: _session.userData.email,
                                     push_status_id: 1,
-                                    push_date: new Date().toISOString(),
+                                    push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                                     deleted_date: null,
                                     deleted_by: null,
                                     is_deleted: false,
@@ -531,9 +578,9 @@ export default function ReviewingWorkPlanPage() {
                                         ? {
                                             ...item,
                                             status_id: 2,
-                                            push_date: new Date().toISOString(),
+                                            push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                                             last_modified_by: _session.userData.email,
-                                            last_modified_date: new Date().toISOString(),
+                                            last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                                             remarks: remarks,
                                         }
                                         : item
@@ -643,7 +690,7 @@ export default function ReviewingWorkPlanPage() {
                             <p className="text-sm text-muted-foreground mb-1">Deployment Area Name</p>
                             <div className="text-lg font-semibold text-gray-900">
                                 {/* Replace this with actual value */}
-                                {deploymentAreaName.toUpperCase() || "Loading..."}
+                                {deploymentAreaName || "Loading..."}
                                 {/* {workPlanData?.deployment_area_name || "Loading..."} */}
                             </div>
                         </div>
@@ -651,7 +698,7 @@ export default function ReviewingWorkPlanPage() {
                             <p className="text-sm text-muted-foreground mb-1">Office/Division/Section/Unit Name</p>
                             <div className="text-lg font-semibold text-gray-900">
                                 {/* Replace this with actual value */}
-                                {officeName.toUpperCase() || "Loading..."}
+                                {officeName || "Loading..."}
                                 {/* {workPlanData?.office_name || "Loading..."} */}
                             </div>
                         </div>
@@ -661,7 +708,8 @@ export default function ReviewingWorkPlanPage() {
                             <p className="text-sm text-muted-foreground mb-1">Selected Beneficiaries ({beneficiariesData.length})</p>
                             <div className="flex flex-wrap gap-2">
                                 {beneficiariesData.length == 0 ? "Loading..." : ""}
-                                {beneficiariesData.map((bene, index) => (
+                                {beneficiariesData && beneficiariesData.length > 0 && beneficiariesData.map((bene, index) => (
+                                    // {Array.isArray(beneficiariesData) && beneficiariesData.map((bene, index) => (
                                     <span
                                         key={index}
                                         className="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-800 text-sm border border-gray-300 shadow-sm"
@@ -679,7 +727,7 @@ export default function ReviewingWorkPlanPage() {
                         <div className="mt-6 grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm pb-3">
                             <div>
                                 <span className="text-muted-foreground">Supervisor</span>
-                                <p className="font-medium">{workPlanData?.immediate_supervisor_name.toUpperCase() || "Loading..."}</p>
+                                <p className="font-medium">{workPlanData?.immediate_supervisor_name || "Loading..."}</p>
                                 {/* <p className="font-medium">{workPlanData?.immediate_supervisor_id || "N/A"}</p> */}
                             </div>
                             <div>
@@ -717,53 +765,59 @@ export default function ReviewingWorkPlanPage() {
                     </CardHeader>
 
                     {/* Task List Section */}
-                    <CardContent >
+                    <CardContent>
                         <span className="text-muted-foreground">Tasks ({tasks.length})</span>
                         {/* <div className="mb-2 font-semibold text-gray-800">Tasks ({tasks.length})</div> */}
                         <div className="space-y-4">
                             {tasks && tasks.length > 0 ? (
-                                tasks.map((task, index) => (
-                                    <div
-                                        key={index}
-                                        className="p-4 border rounded-lg shadow-sm bg-white flex flex-col gap-1 text-sm text-gray-800"
-                                    >
-                                        <div className="font-large text-base text-primary">
-                                            <span
-                                                className={cn(
-                                                    "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
-                                                    task.category_id === "1"
-                                                        ? "bg-blue-100 text-blue-800"
-                                                        : "bg-purple-100 text-purple-800"
+                                tasks
+                                    .slice() // create a shallow copy to avoid mutating original array
+                                    .sort((a, b) =>
+                                        a.work_plan_category_id.toString().localeCompare(b.work_plan_category_id.toString())
+                                    )
+                                    .map((task, index) => (
+                                        <div
+                                            key={index}
+                                            className="p-4 border rounded-lg shadow-sm bg-white flex flex-col gap-1 text-sm text-gray-800"
+                                        >
+                                            <div className="font-large text-base text-primary">
+                                                <span
+                                                    className={cn(
+                                                        "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium",
+                                                        task.work_plan_category_id === "1"
+                                                            ? "bg-blue-100 text-blue-800"
+                                                            : "bg-purple-100 text-purple-800"
+                                                    )}
+                                                >
+
+                                                    {task.work_plan_category_id.toString() == "1" ? "General" : "Specific"}
+                                                </span>
+                                            </div>
+
+                                            <div>
+                                                <span className="font-semibold">Task:</span> {task.activities_tasks || "N/A"}
+                                            </div>
+
+                                            <div>
+                                                <span className="font-semibold">Outputs:</span> {task.expected_output || "N/A"}
+                                            </div>
+
+                                            <div>
+                                                <span className="font-semibold">Duration:</span>
+                                                {task?.timeline_from && task?.timeline_to ? (
+                                                    `${format(new Date(task.timeline_from), "MMMM d, yyyy")} - ${format(new Date(task.timeline_to), "MMMM d, yyyy")}`
+                                                ) : (
+                                                    "Schedule not available"
                                                 )}
-                                            >
-                                                {task.category_id == "1" ? "General" : "Specific"}
-                                            </span>
-                                        </div>
 
-                                        <div>
-                                            <span className="font-semibold">Task:</span> {task.activities_tasks || "N/A"}
-                                        </div>
+                                                {/* {task.timeline_from} -  {task.timeline_to} */}
+                                            </div>
 
-                                        <div>
-                                            <span className="font-semibold">Outputs:</span> {task.expected_output || "N/A"}
+                                            <div>
+                                                <span className="font-semibold">Assigned to:</span> {task.assigned_person_id == null ? "All" : task.assigned_person_name}
+                                            </div>
                                         </div>
-
-                                        <div>
-                                            <span className="font-semibold">Duration:</span>
-                                            {task?.timeline_from && task?.timeline_to ? (
-                                                `${format(new Date(task.timeline_from), "MMMM d, yyyy")} - ${format(new Date(task.timeline_to), "MMMM d, yyyy")}`
-                                            ) : (
-                                                "Schedule not available"
-                                            )}
-
-                                            {/* {task.timeline_from} -  {task.timeline_to} */}
-                                        </div>
-
-                                        <div>
-                                            <span className="font-semibold">Assigned to:</span> {task.assigned_person_id == null ? "All" : task.assigned_person_name?.toUpperCase()}
-                                        </div>
-                                    </div>
-                                ))
+                                    ))
                             ) : (
                                 <p className="text-sm text-muted-foreground italic">No tasks available.</p>
                             )}
@@ -785,33 +839,6 @@ export default function ReviewingWorkPlanPage() {
                         </div>
                     </CardContent>
 
-
-                    {/* <CardFooter className="flex justify-between border-t p-6"> */}
-                    {/* Footer content such as action buttons */}
-                    {/* <div className="text-sm text-muted-foreground">Last updated: {workPlanData?.last_modified_date ?? "—"}</div> */}
-                    {/* <div className="no-print">
-
-                        </div> */}
-
-                    {/* <div className="space-x-2"> */}
-
-
-                    {/* <Button
-                                variant={"destructive"}
-                                onClick={handleDeclineWorkPlan}
-                            // className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm"
-                            >Reject</Button>
-                            <Button
-                                variant={"destructive"}
-                                onClick={handleForComplianceWorkPlan} //10-for compliance
-                            // className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-sm"
-                            >For Compliance</Button>
-                            <Button
-                                variant={"default"}
-                                // className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700 text-sm"
-                                onClick={handleApproveWorkPlan}>Approve</Button> */}
-                    {/* </div> */}
-                    {/* </CardFooter> */}
                 </Card>
 
             </div>

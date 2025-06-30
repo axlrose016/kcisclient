@@ -243,7 +243,8 @@ export default function WorkPlanPending() {
             remarks: data.remarks ?? null,
             alternate_supervisor_id: data.alternate_supervisor_id,
             area_focal_person_id: data.area_focal_person_id,
-            total_number_of_bene: data.total_of_beneficiaries ?? 0,
+            user_id: data.user_id
+            // total_number_of_bene: data.total_of_beneficiaries ?? 0,
         }
     }
 
@@ -251,14 +252,16 @@ export default function WorkPlanPending() {
 
     const loadWorkPlan = async () => {
         setLoading(false);
+        debugger
         const ls = getParsedLocalStorage("work_plan_extended")
         const filtered = (ls || []).filter(
             (item: any) =>
-                (item.status_id === 0 || item.status_id === null) &&
-                item.is_deleted === false
+                (item.status_id === 0 || item.status_id === null || item.status_id == 14) &&
+                (item.is_deleted === false || item.is_deleted === null)
         );
+        console.log("Work Plans", filtered)
         setDataWorkPlan(filtered)
-        alert("refre")
+        // alert("refre")
         // try {
         //     const pendingPlans = await dexieDb.work_plan
         //         .filter(plan => plan.status_id === 0 || plan.status_id === null)
@@ -275,15 +278,16 @@ export default function WorkPlanPending() {
 
 
     useEffect(() => {
+        debugger
         setLoading(false);
         const ls = getParsedLocalStorage("work_plan_extended")
         const filtered = (ls || []).filter(
             (item: any) =>
-                (item.status_id === 0 || item.status_id === null) &&
-                item.is_deleted === false
+                (item.status_id === 0 || item.status_id === null || item.status_id == 14) &&
+                (item.is_deleted === false || item.is_deleted === null)
         );
+        console.log("Work Plans", filtered)
         setDataWorkPlan(filtered)
-
     }, []);
 
     if (loading) {
@@ -314,6 +318,7 @@ export default function WorkPlanPending() {
 
         const result = res.find((item: any) => item.id === row.id);
         localStorage.setItem("work_plan", JSON.stringify(result))
+        localStorage.setItem("work_plan_tasks", JSON.stringify(result.work_plan_tasks))
         // const fetchDataFromDexieDb = async () => {
 
         //     const workPlan = await dexieDb.work_plan.get(row.id);
@@ -358,32 +363,11 @@ export default function WorkPlanPending() {
                     </DialogContent>
                 </DialogContent>
             </Dialog>
-            {/* {!forReviewApprove ?
-                (
-                    <Card className="w-[400px] shadow-lg z-50">
-                        <CardHeader>
-                            <CardTitle>Approval Confirmation</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Textarea placeholder="Input Assessment"></Textarea>
-                            <p>Record ID: { } has been approved.</p>
-                        </CardContent>
-                        <CardFooter>
-                            <Button  >Close</Button>
-                        </CardFooter>
-                    </Card>
-                )
-                        columns={profiles[0] ? Object.keys(profiles[0])
-                            .filter(key => !['id', 'modality'].includes(key)) // Simplified hiding logic
-                            .map(key => ({
 
-                : null
-            } */}
 
             <div className="min-h-screen">
                 <div className="min-h-screen">
-                    {/* <Button onClick={(e) => fetchData("http://10.10.10.162:9000/api/person_profiles/view/pages/")}>Test</Button> */}
-                    {/* role {_session.userData.role} */}
+
                     <AppTable
                         // data={[]}
                         data={dataWorkPlan != undefined ? dataWorkPlan : []}

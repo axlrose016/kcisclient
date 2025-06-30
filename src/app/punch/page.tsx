@@ -31,7 +31,7 @@ import {
 import React, { useState, useEffect, useRef } from "react";
 import LoginService from "../../components/services/LoginService";
 import { ICFWTimeLogs, IUserData } from "@/components/interfaces/iuser";
-import { endOfDay, startOfDay } from "date-fns";
+import { endOfDay, format, startOfDay } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -54,7 +54,6 @@ interface User {
 }
 
 export default function ClockInOut() {
-
 
     const {
         setTasks,
@@ -85,28 +84,87 @@ export default function ClockInOut() {
         try {
             if (navigator.onLine && (!hasSyncedRef.current || forceSync || wasOfflineRef.current)) {
                 setSyncStatus("syncing");
-                // Try to fetch time from a reliable time server
-                const response = await fetch('https://timeapi.io/api/Time/current/zone?timeZone=Asia/Manila');
-                const data = await response.json();
 
-                console.log('gettime from internet', {
-                    syncStatus,
-                    online: navigator.onLine,
-                    isInternetTime,
-                    data,
-                    date: new Date(data.dateTime).toISOString()
-                });
+                // Array of time APIs to try in order
+                const timeApis = [
+                    {
+                        url: 'https://timeapi.io/api/Time/current/zone?timeZone=Asia/Manila',
+                        parser: (data: any) => new Date(data.dateTime)
+                    },
+                    {
+                        url: 'https://worldtimeapi.org/api/timezone/Asia/Manila',
+                        parser: (data: any) => new Date(data.datetime)
+                    },
+                    {
+                        url: 'https://api.ipgeolocation.io/timezone?apiKey=free&tz=Asia/Manila',
+                        parser: (data: any) => new Date(data.date_time_txt)
+                    }
+                ];
 
-                setCurrentTime(new Date(data.dateTime));
-                setIsOnline(true);
-                setIsInternetTime(true);
-                setLastSyncTime(new Date());
-                setSyncStatus("synced");
-                hasSyncedRef.current = true;
-                wasOfflineRef.current = false;
+                let success = false;
+                let lastError: any = null;
+
+                // Try each API in sequence
+                for (const api of timeApis) {
+                    try {
+                        console.log(`Trying time API: ${api.url}`);
+                        const response = await fetch(api.url, {
+                            method: 'GET',
+                            headers: {
+                                'Accept': 'application/json',
+                            },
+                            // Add timeout to prevent hanging
+                            signal: AbortSignal.timeout(5000) // 5 second timeout
+                        });
+
+
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        const data = await response.json();
+                        const serverTime = api.parser(data);
+
+                        console.log('Time sync successful', {
+                            api: api.url,
+                            serverTime: format(serverTime, 'yyyy-MM-dd HH:mm:ss'),
+                            localTime: format(new Date(), 'yyyy-MM-dd HH:mm:ss')
+                        });
+
+                        setCurrentTime(serverTime);
+                        setIsOnline(true);
+                        setIsInternetTime(true);
+                        setLastSyncTime(new Date());
+                        setSyncStatus("synced");
+                        hasSyncedRef.current = true;
+                        wasOfflineRef.current = false;
+                        success = true;
+                        break; // Exit loop on success
+
+                    } catch (error: any) {
+                        const errorMessage = error.name === 'AbortError'
+                            ? 'Request timeout'
+                            : error.message || 'Network error';
+
+                        console.warn(`Time API failed: ${api.url} - ${errorMessage}`, error);
+                        lastError = error;
+                        continue; // Try next API
+                    }
+                }
+
+                if (!success) {
+                    // All APIs failed, fallback to local time
+                    console.error('All time APIs failed, using local time:', lastError);
+                    setCurrentTime(new Date()); // Use local time as fallback
+                    setIsOnline(false);
+                    setIsInternetTime(false);
+                    setSyncStatus("error");
+                    hasSyncedRef.current = false;
+                }
+
             }
         } catch (error) {
-            // If time server request fails, fallback to local time
+            // If all time server requests fail, fallback to local time
             console.error('Failed to fetch internet time:', error);
             setIsOnline(false);
             setIsInternetTime(false);
@@ -227,8 +285,8 @@ export default function ClockInOut() {
         const startPH = startOfDay(now);
         const endPH = endOfDay(now);
 
-        const startUtc = toZonedTime(startPH, timeZone).toISOString();
-        const endUtc = toZonedTime(endPH, timeZone).toISOString();
+        const startUtc = format(toZonedTime(startPH, timeZone), 'yyyy-MM-dd HH:mm:ss');
+        const endUtc = format(toZonedTime(endPH, timeZone), 'yyyy-MM-dd HH:mm:ss');
 
         console.log('results  > user', user)
 
@@ -341,12 +399,12 @@ export default function ClockInOut() {
                 id: uuidv4(),
                 record_id: user.id,
                 log_type: type,
-                log_in: currentTime.toISOString(),
+                log_in: format(new Date(currentTime), 'yyyy-MM-dd HH:mm:ss'),
                 log_out: "",
                 work_session: 1,
                 status: "Pending",
                 total_work_hours: 0,
-                created_date: currentTime.toISOString(),
+                created_date: format(new Date(currentTime), 'yyyy-MM-dd HH:mm:ss'),
                 created_by: user.userData.email,
                 push_status_id: 2,
                 is_deleted: false,
@@ -359,7 +417,7 @@ export default function ClockInOut() {
             } : {
                 ...activeLog!,
                 log_type: type,
-                log_out: currentTime.toISOString()
+                log_out: format(new Date(currentTime), 'yyyy-MM-dd HH:mm:ss')
             };
 
             await dexieDb.cfwtimelogs.put(logs);
@@ -434,7 +492,7 @@ export default function ClockInOut() {
 
                     <h1 className="text-2xl font-bold text-center text-gray-800 mb-2 flex items-center justify-center gap-2">
                         <Building2 className="h-8 w-8 text-cfw_bg_color" />
-                        KAPIT BISIG LABAN SA KAHIRAPAN
+                        KAPIT BISIG LABAN SA KAHIRAPAN  asdf
                     </h1>
                     <h2 className="text-xl font-semibold text-center text-gray-700 mb-6 flex items-center justify-center gap-2">
                         <CalendarClock className="h-6 w-6 text-cfw_bg_color" />

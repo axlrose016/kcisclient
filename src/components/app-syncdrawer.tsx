@@ -36,7 +36,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
-
+import { format } from "date-fns";
 type Props = {
     children: ReactNode;
 };
@@ -99,14 +99,74 @@ export function SyncSummaryDrawer({ children }: Props) {
         }));
     };
 
+    const refreshSummary = async () => {
+        if (!session) return;
+        const newProgressStatus: typeof progressStatus = {};
+        let totalSynced = 0;
+        let totalUnsynced = 0;
+        let totalRecords = 0;
+        let totalErrors = 0;
+        let errorList: any[] = [];
+        let lastSyncedAt = null;
+        const tasksArr = tasks.length ? tasks : [];
+        for (const task of tasksArr) {
+            const module = task.module();
+            const allRecords = await module.toArray();
+            const synced = allRecords.filter((r: any) => r.push_status_id === 1).length;
+            const unsynced = allRecords.length - synced;
+            const errors: any[] = [];
+            newProgressStatus[task.tag] = {
+                tag: task.tag,
+                success: synced,
+                failed: unsynced,
+                errors,
+                state: 'completed',
+                totalRecords: allRecords.length,
+                isSyncing: false,
+            };
+            totalSynced += synced;
+            totalUnsynced += unsynced;
+            totalRecords += allRecords.length;
+            totalErrors += errors.length;
+        }
+        const overallPercentage = totalRecords ? `${Math.round((totalSynced / totalRecords) * 100)}%` : '0%';
+        // Update progressStatus for each tag
+        Object.entries(newProgressStatus).forEach(([tag, status]) => {
+            setProgressStatus(tag, status);
+        });
+        // Update summary
+        resetSummary();
+        setTimeout(() => {
+            // Set summary after reset
+            setProgressStatus('', newProgressStatus); // This line is a no-op, but kept for legacy
+            // If you have setSummary, use it. Otherwise, update summary here:
+            // @ts-ignore
+            useBulkSyncStore.setState((state: any) => ({
+                summary: {
+                    ...state.summary,
+                    totalSynced,
+                    totalUnsynced,
+                    totalRecords,
+                    totalErrors,
+                    errorList,
+                    overallPercentage,
+                    lastSyncedAt: new Date().toISOString(),
+                },
+            }));
+        }, 0);
+    };
+
+    useEffect(() => {
+        if (open && session) {
+            refreshSummary();
+        }
+    }, [open, session]);
+
     const handleShowAllTables = async () => {
         if (!session || !loadingTag) return;
-        
         setLoadingAll(true);
         setSyncingState(prev => ({ ...prev, [loadingTag]: true }));
-        
         try {
-            // Reset the specific module's progress
             const currentProgress = { ...progressStatus };
             currentProgress[loadingTag] = {
                 ...currentProgress[loadingTag],
@@ -117,9 +177,13 @@ export function SyncSummaryDrawer({ children }: Props) {
                 totalRecords: 0,
             };
             setProgressStatus(loadingTag, currentProgress[loadingTag]);
-            
-            // Reload the specific module's data
             await startSync(session, loadingTag);
+            toast({
+                variant: "green",
+                title: "Success!",
+                description: `Successfully synced records for ${loadingTag}`,
+            });
+            await refreshSummary();
         } finally {
             setLoadingAll(false);
             setSyncingState(prev => ({ ...prev, [loadingTag]: false }));
@@ -148,19 +212,33 @@ export function SyncSummaryDrawer({ children }: Props) {
             await startSync(session, tag);
             setLoadingTag(null);
             setShowAllTables(true);
+            toast({
+                variant: "green",
+                title: "Success!",
+                description: `Successfully synced records for ${tag}`,
+            });
+            await refreshSummary();
         } else {
             setLoadingAll(true);
             setShowAllTables(true);
             resetAllTasks();
             await startSync(session);
             setLoadingAll(false);
+            toast({
+                variant: "green",
+                title: "Success!",
+                description: "Successfully synced all records!",
+            });
+            await refreshSummary();
         }
     };
 
     const progressTasks = Object.values(progressStatus);
     const filteredTasks = progressTasks.filter((task) => {
-        const matchesSearch = task.tag.toLowerCase().includes(searchTerm.toLowerCase());
-        return showAllTables ? matchesSearch : (matchesSearch && (loadingTag === task.tag || task.state === "in progress"));
+        // Only show tasks with a valid tag and at least one record
+        const hasRecords = typeof task.success === 'number' && typeof task.failed === 'number' && (task.success + task.failed) > 0;
+        const matchesSearch = task.tag && task.tag.toLowerCase().includes(searchTerm.toLowerCase());
+        return (showAllTables ? matchesSearch : (matchesSearch && (loadingTag === task.tag || task.state === "in progress"))) && hasRecords;
     });
 
     const totalSynced = summary.totalSynced;
@@ -234,7 +312,7 @@ export function SyncSummaryDrawer({ children }: Props) {
     const handleExportErrors = (taskErrors: any[], tag: string) => {
         const errorData = {
             tag,
-            timestamp: new Date().toISOString(),
+            timestamp: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
             errors: taskErrors,
             syncStats: {
                 totalSynced: summary.totalSynced,
@@ -250,7 +328,7 @@ export function SyncSummaryDrawer({ children }: Props) {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `sync-errors-${tag}-${new Date().toISOString()}.json`;
+        a.download = `sync-errors-${tag}-${format(new Date(),'yyyy-MM-dd HH:mm:ss')}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -366,7 +444,9 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                             </div>
                                                             <div className="flex items-center gap-1">
                                                                 <span className="text-muted-foreground">Total:</span>
-                                                                <span className="font-medium">{totalRecords || total}</span>
+                                                                <span className="font-medium">{
+                                                                    Number.isFinite(totalRecords) && totalRecords ? totalRecords : Number.isFinite(total) ? total : 0
+                                                                }</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -459,10 +539,10 @@ export function SyncSummaryDrawer({ children }: Props) {
                                     <div className="space-y-2">
                                         <div className="flex items-center justify-between">
                                             <p className="text-sm font-medium">Overall Progress</p>
-                                            <p className="text-sm font-medium">{overallPercentage}</p>
+                                            <p className="text-sm font-medium">{typeof overallPercentage === 'string' ? overallPercentage : '0%'}</p>
                                         </div>
                                         <Progress
-                                            value={parseInt(overallPercentage)}
+                                            value={parseInt(typeof overallPercentage === 'string' ? overallPercentage.replace('%', '') : '0')}
                                             className="h-2"
                                             color="bg-green-500"
                                         />
@@ -471,19 +551,19 @@ export function SyncSummaryDrawer({ children }: Props) {
                                     <div className="grid grid-cols-4 gap-4">
                                         <div className="space-y-1 text-center">
                                             <p className="text-xs text-muted-foreground">Total Records</p>
-                                            <p className="text-lg font-semibold">{totalRecords}</p>
+                                            <p className="text-lg font-semibold">{typeof totalRecords === 'number' ? totalRecords : 0}</p>
                                         </div>
                                         <div className="space-y-1 text-center">
                                             <p className="text-xs text-muted-foreground">Synced</p>
-                                            <p className="text-lg font-semibold text-green-600">{totalSynced}</p>
+                                            <p className="text-lg font-semibold text-green-600">{typeof totalSynced === 'number' ? totalSynced : 0}</p>
                                         </div>
                                         <div className="space-y-1 text-center">
                                             <p className="text-xs text-muted-foreground">Errors</p>
-                                            <p className="text-lg font-semibold text-red-600">{totalErrors}</p>
+                                            <p className="text-lg font-semibold text-red-600">{typeof totalErrors === 'number' ? totalErrors : 0}</p>
                                         </div>
                                         <div className="space-y-1 text-center">
                                             <p className="text-xs text-muted-foreground">Force Sync</p>
-                                            <p className="text-lg font-semibold text-blue-600">{totalForceSync}</p>
+                                            <p className="text-lg font-semibold text-blue-600">{typeof totalForceSync === 'number' ? totalForceSync : 0}</p>
                                         </div>
                                     </div>
 

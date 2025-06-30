@@ -20,7 +20,7 @@ import { libDb } from '@/db/offline/Dexie/databases/libraryDb'
 interface IReview {
     id: string | undefined,
     record_id: string | undefined,
-    bene_id: string | undefined | null,
+    person_profile_id: string | undefined | null,
     module: string | undefined,
     comment: string | undefined,
     status_id: number | string | undefined,
@@ -62,7 +62,7 @@ function AppSubmitReview(props: IAppSubmitReviewProps) {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [showHistory, setShowHistory] = useState(true);
     const [activeSession, setSession] = useState<SessionPayload>();
-    const logs = review_logs.sort((a, b) => new Date(b.created_date).getTime() - new Date(a.created_date).getTime())
+    const logs = review_logs.sort((a, b) => new Date(b!.created_date!).getTime() - new Date(a!.created_date!).getTime())
 
     useEffect(() => {
         (async () => {
@@ -124,15 +124,16 @@ function AppSubmitReview(props: IAppSubmitReviewProps) {
                     >
                         <History className="h-4 w-4 mr-2" />
                         History
-                    </Button> : <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowHistory(!showHistory)}
-                        className="text-muted-foreground hover:text-foreground"
-                    >
-                        <MessageSquare className="h-4 w-4 mr-2" />
-                        Add Review
-                    </Button>}
+                    </Button> : !["CFW Beneficiary"].includes(activeSession?.userData.role!) ?
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowHistory(!showHistory)}
+                            className="text-muted-foreground hover:text-foreground"
+                        >
+                            <MessageSquare className="h-4 w-4 mr-2" />
+                            Add Review
+                        </Button> : null}
                 </>}
 
             </div>
@@ -164,13 +165,11 @@ function AppSubmitReview(props: IAppSubmitReviewProps) {
                         Submit Review
                     </Button>
 
-                    <div className="relative w-full sm:w-[200px]">
-                        <Select
-                            
-                            value={currentReview.status_id || 0 || ''}
-                            
+                    <div className="relative w-full sm:w-[200px]"> 
+                        <Select 
+                            value={currentReview.status_id?.toString() || undefined} 
                             onValueChange={(value) => handleReviewChange({
-                                status_id: value,
+                                status_id: Number(value),
                                 status_date: new Date().toISOString()
                             })}
                         >
@@ -180,8 +179,8 @@ function AppSubmitReview(props: IAppSubmitReviewProps) {
                             <SelectContent>
                                 {options.map((option) => (
                                     <SelectItem
-                                        key={option.id}
-                                        value={option.id}
+                                        key={option.id.toString()}
+                                        value={option.id.toString()}
                                         className="flex items-center"
                                     >
                                         <div className="flex items-center">
@@ -352,9 +351,10 @@ interface ReviewDialogProps {
 
 export function ReviewDialog({ open, onOpenChange, review, onConfirm, options }: ReviewDialogProps) {
     const status = options.find(i => i.id == review.status_id)
+    // console.log('ReviewDialog > status', status)
     const dialogTitle = `Confirm Submission`;
 
-    const dialogDescription = status.name
+    const dialogDescription = status?.name
         ? `You're about to mark this record as "${status.name}". This action will be logged and timestamped.`
         : 'Please review your comments before submitting.';
 

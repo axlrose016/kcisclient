@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import Dexie from 'dexie';
 import { decryptJsonAsync, encryptJsonAsync } from '@/lib/utils';
-
+import { format } from "date-fns";
 export const useExportImport = (dbs: Dexie[]) => {
   const exportToJSON = useCallback(async () => {
     try {
@@ -22,7 +22,7 @@ export const useExportImport = (dbs: Dexie[]) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `kcis-encrypted-db-${new Date().toISOString()}.json`;
+      a.download = `kcis-encrypted-db-${format(new Date(),'yyyy-MM-dd HH:mm:ss')}.json`;
       a.click();
       URL.revokeObjectURL(url);
 

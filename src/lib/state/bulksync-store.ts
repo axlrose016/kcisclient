@@ -4,7 +4,7 @@ import { toast } from "@/hooks/use-toast";
 import { syncTask } from "../bulksync";
 import { cleanArray, hasOnlineAccess, isValidTokenString } from "../utils";
 import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb";
-
+import { format } from "date-fns";
 export interface ISummary {
   state:
   | "idle"
@@ -81,6 +81,7 @@ interface BulkSyncStore {
     tags?: string | string[],
     progressUpdate?: (progress: ProgressStatus[string]) => void
   ) => Promise<void>;
+  execBackgroundSync: (session: SessionPayload, onComplete?: () => void) => Promise<void>;
 }
 
 export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
@@ -185,8 +186,8 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
     const { tasks, setProgressStatus } = get();
     const filteredTasks = tags
       ? tasks.filter((task) =>
-          Array.isArray(tags) ? tags.includes(task.tag) : task.tag === tags
-        )
+        Array.isArray(tags) ? tags.includes(task.tag) : task.tag === tags
+      )
       : tasks;
 
     set({
@@ -221,7 +222,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
       const records = forceSync
         ? await module.toArray()
         : await module.where("push_status_id").notEqual(1).toArray();
-      
+
       taskRecordMap[task.tag] = task.cleanup ? records.map(task.cleanup) : records;
       totalRecords += records.length;
 
@@ -280,7 +281,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
               const json = await res.clone().json();
               await task.module().update(record.id, {
                 push_status_id: 1,
-                push_date: new Date().toISOString(),
+                push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
               });
               success++;
               task.onSyncRecordResult?.(record, {
@@ -324,7 +325,7 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
         summary: {
           ...state.summary,
           overallPercentage: percent,
-          lastSyncedAt: new Date().toISOString(),
+          lastSyncedAt: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         },
       }));
 
@@ -378,8 +379,23 @@ export const useBulkSyncStore = create<BulkSyncStore>((set, get) => ({
         totalErrors,
         errorList,
         overallPercentage,
-        lastSyncedAt: new Date().toISOString(),
+        lastSyncedAt: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
       },
-    }); 
+    });
+  },
+
+  execBackgroundSync: async (session, onComplete) => {
+    toast({
+      title: "Syncing in progress...",
+      description: "Background sync of all modules has started.",
+      variant: "default",
+    });
+    await get().startSync(session);
+    if (onComplete) onComplete();
+    toast({
+      title: "Sync Complete",
+      description: "All modules have been synced.",
+      variant: "green",
+    });
   },
 }));

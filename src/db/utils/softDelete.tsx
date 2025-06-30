@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import Dexie from 'dexie';
-
+import { format } from "date-fns";
 export const softDelete = async (
   db: Dexie,
   tableName: string,
@@ -28,7 +28,7 @@ export const softDelete = async (
       // Soft delete the main row
       await table.update(id, {
         is_deleted: true,
-        deleted_date: new Date().toISOString(),
+        deleted_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         deleted_by: _session?.userData?.email ?? 'unknown',
         remarks: "Record deleted by "+_session?.userData.email,
         push_status_id: 2,
@@ -49,7 +49,7 @@ export const softDelete = async (
             const childId = child[childTable.schema.primKey.name];
             await childTable.update(childId, {
               is_deleted: true,
-              deleted_date: new Date().toISOString(),
+              deleted_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               deleted_by: _session?.userData?.email ?? 'unknown',
               remarks: "Record deleted by "+_session?.userData.email,
               push_status_id: 2,

@@ -73,6 +73,7 @@ import RoleSelectionComponent from "@/components/forms/role-selection";
 import { IUser } from "@/components/interfaces/iuser";
 import { seedModules } from "@/db/offline/Dexie/schema/library-service";
 import SectorDetailsOld from "./sectors";
+import { format } from "date-fns";
 // import pdfFonts from "pdfmake/build/vfs_fonts";
 const _session = (await getSession()) as SessionPayload;
 export default function PersonProfileForm_({ user_id_viewing }: any) {
@@ -1044,7 +1045,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
 
               user_id: session.id,
               created_by: session.userData.email ?? "",
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: null,
               last_modified_date: null,
               push_date: null,
@@ -1068,7 +1069,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                   sector_id: sector.sector_id ?? 0,
                   user_id: session.id,
                   created_by: session.userData.email ?? "",
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: null,
                   last_modified_date: null,
                   push_date: null,
@@ -1092,7 +1093,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                 type_of_disability_id: disability.type_of_disability_id ?? 0,
                 user_id: session.id,
                 created_by: session.userData.email ?? "",
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 last_modified_by: null,
                 last_modified_date: null,
                 push_date: null,
@@ -1128,7 +1129,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                 work: fcd.work ?? "",
                 user_id: session.id,
                 created_by: session.userData.email ?? "",
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 last_modified_by: null,
                 last_modified_date: null,
                 push_date: null,
@@ -1152,7 +1153,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                   year_served_id: cfwFam.year_served_id ?? 0,
                   user_id: session.id,
                   created_by: session.userData.email ?? "",
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: null,
                   last_modified_date: null,
                   push_date: null,
@@ -1178,7 +1179,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                   module_path: attachment.module_path ?? "",
                   user_id: session.id,
                   created_by: _session.userData.email ?? "",
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: null,
                   last_modified_date: null,
                   push_date: null,
@@ -2190,7 +2191,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
           alternate_supervisor_id: null,
           cfw_category_id: formData.is_graduate ?? false,
           created_by: _session?.userData.email ?? null,
-          created_date: new Date().toISOString(),
+          created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
           last_modified_by: null,
           last_modified_date: null,
           push_date: null,
@@ -2280,7 +2281,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                         id: parsedPP.user_id,
                         last_modified_by: session?.userData.email,
                         remarks: "Role has been changed",
-                        synced_date: new Date().toISOString(),
+                        synced_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         role_id: "37544f59-f3ba-45df-ae0b-c8fa4e4ce446",
                         push_status_id: 2,
                       }),
@@ -2582,7 +2583,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                       file_name: file.name, //image1.jpg
                       file_type: "",
                       file_path: null,
-                      created_date: new Date().toISOString(),
+                      created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                       last_modified_date: null,
                       created_by: _session?.userData.email ?? "",
                       last_modified_by: null,
@@ -3032,7 +3033,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
           file_path: blob,
           user_id: _session.id,
           record_id: formData.id,
-          last_modified_date: new Date().toISOString(),
+          last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
           last_modified_by: "00000000-0000-0000-0000-000000000000",
         });
         console.log("✅ Record updated.");
@@ -3046,7 +3047,7 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
           file_name: file.name,
           file_type: file.type,
           file_path: blob,
-          created_date: new Date().toISOString(),
+          created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
           last_modified_date: null,
           created_by: _session.userData.email ?? "",
           user_id: _session?.id, // session?.id ?? "",
@@ -3299,10 +3300,10 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
 
                 user_id: _session.id,
                 created_by: _session.userData.email ?? "",
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 last_modified_by: null,
                 last_modified_date: null,
-                push_date: new Date().toISOString(),
+                push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 push_status_id: 2,
                 deleted_by: null,
                 deleted_date: null,
@@ -3327,11 +3328,11 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                 work_plan_id: null, // ✨ bago to master
                 status_id: null,
                 user_id: _session.id,
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 last_modified_date: null,
                 last_modified_by: null,
                 push_status_id: 2,
-                push_date: new Date().toISOString(),
+                push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 deleted_date: null,
                 deleted_by: null,
                 is_deleted: false,
@@ -3352,10 +3353,10 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                 if (user) {
                   const result = await dexieDb.users.update(user.id, {
                     role_id: selectedRoleNew?.id || "",
-                    last_modified_date: new Date().toISOString(),
+                    last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     last_modified_by: _session.userData.email || "",
                     push_status_id: 2,
-                    push_date: new Date().toISOString(),
+                    push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     remarks: "Role has been changed"
                   });
                   if (result) {
@@ -3370,10 +3371,10 @@ export default function PersonProfileForm_({ user_id_viewing }: any) {
                       const resua = await dexieDb.useraccess.update(useraccess.id, {
                         // module_id: "4e658b02-705a-43eb-a051-681d54e22e2a", //person profile by default
                         permission_id: getPermissionIdByRoleName(selectedRoleNew?.role_description || ""),
-                        last_modified_date: new Date().toISOString(),
+                        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         last_modified_by: _session.userData.email || "",
                         push_status_id: 2,
-                        push_date: new Date().toISOString(),
+                        push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         remarks: "User Access Permission  has been changed"
                       })
                     } else {

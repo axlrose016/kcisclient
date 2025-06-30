@@ -23,18 +23,18 @@ class PersonProfileService {
   private apiUrlCFWAssessment = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/create/'
   private apiUrlCFWAssessmentPatch = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'cfw_assessment/status/patch/'
   // Method to sync data in bulk
-   async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
+  async syncBulkData(formPersonProfile?: IPersonProfile): Promise<{ success: number; failed: number }> {
     try {
       const unsyncedData = await dexieDb.person_profile
         .where("push_status_id")
         .equals(2)
         .toArray();
-  
+
       if (unsyncedData.length === 0) {
         console.log("No data to sync.");
         return { success: 0, failed: 0 };
       }
-      
+
       const results = await Promise.allSettled(
         unsyncedData.map((record) => {
 
@@ -46,9 +46,9 @@ class PersonProfileService {
           };
 
           console.log("Record", JSON.stringify(formattedRecord));
-  
+
           console.log("Syncing record:", formattedRecord);
-  
+
           return axios.post(this.apiUrl, formattedRecord, {
             headers: {
               Authorization: `bearer ${_session.token}`,
@@ -57,14 +57,14 @@ class PersonProfileService {
           });
         })
       );
-  
+
       let success = 0;
       let failed = 0;
-  
+
       for (let i = 0; i < results.length; i++) {
         const result = results[i];
         const record = unsyncedData[i];
-  
+
         if (result.status === "fulfilled") {
           success++;
           // mark as synced
@@ -74,7 +74,7 @@ class PersonProfileService {
           console.error("Failed to sync record:", record.id, result.reason);
         }
       }
-  
+
       return { success, failed };
     } catch (error) {
       console.error("Error syncing bulk data:", error);
@@ -327,6 +327,56 @@ class PersonProfileService {
       return undefined;
     }
   }
+
+
+  async syncDLProfile(url: string, filter?: any): Promise<IPersonProfile[] | undefined> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS
+    try {
+      const session = await getSession() as SessionPayload
+      const headers = {
+        'Authorization': `bearer ${session.token}`,
+        'Content-Type': 'application/json',
+      };
+      const dr = filter
+        ? await axios.post<IPersonProfile[]>(apiUrl + url, filter, { headers })
+        : await axios.get<IPersonProfile[]>(apiUrl + url, { headers });
+
+      const data = dr.data;
+      await dexieDb.transaction('rw', [dexieDb.person_profile],
+        async () => {
+          await dexieDb.person_profile.bulkPut(data);
+        }
+      )
+
+      console.log(`data synced to Dexie > ${url} :`, data.length);
+      return data;
+    } catch (error) {
+      console.error('Failed to sync auth users to Dexie:', error);
+      return undefined;
+    }
+  }
+
+  async getAPIBenes(url: string, filter?: any): Promise<any[] | undefined> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS
+    try {
+      const session = await getSession() as SessionPayload
+      const headers = {
+        'Authorization': `bearer ${session.token}`,
+        'Content-Type': 'application/json',
+      };
+      const dr = filter
+        ? await axios.post<any[]>(apiUrl + url, filter, { headers })
+        : await axios.get<any[]>(apiUrl + url, { headers });
+
+      const data:any = dr.data;
+      console.log(`data synced to Dexie > ${url} :`,data);
+      return data.data;
+    } catch (error) {
+      console.error('Failed to sync auth users to Dexie:', error);
+      return undefined;
+    }
+  }
+
 }
 
 

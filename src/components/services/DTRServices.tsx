@@ -61,6 +61,6 @@ export class DTRService {
       console.error('Failed to sync auth users to Dexie:', error);
       return undefined;
     }
-  }
+  } 
 
 }

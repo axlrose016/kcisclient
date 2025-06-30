@@ -6,7 +6,7 @@ import { toast } from '@/hooks/use-toast';
 import { cleanArray, encryptJsonAsync, hashPassword } from '@/lib/utils';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
-
+import { format } from "date-fns";
 class UsersService {
   private userApi = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'auth_users/create/';
 
@@ -75,7 +75,7 @@ class UsersService {
         password: hashedPassword,
         salt: saltObject,
         role_id: _role.id,
-        created_date: new Date().toISOString(),
+        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         created_by: _id,
         push_status_id: 2,
         remarks: `Record Created by ${userData.email}`,
@@ -88,7 +88,7 @@ class UsersService {
         ...existing,
         ...userData,
         last_modified_by: userData.email,
-        last_modified_date: new Date().toISOString(),
+        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         push_status_id: 2,
         remarks: `Record Updated by ${userData.email}`,
       };
@@ -102,7 +102,7 @@ class UsersService {
         user_id: _id,
         module_id: _module.id,
         permission_id: _permission.id,
-        created_date: new Date().toISOString(),
+        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         created_by: userData.id,
         last_modified_by: null,
         last_modified_date: null,
@@ -135,7 +135,7 @@ class UsersService {
         sitio_present_address: await encryptJsonAsync(userProfile.sitio_present_address || ""),
         cellphone_no: await encryptJsonAsync(userProfile.cellphone_no || ""),
         cellphone_no_secondary: await encryptJsonAsync(userProfile.cellphone_no_secondary || ""),
-        created_date: new Date().toISOString(),
+        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         created_by: _id,
         push_status_id: 2,
         remarks: `Record Created by ${userData.email}`,
@@ -149,7 +149,7 @@ class UsersService {
         ...existing,
         ...userProfile,
         last_modified_by: userData.email,
-        last_modified_date: new Date().toISOString(),
+        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         push_status_id: 2,
         remarks: `Record Updated by ${userData.email}`,
       };

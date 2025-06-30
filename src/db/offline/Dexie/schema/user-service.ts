@@ -4,7 +4,7 @@ import { ICFWSchedules, ICFWTimeLogs, IUser, IUserAccess, IUserData, IUserDataAc
 import { toast } from '@/hooks/use-toast';
 import { encryptJson, encryptJsonAsync, hashPassword } from '@/lib/utils';
 import { libDb } from '../databases/libraryDb';
-
+import { format } from "date-fns";
 // Ensure you're using a single instance for interacting with the users table
 const tblUsers = dexieDb.table('users') as EntityTable<IUser, 'id'>;
 const tblUserAccess = dexieDb.table('useraccess') as EntityTable<IUserAccess, 'id'>;
@@ -431,7 +431,7 @@ export const seedCFWSchedules: ICFWSchedules[] = [
         time_out_4: "",
         total_hours_required: 8,               // Total required hours for Fixed Graduate
         status_id: 1,                           // Active status
-        "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+        "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     },
     {
         id: "2",
@@ -450,7 +450,7 @@ export const seedCFWSchedules: ICFWSchedules[] = [
         time_out_4: "",
         total_hours_required: 4,               // 4 hours for Flexi-Student
         status_id: 1                           // Active status
-        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+        , "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     },
     {
         id: "3",
@@ -469,7 +469,7 @@ export const seedCFWSchedules: ICFWSchedules[] = [
         time_out_4: "",
         total_hours_required: 8,               // 8 hours for Fixed Graduate
         status_id: 1                           // Active status
-        , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+        , "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     },
 
 
@@ -484,7 +484,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_datetime: "2025-04-03 08:00:00",         // Timestamp of the log (YYYY-MM-DD HH:MM:SS)
     //     work_session: 1,                              // First session of the day (1st IN/OUT)
     //     status: "Pending"                             // Status can be "Pending" or "Completed"
-    //     , "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     , "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_002",
@@ -493,7 +493,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_datetime: "2025-04-03 12:00:00",
     //     work_session: 1,
     //     total_work_hours: 4,                         // Optional total work hours after OUT log
-    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Completed", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_003",
@@ -501,7 +501,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_type: "IN",
     //     log_datetime: "2025-04-03 13:00:00",
     //     work_session: 2,                              // Second session of the day (2nd IN/OUT)
-    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Pending", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_004",
@@ -510,7 +510,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_datetime: "2025-04-03 17:00:00",
     //     work_session: 2,
     //     total_work_hours: 4,                         // Optional total work hours after OUT log
-    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Completed", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_005",
@@ -518,7 +518,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_type: "IN",
     //     log_datetime: "2025-04-03 09:00:00",
     //     work_session: 1,
-    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Pending", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_006",
@@ -527,7 +527,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_datetime: "2025-04-03 12:00:00",
     //     work_session: 1,
     //     total_work_hours: 3,                         // Optional total work hours after OUT log
-    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Completed", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_007",
@@ -535,7 +535,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_type: "IN",
     //     log_datetime: "2025-04-03 13:00:00",
     //     work_session: 2,
-    //     status: "Pending", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Pending", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // },
     // {
     //     id: "log_008",
@@ -544,7 +544,7 @@ export const seedCFWTimeLogs: ICFWTimeLogs[] = [
     //     log_datetime: "2025-04-03 16:00:00",
     //     work_session: 2,
     //     total_work_hours: 3,                         // Optional total work hours after OUT log
-    //     status: "Completed", "created_date": new Date().toISOString(), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
+    //     status: "Completed", "created_date": format(new Date(),'yyyy-MM-dd HH:mm:ss'), "created_by": "00000000-0000-0000-0000-000000000000", "last_modified_by": "", "last_modified_date": "", "push_status_id": 2, "push_date": "", "deleted_by": "", "deleted_date": "", "is_deleted": false, "remarks": "Seeded"
     // }
 ];
 

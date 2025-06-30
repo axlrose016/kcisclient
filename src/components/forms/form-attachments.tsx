@@ -18,7 +18,7 @@ import { getOfflineLibFilesToUpload } from "../_dal/offline-options"
 import { LibraryOption } from "../interfaces/library-interface"
 import { getSession } from "@/lib/sessions-client"
 import { SessionPayload } from "@/types/globals"
-
+import { format } from "date-fns";
 interface FormAttachmentsProps {
   record_id: string;    
   module_path: string;
@@ -249,7 +249,7 @@ export default function FormAttachments({ record_id, module_path }: FormAttachme
           setFiles((prev) => prev.map((f) => (f.id === file.id ? { ...f, progress } : f)))
         }
 
-        const now = new Date().toISOString()
+        const now = format(new Date(),'yyyy-MM-dd HH:mm:ss')
         const fileId = Date.now() + Math.random() // Ensure unique file_id
 
         // Save to Dexie with the detailed schema
@@ -300,7 +300,7 @@ export default function FormAttachments({ record_id, module_path }: FormAttachme
 
   const deleteSavedAttachment = async (id: string) => {
     try {
-      const now = new Date().toISOString()
+      const now = format(new Date(),'yyyy-MM-dd HH:mm:ss')
 
       // Soft delete - update the record instead of removing it
       await attachmentDb.attachments.update(id, {

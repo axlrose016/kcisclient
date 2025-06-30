@@ -19,13 +19,15 @@ export interface ICFWPayroll {
 
 export interface ICFWPayrollBene {
   id: string;
-  bene_id: string;
+  person_profile_id: string;
   daily_time_record_id: string;
-  daily_time_record_reviewed_date: string;
+  daily_time_record_reviewed_date: string | null;
+  daily_time_record_reviewed_by: string | null;
   accomplishment_report_id: string;
-  accomplishment_report_reviewed_date: string;
-  period_cover_from: Date;
-  period_cover_to: Date;
+  accomplishment_report_reviewed_date: string | null;
+  accomplishment_report_reviewed_by: string | null;
+  period_cover_from: string;
+  period_cover_to: string;
   operation_status: string;
   operation_status_date: string | null;
   operation_reviewed_by: string | null; //new
@@ -37,12 +39,12 @@ export interface ICFWPayrollBene {
   finance_reviewed_by: string | null; //new
   date_released: string | null;
   date_received: string | null;
-  // created_date: string;
-  // created_by: string;
+  created_date: string;
+  created_by: string;
   last_modified_date?: string | null;
   last_modified_by?: string | null;
   push_status_id?: number;
-  push_date?: string;
+  push_date?: string | null;
   deleted_date?: string | null;
   deleted_by?: string | null;
   is_deleted?: boolean;
@@ -52,19 +54,20 @@ export interface ICFWPayrollBene {
 export interface ISubmissionLog {
   id: string;
   record_id: string;//
-  bene_id: string | undefined | null;//
+  person_profile_id: string | undefined | null;//
+  role:string,
   module: string;//
   comment: string;//
-  status_id: number;//
+  status_id: number | undefined;//
   status_date: string | null;//
-  created_date: string;//
+  created_date: string |null;//
   created_by: string;//
   last_modified_date?: string | null; //
-  last_modified_by?: string | null;//
+  last_modified_by?: string;//
   push_status_id?: number;//
-  push_date?: string;//
+  push_date?: string | null;//
   deleted_date?: string | null;//
-  deleted_by?: string | null;//
+  deleted_by?: string;//
   is_deleted?: boolean;//
   remarks?: string | null;//
   user_id?: string | null

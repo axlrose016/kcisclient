@@ -23,13 +23,14 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [sessionCount, setSessionCount] = useState<number>(0);
   const router = useRouter();
 
-  const { state, summary, setTasks, resetAllTasks } = useBulkSyncStore();
+  const { state, summary, setTasks, resetAllTasks , execBackgroundSync } = useBulkSyncStore();
 
   // Setup bulk sync task
   useEffect(() => {
     if (session!) {  
       setTasks(syncTask);
       resetAllTasks();
+      // execBackgroundSync(session); 
     }
   }, [session]);
 

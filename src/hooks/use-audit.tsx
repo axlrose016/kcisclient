@@ -1,7 +1,7 @@
 import { auditDb } from "@/db/offline/Dexie/databases/auditDb";
 import Dexie from "dexie";
 import { v4 as uuidv4 } from "uuid";
-
+import { format } from "date-fns";
 export function _registerAuditHooks(db: Dexie, module: string, email: string) {
   db.tables.forEach((table) => {
     const tableName = table.name;
@@ -21,7 +21,7 @@ export function _registerAuditHooks(db: Dexie, module: string, email: string) {
               transacted_by: email,
               table: tableName,
               operation: "create",
-              timestamp: new Date().toISOString(),
+              timestamp: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               primaryKey: generatedKey ?? primKey ?? "autoincrement",
               newValue: obj,
             });
@@ -47,7 +47,7 @@ export function _registerAuditHooks(db: Dexie, module: string, email: string) {
               transacted_by: email,
               table: tableName,
               operation: "update",
-              timestamp: new Date().toISOString(),
+              timestamp: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               primaryKey: primKey,
               oldValue: oldObj,
               newValue,
@@ -72,7 +72,7 @@ export function _registerAuditHooks(db: Dexie, module: string, email: string) {
               transacted_by: email,
               table: tableName,
               operation: "delete",
-              timestamp: new Date().toISOString(),
+              timestamp: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               primaryKey: primKey,
               oldValue: obj,
             });

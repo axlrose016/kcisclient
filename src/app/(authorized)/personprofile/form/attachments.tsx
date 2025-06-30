@@ -36,6 +36,7 @@ import { IAttachments } from "@/components/interfaces/general/attachments";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
 import { IPersonProfile } from "@/components/interfaces/personprofile";
+import { format } from "date-fns";
 export default function Attachments({
   updateFormData,
   session,
@@ -150,7 +151,7 @@ export default function Attachments({
           remarks: ".",
           user_id: _session.id,
           // file_path: fileBlob,
-          last_modified_date: new Date().toISOString(),
+          last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
         });
         console.log(`✅ Updated record for file_id: ${id}`);
       } else {
@@ -164,7 +165,7 @@ export default function Attachments({
           file_name: file.name,
           file_type: file.type,
           file_path: fileBlob,
-          created_date: new Date().toISOString(),
+          created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
           last_modified_date: null,
           user_id: session.id ?? "",
           created_by: _session.userData.email ?? "", //for changing

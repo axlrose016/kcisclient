@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useEffect, useState } from "react"
-import { Wifi, WifiOff, Check, AlertCircle, Loader2 } from "lucide-react"
+import { Wifi, WifiOff, Check, AlertCircle, Loader2, RefreshCwIcon } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils" 
@@ -97,7 +97,6 @@ export default function FloatingPWAStatusAvatar() {
         return "Offline mode not supported in this browser"
     }
   }
-
   return ( 
     <SyncSummaryDrawer>
       <div className="fixed bottom-4 right-4 z-50">
@@ -107,10 +106,11 @@ export default function FloatingPWAStatusAvatar() {
               <button className="relative group" onClick={() => setIsOpen(!isOpen)} aria-label="PWA offline status">
                 <Avatar className="h-12 w-12 border-2 shadow-lg hover:shadow-xl transition-shadow">
                   <AvatarImage src="/placeholder.svg?height=48&width=48" alt="App logo" />
-                  <AvatarFallback>PWA</AvatarFallback>
-                </Avatar>
+                  <AvatarFallback>
+                    <RefreshCwIcon className="h-6 w-6 text-primary"/>
+                  </AvatarFallback>
+                </Avatar> 
 
-                {/* Status indicator dot */}
                 <span
                   className={cn(
                     "absolute top-0 right-0 h-4 w-4 rounded-full border-2 border-white",

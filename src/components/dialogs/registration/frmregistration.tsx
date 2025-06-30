@@ -19,7 +19,7 @@ import { useOnlineStatus } from "@/hooks/use-network"
 import UsersService from "../../services/UsersService"
 import { datetime } from "drizzle-orm/mysql-core"
 import React, { useState } from "react"
-
+import { format } from "date-fns";
 const formSchema = z
   .object({
     username: z.string().min(8, { message: "Username must be at least 8 characters" }),
@@ -87,7 +87,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       password: hashedPassword,
       salt: saltObject, //salt,
       role_id: _role[0].id,
-      created_date: new Date().toISOString(),
+      created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
       created_by: _id,
       last_modified_by: null,
       last_modified_date: null,
@@ -105,7 +105,7 @@ export default function RegistrationForm({ className, ...props }: React.Componen
       user_id: _id,
       module_id: _module[0].id,
       permission_id: _permission[0].id,
-      created_date: new Date().toISOString(),
+      created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
       created_by: _id,
       last_modified_by: null,
       last_modified_date: null,

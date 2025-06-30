@@ -110,13 +110,13 @@ export function PushStatusBadge({ push_status_id, size = "md", showDate = true }
 //     {
 //       id: 1,
 //       push_status_id: 1 as const,
-//       push_date: new Date().toISOString(), // Today
+//       push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'), // Today
 //       description: "Latest deployment",
 //     },
 //     {
 //       id: 2,
 //       push_status_id: 2 as const,
-//       push_date: new Date().toISOString(), // Currently uploading
+//       push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'), // Currently uploading
 //       description: "Feature update",
 //     },
 //     {
@@ -150,9 +150,9 @@ export function PushStatusBadge({ push_status_id, size = "md", showDate = true }
 //           <div className="space-y-4">
 //             <h3 className="text-lg font-semibold">Different Sizes</h3>
 //             <div className="flex flex-wrap items-start gap-4">
-//               <StatusBadge push_status_id={1} push_date={new Date().toISOString()} size="sm" />
-//               <StatusBadge push_status_id={2} push_date={new Date().toISOString()} size="md" />
-//               <StatusBadge push_status_id={1} push_date={new Date().toISOString()} size="lg" />
+//               <StatusBadge push_status_id={1} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} size="sm" />
+//               <StatusBadge push_status_id={2} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} size="md" />
+//               <StatusBadge push_status_id={1} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} size="lg" />
 //             </div>
 //           </div>
 
@@ -162,11 +162,11 @@ export function PushStatusBadge({ push_status_id, size = "md", showDate = true }
 //             <div className="grid gap-4 md:grid-cols-2">
 //               <div className="p-4 border rounded-lg">
 //                 <h4 className="font-medium mb-2">Uploaded (push_status_id: 1)</h4>
-//                 <StatusBadge push_status_id={1} push_date={new Date().toISOString()} />
+//                 <StatusBadge push_status_id={1} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} />
 //               </div>
 //               <div className="p-4 border rounded-lg">
 //                 <h4 className="font-medium mb-2">Uploading (push_status_id: 2)</h4>
-//                 <StatusBadge push_status_id={2} push_date={new Date().toISOString()} />
+//                 <StatusBadge push_status_id={2} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} />
 //               </div>
 //             </div>
 //           </div>
@@ -191,8 +191,8 @@ export function PushStatusBadge({ push_status_id, size = "md", showDate = true }
 //           <div className="space-y-4">
 //             <h3 className="text-lg font-semibold">Without Date Display</h3>
 //             <div className="flex gap-4">
-//               <StatusBadge push_status_id={1} push_date={new Date().toISOString()} showDate={false} />
-//               <StatusBadge push_status_id={2} push_date={new Date().toISOString()} showDate={false} />
+//               <StatusBadge push_status_id={1} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} showDate={false} />
+//               <StatusBadge push_status_id={2} push_date={format(new Date(),'yyyy-MM-dd HH:mm:ss')} showDate={false} />
 //             </div>
 //           </div>
 //         </CardContent>

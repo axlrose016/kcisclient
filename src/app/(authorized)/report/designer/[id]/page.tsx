@@ -216,12 +216,12 @@ export default function MonitoringCFW() {
       columns: JSON.stringify(report_clean_column),
       push_status_id: params?.id == "new" ? 0 : 0,
       push_date: params?.id == "new" ? "" : "",
-      created_date: new Date().toISOString(),
+      created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
       created_by: session?.userData.email ?? "",
       deleted_date: null,
       deleted_by: null,
       last_modified_by: params?.id == "new" ? null : session?.userData.email,
-      last_modified_date: params?.id == "new" ? null : new Date().toISOString(),
+      last_modified_date: params?.id == "new" ? null : format(new Date(),'yyyy-MM-dd HH:mm:ss'),
       is_deleted: false,
     }
 

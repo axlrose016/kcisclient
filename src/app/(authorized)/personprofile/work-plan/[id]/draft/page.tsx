@@ -81,21 +81,89 @@ export default function CreateWorkPlanPage() {
 
         // Fetch task management data from local storage or server if needed
         const lsWorkPlanData = localStorage.getItem("work_plan")
+        let wpIdfromLs = ""
         if (lsWorkPlanData) {
             const parsedTM = JSON.parse(lsWorkPlanData) as WorkPlanProps
+            wpIdfromLs = parsedTM.id
+            console.log("✨Work Plan: ", parsedTM)
             setWorkPlanData(parsedTM)
         } else {
             localStorage.setItem("work_plan", JSON.stringify(workPlanData))
         }
 
-        const lsWPTasks = localStorage.getItem("work_plan_tasks")
-        if (lsWPTasks) {
-            const parsedTasks = JSON.parse(lsWPTasks) as WorkPlanTasks[]
-            setTasks(parsedTasks)
-        } else {
-            localStorage.setItem("work_plan_tasks", JSON.stringify([]))
-            setTasks([])
+
+        async function getWorkPlanTask() {
+            try {
+                debugger;
+                const email = "dsentico@dswd.gov.ph";
+                const password = "Dswd@123";
+
+                const onlinePayload = await LoginService.onlineLogin(email, password);
+                const token = onlinePayload.token;
+
+                const wpTasksResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/view/${wpIdfromLs}/`,
+                    {
+                        method: "GET",
+                        headers: {
+                            Authorization: `bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                if (!wpTasksResponse.ok) {
+                    const errorData = await wpTasksResponse.json();
+                    console.error("❌ Failed to load work plan tasks:", errorData);
+                    return;
+                }
+
+                const wpTaskResult = await wpTasksResponse.json();
+                localStorage.setItem("work_plan_tasks", JSON.stringify(wpTaskResult))
+                console.log("📅Work Plan Tasks:", wpTaskResult);
+
+
+            } catch (error: any) {
+                if (error.name === "AbortError") {
+                    console.warn("🚫 Request canceled:", error.message);
+                } else {
+                    console.error("🔥 Unexpected error:", error);
+                }
+            }
         }
+        getWorkPlanTask()
+        // search for work_plan_extended
+        // debugger
+        // const lswpe = localStorage.getItem("work_plan_extended")
+        // const workPlanId = localStorage.getItem("current_work_plan_id"); // or use your variable
+
+        // if (lswpe && workPlanId) {
+        //     try {
+        //         const parsedWPE = JSON.parse(lswpe); // should be an array of work plans
+        //         const matched = parsedWPE.find((wp: any) => wp.work_plan_id === workPlanId);
+
+        //         if (matched && Array.isArray(matched.work_plan_task)) {
+        //             localStorage.setItem("work_plan_tasks", JSON.stringify(matched.work_plan_task));
+        //             console.log("✅ work_plan_task saved to localStorage.");
+        //         } else {
+        //             console.warn("⚠️ No matching work plan or work_plan_task not found.");
+        //         }
+        //     } catch (err) {
+        //         console.error("❌ Error parsing work_plan_extended from localStorage:", err);
+        //     }
+        // } else {
+        //     console.warn("⚠️ Missing work_plan_extended or current_work_plan_id in localStorage.");
+        // }
+
+
+        // const lsWPTasks = localStorage.getItem("work_plan_tasks")
+        // if (lsWPTasks) {
+        //     const parsedTasks = JSON.parse(lsWPTasks) as WorkPlanTasks[]
+        //     setTasks(parsedTasks)
+        // } else {
+        //     localStorage.setItem("work_plan_tasks", JSON.stringify([]))
+        //     setTasks([])
+        // }
 
 
         async function loadPersonProfile() {
@@ -189,12 +257,7 @@ export default function CreateWorkPlanPage() {
 
 
 
-    // const handleInputChangeTaskManagement = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    //   const { name, value } = e.target;
-    //   const updated = { ...workPlanData, [name]: value };
-    //   setWorkPlanData(updated);
-    //   localStorage.setItem("work_plan", JSON.stringify(updated));
-    // }
+    
     const { toast } = useToast()
 
 
@@ -217,78 +280,7 @@ export default function CreateWorkPlanPage() {
     // State to track which task is being edited
     const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
 
-    // Function to handle saving a new task
-    // const handleSaveTask = () => {
-    //   if (!newTask.category_id || !newTask.activities_tasks) {
-    //     return // Basic validation
-    //   }
-
-    //   const taskId = Date.now().toString()
-    //   const taskToSave = { ...newTask, id: taskId }
-    //   // const { toast } = useToast()
-    //   // debugger;
-    //   const isTaskExist = tasks.some((task) => task.activities_tasks.toLowerCase().trim() === newTask.activities_tasks.toLowerCase().trim() && task.category_id.toLowerCase().trim() === newTask.category_id.toLowerCase().trim())
-    //   if (isTaskExist) {
-    //     toast({
-    //       variant: "destructive",
-    //       description: "Task with the same type and name already exists!"
-
-    //     })
-
-    //     return;
-    //   }
-    //   setTasks([...tasks, taskToSave])
-    //   localStorage.setItem("workPlan", JSON.stringify([...tasks, taskToSave]))
-    //   // Reset the form
-    //   setNewTask({
-    //     id: "",
-    //     work_plan_id: "",
-    //     category_id: "",
-    //     activities_tasks: "",
-    //     expected_output: "",
-    //     timeline_from: "",
-    //     timeline_to: "",
-    //     assigned_person_id: "",
-    //   })
-    // }
-
-    // // Function to handle editing a task
-    // const handleEditTask = (taskId: string) => {
-    //   setEditingTaskId(taskId)
-    //   const taskToEdit = tasks.find((task) => task.id === taskId)
-    //   if (taskToEdit) {
-    //     setNewTask(taskToEdit)
-    //   }
-    // }
-
-    // // Function to handle updating a task
-    // const handleUpdateTask = () => {
-    //   const updatedTasks = tasks.map((task) => (task.id === editingTaskId ? newTask : task))
-    //   setTasks(updatedTasks)
-    //   localStorage.setItem("work_plan_tasks", JSON.stringify(updatedTasks))
-    //   // Reset the form and editing state
-    //   setNewTask({
-    //     id: "",
-    //     work_plan_id: "",
-    //     category_id: "",
-    //     activities_tasks: "",
-    //     expected_output: "",
-    //     timeline_from: "",
-    //     timeline_to: "",
-    //     assigned_person_id: "",
-    //   })
-    //   setEditingTaskId(null)
-    // }
-
-    // // Function to handle deleting a task
-    // const handleDeleteTask = (taskId: string) => {
-    //   const deleteTask = tasks.filter((task) => task.id !== taskId)
-    //   setTasks(deleteTask)
-    //   localStorage.setItem("work_plan_tasks", JSON.stringify(deleteTask))
-    // }
-    // const submitWorkPlan = () => {
-    //   alert("Submitting")
-    // }
+     
     return (
         <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -296,13 +288,7 @@ export default function CreateWorkPlanPage() {
             transition={{ duration: 0.4 }}
             className="w-full p-0"
         >
-
-            {/* <main className="max-h-screen w-full bg-background py-10">
-        <Wizard
-          title='Work Plan Creation'
-          description='Create a work plan for the beneficiaries'
-        />
-      </main> */}
+ 
 
             <div className="w-full mx-auto px-4 pt-0 mt-0 py-0">
                 {/* Workplan Details {JSON.stringify(workPlanData)} */}

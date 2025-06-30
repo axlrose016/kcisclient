@@ -4,7 +4,7 @@ import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
 import { v4 as uuidv4 } from 'uuid';
-
+import { format } from "date-fns";
 const _session = await getSession() as SessionPayload;
 
 export class LibrariesService{
@@ -22,7 +22,7 @@ export class LibrariesService{
                 data = {
                   ...role,
                   id: uuidv4(),
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -36,7 +36,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...role,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -96,7 +96,7 @@ export class LibrariesService{
                 data = {
                   ...permission,
                   id: uuidv4(),
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -110,7 +110,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...permission,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -170,7 +170,7 @@ export class LibrariesService{
                 data = {
                   ...module,
                   id: uuidv4(),
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -184,7 +184,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...module,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email,
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -400,7 +400,7 @@ export class LibrariesService{
           if(!emp.id || emp.id === ""){
             data = {
               ...emp,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -414,7 +414,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...emp,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -444,7 +444,7 @@ export class LibrariesService{
           if(!office.id || office.id === ""){
             data = {
               ...office,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -458,7 +458,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...office,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -486,7 +486,7 @@ export class LibrariesService{
           if(!division.id || division.id === ""){
             data = {
               ...division,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -500,7 +500,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...division,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -527,7 +527,7 @@ export class LibrariesService{
           if(!hiring_procedure.id || hiring_procedure.id === ""){
             data = {
               ...hiring_procedure,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -541,7 +541,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...hiring_procedure,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -569,7 +569,7 @@ export class LibrariesService{
           if(!pos.id || pos.id === ""){
             data = {
               ...pos,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -583,7 +583,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...pos, 
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -646,7 +646,7 @@ export class LibrariesService{
           if(!budget_year.id || budget_year.id === ""){
             data = {
               ...budget_year,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -660,7 +660,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...budget_year,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -721,7 +721,7 @@ export class LibrariesService{
           if(!modality.id || modality.id === ""){
             data = {
               ...modality,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -735,7 +735,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...modality,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -796,7 +796,7 @@ export class LibrariesService{
           if(!app_source.id || app_source.id === ""){
             data = {
               ...app_source,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -810,7 +810,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...app_source,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -871,7 +871,7 @@ export class LibrariesService{
           if(!app_type.id || app_type.id === ""){
             data = {
               ...app_type,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -885,7 +885,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...app_type,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -946,7 +946,7 @@ export class LibrariesService{
           if(!expense.id || expense.id === ""){
             data = {
               ...expense,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -960,7 +960,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...expense,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1021,7 +1021,7 @@ export class LibrariesService{
           if(!allotment_class.id || allotment_class.id === ""){
             data = {
               ...allotment_class,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1035,7 +1035,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...allotment_class,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1096,7 +1096,7 @@ export class LibrariesService{
           if(!fund_source.id || fund_source.id === 0){
             data = {
               ...fund_source,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1110,7 +1110,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...fund_source,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1172,7 +1172,7 @@ export class LibrariesService{
           if(!region.reg_id || region.reg_id === 0){
             data = {
               ...region,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1186,7 +1186,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...region,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1215,7 +1215,7 @@ export class LibrariesService{
             if (!existing) {
                data = {
                   ...region,
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -1224,7 +1224,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...region,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -1287,7 +1287,7 @@ export class LibrariesService{
           if(!province.prov_id || province.prov_id === 0){
             data = {
               ...province,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1301,7 +1301,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...province,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1330,7 +1330,7 @@ export class LibrariesService{
             if (!existing) {
                data = {
                   ...province,
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -1339,7 +1339,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...province,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -1402,7 +1402,7 @@ export class LibrariesService{
           if(!city.city_id || city.city_id === 0){
             data = {
               ...city,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1416,7 +1416,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...city,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1445,7 +1445,7 @@ export class LibrariesService{
             if (!existing) {
                data = {
                   ...city,
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -1454,7 +1454,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...city,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,
@@ -1517,7 +1517,7 @@ export class LibrariesService{
           if(!brgy.city_id || brgy.city_id === 0){
             data = {
               ...brgy,
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Created by " + _session?.userData?.email,
@@ -1531,7 +1531,7 @@ export class LibrariesService{
             data = {
               ...existing,
               ...brgy,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session?.userData?.email ?? "unknown",
               push_status_id: 2,
               remarks: "Record Updated by " + _session?.userData?.email,
@@ -1560,7 +1560,7 @@ export class LibrariesService{
             if (!existing) {
                data = {
                   ...brgy,
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Created by " + _session?.userData?.email,
@@ -1569,7 +1569,7 @@ export class LibrariesService{
                 data = {
                   ...existing,
                   ...brgy,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session?.userData?.email ?? "unknown",
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session?.userData?.email,

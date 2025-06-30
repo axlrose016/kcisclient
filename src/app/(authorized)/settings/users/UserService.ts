@@ -5,7 +5,7 @@ import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
 import { v4 as uuidv4 } from 'uuid';
-
+import { format } from "date-fns";
 const _session = await getSession() as SessionPayload;
 
 export class UserService{
@@ -23,7 +23,7 @@ export class UserService{
                 data = {
                   ...user,
                   id: uuidv4(),
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session.userData.email,
                   push_status_id: 2,
                   remarks: "Record Created by " + _session.userData.email,
@@ -38,7 +38,7 @@ export class UserService{
                 data = {
                   ...existing,
                   ...user,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session.userData.email,
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session.userData.email,
@@ -128,7 +128,7 @@ export class UserService{
                 data = {
                   ...userAccess,
                   id: uuidv4(),
-                  created_date: new Date().toISOString(),
+                  created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   created_by: _session.userData.email,
                   push_status_id: 2,
                   remarks: "Record Created by " + _session.userData.email,
@@ -136,7 +136,7 @@ export class UserService{
               } else {
                 data = {
                   ...userAccess,
-                  last_modified_date: new Date().toISOString(),
+                  last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                   last_modified_by: _session.userData.email,
                   push_status_id: 2,
                   remarks: "Record Updated by " + _session.userData.email,

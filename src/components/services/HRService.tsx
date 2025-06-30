@@ -87,7 +87,7 @@ export class HRService {
             data = {
               ...positionItem,
               id: uuidv4(),
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: positionItem.created_by,
               push_status_id: 2,
               remarks: "Record Created by " + _session.userData.email,
@@ -101,7 +101,7 @@ export class HRService {
             data = {
               ...existing,
               ...positionItem,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session.userData.email,
@@ -132,7 +132,7 @@ export class HRService {
             data = {
               ...postionDistribution,
               id: uuidv4(),
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: postionDistribution.created_by,
               push_status_id: 2,
               remarks: "Record Created by " + _session.userData.email,
@@ -146,7 +146,7 @@ export class HRService {
             data = {
               ...existing,
               ...postionDistribution,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session.userData.email,
@@ -241,7 +241,7 @@ export class HRService {
             data = {
               ...hiringProcedure,
               id: uuidv4(),
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session.userData.email,
@@ -254,7 +254,7 @@ export class HRService {
             data = {
               ...existing,
               ...hiringProcedure,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session.userData.email,
@@ -339,7 +339,7 @@ export class HRService {
             data = {
               ...applicant,
               id: uuidv4(),
-              created_date: new Date().toISOString(),
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               created_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Created by " + _session.userData.email,
@@ -352,7 +352,7 @@ export class HRService {
             data = {
               ...existing,
               ...applicant,
-              last_modified_date: new Date().toISOString(),
+              last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
               last_modified_by: _session.userData.email,
               push_status_id: 2,
               remarks: "Record Updated by " + _session.userData.email,

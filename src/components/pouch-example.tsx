@@ -27,7 +27,7 @@ export default function PouchDBPage() {
   // Add a new user
   async function addUser() {
     if (!name.trim()) return;
-    const newUser = { _id: new Date().toISOString(), name };
+    const newUser = { _id: format(new Date(),'yyyy-MM-dd HH:mm:ss'), name };
     await localDB.put(newUser);
     setName("");
     fetchUsers();

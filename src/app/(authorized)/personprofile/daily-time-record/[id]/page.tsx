@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from 'react';
-import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, SquareArrowUpRightIcon } from 'lucide-react';
+import { Clock, Plus, Trash2, Save, X, Printer, Download, SquareArrowUpRight, SquareArrowUpRightIcon, CheckCircle2Icon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { addDays, differenceInMinutes, endOfMonth, format } from 'date-fns';
@@ -23,10 +23,13 @@ import AppSubmitReview from '@/components/app-submit-review';
 import { ICFWPayrollBene, ISubmissionLog } from '@/components/interfaces/cfw-payroll';
 import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
 import { v4 as uuidv4 } from 'uuid';
-import { v5 as uuidv5 } from 'uuid';
-import { DTRService } from '../service';
+import { DTRService } from '@/components/services/DTRServices';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
-import { ARService } from '../../accomplishment-report/service';
+import { ARService } from '@/components/services/ARservice';
+import { uuidv5 } from '@/lib/utils';
+import { CFWPayrollService } from '@/components/services/CFWPayrollService';
+import { SubmissionReviewService } from '@/components/services/SubmissionReviewService';
+import PersonProfileService from '@/components/services/PersonProfileService';
 
 
 export const DTRcolumns = [
@@ -38,7 +41,7 @@ export const DTRcolumns = [
         sortable: true,
         cell: (value: Date | undefined) => {
             if (value) {
-                return format(value, 'MMM dd');
+                return formatInTimeZone(value, 'UTC', 'MMM dd');
             }
             return "-";
         },
@@ -51,7 +54,7 @@ export const DTRcolumns = [
         sortable: true,
         cell: (value: Date | undefined) => {
             if (value) {
-                return format(value, "eeee");
+                return formatInTimeZone(value, 'UTC', "eeee");
             }
             return "-";
         },
@@ -76,7 +79,7 @@ export const DTRcolumns = [
         validationTrigger: 'log_out',
         cell: (value: Date | undefined) => {
             if (value) {
-                return format(value, "HH:mm");
+                return formatInTimeZone(value, 'UTC', "HH:mm");
             }
             return "-";
         },
@@ -102,7 +105,7 @@ export const DTRcolumns = [
         validationTrigger: 'log_in',
         cell: (value: Date | undefined) => {
             if (value) {
-                return format(value, "HH:mm");
+                return formatInTimeZone(value, 'UTC', "HH:mm");
             }
             return "-";
         },
@@ -115,18 +118,28 @@ export const DTRcolumns = [
         filterType: 'text',
         sortable: true,
         cellRow: (row: any) => {
-            if (["-", "", null].includes(row.log_out) || !(new Date(row.log_out) instanceof Date)) {
+            if (
+                ["-", "", null].includes(row.log_out) ||
+                !(new Date(row.log_out) instanceof Date) ||
+                isNaN(new Date(row.log_out).getTime()) ||
+                isNaN(new Date(row.log_in).getTime())
+            ) {
                 return "-";
             }
-            const minutes = differenceInMinutes(row.log_out, row.log_in);
+            // Always use absolute difference and floor to 0 if negative
+            let minutes = differenceInMinutes(new Date(row.log_out), new Date(row.log_in));
             if (minutes < 0) {
                 return "-";
+            }
+            // If log_in and log_out are the same minute, show "1 min"
+            if (minutes === 0) {
+                return "1 min";
             } else if (minutes < 60) {
                 return `${minutes} min`;
             } else if (minutes < 1440) { // Less than 24 hours
                 const hours = Math.floor(minutes / 60);
                 const remainingMinutes = minutes % 60;
-                return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+                return `${hours}h ${remainingMinutes}m`;
             } else {
                 const days = Math.floor(minutes / 1440);
                 const remainingHours = Math.floor((minutes % 1440) / 60);
@@ -153,8 +166,6 @@ type IUser = IPersonProfile & ILibSchoolProfiles;
 
 export default function DailyTimeRecordUser() {
 
-    const service = new DTRService();
-
     const params = useParams<{ id: string }>()
     const router = useRouter()
 
@@ -169,24 +180,26 @@ export default function DailyTimeRecordUser() {
     const [lastStatus, setLastStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
+        role: "",
         module: "",
         comment: "",
-        status: "",
-        status_date: "",
-        created_date: "",
+        status_id: undefined,
+        status_date: null,
+        created_date: null,
         created_by: ""
     });
 
     const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
+        role: "",
         module: "",
         comment: "",
-        status: "",
-        status_date: "",
-        created_date: "",
+        status_id: undefined,
+        status_date: null,
+        created_date: null,
         created_by: ""
     });
 
@@ -214,8 +227,12 @@ export default function DailyTimeRecordUser() {
 
         (async () => {
             const _session = await getSession() as SessionPayload;
-            console.log('session', _session)
+
             setSession(_session);
+
+            console.log('session', { _session, params })
+
+
             try {
                 if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
             } catch (error) {
@@ -229,10 +246,19 @@ export default function DailyTimeRecordUser() {
             const user = await dexieDb.person_profile.where('user_id')
                 .equals(params!.id).first();
 
+            console.log('profile > user', user)
+
+            const syncCFWPayrollBeneStatus = await new CFWPayrollService().syncDLCFWPayrollBene(`cfw_payroll_beneficiary/view/${user?.id}/`);
+            console.log("CFW Payroll Beneficiary", syncCFWPayrollBeneStatus);
+
+            const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
+            console.log("Submission Review", sv);
+
+
             let period_cover = "";
             let r = "";
             if (date?.from && date?.to && user?.id) {
-                period_cover = format(new Date(date!.from!)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(date!.to!)!.toISOString(), 'yyyyMMdd')
+                period_cover = format(new Date(date!.from!)!, 'yyyyMMdd') + "-" + format(new Date(date!.to!)!, 'yyyyMMdd')
                 r = uuidv5("daily time record" + "-" + period_cover, user.id);
             }
 
@@ -248,18 +274,19 @@ export default function DailyTimeRecordUser() {
             setLastStatus(logslast ?? selectedStatus)
 
             const pb = await dexieDb.cfwpayroll_bene.where({
-                period_cover_from: date!.from!,
-                period_cover_to: date!.to!,
-                bene_id: user!.id
+                period_cover_from: format(new Date(date!.from!), "yyyy-MM-dd"),
+                period_cover_to: format(new Date(date!.to!), "yyyy-MM-dd"),
+                person_profile_id: user!.id!
             }).first()
+            console.log('payrollbene', { pb, date, user, r })
             setCFWPayrollBene(pb)
-            console.log('ar', { params, pb })
 
             const merge = {
                 ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
                 ...user
             };
             setUser(merge);
+
 
 
             const assessment = await new ARService().syncDLWorkplan(`work_plan/view/by_bene/${merge.id}/`);
@@ -311,7 +338,7 @@ export default function DailyTimeRecordUser() {
                 ...row,
                 push_status_id: 0,
                 last_modified_by: session!.userData!.email!,
-                last_modified_date: new Date().toISOString()
+                last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss')
             }, 'id')
 
             toast({
@@ -333,21 +360,21 @@ export default function DailyTimeRecordUser() {
             console.log('handleAddNewRecord', row);
             await dexieDb.cfwtimelogs.put({
                 ...row,
-                log_in: new Date(row.log_in).toISOString(),
-                log_out: new Date(row.log_out).toISOString(),
+                log_in: format(new Date(row.log_in), 'yyyy-MM-dd HH:mm:ss'),
+                log_out: format(new Date(row.log_out), 'yyyy-MM-dd HH:mm:ss'),
                 id: uuidv4(),
                 log_type: "IN",
                 work_session: 1,
                 total_work_hours: 0,
                 status: "Pending",
                 record_id: user.user_id,
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                 created_by: session!.userData!.email!,
                 last_modified_by: session!.userData!.email!,
                 push_status_id: 0,
                 is_deleted: false,
-                last_modified_date: new Date().toISOString(),
-                push_date: new Date().toISOString(),
+                last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                 deleted_date: null,
                 deleted_by: null
             }, 'id')
@@ -367,7 +394,7 @@ export default function DailyTimeRecordUser() {
         (async () => {
 
             try {
-                const period_cover = format(new Date(date!.from!)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(date!.to!)!.toISOString(), 'yyyyMMdd')
+                const period_cover = format(new Date(date!.from!)!, 'yyyyMMdd') + "-" + format(new Date(date!.to!)!, 'yyyyMMdd')
                 const record_id = uuidv5(module + "-" + period_cover, user.id);
                 console.log('period_cover', period_cover, record_id)
 
@@ -375,9 +402,10 @@ export default function DailyTimeRecordUser() {
                     ...selectedStatus!,
                     id: uuidv4(),
                     record_id: record_id,
-                    bene_id: user!.id,
+                    person_profile_id: user!.id,
+                    role: session?.userData.role ?? "",
                     module: module,
-                    created_date: new Date().toISOString(),
+                    created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     created_by: session!.userData!.email!,
                     push_status_id: 0,
                 }
@@ -385,31 +413,40 @@ export default function DailyTimeRecordUser() {
                 await dexieDb.submission_log.put(raw)
 
                 console.log('handleSaveAccomplishmentReport', raw, payrollbene)
-                if (raw.status == "2") {
-                    const rev = {
-                        id: payrollbene ? payrollbene.id : uuidv4(),
-                        bene_id: user!.id,
+                if (raw.status_id == 2) {
+                    const rev = payrollbene ? {
+                        ...payrollbene,
                         daily_time_record_id: record_id,
-                        daily_time_record_reviewed_date: new Date().toISOString(),
-                        accomplishment_report_id: payrollbene?.accomplishment_report_id || "",
-                        accomplishment_report_reviewed_date: payrollbene?.accomplishment_report_reviewed_date || "",
-                        period_cover_from: date?.from!,
-                        period_cover_to: date?.to!,
+                        daily_time_record_reviewed_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        last_modified_by: session!.userData!.email!,
+                    } : {
+                        id: uuidv4(),
+                        person_profile_id: user!.id,
+                        daily_time_record_id: record_id,
+                        daily_time_record_reviewed_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        accomplishment_report_id: "",
+                        accomplishment_report_reviewed_date: "",
                         operation_status: "",
-                        operation_status_date: "",
-                        odnpm_status: "",
-                        odnpm_status_date: "",
-                        finance_status: "",
-                        finance_status_date: "",
-                        date_released: "",
-                        date_received: "",
+                        operation_status_date: null,
                         operation_reviewed_by: "",
+                        odnpm_status: "",
+                        odnpm_status_date: null,
                         odnpm_reviewed_by: "",
+                        finance_status: "",
+                        finance_status_date: null,
                         finance_reviewed_by: "",
+                        date_released: null,
+                        date_received: null,
+                        period_cover_from: format(new Date(date!.from!), "yyyy-MM-dd"),
+                        period_cover_to: format(new Date(date!.to!), "yyyy-MM-dd"),
+                        created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        created_by: session!.userData!.email!,
                         push_status_id: 0,
+                        push_date: null,
                     }
                     console.log('review', rev)
-                    await dexieDb.cfwpayroll_bene.put(rev)
+                    await dexieDb.cfwpayroll_bene.put(rev as ICFWPayrollBene)
                 }
 
                 toast({
@@ -441,10 +478,9 @@ export default function DailyTimeRecordUser() {
                 return;
             }
 
-            const results = await service.syncDLTimeLogs('cfwtimelogs/view/multiple/', {
+            const results = await new DTRService().syncDLTimeLogs('cfwtimelogs/view/multiple/', {
                 "person_profile_id": user.user_id
             });
-
 
             console.log('results', results)
 
@@ -477,9 +513,24 @@ export default function DailyTimeRecordUser() {
                     </div>
 
                     {/* Title Section */}
-                    <div className="text-lg font-semibold mt-2 md:mt-0">
-                        Daily Time Record
+                    <div className="flex flex-col text-lg font-semibold mt-2 md:mt-0">
+                        <div className="flex items-center gap-1 flex-1">
+                            <span className='flex-1'>Daily Time Record</span>
+                            {lastStatus.status_id == 2 &&
+                                <CheckCircle2Icon className="h-8 w-8 bg-green-500/30 p-1 rounded-full text-green-500" />
+                            }
+
+                        </div>
+                        {lastStatus.id !== "" &&
+                            <small className={`text-xs ${lastStatus.status_id == 2 ? "text-green-500 font-bold" : "text-yellow-500 text-center font-bold"}`}>
+                                {lastStatus.status_id == 2 ? `Approved at ${lastStatus?.status_date && !isNaN(new Date(lastStatus.status_date).getTime())
+                                    ? format(new Date(lastStatus.status_date), 'MMM dd, yyyy hh:mm a')
+                                    : "-"}` : "(For Compliance)"}
+                            </small>
+                        }
+
                     </div>
+
                 </CardTitle>
 
             </CardHeader>
@@ -490,7 +541,7 @@ export default function DailyTimeRecordUser() {
 
                     <div className="flex items-center space-x-4 mb-6 flex-wrap gap-1">
                         <Avatar>
-                            <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" alt="User name" />
+                            <AvatarImage src={user?.profile_picture} alt={`${user?.first_name} ${user?.last_name}`} />
                             <AvatarFallback>{user?.first_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className='flex-1'>
@@ -500,16 +551,14 @@ export default function DailyTimeRecordUser() {
 
                         <DatePickerWithRange
                             endIcon={<SquareArrowUpRightIcon onClick={() => {
-                                const period_cover = format(new Date(date!.from!)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(date!.to!)!.toISOString(), 'yyyyMMdd')
-                                router.push(`/personprofile/accomplishment-report/${user?.user_id}/${uuidv5("accomplishment report" + "-" + period_cover, user?.user_id ?? "")}`)
+                                const period_cover = format(new Date(date!.from!)!, 'yyyyMMdd') + "-" + format(new Date(date!.to!)!, 'yyyyMMdd')
+                                router.push(`/personprofile/accomplishment-report/${user?.id}/view=${period_cover}`)
                             }} className="scale-116 mx-2 cursor-pointer" />}
                             className={"bg-primary text-primary-foreground hover:bg-primary/90 p-[5px] rounded-md px-1 cursor-pointer"}
                             value={date}
                             onChange={setDate}
                         />
-
-
-                        {lastStatus.status == "2" &&
+                        {lastStatus.status_id == 2 &&
                             <>
                                 <Button onClick={() => console.log('enteries', null)} size="icon" className="[&_svg]:size-[20px] flex items-center gap-2 !ml-0">
                                     <Printer />
@@ -536,7 +585,7 @@ export default function DailyTimeRecordUser() {
                     </div>
 
                     <div className="no-print">
-                     
+
                         <AppSubmitReview
                             session={session!}
                             review_logs={submissionLogs}

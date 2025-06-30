@@ -80,6 +80,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useForm } from "react-hook-form";
 import { AppTableDialogForm } from './app-table-dialog';
 import { PushStatusBadge } from './general/push-status-badge';
+
 interface DataTableProps {
   iconEdit?: ReactNode;
   iconDelete?: ReactNode;
@@ -106,6 +107,7 @@ interface DataTableProps {
   onFilterChange?: (filters: Filter[]) => void;
   onUseFields?: (columns: any[]) => any[];
   columnProps?: Record<string, any>;
+  onRowSelectionChange?: (selectedRows: any[]) => void;
 }
 
 interface Filter {
@@ -160,7 +162,8 @@ export function AppTable({
   initialFilters = [],
   onFilterChange,
   onUseFields,
-  columnProps
+  columnProps,
+  onRowSelectionChange
 }: DataTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -223,11 +226,41 @@ export function AppTable({
     router.push(`${pathname}${queryString ? `?${queryString}` : ''}`);
   }, [router, pathname, createQueryString]);
 
+  const setSelectedRowsAndNotify = (newSelected: Set<string>) => {
+    setSelectedRows(newSelected);
+    if (enableRowSelection && onRowSelectionChange) {
+      const selected = data.filter(row => newSelected.has(row.id));
+      onRowSelectionChange(selected);
+    }
+  };
+
   const removeSelectedRow = (rowId: string, event?: React.MouseEvent) => {
     event?.stopPropagation();
     const newSelected = new Set(selectedRows);
     newSelected.delete(rowId);
-    setSelectedRows(newSelected);
+    setSelectedRowsAndNotify(newSelected);
+  };
+
+  const toggleRowSelection = (rowId: string, event?: React.MouseEvent) => {
+    event?.stopPropagation();
+    const newSelected = new Set(selectedRows);
+    if (newSelected.has(rowId)) {
+      newSelected.delete(rowId);
+    } else {
+      newSelected.add(rowId);
+    }
+    setSelectedRowsAndNotify(newSelected);
+  };
+
+  const toggleAllRows = (checked: boolean) => {
+    let newSelected;
+    if (checked) {
+      const allIds = data.map(row => row.id);
+      newSelected = new Set(allIds);
+    } else {
+      newSelected = new Set();
+    }
+    setSelectedRowsAndNotify(newSelected);
   };
 
   const columns = useMemo(() => {
@@ -314,26 +347,6 @@ export function AppTable({
       }
     }
   }
-
-  const toggleRowSelection = (rowId: string, event?: React.MouseEvent) => {
-    event?.stopPropagation();
-    const newSelected = new Set(selectedRows);
-    if (newSelected.has(rowId)) {
-      newSelected.delete(rowId);
-    } else {
-      newSelected.add(rowId);
-    }
-    setSelectedRows(newSelected);
-  };
-
-  const toggleAllRows = (checked: boolean) => {
-    if (checked) {
-      const allIds = data.map(row => row.id);
-      setSelectedRows(new Set(allIds));
-    } else {
-      setSelectedRows(new Set());
-    }
-  };
 
   const handleAddFilter = () => {
     if (selectedColumn) {
@@ -458,21 +471,36 @@ export function AppTable({
   const tableColumns: ColumnDef<any>[] = [
     ...(enableRowSelection ? [{
       id: 'select',
-      header: ({ table }: any) => (
-        <Checkbox
-          checked={table.getIsAllPageRowsSelected()}
-          onCheckedChange={(value) => toggleAllRows(!!value)}
-          aria-label="Select all"
-          className="translate-y-[2px]"
-        />
-      ),
+      header: ({ table }: any) => {
+        const allSelected = selectedRows.size === data.length && data.length > 0;
+        const someSelected = selectedRows.size > 0 && selectedRows.size < data.length;
+        let checked: boolean | 'indeterminate' = false;
+        if (allSelected) checked = true;
+        else if (someSelected) checked = 'indeterminate';
+        return (
+          <Checkbox
+            checked={checked}
+            onCheckedChange={() => {
+              if (allSelected) toggleAllRows(false);
+              else toggleAllRows(true);
+            }}
+            aria-label="Select all"
+            className={cn(
+              "translate-y-[2px] bg-transparent mr-4",
+              (allSelected || someSelected) && "text-white"
+            )}
+          />
+        );
+      },
       cell: ({ row }: any) => (
-        <Checkbox
-          checked={selectedRows.has(row.original.id)}
-          onCheckedChange={() => toggleRowSelection(row.original.id)}
-          aria-label="Select row"
-          className="translate-y-[2px]"
-        />
+        <div onClick={e => e.stopPropagation()}>
+          <Checkbox
+            checked={selectedRows.has(row.original.id)}
+            onCheckedChange={() => toggleRowSelection(row.original.id)}
+            aria-label="Select row"
+            className="translate-y-[2px] text-primary"
+          />
+        </div>
       ),
       enableSorting: false,
       enableHiding: false,
@@ -879,26 +907,33 @@ export function AppTable({
               <TableHeader>
                 <TableRow>
                   {table.getHeaderGroups().map((headerGroup) =>
-                    headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className={cn(
-                          `${simpleView ? 'bg-muted/50 font-bold text-primary' : 'bg-primary text-primary-foreground'}  h-12`,
-                          "border-[0.5px] border-primary-foreground/10",
-                          "@media (max-width: 768px) {",
-                          header.id === headerGroup.headers[0].id || header.id === 'actions' ? 'sticky z-10' : '',
-                          header.id === headerGroup.headers[0].id ? 'left-0' : header.id === 'actions' ? 'right-0' : '',
-                          "}"
-                        )}
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+                    headerGroup.headers.map((header, headerIdx, arr) => {
+                      const isFirst = headerIdx === 0 ;
+                      const applyBg = simpleView;
+                      return (
+                        <TableHead
+                          key={header.id}
+                          className={cn(
+                            `${simpleView ? 'bg-muted/50 font-bold text-primary' : 'h-12'}`,
+                            'bg-black text-white border-[0.5px] border-primary-foreground/10',
+                            isFirst  && enableRowSelection && ' bg-white',
+                            isFirst  && 'sticky left-0 z-10  mx-2',
+                            "border-[0.5px] border-primary-foreground/10",
+                            "@media (max-width: 768px) {",
+                            header.id === 'actions' ? 'sticky z-10 right-0' : '',
+                            "}"
                           )}
-                      </TableHead>
-                    ))
+                        >
+                          {/* {JSON.stringify({applyBg,isFirst})} */}
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      );
+                    })
                   )}
                 </TableRow>
               </TableHeader>
@@ -914,10 +949,13 @@ export function AppTable({
                       )}
                       onClick={() => !isRefreshing && onRowClick?.(row.original)}
                     >
-                      {row.getVisibleCells().map((cell) => (
+                      {row.getVisibleCells().map((cell, cellIdx) => (
                         <TableCell
                           key={cell.id}
-                          className={`  @apply border-b;   @media (max-width: 768px) {     ${cell.column.id === row.getVisibleCells()[0].column.id || cell.column.id === 'actions' ? 'sticky z-10 bg-background' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0 border-r' : cell.column.id === 'actions' ? 'right-0 border-l' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0' : cell.column.id === 'actions' ? 'right-0' : ''}   } `}
+                          className={cn(
+                            cellIdx === 0 && enableRowSelection && 'sticky left-0 z-10 bg-white mx-2',
+                            `@apply border-b;   @media (max-width: 768px) {     ${cell.column.id === row.getVisibleCells()[0].column.id || cell.column.id === 'actions' ? 'sticky z-10 bg-background' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0 border-r' : cell.column.id === 'actions' ? 'right-0 border-l' : ''}     ${cell.column.id === row.getVisibleCells()[0].column.id ? 'left-0' : cell.column.id === 'actions' ? 'right-0' : ''}   } `
+                          )}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -964,7 +1002,7 @@ export function AppTable({
                     checked={selectedRows.has(row.original.id)}
                     onCheckedChange={() => toggleRowSelection(row.original.id)}
                     aria-label="Select row"
-                    className="translate-y-[2px]"
+                    className="translate-y-[2px] text-primary"
                   />
                 </div>
               )}

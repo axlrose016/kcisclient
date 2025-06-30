@@ -331,7 +331,7 @@ export class FinanceService {
                     data = {
                         ...allocation,
                         id:uuidv4(),
-                        created_date: new Date().toISOString(),
+                        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         created_by: _session.userData.email!,
                         push_status_id: 2,
                         remarks: "Record Created by " + _session.userData.email,
@@ -344,7 +344,7 @@ export class FinanceService {
                         data = {
                         ...existing,
                         ...allocation,
-                        last_modified_date: new Date().toISOString(),
+                        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         last_modified_by: _session.userData.email!,
                         push_status_id: 2,
                         remarks: "Record Updated by " + _session.userData.email,
@@ -392,7 +392,7 @@ export class FinanceService {
                     data = {
                         ...uacs,
                         id:uuidv4(),
-                        created_date: new Date().toISOString(),
+                        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         created_by: _session.userData.email,
                         push_status_id: 2,
                         remarks: "Record Created by " + _session.userData.email,
@@ -405,7 +405,7 @@ export class FinanceService {
                         data = {
                         ...existing,
                         ...uacs,
-                        last_modified_date: new Date().toISOString(),
+                        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         last_modified_by: _session.userData.email,
                         push_status_id: 2,
                         remarks: "Record Updated by " + _session.userData.email,
@@ -456,7 +456,7 @@ export class FinanceService {
                     data = {
                         ...mop,
                         id:uuidv4(),
-                        created_date: new Date().toISOString(),
+                        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         created_by: _session.userData.email,
                         push_status_id: 2,
                         remarks: "Record Created by " + _session.userData.email,
@@ -469,7 +469,7 @@ export class FinanceService {
                         data = {
                         ...existing,
                         ...mop,
-                        last_modified_date: new Date().toISOString(),
+                        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         last_modified_by: _session.userData.email,
                         push_status_id: 2,
                         remarks: "Record Updated by " + _session.userData.email,
@@ -524,7 +524,7 @@ export class FinanceService {
                     data = {
                         ...allotment,
                         id:uuidv4(),
-                        created_date: new Date().toISOString(),
+                        created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         created_by: _session.userData.email!,
                         push_status_id:2,
                         remarks: "Record Created by " + _session.userData.email,
@@ -537,7 +537,7 @@ export class FinanceService {
                     data = {
                         ...existing,
                         ...allotment,
-                        last_modified_date: new Date().toISOString(),
+                        last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                         last_modified_by: _session.userData.email!,
                         push_status_id: 2,
                         remarks: "Record Updated by " + _session.userData.email
@@ -564,7 +564,7 @@ export class FinanceService {
                 const data = {
                     ...uacs,
                     allotment_id: "",
-                    last_modified_date: new Date().toISOString(),
+                    last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     last_modified_by: _session.userData.email ?? "unknown",
                     push_status_id: 2,
                     remarks: "Automatically unassigned the allotment id because it was already deleted by " + _session.userData.email, 

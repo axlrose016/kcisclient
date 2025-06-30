@@ -13,7 +13,7 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import Image from 'next/image';
-import { DTRService } from './service';
+import { DTRService } from '@/components/services/DTRServices';
 import { toast } from '@/hooks/use-toast';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 
@@ -163,25 +163,12 @@ export default function DailyTimeRecordPage() {
         }
     };
 
-
-    const handleEdit = (row: any) => {
-        console.log('Edit:', row);
-    };
-
-    const handleDelete = (row: any) => {
-        console.log('Delete:', row);
-    };
+ 
 
     const handleRowClick = (row: any) => {
         console.log('Row clicked:', row);
         router.push(`/${baseUrl}/${row.user_id}`);
-    };
-
-    const handleAddNewRecord = (newRecord: any) => {
-        console.log('handleAddNewRecord', newRecord)
-    };
-
-
+    }; 
 
     return (
 

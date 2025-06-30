@@ -258,6 +258,7 @@ export interface IWorkPlan {
   remarks?: string | null,  //✔️
   alternate_supervisor_id: string | null;  //✔️
   area_focal_person_id: string | null;  //✔️//main focal person of the company i.e HEI Focal Person 
+  user_id: string
   // total_number_of_bene?: number;  
   
 }
@@ -324,7 +325,7 @@ export interface IAccomplishmentReport {
 export interface IAccomplishmentActualTask {
   id: string;  
   accomplishment_report_id: string;
-  category_id: string;
+  category_id: number;
   task: string;
   accomplishment: string;
   mov: string;

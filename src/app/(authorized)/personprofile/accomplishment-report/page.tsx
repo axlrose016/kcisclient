@@ -12,10 +12,11 @@ import { AppTable } from '@/components/app-table';
 import { SessionPayload } from '@/types/globals';
 import { getSession } from '@/lib/sessions-client';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
-import { ARService } from './service';
+import { ARService } from '@/components/services/ARservice';
 import { toast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb'; 
+import PersonProfileService from '@/components/services/PersonProfileService';
 
 
 
@@ -77,8 +78,7 @@ const columns = [
 
 
 export default function AccomplishmentReport() {
-
-    const service = new ARService();
+ 
     const router = useRouter(); 
     const [session, setSession] = useState<SessionPayload>();
     const [data, setData] = useState<any[]>([]);
@@ -121,7 +121,11 @@ export default function AccomplishmentReport() {
         console.log('DTR: session', _session)
         debugger;
         if (["CFW Beneficiary", "Guest"].includes(_session?.userData?.role || "")) {
-            router.push(`/${baseUrl}/${_session.id}`);
+            (async () => {
+                const user = await dexieDb.person_profile.where('user_id')
+                .equals(_session.id!).first();          
+                router.push(`/${baseUrl}/${user?.id}`);
+            })();
         } else {
             (async () => {
                 const _session = await getSession() as SessionPayload;
@@ -145,7 +149,7 @@ export default function AccomplishmentReport() {
                 return;
             }
 
-            const results = await service.syncDLProfile(`person_profile/view/by_supervisor/${session.id}/`);
+            const results = await PersonProfileService.syncDLProfile(`person_profile/view/by_supervisor/${session.id}/`);
             if (!results) {
                 console.log('Failed to fetch time records');
                 return;
@@ -170,7 +174,7 @@ export default function AccomplishmentReport() {
 
     const handleRowClick = (row: any) => {
         console.log('Row clicked:', row);
-        router.push(`/${baseUrl}/${row.user_id}`);
+        router.push(`/${baseUrl}/${row.id}`);
     };
 
     return (
@@ -191,15 +195,13 @@ export default function AccomplishmentReport() {
 
             </CardHeader>
             <CardContent>
-
                 <div className="min-h-screen">
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
                             columns={columns} 
                             onRowClick={handleRowClick}
-                            onRefresh={handleOnRefresh}
-                        />
+                            onRefresh={handleOnRefresh}/>
                     </div>
                 </div>
 

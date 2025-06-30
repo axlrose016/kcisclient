@@ -13,7 +13,10 @@ import clsx from "clsx";
 import GeneratePDF from "@/components/pdf/CfwBooklet";
 import { useBulkSyncStore } from "@/lib/state/bulksync-store";
 import PersonProfileService from "@/components/services/PersonProfileService";
-
+import { CFWPayrollService } from "@/components/services/CFWPayrollService";
+import { ARService } from "@/components/services/ARservice";
+import { DTRService } from "@/components/services/DTRServices";
+import { SubmissionReviewService } from "@/components/services/SubmissionReviewService";
 
 //import pdfviewer from "../../components/PDF/pdfviewer";
 export default function PersonProfileDashboard() {
@@ -55,11 +58,42 @@ export default function PersonProfileDashboard() {
         console.log("Person Profile Sector", syncSectorsStatus);
         const syncProgramDetailsStatus = await PersonProfileService.syncBulkProgramDetails();
         console.log("Person Profile Program Details", syncProgramDetailsStatus);
-        setPersonSynching(false);
       }
     }
     syncData();
   }, [personSynching]);
+
+
+  useEffect(() => {
+    const syncData = async () => {
+      if (profile && session?.userData.role === "CFW Beneficiary" && session?.id !== undefined) {
+
+        const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${profile?.id}/`);
+        console.log("Submission Review", sv);
+
+        const syncDTR = await new DTRService().syncDLTimeLogs(`cfwtimelogs/view/multiple/`, {
+          "person_profile_id": profile?.user_id
+        });
+        console.log("DTR", syncDTR);
+
+        const syncAccomplishmentReport = await new ARService().syncDLARs(`accomplishment_report/view/${profile?.id}/`);
+        console.log("Accomplishment Report", syncAccomplishmentReport); 
+        
+      } else {
+        // const results = await PersonProfileService.getAPIBenes(`person_profile/view/pages/`, {
+        //   "page_number": 1,
+        //   "page_size": 10000
+        // });
+        // console.log("Person Profile", syncCFWPayrollBene);
+
+        const syncCFWPayrollBene = await new CFWPayrollService().syncDLCFWPayrollBene(`submission_logs/view/by_supervisor/${profile?.id}/`);
+        console.log("CFW Payroll Beneficiary", syncCFWPayrollBene);
+        
+      }
+      setPersonSynching(false);
+    }
+    syncData();
+  }, [profile])
 
   useEffect((() => {
     const fetchData = async () => {
@@ -73,6 +107,12 @@ export default function PersonProfileDashboard() {
 
             // Fetch Profile (Dexie first, then LocalStorage)
             let profile: IPersonProfile | null = (await dexieDb.person_profile.where("user_id").equals(session.id).first()) || null;
+            // const sr = await CFWPayrollService.syncDLCFWPayrollBene(`cfw_payroll_beneficiary/view/${user?.id}/`);
+            // if (!sr) {
+            //     console.log('Failed to fetch time records');
+            //     return;
+            // }
+
             //debugger;
             if (!profile) {
               profile = JSON.parse(localStorage.getItem("person_profile") || "null");

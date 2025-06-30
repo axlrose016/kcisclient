@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DateRange } from 'react-day-picker';
 import { DatePickerWithRange } from '@/components/app-daterange';
-import { cn } from '@/lib/utils';
+import { cn, uuidv5 } from '@/lib/utils';
 import { Download, ExternalLinkIcon, File, Printer, Trash2 } from 'lucide-react';
 import { IAccomplishmentActualTask, ICFWAssessment, IPersonProfile, IWorkPlan, IWorkPlanTasks } from '@/components/interfaces/personprofile';
 import { IUser } from '@/components/interfaces/iuser';
@@ -17,7 +17,7 @@ import AppSubmitReview from './app-submit-review';
 import { IAttachments } from './interfaces/general/attachments';
 import { toast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { v5 as uuidv5 } from 'uuid';
+import { format } from 'date-fns';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5
@@ -84,14 +84,10 @@ export function AccomplishmentUser({
 
                 // Get other tasks and actual tasks 
                 if (accomplishmentReportId) {
-                    const otherTask = await dexieDb.accomplishment_actual_task.where({
-                        category_id: '99',
-                        accomplishment_report_id: accomplishmentReportId
-                    }).toArray();
-
-                    setOtherTask(otherTask);
                     const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
+                    const otherTask = alltask.filter(i => i.category_id == 99)
                     console.log('AccomplishmentUser > alltask', { alltask, otherTask, accomplishmentReportId })
+                    setOtherTask(otherTask);
                     setTasks(alltask);
                     setTaskLoader(alltask);
                     onChangeTask?.(alltask)
@@ -126,6 +122,7 @@ export function AccomplishmentUser({
                 accomplishment: type == "accomplishment" ? sanitizedValue : item.accomplishment,
                 mov: type == "movs" ? sanitizedValue : item.mov,
                 task: type == "task" ? sanitizedValue : item.task,
+                remarks: task.id,
             };
             console.log('handleContentEdit > updates', { updates })
             const r = [...tasks.map((t, i) => i === index ? updates : t)]
@@ -141,7 +138,7 @@ export function AccomplishmentUser({
                 mov: type == "movs" ? sanitizedValue : "",
                 task: type == "task" ? sanitizedValue : "",
                 status_id: 0,
-                created_date: new Date().toString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 created_by: session!.userData!.email!,
                 last_modified_date: null,
                 last_modified_by: "",
@@ -163,15 +160,16 @@ export function AccomplishmentUser({
     };
 
     const handleOtherTask = () => {
+        const id = uuidv4()
         const newTask: IAccomplishmentActualTask = {
-            id: uuidv4(),
-            category_id: '99',
+            id: id,
+            category_id: 99,
             accomplishment_report_id: accomplishmentReportId || "",
             accomplishment: "",
             mov: "",
             task: "",
             status_id: 0,
-            created_date: new Date().toString(),
+            created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
             created_by: session!.userData!.email!,
             last_modified_date: null,
             last_modified_by: "",
@@ -180,14 +178,14 @@ export function AccomplishmentUser({
             deleted_date: null,
             deleted_by: "",
             is_deleted: false,
-            remarks: "",
+            remarks: id,
         };
         setOtherTask([...otherTask, newTask]);
         onChangeTask?.(otherTask)
         onChangeAttachments?.(attachments)
     };
 
-    const handleOpenFileOnNewTab = (task: any, idx: number, e: any   , key = 'remarks' , idKey = 'id') => {
+    const handleOpenFileOnNewTab = (task: any, idx: number, e: any, key = 'remarks', idKey = 'id') => {
         const attachment = attachments.find((i: any) => i[key] == task[idKey])
         // console.log('handleOpenFileOnNewTab', { e, attachment, attachments, task, idx });
         if (attachment) {
@@ -199,7 +197,7 @@ export function AccomplishmentUser({
         }
     }
 
-    const handleDeleteAttachment = (task: any, idx: number, e: any , key = 'remarks' , idKey = 'id') => { 
+    const handleDeleteAttachment = (task: any, idx: number, e: any, key = 'remarks', idKey = 'id') => {
         (async () => {
 
             const updatedTasks = [...tasks];
@@ -209,9 +207,9 @@ export function AccomplishmentUser({
                 await dexieDb.attachments.put({
                     ...attachment,
                     is_deleted: true,
-                    deleted_date: new Date().toISOString(),
+                    deleted_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     deleted_by: session!.userData!.email!,
-                    last_modified_date: new Date().toISOString(),
+                    last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     last_modified_by: session!.userData!.email!,
                     push_status_id: 0,
                 })
@@ -232,7 +230,7 @@ export function AccomplishmentUser({
     }
 
 
-    const handleAddAttachment = (task: any, idx: number, e: any , key = 'remarks' , idKey = 'id') => {
+    const handleAddAttachment = (task: any, idx: number, e: any, key = 'remarks', idKey = 'id') => {
         // console.log('handleAddAttachment', { e, task, idx });
         (async () => {
             if (e && e.target.files && e.target.files[0]) {
@@ -261,7 +259,7 @@ export function AccomplishmentUser({
                     file_id: 100,
                     module_path: module_path,
                     user_id: session!.id,
-                    created_date: new Date().toISOString(),
+                    created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     created_by: session!.userData.email ?? "",
                     last_modified_date: null,
                     last_modified_by: null,
@@ -285,15 +283,15 @@ export function AccomplishmentUser({
         })();
     }
 
-    const checkImageAttachment = (task: IWorkPlanTasks | IAccomplishmentActualTask | any, idx: number, key = 'remarks' , idKey = 'id') => {
+    const checkImageAttachment = (task: IWorkPlanTasks | IAccomplishmentActualTask | any, idx: number, key = 'remarks', idKey = 'id') => {
         const attachment = attachments.find((i: any) => i[key] === task[idKey]);
-        console.log('checkImageAttachment', { attachment, task, key , attachments   })
+        // console.log('checkImageAttachment', { attachment, task, key, attachments })
         if (!attachment?.file_path) return null;
 
         if (attachment.file_path instanceof Blob) {
             return URL.createObjectURL(attachment.file_path);
         }
-        return null;
+        return 'https://kcnfms.dswd.gov.ph' + attachment.file_path;
     }
 
     const handleDeleteOtherTask = (task: IAccomplishmentActualTask, idx: number) => {
@@ -408,13 +406,19 @@ export function AccomplishmentUser({
                                             beforeInput={<div className='flex flex-row gap-2'>
                                                 {checkImageAttachment(task, idx) && (
                                                     <div className="relative">
-                                                        <Image
-                                                            className='my-2'
-                                                            src={checkImageAttachment(task, idx) || ""}
-                                                            alt="attachment"
-                                                            width={300}
-                                                            height={300}
-                                                        />
+
+                                                        <div className='flex flex-col gap-2'>
+                                                            <Image
+                                                                className='my-2'
+                                                                src={checkImageAttachment(task, idx) || ""}
+                                                                alt="attachment"
+                                                                objectFit='contain'
+                                                                width={300}
+                                                                height={300}
+                                                            />
+                                                            {/* <small>{checkImageAttachment(task, idx) || ""}</small> */}
+                                                        </div>
+
 
                                                         <div className='absolute top-2 right-2'>
                                                             <Button
@@ -529,13 +533,17 @@ export function AccomplishmentUser({
                                             beforeInput={<div className='flex flex-row gap-2'>
                                                 {checkImageAttachment(task, idx) && (
                                                     <div className="relative">
-                                                        <Image
-                                                            className='my-2'
-                                                            src={checkImageAttachment(task, idx) || ""}
-                                                            alt="attachment"
-                                                            width={300}
-                                                            height={300}
-                                                        />
+                                                        <div className='flex flex-col gap-2'>
+                                                            <Image
+                                                                className='my-2'
+                                                                src={checkImageAttachment(task, idx) || ""}
+                                                                alt="attachment"
+                                                                objectFit='contain'
+                                                                width={300}
+                                                                height={300}
+                                                            />
+                                                            {/* <small>{checkImageAttachment(task, idx) || ""}</small> */}
+                                                        </div>
 
                                                         <div className='absolute top-2 right-2'>
                                                             <Button
@@ -597,7 +605,7 @@ export function AccomplishmentUser({
                                     </TableRow>
                                 ))}
                             </> : null}
- 
+
                             {otherTask.length !== 0 ? <>
                                 <TableRow
                                     key={"othertask"}
@@ -650,22 +658,26 @@ export function AccomplishmentUser({
                                             value={task.mov}
                                             onDebouncedChange={(val) => handleContentEdit(task, val || "", "movs")}
                                             beforeInput={<div className='flex flex-row gap-2'>
-                                                {checkImageAttachment(task, idx , 'remarks' , 'remarks') && (
+                                                {checkImageAttachment(task, idx, 'remarks', 'remarks') && (
                                                     <div className="relative">
-                                                        <Image
-                                                            className='my-2'
-                                                            src={checkImageAttachment(task, idx , 'remarks' , 'remarks' ) || ""}
-                                                            alt="attachment"
-                                                            width={300}
-                                                            height={300}
-                                                        />
+                                                        <div className='flex flex-col gap-2'>
+                                                            <Image
+                                                                className='my-2'
+                                                                src={checkImageAttachment(task, idx, 'remarks', 'remarks') || ""}
+                                                                alt="attachment"
+                                                                objectFit='contain'
+                                                                width={300}
+                                                                height={300}
+                                                            />
+                                                            {/* <small>{checkImageAttachment(task, idx, 'remarks', 'remarks') || ""}</small> */}
+                                                        </div>
 
                                                         <div className='absolute top-2 right-2'>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
                                                                 className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e , 'remarks' , 'remarks')}
+                                                                onClick={(e: any) => handleOpenFileOnNewTab(task, idx, e, 'remarks', 'remarks')}
                                                             >
                                                                 <ExternalLinkIcon className="h-4 w-4" />
                                                                 <span className="sr-only">open attachment</span>
@@ -675,7 +687,7 @@ export function AccomplishmentUser({
                                                                     variant="ghost"
                                                                     size="icon"
                                                                     className="h-8 w-8 p-0 text-destructive hover:text-destructive/90"
-                                                                    onClick={(e: any) => handleDeleteAttachment(task, idx, e , 'remarks' , 'remarks')}
+                                                                    onClick={(e: any) => handleDeleteAttachment(task, idx, e, 'remarks', 'remarks')}
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                     <span className="sr-only">Delete attachment</span>

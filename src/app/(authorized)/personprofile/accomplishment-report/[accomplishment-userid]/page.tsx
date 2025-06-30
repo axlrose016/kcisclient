@@ -12,9 +12,11 @@ import { getSession } from '@/lib/sessions-client';
 import { formatInTimeZone } from 'date-fns-tz';
 import { ILibSchoolProfiles } from '@/components/interfaces/library-interface';
 import Image from 'next/image';
-import { ARService } from '../service';
+import { ARService } from '@/components/services/ARservice';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 import { toast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
+import { CFWPayrollService } from '@/components/services/CFWPayrollService';
 
 interface IData {
     id: string;
@@ -24,44 +26,14 @@ interface IData {
 }
 const columns = [
     {
-        id: 'date_cover_from',
-        header: 'Date Cover',
+        id: 'Period',
+        header: 'Period Cover',
         accessorKey: 'period_cover_from',
         filterType: 'text',
         sortable: true,
-        cell: (value: Date | undefined) => {
-            if (value) {
-                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
-            }
-            return "-";
+        cellRow: (row: any) => {
+            return format(row.period_cover_from, 'LLL dd') + " - " + format(row.period_cover_to, 'dd,y');
         },
-    },
-    {
-        id: 'date_cover_to',
-        header: 'Date Cover To',
-        accessorKey: 'period_cover_to',
-        filterType: 'text',
-        sortable: true,
-        cell: (value: Date | undefined) => {
-            if (value) {
-                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
-            }
-            return "-";
-        },
-    },
-    {
-        id: 'status',
-        header: 'status',
-        accessorKey: 'status_id',
-        filterType: 'text',
-        sortable: true,
-    },
-    {
-        id: 'remarks',
-        header: 'Remarks',
-        accessorKey: 'remarks',
-        filterType: 'text',
-        sortable: true,
     },
 ]
 
@@ -71,9 +43,7 @@ const baseUrl = 'personprofile/accomplishment-report'
 
 export default function AccomplishmentReportUsersList() {
 
-    const router = useRouter();
-    const service = new ARService()
-
+    const router = useRouter();  
     const [user, setUser] = useState<IUser | any>();
     const [session, setSession] = useState<SessionPayload>();
     const params = useParams<{ 'accomplishment-userid': string; id: string }>()
@@ -92,8 +62,6 @@ export default function AccomplishmentReportUsersList() {
         })();
     }, [])
 
-
-
     useEffect(() => {
         console.log('')
         const fetchWorkPlan = async () => {
@@ -102,8 +70,8 @@ export default function AccomplishmentReportUsersList() {
                 return null;
             }
 
-            try { 
-                const results = await service.syncDLWorkplan(`work_plan/view/by_bene/${user.id}/`);
+            try {
+                const results = await new ARService().syncDLWorkplan(`work_plan/view/by_bene/${user.id}/`);
                 if (!results) {
                     console.log('Failed to fetch time records');
                     return;
@@ -120,11 +88,10 @@ export default function AccomplishmentReportUsersList() {
     }, [user])
 
     useEffect(() => {
-        (async () => { 
+        (async () => {
             handleOnRefresh()
         })();
     }, [session])
-
 
     const handleOnRefresh = async () => {
         try {
@@ -132,15 +99,15 @@ export default function AccomplishmentReportUsersList() {
             if (!session) {
                 console.log('handleOnRefresh > session is not available');
                 return;
-            }
-
-            const results = await service.syncDLARs(`accomplishment_report/view/${params!['accomplishment-userid']}/`);
+            } 
+           
+            const results = await new ARService().syncDLARs(`accomplishment_report/view/${params!['accomplishment-userid']}/`);
             if (!results) {
                 console.log('Failed to fetch time records');
                 return;
             }
 
-            await getResults(session);
+            await getResults(session)
         } catch (error) {
             console.error('Error syncing time records:', error);
             toast({
@@ -153,19 +120,23 @@ export default function AccomplishmentReportUsersList() {
         }
     };
 
-
     const getResults = async (session: SessionPayload) => {
-        const user = await dexieDb.person_profile.where('user_id')
+        const user = await dexieDb.person_profile.where('id')
             .equals(params!['accomplishment-userid']!).first();
 
         const merge = {
             ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
         };
-
-        console.log('getResults', { session, merge });
         setUser(merge);
-        setARList(await dexieDb.accomplishment_report.where("person_profile_id").equals(params!['accomplishment-userid']!).toArray())
+
+        const syncCFWPayrollBeneStatus = await new CFWPayrollService().syncDLCFWPayrollBene(`cfw_payroll_beneficiary/view/${user?.id}/`);
+        console.log("CFW Payroll Beneficiary", syncCFWPayrollBeneStatus); 
+
+        const rw = await dexieDb.accomplishment_report.where("person_profile_id").equals(params!['accomplishment-userid']!).toArray()
+        const par = rw.filter((item) => !item.is_deleted)
+        console.log('getResults', { session, merge, par });
+        setARList(par)
 
         const results = await dexieDb.cfwtimelogs.where('created_by')
             .equals(user?.email ?? "")
@@ -175,7 +146,31 @@ export default function AccomplishmentReportUsersList() {
     };
 
     const handleDelete = (row: any) => {
-        console.log('Delete:', row);
+        console.log('Delete:2', row);
+        (async () => {
+
+            //Table.where(":id").equals(key).modify(changes)
+            await dexieDb.accomplishment_report.where(":id").equals(row.id).modify({
+                is_deleted: true,
+                push_status_id: 0,
+                status_id: 0,
+                last_modified_date: format(new Date() , 'yyyy-MM-dd HH:mm:ss'),
+                last_modified_by: session?.userData?.email ?? "",
+            });
+            const tasks = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(row.id).toArray();
+            if (tasks.length > 0) {
+                tasks.forEach(async (task) => {
+                    await dexieDb.accomplishment_actual_task.where(":id").equals(task.id).modify({
+                        is_deleted: true,
+                        push_status_id: 0,
+                        last_modified_date: format(new Date() , 'yyyy-MM-dd HH:mm:ss'),
+                        last_modified_by: session?.userData?.email ?? "",
+                    });
+                });
+            }
+
+            await handleOnRefresh();
+        })();
     };
 
     const handleRowClick = (row: any) => {
@@ -206,32 +201,28 @@ export default function AccomplishmentReportUsersList() {
                 </CardTitle>
             </CardHeader>
             <CardContent>
-
                 <div className="min-h-screen">
-
                     <div className="flex items-center space-x-4 mb-6">
                         <Avatar>
-                            <AvatarImage src="https://images.unsplash.com/photo-1494790108377-be9c29b29330" alt="User name" />
+                            <AvatarImage src={user?.profile_picture} alt={`${user?.first_name} ${user?.last_name}`} />
                             <AvatarFallback>{user?.first_name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className='flex-1'>
                             <h2 className="text-lg font-semibold uppercase">{user?.first_name} {user?.last_name}</h2>
                             <p className="text-sm text-gray-500">{user?.school_name}</p>
                         </div>
-
-
                     </div>
+
 
                     <AppTable
                         data={data}
-                        columns={columns} 
+                        columns={columns}
                         onRowClick={handleRowClick}
                         onClickAddNew={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleClickAddNew : undefined}
+                        onDelete={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleDelete : undefined}
                     />
                 </div>
-
             </CardContent>
         </Card>
-
     );
 }

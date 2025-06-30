@@ -31,7 +31,11 @@ export class ARService {
         if (p.accomplishment_report_task && p.accomplishment_report_task.length > 0) {
           await dexieDb.accomplishment_actual_task.bulkPut(p.accomplishment_report_task)
         }
+        if (p.attachments && p.attachments.length > 0) {
+          await dexieDb.attachments.bulkPut(p.attachments)
+        }
         delete p.accomplishment_report_task
+        delete p.attachments
         await dexieDb.accomplishment_report.put(p)
       }
 
@@ -43,7 +47,7 @@ export class ARService {
       // )
 
       console.log(`data synced to Dexie > ${url} :`, data.length);
-      return data;
+      return await dexieDb.accomplishment_report.where("is_deleted").equals("false").toArray();
     } catch (error) {
       console.error('Failed to sync auth users to Dexie:', error);
       return undefined;
@@ -125,31 +129,4 @@ export class ARService {
       return undefined;
     }
   }
-
-  async syncDLProfile(url: string, filter?: any): Promise<IPersonProfile[] | undefined> {
-    try {
-      const session = await getSession() as SessionPayload
-      const headers = {
-        'Authorization': `bearer ${session.token}`,
-        'Content-Type': 'application/json',
-      };
-      const dr = filter
-        ? await axios.post<IPersonProfile[]>(apiUrl + url, filter, { headers })
-        : await axios.get<IPersonProfile[]>(apiUrl + url, { headers });
-
-      const data = dr.data;
-      await dexieDb.transaction('rw', [dexieDb.person_profile],
-        async () => {
-          await dexieDb.person_profile.bulkPut(data);
-        }
-      )
-
-      console.log(`data synced to Dexie > ${url} :`, data.length);
-      return data;
-    } catch (error) {
-      console.error('Failed to sync auth users to Dexie:', error);
-      return undefined;
-    }
-  }
-
 }

@@ -195,8 +195,8 @@ export default function WorkPlanPage() {
         {/* Workplan Details {JSON.stringify(workPlanData)} */}
         <Wizard
           mode='draft'
-          title='Work Plan Creation'
-          description='Create a work plan for the beneficiaries'
+          title='Work Plan Drafting'
+          description='Draft a work plan for the beneficiaries'
           beneficiariesData={beneficiariesData}
           workPlanDetails={workPlanData}
           workPlanTasks={tasks}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { addDays, endOfMonth, format } from 'date-fns';
 import { useParams, useRouter } from 'next/navigation';
 import { DateRange } from 'react-day-picker';
@@ -17,11 +17,12 @@ import { AccomplishmentUser } from '@/components/accomplishment-user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
-import { Download, Edit, Printer } from 'lucide-react';
+import { CheckCircle2Icon, CircleAlertIcon, Download, Edit, Printer } from 'lucide-react';
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
-import { v5 as uuidv5 } from 'uuid';
 import { toast } from '@/hooks/use-toast';
+import { uuidv5 } from '@/lib/utils';
+import { SubmissionReviewService } from '@/components/services/SubmissionReviewService';
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 
@@ -64,10 +65,11 @@ export default function AccomplishmentReportUser() {
     const [lastStatus, setLastStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
+        role: "",
         module: "",
         comment: "",
-        status: "",
+        status_id: undefined,
         status_date: "",
         created_date: "",
         created_by: ""
@@ -76,14 +78,17 @@ export default function AccomplishmentReportUser() {
     const [selectedStatus, setSelectedStatus] = useState<ISubmissionLog>({
         id: "",
         record_id: "",
-        bene_id: "",
+        person_profile_id: "",
+        role: "",
         module: "",
         comment: "",
-        status: "",
+        status_id: undefined,
         status_date: "",
         created_date: "",
         created_by: ""
     });
+
+
 
     useEffect(() => {
         (async () => {
@@ -100,14 +105,63 @@ export default function AccomplishmentReportUser() {
 
 
             setSession(_session)
-            await getResults(_session)
+            await getResults()
         })();
     }, [date])
 
-    const getResults = async (session: SessionPayload) => {
-        const user = await dexieDb.person_profile.where('user_id')
+
+    useEffect(() => {
+        (async () => {
+            if (params?.id !== "new") {
+                const raw_ar = await dexieDb.accomplishment_report.where("id").equals(params!.id).toArray()
+                let ar = raw_ar.filter((item) => !item.is_deleted)[0] ?? null
+                if (params?.id.includes("view") || ar !== null) {
+                    if (params?.id.includes("view")) {
+                        const period_cover = params?.id.split("view%3D")[1]
+                        if (period_cover) {
+                            const period_cover_from = new Date(
+                                period_cover.split("-")[0].substring(0, 4) + "-" +
+                                period_cover.split("-")[0].substring(4, 6) + "-" +
+                                period_cover.split("-")[0].substring(6, 8)
+                            )
+                            const period_cover_to = new Date(
+                                period_cover.split("-")[1].substring(0, 4) + "-" +
+                                period_cover.split("-")[1].substring(4, 6) + "-" +
+                                period_cover.split("-")[1].substring(6, 8)
+                            )
+                            ar = {
+                                ...ar,
+                                period_cover_from: period_cover_from,
+                                period_cover_to: period_cover_to
+                            }
+                        }
+                    }
+                    console.log('AccomplishmentReportUser', { ar, params })
+                    setDate({
+                        from: ar?.period_cover_from ? new Date(ar.period_cover_from) : new Date(),
+                        to: ar?.period_cover_to ? new Date(ar.period_cover_to) : new Date()
+                    })
+                } else if (ar == null) {
+                    toast({
+                        variant: "destructive",
+                        title: "Accomplishment Report not found",
+                        description: "Please notify your supervisor to create an accomplishment report!   ",
+                    });
+                    router.push(`/${baseUrl}/${params!['accomplishment-userid']}`)
+                }
+            }
+        })()
+    }, [])
+
+    const getResults = async () => {
+        setAttachments([])
+        const user = await dexieDb.person_profile.where('id')
             .equals(params!['accomplishment-userid']).first();
         console.log('p', { user, params, p: params!['accomplishment-userid'] })
+
+        const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
+        console.log("Submission Review", sv);
+
         const merge = {
             ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),
             ...user
@@ -117,19 +171,16 @@ export default function AccomplishmentReportUser() {
         let period_cover = "";
         let r = "";
         if (date?.from && date?.to && user?.id) {
-            period_cover = format(new Date(date!.from!)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(date!.to!)!.toISOString(), 'yyyyMMdd')
+            period_cover = format(new Date(date!.from!)!, 'yyyyMMdd') + "-" + format(new Date(date!.to!)!, 'yyyyMMdd')
             r = uuidv5("accomplishment report" + "-" + period_cover, user.id);
         }
-        console.log('getResults > uuidv5', { params, date, period_cover, params_id: params!.id, user_id: user?.user_id ?? "", r })
 
         const arId = r;
-        // If the arId is different from the current URL param, update the URL (shallow routing) without refreshing the page
         if (params?.id !== arId && arId) {
-            // Use window.history.replaceState to update the URL without reloading the page
             const newUrl = `/${baseUrl}/${params!['accomplishment-userid']}/${arId}`;
             window.history.replaceState(null, '', newUrl);
         }
-
+        console.log('getResults > uuidv5', { params, date, period_cover, params_id: params!.id, person_profile_id: user?.id ?? "", r })
 
         const logsQuery = await dexieDb.submission_log.where("record_id").equals(arId)
         const logs = await logsQuery.sortBy("created_date")
@@ -139,13 +190,12 @@ export default function AccomplishmentReportUser() {
         setSelectedStatus(logslast ?? selectedStatus)
         setLastStatus(logslast ?? selectedStatus)
 
-        const ar = await dexieDb.accomplishment_report.where("id").equals(arId).first()
-
         const pb = await dexieDb.cfwpayroll_bene.where({
-            period_cover_from: date!.from!,
-            period_cover_to: date!.to!,
-            bene_id: user!.id
+            period_cover_from: format(new Date(date!.from!), "yyyy-MM-dd"),
+            period_cover_to: format(new Date(date!.to!), "yyyy-MM-dd"),
+            person_profile_id: user!.id
         }).first()
+        console.log('payrollbene', { pb, date, user, arId })
         setCFWPayrollBene(pb)
 
         const assessment = await dexieDb.cfwassessment.where("person_profile_id").equals(user?.id || "").first();
@@ -162,16 +212,16 @@ export default function AccomplishmentReportUser() {
 
         const raw = {
             id: arId,
-            person_profile_id: user!.user_id,
+            person_profile_id: user!.id,
             period_cover_from: date?.from ? format(new Date(date.from), "yyyy-MM-dd") : "",
             period_cover_to: date?.to ? format(new Date(date.to), "yyyy-MM-dd") : "",
             work_plan_id: assessment?.work_plan_id || "",
             accomplishment_actual_task: "",
             status_id: ar ? ar.status_id : 0,
-            created_date: ar?.created_date ?? new Date().toISOString(),
+            created_date: ar?.created_date ?? format(new Date(),'yyyy-MM-dd HH:mm:ss'),
             created_by: ar?.created_by ?? user!.email!,
             last_modified_by: ar?.last_modified_by ?? user!.email!,
-            last_modified_date: new Date().toISOString(),
+            last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
             push_status_id: 0,
             push_date: null,
             deleted_date: null,
@@ -184,7 +234,7 @@ export default function AccomplishmentReportUser() {
         const attachments = await dexieDb.attachments.where("record_id").equals(arId).toArray()
         console.log('attachments', { raw, attachments })
         setAttachments(attachments)
-    };
+    }
 
     const handleSaveAccomplishmentReport = () => {
         const id = `${ar?.id}`
@@ -195,36 +245,47 @@ export default function AccomplishmentReportUser() {
                     ...selectedStatus!,
                     id: uuidv4(),
                     record_id: id,
-                    bene_id: user!.id,
+                    person_profile_id: user!.id,
+                    role: session?.userData.role ?? "",
                     module: module,
-                    created_date: new Date().toISOString(),
+                    created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                     created_by: session!.userData!.email!,
                     push_status_id: 0,
                 }
                 await dexieDb.submission_log.put(raw)
-                if (raw.status == "2") {
-                    const rev = {
-                        id: payrollbene ? payrollbene.id : uuidv4(),
-                        bene_id: user!.id,
-                        daily_time_record_id: payrollbene?.daily_time_record_id || "",
-                        daily_time_record_reviewed_date: payrollbene?.daily_time_record_reviewed_date || "",
+                if (raw.status_id == 2) {
+                    const rev = payrollbene ? {
+                        ...payrollbene,
                         accomplishment_report_id: id,
-                        accomplishment_report_reviewed_date: new Date().toISOString(),
-                        period_cover_from: date?.from!,
-                        period_cover_to: date?.to!,
-                        operation_reviewed_by: "",
-                        odnpm_reviewed_by: "",
-                        finance_reviewed_by: "",
+                        accomplishment_report_reviewed_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        last_modified_by: session!.userData!.email!,
+                    } : {
+                        id: uuidv4(),
+                        person_profile_id: user!.id,
+                        daily_time_record_id: "",
+                        daily_time_record_reviewed_date: "",
+                        accomplishment_report_id: id,
+                        accomplishment_report_reviewed_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                         operation_status: "",
                         operation_status_date: null,
+                        operation_reviewed_by: "",
                         odnpm_status: "",
                         odnpm_status_date: null,
+                        odnpm_reviewed_by: "",
                         finance_status: "",
                         finance_status_date: null,
+                        finance_reviewed_by: "",
                         date_released: null,
                         date_received: null,
+                        period_cover_from: format(new Date(date!.from!), "yyyy-MM-dd"),
+                        period_cover_to: format(new Date(date!.to!), "yyyy-MM-dd"),
+                        created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                        created_by: session!.userData!.email!,
+                        push_status_id: 0,
+                        push_date: null,
                     }
-                    await dexieDb.cfwpayroll_bene.put(rev)
+                    await dexieDb.cfwpayroll_bene.put(rev as ICFWPayrollBene)
                 }
                 toast({
                     variant: "green",
@@ -237,10 +298,10 @@ export default function AccomplishmentReportUser() {
                 const raw = {
                     ...ar!,
                     status_id: 0,
-                    created_date: ar?.created_date ?? new Date().toISOString(),
+                    created_date: ar?.created_date ?? format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     created_by: ar?.created_by ?? user!.email!,
                     last_modified_by: ar?.last_modified_by ?? user!.email!,
-                    last_modified_date: new Date().toISOString(),
+                    last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     push_status_id: 0,
                     remarks: "",
                 }
@@ -275,14 +336,32 @@ export default function AccomplishmentReportUser() {
                         <div className="flex-shrink-0">
                             <Image src="/images/logos.png" width={300} height={300} alt="DSWD KC BAGONG PILIPINAS" className="h-12 w-auto" />
                         </div>
-                        <div className="text-lg font-semibold mt-2 md:mt-0">
-                            Accomplishment Report
+                        <div className="flex flex-col text-lg font-semibold mt-2 md:mt-0">
+                            <div className="flex items-center gap-1 flex-1">
+                                <span className='flex-1'>Accomplishment Report</span>
+                                {lastStatus.status_id == 2 ?
+                                    <CheckCircle2Icon className="h-8 w-8 bg-green-500/30 p-1 rounded-full text-green-500 no-print" />
+                                    : lastStatus.status_id == 10 ?
+                                        <CircleAlertIcon className="h-8 w-8 bg-yellow-500/30 p-1 rounded-full text-yellow-500 no-print" />
+                                        : null
+                                }
+
+
+                            </div>
+                            {lastStatus.id !== "" &&
+                                <small className={`text-xs no-print ${lastStatus.status_id == 2 ? "text-green-500 font-bold" : "text-yellow-500 font-bold"}`}>
+                                    {lastStatus.status_id == 2 ? `Approved at ${lastStatus?.status_date && !isNaN(new Date(lastStatus.status_date).getTime())
+                                        ? format(new Date(lastStatus.status_date), 'MMM dd, yyyy hh:mm a')
+                                        : "-"}` : "Submission needs compliance"}
+                                </small>
+                            }
                         </div>
                     </CardTitle>
                 </CardHeader>
 
                 <CardContent>
                     <AccomplishmentUser
+                        key={ar?.id}
                         disabled={session?.userData.role !== "CFW Beneficiary"}
                         assessment={assessment!}
                         user={user}
@@ -301,7 +380,7 @@ export default function AccomplishmentReportUser() {
                             <Button onClick={handleSaveAccomplishmentReport}>
                                 <Edit className="mr-1 h-4 w-4" /> Save
                             </Button>
-                            {lastStatus.status == "2" &&
+                            {lastStatus.status_id == 2 &&
                                 <>
                                     <Button variant="outline" onClick={() => {
                                         const content = document.getElementById('print-section');
@@ -374,7 +453,6 @@ export default function AccomplishmentReportUser() {
                             onSubmit={() => handleSaveAccomplishmentReport()}
                         />
                     </div>
-
                 </CardContent>
             </div>
         </Card>

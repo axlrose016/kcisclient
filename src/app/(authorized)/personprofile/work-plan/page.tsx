@@ -225,9 +225,9 @@ export default function WorkPlanMasterList() {
   const handleCreateNewWorkPlan = () => {
     localStorage.removeItem("work_plan")
     localStorage.removeItem("selectedBeneficiaries")
-
+    const wpIdDraft = uuidv4()
     const work_plan_details = {
-      "id": uuidv4(),
+      "id": wpIdDraft,
       "work_plan_title": "",
       "immediate_supervisor_id": _session.id,
       "deployment_area_name": "",
@@ -240,8 +240,46 @@ export default function WorkPlanMasterList() {
 
     localStorage.setItem("work_plan", JSON.stringify(work_plan_details))
 
+    // save to work_plan table then reroute to edit
+    const createDraftWorkPlan = async () => {
+      debugger
+      try {
+        const onlinePayload = await LoginService.onlineLogin("dsentico@dswd.gov.ph", "Dswd@123");
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`, {
+          method: "POST",
+          headers: {
+            Authorization: `bearer ${onlinePayload.token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify([
+            {
+              id: wpIdDraft,
+              created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+              created_by: _session.userData.email,
+              remarks: "Work Plan Drafted",
+              immediate_supervisor_id: _session.id,
+              status_id: 22,
+              push_status_id: 1,
+              push_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+            },
+          ]),
+        });
 
-    router.push(baseUrl + "/new");
+        if (!res.ok) {
+          console.error("Error creating draft work plan", await res.text());
+        } else {
+          const data = await res.json();
+          console.log("Draft work plan created:", data);
+          router.push(baseUrl + "/" + wpIdDraft + "/draft");
+
+        }
+      } catch (error) {
+        console.error("Draft creation error:", error);
+      }
+    };
+
+    createDraftWorkPlan();
+
   };
 
   function mapApiToDexieWorkPlan(data: any): IWorkPlan {
@@ -268,6 +306,7 @@ export default function WorkPlanMasterList() {
       remarks: data.remarks ?? null,
       alternate_supervisor_id: data.alternate_supervisor_id,
       area_focal_person_id: data.area_focal_person_id,
+      user_id: data.user_id
       // total_number_of_bene: data.total_of_beneficiaries ?? 0,
     }
   }
@@ -317,7 +356,7 @@ export default function WorkPlanMasterList() {
 
 
             console.log("🗣️Work Plan from API ", data);
-            console.log("🗣️Work Plan from API ", data.length);
+
 
             if (data.length == 0 || data == undefined) {
               setDataWorkPlan([]);
@@ -384,8 +423,13 @@ export default function WorkPlanMasterList() {
     // alert(workPlanId)
     if (row.status_id == 0 || row.status_id == 10 || row.status_id == 22 || row.status_id == null) {
       // 0=edit (url: url: /personprofile/workplan/uuid), 1=approved (viewing - url: /personprofile/workplan/uuid)
+      const index = dataWorkPlan.findIndex((item) => item.id === workPlanId);
 
-      router.push("/personprofile/work-plan/" + workPlanId + "/edit");
+      console.log("🥰Data of the work plan", dataWorkPlan)
+      console.log("🥰selected work plan", dataWorkPlan[index])
+      localStorage.setItem("work_plan", JSON.stringify(dataWorkPlan[index]))
+
+      router.push("/personprofile/work-plan/" + workPlanId + "/draft");
     } else if (row.status_id == 1) {
       // viewing 1=approved (viewing - url: /personprofile/workplan/uuid)
       router.push("/personprofile/work-plan/" + workPlanId);

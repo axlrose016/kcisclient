@@ -2,11 +2,26 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import DOMPurify from "dompurify";
 import CryptoJS from 'crypto-js';
-
+import crypto from 'crypto';
 // import { HeaderData } from "@/app/(authorized)/report/designer/HeaderSettings";
 
 const encode = new TextEncoder();
 const SECRET_KEY = process.env.JSON_SECRET_KEY!;
+ 
+
+/**
+ * Deterministic UUID v4-style generator
+ * @param {string} str
+ * @returns {string}
+ */
+export function uuidv5(str:string, base:string = "default") {
+  const d = crypto.createHash('sha256').update(`${base}::${str}`).digest();
+  d[6] = (d[6] & 0x0f) | 0x40;
+  d[8] = (d[8] & 0x3f) | 0x80;
+  const h = d.toString('hex');
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20,32)}`;
+}
+
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

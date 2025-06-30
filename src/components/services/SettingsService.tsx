@@ -7,7 +7,7 @@ import { cleanArray } from "@/lib/utils";
 import { SessionPayload } from "@/types/globals";
 import axios from 'axios';
 import Dexie from "dexie";
-
+import { format } from "date-fns";
 const _session = await getSession() as SessionPayload;
 const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS;
 
@@ -108,7 +108,7 @@ export class SettingsService {
         ]);
 
         if (userResponse.status === 200) {
-            const today = new Date().toISOString().split("T")[0];
+            const today = format(new Date(),'yyyy-MM-dd HH:mm:ss').split("T")[0];
 
             await dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async (trans) => {
             trans.meta = {

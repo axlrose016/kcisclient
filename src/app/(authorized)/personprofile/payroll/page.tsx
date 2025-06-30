@@ -16,7 +16,7 @@ import { ICFWPayroll } from '@/components/interfaces/cfw-payroll';
 
 import { v3 as uuidv3 } from 'uuid';
 import { format } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
+import PersonProfileService from '@/components/services/PersonProfileService';
 
 const ModuleKey = 'kcis-payroll';//dont chnage
 
@@ -43,29 +43,13 @@ const baseUrl = 'personprofile/payroll'
 
 const columns = [
     {
-        id: 'date_cover_from',
-        header: 'Date Cover',
+        id: 'Period',
+        header: 'Period Cover',
         accessorKey: 'period_cover_from',
         filterType: 'text',
         sortable: true,
-        cell: (value: Date | undefined) => {
-            if (value) {
-                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
-            }
-            return "-";
-        },
-    },
-    {
-        id: 'date_cover_to',
-        header: 'Date Cover To',
-        accessorKey: 'period_cover_to',
-        filterType: 'text',
-        sortable: true,
-        cell: (value: Date | undefined) => {
-            if (value) {
-                return formatInTimeZone(value, 'UTC', 'MM-dd-yyyy');
-            }
-            return "-";
+        cellRow: (row: any) => {
+            return format(row.period_cover_from, 'LLL dd') + " - " + format(row.period_cover_to, 'dd,y');
         },
     },
     {
@@ -103,23 +87,36 @@ export default function PayrollPage() {
     const [data, setData] = useState<ICFWPayroll[] | any[]>([]);
 
     useEffect(() => {
+        console.log('Payroll: session', session)
+        debugger;
+        if (["CFW Beneficiary", "Guest"].includes(session?.userData?.role || "")) {
+            (async () => {
+                const user = await dexieDb.person_profile.where('user_id')
+                    .equals(session.id!).first();
+                router.push(`/${baseUrl}/${user?.id}`);
+            })();
+        }
+    }, [])
+
+    useEffect(() => {
         (async () => {
             try {
                 if (!dexieDb.isOpen()) await dexieDb.open(); // Ensure DB is open 
             } catch (error) {
                 console.error('Error fetching data:', error);
-            }
+            } 
+
             const data = await dexieDb.cfwpayroll_bene.toArray()
             const groupedData = data.reduce((acc: any[], curr) => {
                 const existingGroup = acc.find(group =>
-                    group.period_cover_from.getTime() === new Date(curr.period_cover_from).getTime() &&
-                    group.period_cover_to.getTime() === new Date(curr.period_cover_to).getTime()
+                    format(new Date(group.period_cover_from), 'yyyy-MM-dd') === format(new Date(curr.period_cover_from), 'yyyy-MM-dd') &&
+                    format(new Date(group.period_cover_to), 'yyyy-MM-dd') === format(new Date(curr.period_cover_to), 'yyyy-MM-dd')
                 );
 
                 if (!existingGroup) {
                     acc.push({
-                        period_cover_from: new Date(curr.period_cover_from).toISOString(),
-                        period_cover_to: new Date(curr.period_cover_to).toISOString()
+                        period_cover_from: format(new Date(curr.period_cover_from),'yyyy-MM-dd HH:mm:ss'),
+                        period_cover_to:  format(new Date(curr.period_cover_to),'yyyy-MM-dd HH:mm:ss')
                     });
                 }
                 return acc;
@@ -132,7 +129,7 @@ export default function PayrollPage() {
     const handleEdit = (row: any) => {
         (async () => {
             await dexieDb.cfwpayroll.put({
-                last_modified_date: new Date().toISOString(),
+                last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 last_modified_by: session.userData.email,
                 ...row
             })
@@ -150,7 +147,7 @@ export default function PayrollPage() {
 
     const handleRowClick = (row: any) => {
 
-        const period_cover = format(new Date(row.period_cover_from)!.toISOString(), 'yyyyMMdd') + "-" + format(new Date(row.period_cover_to)!.toISOString(), 'yyyyMMdd')
+        const period_cover = format(new Date(row.period_cover_from), 'yyyyMMdd') + "-" + format(new Date(row.period_cover_to), 'yyyyMMdd')
         console.log('Row clicked:', period_cover);
         router.push(`/${baseUrl}/${period_cover}`);
     };
@@ -160,7 +157,7 @@ export default function PayrollPage() {
         (async () => {
             await dexieDb.cfwpayroll.put({
                 id: uuidv4(),
-                created_date: new Date().toISOString(),
+                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
                 created_by: session.userData.email,
                 ...newRecord
             })
@@ -203,15 +200,11 @@ export default function PayrollPage() {
 
                 <div className="min-h-screen">
 
-                    <AppTable
+                    <AppTable 
                         data={data}
                         columns={columns}
-                        onDelete={handleDelete}
                         onRowClick={handleRowClick}
-                        onRefresh={handleRefresh}
-                        onAddNewRecord={handleAddNewRecord}
-                        onClickAddNew={handleClickAddNew}
-                        onEditRecord={handleEdit}
+                        onRefresh={handleRefresh} 
                     />
                 </div>
 
