@@ -8,8 +8,6 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { format } from "date-fns";
 class UsersService {
-  private userApi = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'auth_users/create/';
-
   async syncUserData(userData: IUser,userAccess: IUserAccess[]): Promise<any> {
     const payload = {
       user: userData,
@@ -17,8 +15,8 @@ class UsersService {
     }
     console.log("User payload!", Array(payload));
     try {
-      debugger;
-      const response = await axios.post(this.userApi, Array(payload), {
+      const url = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + 'auth_users/create/';
+      const response = await axios.post(url, Array(payload), {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -28,6 +26,81 @@ class UsersService {
     } catch (error) {
       console.error('Error syncing user data:', error);
       return false;
+    }
+  }
+
+  async saveOfflineUserData(userData: any): Promise<any | undefined>{
+    try{
+      let savedUser: IUser | undefined;
+      let savedUserAccess: IUserAccess[] | undefined;
+      await dexieDb.transaction('rw', [dexieDb.users, dexieDb.useraccess], async (trans) => {
+        let user: IUser = userData;
+        let userAccess: IUserAccess[] = userData.user_access;
+        debugger;
+        if(user.id === ""){
+          user = {
+            ...userData,
+            id: uuidv4(),
+            created_date: new Date().toISOString(),
+            created_by: userData.user.email,
+            push_status_id: 2,
+            remarks: `Record Created by ${userData.user.email}`,
+          };
+        }else{
+          const existingUser = await dexieDb.users.get(user.id);
+          if (!existingUser && !user.id) {
+            throw new Error("User record not found for update.");
+          }
+
+          user = {
+            ...existingUser,
+            ...userData,
+            last_modified_by: userData.email,
+            last_modified_date: new Date().toISOString(),
+            push_status_id: 2,
+            remarks: `Record Updated by ${userData.email}`,
+          };
+        }
+
+        if(userAccess && userAccess.length > 0){
+          userAccess = userAccess.map((access: IUserAccess) => {
+            if(access.id === ""){
+              return {
+                ...access,
+                id: uuidv4(),
+                user_id: user.id,
+                created_date: new Date().toISOString(),
+                created_by: userData.email,
+                push_status_id: 2,
+                remarks: `Record Created by ${userData.email}`,
+              };
+            }else{
+              // IMPORTANT!!!! WE REMOVE THE CHECKING OF EXISTING ACCESS SINCE THE RESPONSE FROM API IS THE WHOLE USER ACCESS
+              // const existingAccess = dexieDb.useraccess.get(access.id);
+              // if (!existingAccess && !access.id) {
+              //   throw new Error("User access record not found for update.");
+              // }
+
+              return {
+                ...access,
+                last_modified_by: userData.email,
+                last_modified_date: new Date().toISOString(),
+                push_status_id: 2,
+                remarks: `Record Updated by ${userData.email}`,
+              };
+            }
+          }
+        )
+        }
+        await dexieDb.users.put(user);
+        await dexieDb.useraccess.bulkPut(userAccess);
+        savedUserAccess = userAccess;
+        savedUser = user;
+      });
+
+    } catch (error) {
+      console.error('Transaction failed: ', error);
+      return undefined;
     }
   }
 
@@ -178,6 +251,22 @@ class UsersService {
     console.error("Save user failed:", error);
     return undefined;
   }
+  }
+
+  async syncDownloadUserData(id:string, token?: string): Promise<any>{
+    const url = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS + "auth_users/get_users_with_access/" + id + "/";
+    debugger;
+    try{
+      const response = await axios.get(url, {
+        headers: {
+          'Authorization': `bearer ${token}`,
+        },
+      });
+      return response.data;
+    }catch(error){
+      console.error('Error fetching user:', error);
+      return false;
+    }
   }
 }
 

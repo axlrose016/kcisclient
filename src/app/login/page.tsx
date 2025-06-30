@@ -288,6 +288,7 @@ export default function LoginPage() {
         if (onlinePayload) {
           const raw = await LoginService.getProfile(onlinePayload.user.id, onlinePayload.token);
           const onlineProfile = await LoginService.getProfile(raw.id, onlinePayload.token);
+          const onlineUserData = await UsersService.syncDownloadUserData(onlinePayload.user.id, onlinePayload.token);
           console.log('onlineProfile', onlineProfile)
           debugger
           if (onlineProfile) {
@@ -391,6 +392,10 @@ export default function LoginPage() {
             //     }
             //   });
             // // debugger 
+          }
+          if(onlineUserData){
+            debugger;
+            await UsersService.saveOfflineUserData(onlineUserData);
           }
           debugger
           await createSession(onlinePayload.user.id, onlinePayload.user.userData, onlinePayload.token);

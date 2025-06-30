@@ -212,9 +212,6 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
 
 
     const submitWorkPlanWPTaskSelectedBenes = async () => {
-
-        // let workplanid = "";
-
         const ls = localStorage.getItem("work_plan");
         if (!ls) {
             console.warn("No work_plan found in localStorage.");
@@ -223,35 +220,41 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
 
         const parsedWP = JSON.parse(ls);
         const workplanid = parsedWP.id;
-
         const email = "dsentico@dswd.gov.ph";
         const password = "Dswd@123";
         const token = (await LoginService.onlineLogin(email, password)).token;
 
-        const existingWP = await dexieDb.work_plan.get(workplanid);
+        // Get existing work plan or create if not found
+        let existingWP = await dexieDb.work_plan.get(workplanid);
         if (!existingWP) {
-            console.warn("\u274C Work plan not found in Dexie, can't update.");
-            return;
+            console.warn("\u274C Work plan not found in Dexie, creating new one.");
+
+            const newWorkPlan: IWorkPlan = {
+                ...parsedWP,
+                id: workplanid,
+                created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                last_modified_by: _session?.userData?.email ?? "",
+                push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                push_status_id: 2,
+                status_id: null,
+                remarks: "Work Plan created via sync",
+            };
+
+            await dexieDb.work_plan.add(newWorkPlan);
+            await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`, {
+                method: "POST",
+                headers: {
+                    Authorization: `bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify([newWorkPlan]),
+            });
+
+            existingWP = newWorkPlan; // Treat it as the current work plan going forward
         }
 
-        const updatedWorkPlan = {
-            ...existingWP,
-            work_plan_title: parsedWP.work_plan_title ?? existingWP.work_plan_title,
-            immediate_supervisor_id: parsedWP.immediate_supervisor_id ?? existingWP.immediate_supervisor_id,
-            office_name: parsedWP.office_name ?? existingWP.office_name,
-            no_of_days_program_engagement: parsedWP.no_of_days_program_engagement ?? existingWP.no_of_days_program_engagement,
-            approved_work_schedule_from: parsedWP.approved_work_schedule_from ?? existingWP.approved_work_schedule_from,
-            approved_work_schedule_to: parsedWP.approved_work_schedule_to ?? existingWP.approved_work_schedule_to,
-            objectives: parsedWP.objectives ?? existingWP.objectives,
-            last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-            // created_date: format(parsedWP.created_date, 'yyyy-MM-dd HH:mm:ss'),
-            last_modified_by: _session?.userData?.email ?? existingWP.last_modified_by,
-            push_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
-            push_status_id: 2,
-            status_id: null,
-            remarks: "Work Plan has been synch upon submission",
-        };
-
+        // Process tasks
         const tasksLS = localStorage.getItem("work_plan_tasks");
         const collectedTasks: IWorkPlanTasks[] = tasksLS
             ? JSON.parse(tasksLS).map((task: any) => ({
@@ -277,16 +280,6 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
             }))
             : [];
 
-        // Push to server (outside Dexie transaction)
-        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan/create/`, {
-            method: "POST",
-            headers: {
-                Authorization: `bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify([updatedWorkPlan]),
-        });
-
         if (collectedTasks.length > 0) {
             await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}work_plan_task/create/`, {
                 method: "POST",
@@ -298,10 +291,7 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
             });
         }
 
-        debugger
-        // Final Dexie transaction for local save
-        await dexieDb.transaction("rw", [dexieDb.work_plan, dexieDb.work_plan_tasks], async () => {
-            await dexieDb.work_plan.put(updatedWorkPlan);
+        await dexieDb.transaction("rw", [dexieDb.work_plan_tasks], async () => {
             if (collectedTasks.length > 0) {
                 await dexieDb.work_plan_tasks.bulkPut(collectedTasks);
             }
@@ -328,7 +318,6 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
         }));
 
         const successfullySynced: string[] = [];
-
         for (const payload of payloads) {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}cfw_assessment/update/`, {
@@ -350,7 +339,6 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
         }
 
         const recordsToSave: any[] = [];
-
         for (const person_profile_id of successfullySynced) {
             try {
                 const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL_KCIS}cfw_assessment/view/${person_profile_id}/`, {
@@ -379,24 +367,11 @@ export default function Wizard({ title: pageTitle, description: pageDescription,
         }
 
         if (recordsToSave.length > 0) {
-            await dexieDb.table("cfwassessment").bulkPut(recordsToSave); // safer than .cfwassessment
+            await dexieDb.table("cfwassessment").bulkPut(recordsToSave);
             console.log(`✅ Saved ${recordsToSave.length} records to Dexie`);
         }
+    };
 
-        // save work plan benes to server and dexiedb
-        // saveWorkPlanSelectedBenes(workplanid)
-        //end of save work plan benes to server and dexiedb
-        return
-        const timer = setTimeout(() => {
-            router.push("/personprofile/work-plan"); // Relative path
-            // or use full URL: router.push("http://localhost:3000/personprofile/work-plan");
-        }, 3000);
-
-        // synch
-
-
-
-    }
 
     // useEffect(() => {
     //     localStorage.setItem("work_plan", JSON.stringify(workPlanData));
@@ -1695,11 +1670,12 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
                                             });
                                             return;
                                         }
-
+                                        console.log("Searching for value:", value);
                                         const selected = selectedBeneficiariesOptions.find(
-                                            (bene) => bene.person_profile_id === value || bene.ID === value
+                                            (bene) => bene.person_profile_id === value || bene["ID"] === value
                                         );
 
+                                        console.log("Has selected assign person", selected)
                                         const selectedName = selected
                                             ? selected.full_name || selected["FULL NAME"] || ""
                                             : "";
@@ -1721,8 +1697,8 @@ function TasksStep({ workPlanTasks, noOfTasks }: WizardProps) {
 
 
                                         {selectedBeneficiariesOptions.map((bene, idx) => (
-                                            <SelectItem key={idx} value={bene.person_profile_id}>
-                                                {bene.full_name}
+                                            <SelectItem key={idx} value={bene.person_profile_id || bene["ID"]}>
+                                                {bene.full_name || bene['FULL NAME']}
                                                 {/* {bene.full_name} */}
                                                 {/* //{bene.ID} */}
                                             </SelectItem>
