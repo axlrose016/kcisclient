@@ -540,18 +540,18 @@ export default function LoginPage() {
 
             <div className="text-center text-sm">
               Don&apos;t have an account?{" "}
-              {/* <ButtonDialog
+              <ButtonDialog
                 dialogForm={RegistrationForm}
                 label="Register"
                 dialog_title="Welcome to KALAHI-CIDSS Information System"
                 css="underline underline-offset-4 cursor-pointer text-primary"
-              /> */}
-             <Link
+              />
+             {/* <Link
                 href="/sign-up/guest"
                 className="text-sm text-blue-600 underline hover:text-blue-800"
               >
                 Sign-Up
-              </Link>
+              </Link> */}
             </div>
 
             <div className="mt-8 text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
