@@ -5,8 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { HRService } from "../../../../../../../../components/services/HRService";
 import { IHiringProcedure } from "@/db/offline/Dexie/schema/hr-service";
+import { useFormContext } from "react-hook-form";
+import { FormValues } from "../page";
 
-function HiringProcedures() {
+
+function HiringProcedures({setSubmitSource}: {setSubmitSource: (source: "hiring-procedures") => void;}) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
@@ -14,6 +17,7 @@ function HiringProcedures() {
     const params = useParams() || undefined; 
     const id = typeof params?.id === 'string' ? params.id : '';
     const [hiringProcedures, setHiringProcedures] = useState<any>(null);
+    const { handleSubmit } = useFormContext();
 
     useEffect(() => {
         async function fetchHiringProcedures() {
@@ -40,6 +44,11 @@ function HiringProcedures() {
       router.push(`/${baseUrl}/form/${row.position_item_distribution_id}/hiring-procedures/form/${row.id}`);
     };
 
+    const handleNewRecord = async () => {
+      setSubmitSource("hiring-procedures");
+      handleSubmit(() => {})();
+    }
+    
     const columnsMasterlist =[
         {
           id: 'hiring procedure description',
@@ -95,7 +104,7 @@ function HiringProcedures() {
                 columns={columnsMasterlist}
                 onDelete={handleDelete}
                 onRowClick={handleRowClick}
-                onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/${id}/hiring-procedures/form/0`)}
+                onAddNewRecordNavigate={handleNewRecord}
             />
         </div>
         

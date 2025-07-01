@@ -4,6 +4,7 @@ import { libDb } from "@/db/offline/Dexie/databases/libraryDb";
 import { IApplicant, IHiringProcedure, IPositionItem, IPositionItemDistribution } from "@/db/offline/Dexie/schema/hr-service";
 import { getSession } from "@/lib/sessions-client";
 import { SessionPayload } from "@/types/globals";
+import { format } from "date-fns";
 import { v4 as uuidv4 } from 'uuid';
 
 const _session = await getSession() as SessionPayload;
@@ -306,26 +307,29 @@ export class HRService {
       }
     }
 
-    async getOfflineApplicants(): Promise<any[] | undefined> {
-      await hrDb.open();
-      await dexieDb.open();
+  async getOfflineApplicants(): Promise<any[] | undefined> {
+    await Promise.all([hrDb.open(), dexieDb.open(), libDb.open()]);
 
-      const data = await hrDb.applicant.toArray();
-      const resolvedData = await Promise.all(
-        data.map(async (item: any) => {
-          const extension_name = await libDb.lib_extension_name.get(item.extension_name_id);
-          const sex = await libDb.lib_sex.get(item.sex_id);
-          const civil_status = await libDb.lib_civil_status.get(item.civil_status_id);
-          return {
-            ...item,
-            extension_name: extension_name ? extension_name.extension_name : null,
-            sex: sex ? sex.sex_description : null,
-            civil_status: civil_status ? civil_status.civil_status_description : null,
-          };
-        })
-      );
-      return resolvedData;
-    }
+    const [applicants, extensionNames, sexes, civilStatuses] = await Promise.all([
+      hrDb.applicant.toArray(),
+      libDb.lib_extension_name.toArray(),
+      libDb.lib_sex.toArray(),
+      libDb.lib_civil_status.toArray()
+    ]);
+
+    // Convert to maps for faster lookup
+    const extensionMap = new Map(extensionNames.map(e => [e.id, e.extension_name]));
+    const sexMap = new Map(sexes.map(s => [s.id, s.sex_description]));
+    const civilStatusMap = new Map(civilStatuses.map(c => [c.id, c.civil_status_description]));
+
+    return applicants.map(item => ({
+      ...item,
+      extension_name: extensionMap.get(item.extension_name_id ?? 0),
+      sex: sexMap.get(item.sex_id ?? 0),
+      civil_status: civilStatusMap.get(item.civil_status_id ?? 0)
+    }));
+  }
+
 
     async saveOfflineApplicant(applicant: any): Promise<any | undefined> {
       try {

@@ -219,6 +219,7 @@ export default function AccomplishmentReportUsersList() {
                         columns={columns}
                         onRowClick={handleRowClick}
                         onClickAddNew={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleClickAddNew : undefined}
+                        // onClickAddNew={handleClickAddNew}
                         onDelete={session?.userData?.role && ["CFW Beneficiary", "Guest"].includes(session.userData.role) ? handleDelete : undefined}
                     />
                 </div>

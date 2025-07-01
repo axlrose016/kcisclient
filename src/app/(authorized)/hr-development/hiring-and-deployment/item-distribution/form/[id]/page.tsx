@@ -16,7 +16,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { cn } from "@/lib/utils"
 import { HRService } from "../../../../../../../components/services/HRService"
 import { IPositionItem, IPositionItemDistribution } from "@/db/offline/Dexie/schema/hr-service"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "@/hooks/use-toast"
 import { FormDropDown } from "@/components/forms/form-dropdown"
@@ -44,7 +44,7 @@ const formSchema = z.object({
   date_distributed: z.date().nullable().optional().transform((val) => (val ? val.toISOString() : null)),
 });
 
-type FormValues = z.infer<typeof formSchema>
+export type FormValues = z.infer<typeof formSchema>
 const hrService = new HRService();
 
 export default function FormPositionDistribution() {
@@ -61,7 +61,7 @@ export default function FormPositionDistribution() {
   const [city, setCity] = useState<LibraryOption[]>([]);
   const [itemCode, setItemCode] = useState<LibraryOption[]>([]);
   const [activeTab, setActiveTab] = useState("hiring-procedures");
-      
+  const submitSourceRef = useRef<"parent" | "hiring-procedures" | "applicants" | null>(null);
   // const searchParams = useSearchParams() || undefined;
   // const id = searchParams?.get('id');
   const id = typeof params?.id === 'string' ? params.id : '';
@@ -171,12 +171,21 @@ export default function FormPositionDistribution() {
   }, [id]);
 
   function onSubmit(data: FormValues) {
+    const source = submitSourceRef.current;
     // Perform your form submission logic here
     console.log("Form submitted:", data)
     // Here you would typically send the data to your API
     hrService.saveOfflinePositionDistribution(data).then((response:any) => {
+      debugger;
       if (response) {
-        router.push(`/${baseUrl}/`);
+        if (source === "hiring-procedures") {
+          router.push(`/${baseUrl}/form/${response.id}/hiring-procedures/form/0`);
+        } else if (source === "applicants") {
+          router.push(`/${baseUrl}/form/${response.id}/applicants/form/0`);
+        } 
+        else {
+          router.push(`/${baseUrl}/`);
+        }
         toast({
             variant: "green",
             title: "Success.",
@@ -192,7 +201,7 @@ export default function FormPositionDistribution() {
       label: "Hiring Procedures",
       content: activeTab === "hiring-procedures" && (
         <div className="bg-card rounded-lg">
-          <HiringProcedures
+          <HiringProcedures setSubmitSource={(source) => (submitSourceRef.current = source)}
           />
         </div>
       ),
@@ -202,7 +211,7 @@ export default function FormPositionDistribution() {
       label: "Applicants",
       content: activeTab === "applicants" && (
         <div className="bg-card rounded-lg">
-          <ApplicantList
+          <ApplicantList setSubmitSource={(source) => (submitSourceRef.current = source)}
           />
         </div>
       ),
@@ -217,7 +226,7 @@ export default function FormPositionDistribution() {
           <CardDescription>Enter or update distribution details.</CardDescription>
         </CardHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit((data) => onSubmit(data))}>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
@@ -439,6 +448,10 @@ export default function FormPositionDistribution() {
                     </FormItem>
                   )}
                 />  
+              
+            <div className="col-span-full">
+              <FormTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+            </div>
             </CardContent>
             <CardFooter className="flex justify-between">
               <Button variant="outline" type="button" onClick={() => router.push(`/${baseUrl}/`)}>
@@ -448,9 +461,6 @@ export default function FormPositionDistribution() {
             </CardFooter>
           </form>
         </Form>
-        <div className="p-3 col-span-full">
-          <FormTabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-        </div>
       </Card>
     </div>
   )

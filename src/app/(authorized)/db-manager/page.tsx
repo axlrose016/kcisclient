@@ -16,6 +16,7 @@ import { dexieDb } from "@/db/offline/Dexie/databases/dexieDb"
 import { auditDb } from "@/db/offline/Dexie/databases/auditDb"
 import { hrDb } from "@/db/offline/Dexie/databases/hrDb"
 import { attachmentDb } from "@/components/forms/form-attachments"
+import { libDb } from "@/db/offline/Dexie/databases/libraryDb"
 
 export default function ExportImportUI() {
   const [importStatus, setImportStatus] = useState<"idle" | "success" | "error">("idle")
@@ -25,7 +26,7 @@ export default function ExportImportUI() {
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [fileName, setFileName] = useState("")
   const [file, setFile] = useState<File | null>(null)
-  const { exportToJSON, importFromJSON } = useExportImport([financeDb,dexieDb,auditDb,hrDb,attachmentDb]);
+  const { exportToJSON, importFromJSON } = useExportImport([financeDb,dexieDb,auditDb,hrDb,attachmentDb,libDb]);
 
   const handleExportToJSON = () => {
     try {

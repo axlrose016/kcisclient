@@ -23,6 +23,7 @@ import { StatusBadge } from '@/components/app-submit-review';
 import { toast } from '@/hooks/use-toast';
 import { uuidv5 } from '@/lib/utils';
 import { CFWPayrollService } from '@/components/services/CFWPayrollService';
+import PersonProfileService from '@/components/services/PersonProfileService';
 
 const KeyToken = process.env.NEXT_PUBLIC_DXCLOUD_KEY;
 const session = await getSession() as SessionPayload;
@@ -136,10 +137,11 @@ function PayrollAdmin() {
                             //     .equals(region!.region_code)
                             //     .first();
 
-                            const school = await libDb.lib_school_profiles
+                            const school = period_cover_to ? await libDb.lib_school_profiles
                                 .where("id")
                                 .equals(parseInt(personProfile!.school_id!.toString()))
-                                .first();
+                                .first() : {} as any;
+
 
                             return {
                                 ...record,
@@ -151,7 +153,7 @@ function PayrollAdmin() {
                                 // middle_name: personProfile?.middle_name, 
                                 school: school?.school_name,
                                 person_profile_id: personProfile?.id,
-                                cfwp_id_no: personProfile?.cfwp_id_no, 
+                                cfwp_id_no: personProfile?.cfwp_id_no,
                                 operation_status: libstatus?.find(i => i.id == parseInt(record.operation_status))?.status_name ?? "",
                                 odnpm_status: libstatus?.find(i => i.id == parseInt(record.odnpm_status))?.status_name ?? "",
                                 finance_status: libstatus?.find(i => i.id == parseInt(record.finance_status))?.status_name ?? "",
@@ -168,9 +170,11 @@ function PayrollAdmin() {
     }, [regions])
 
     const handleRowClick = (row: any) => {
-        const r = `/${baseUrl}/${params!['payroll-list']!}/${row.person_profile_id}`
-        console.log('Row clicked:', { r, row });
-        router.push(r);
+        (async () => {
+            const r = `/${baseUrl}/${params!['payroll-list']!}/${row.person_profile_id}`
+            console.log('Row clicked:', { r, row }); 
+            router.push(r);
+        })()
     };
     // console.log('PayrollAdmin > params', { data, payroll, cfwSubmissions })
 
@@ -344,7 +348,7 @@ function PayrollAdmin() {
                 return;
             }
 
-            setPayrollBeneData(results) 
+            setPayrollBeneData(results)
             // await getResults()   
         } catch (error) {
             console.error('Error syncing time records:', error);
@@ -368,7 +372,7 @@ function PayrollAdmin() {
                 iconEdit={<UserCheck2Icon className="h-[55px] w-[55px] text-blue-500" />}
                 onClickEdit={(record) => console.log('onClickEdit > ecord', record)}
                 onRowClick={handleRowClick}
-                onRefresh={handleOnRefresh} 
+                onRefresh={handleOnRefresh}
                 onDelete={handleRowClick}
             />
         </>
@@ -586,7 +590,7 @@ function PayrollBene() {
                 acc.push({
                     ...curr,
                     period_cover_from: format(new Date(curr.period_cover_from), 'yyyy-MM-dd HH:mm:ss'),
-                    period_cover_to: format(new Date(curr.period_cover_to) , 'yyyy-MM-dd HH:mm:ss')
+                    period_cover_to: format(new Date(curr.period_cover_to), 'yyyy-MM-dd HH:mm:ss')
                 });
             }
             return acc;
@@ -678,7 +682,7 @@ function PayrollBene() {
                                 <p><strong>Bank:</strong> Cash</p>
                                 <p><strong>Bank Number:</strong> N/A</p>
                             </div>
-                        </>)} */} 
+                        </>)} */}
 
                     <div className="min-h-screen mt-10">
                         <AppTable

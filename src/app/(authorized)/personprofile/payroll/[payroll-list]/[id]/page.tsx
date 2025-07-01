@@ -28,6 +28,7 @@ import { uuidv5 } from '@/lib/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { DTRService } from '@/components/services/DTRServices';
 import { ARService } from '@/components/services/ARservice';
+import PersonProfileService from '@/components/services/PersonProfileService';
 
 export interface dataI {
     id: string;
@@ -92,6 +93,10 @@ export default function PayrollUser() {
             const _session = await getSession() as SessionPayload;
             setSession(_session)
 
+
+            const p = await PersonProfileService.getPersonProfileId(params!.id);
+            console.log('person_profile > p', p)
+
             await getResults(_session)
 
             const statuses = await getOfflineLibStatuses();
@@ -122,6 +127,8 @@ export default function PayrollUser() {
     const getResults = async (session: SessionPayload) => {
         const user = await dexieDb.person_profile.where('id')
             .equals(params!.id).first();
+
+        console.log('person_profile > getResults > params', params!)
 
         const merge = {
             ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),

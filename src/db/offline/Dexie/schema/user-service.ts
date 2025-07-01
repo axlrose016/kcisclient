@@ -98,7 +98,12 @@ export async function getUserData(id: string): Promise<IUserData | null> {
             return null;
         }
         const userrole = await libDb.roles.where('id').equals(user.role_id).first();
-        const useraccess = await tblUserAccess.where('user_id').equals(id).toArray();
+        const allAccess = await tblUserAccess.where('user_id').equals(id).toArray();
+
+        const useraccess = allAccess.filter(
+        (ua) => ua.is_deleted === false || ua.is_deleted === null || ua.is_deleted === undefined
+        );
+        
         const userlevel = await libDb.lib_level.where('id').equals(user.level_id ?? 0).first();
         console.log("User Access: ", useraccess);
         const userDataAccess: IUserDataAccess[] = [];

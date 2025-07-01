@@ -76,7 +76,7 @@ class MyDatabase extends Dexie {
             report_designer: `id, name, columns, ${commonFields}`,
             report_column: `id, report_designer_id, label, value, type, description, visible, options,${commonFields}`,
             cfwpayroll: `id, period_cover_from, period_cover_to, status, status_date,mov_path,${commonFields}`,
-            cfwpayroll_bene: `id ,person_profile_id,daily_time_record_id ,daily_time_record_reviewed_date,accomplishment_report_id ,accomplishment_report_reviewed_date ,period_cover_from, period_cover_to, operation_status,operation_reviewed_by, operation_status_date, odnpm_status, odnpm_reviewed_by, odnpm_status_date, finance_status,finance_reviewed_by ,finance_status_date,date_released,date_received,${commonFields}`,
+            cfwpayroll_bene: `id, person_profile_id ,daily_time_record_id ,daily_time_record_reviewed_date,accomplishment_report_id ,accomplishment_report_reviewed_date ,period_cover_from, period_cover_to, operation_status,operation_reviewed_by, operation_status_date, odnpm_status, odnpm_reviewed_by, odnpm_status_date, finance_status,finance_reviewed_by ,finance_status_date,date_released,date_received,${commonFields}`,
             submission_log: `id, record_id ,person_profile_id ,role ,module ,comment,status , status_date,${commonFields}`,
         }); 
         _registerAuditHooks(this, "Person Profile", _session?.userData.email || "unknown");

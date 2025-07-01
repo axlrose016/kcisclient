@@ -85,14 +85,16 @@ export function AccomplishmentUser({
                 // Get other tasks and actual tasks 
                 if (accomplishmentReportId) {
                     const alltask = await dexieDb.accomplishment_actual_task.where("accomplishment_report_id").equals(accomplishmentReportId).toArray()
-                    const otherTask = alltask.filter(i => i.category_id == 99)
+                    const otherTask = alltask.filter(i => i.category_id == 99 && i.is_deleted !== true)
                     console.log('AccomplishmentUser > alltask', { alltask, otherTask, accomplishmentReportId })
                     setOtherTask(otherTask);
                     setTasks(alltask);
                     setTaskLoader(alltask);
                     onChangeTask?.(alltask)
 
-                    const attachments = await dexieDb.attachments.where("record_id").equals(accomplishmentReportId).toArray()
+                    const attachments = await dexieDb.attachments.where("record_id")
+                        .equals(accomplishmentReportId)
+                        .filter(item => item.is_deleted === false || item.is_deleted === null).toArray()
 
                     setAttachments(attachments)
                     onChangeAttachments?.(attachments)
@@ -138,7 +140,7 @@ export function AccomplishmentUser({
                 mov: type == "movs" ? sanitizedValue : "",
                 task: type == "task" ? sanitizedValue : "",
                 status_id: 0,
-                created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+                created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                 created_by: session!.userData!.email!,
                 last_modified_date: null,
                 last_modified_by: "",
@@ -169,7 +171,7 @@ export function AccomplishmentUser({
             mov: "",
             task: "",
             status_id: 0,
-            created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+            created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
             created_by: session!.userData!.email!,
             last_modified_date: null,
             last_modified_by: "",
@@ -207,9 +209,9 @@ export function AccomplishmentUser({
                 await dexieDb.attachments.put({
                     ...attachment,
                     is_deleted: true,
-                    deleted_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+                    deleted_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     deleted_by: session!.userData!.email!,
-                    last_modified_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+                    last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     last_modified_by: session!.userData!.email!,
                     push_status_id: 0,
                 })
@@ -259,7 +261,7 @@ export function AccomplishmentUser({
                     file_id: 100,
                     module_path: module_path,
                     user_id: session!.id,
-                    created_date: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
+                    created_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
                     created_by: session!.userData.email ?? "",
                     last_modified_date: null,
                     last_modified_by: null,
@@ -295,7 +297,34 @@ export function AccomplishmentUser({
     }
 
     const handleDeleteOtherTask = (task: IAccomplishmentActualTask, idx: number) => {
-        setOtherTask(otherTask.filter((_, i) => i !== idx));
+        (async () => {
+            console.log('handleDeleteAttachment > attachment', { task, idx })
+            const tasks = otherTask.filter((_, i) => i !== idx)
+
+            const attachment = attachments.find((i: any) => i['remarks'] === task.remarks);
+            console.log('attachment', attachment)
+
+            if (attachment) {
+                await dexieDb.attachments.put({
+                    ...attachment,
+                    is_deleted: true,
+                    deleted_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                    deleted_by: session!.userData!.email!,
+                    last_modified_date: format(new Date(), 'yyyy-MM-dd HH:mm:ss'),
+                    last_modified_by: session!.userData!.email!,
+                    push_status_id: 0,
+                })
+            }
+
+            await dexieDb.accomplishment_actual_task.put({
+                ...task,
+                is_deleted: true,
+                push_status_id: 0
+            })
+
+            setOtherTask(tasks);
+            onChangeTask?.(tasks);
+        })();
     };
 
     const isCategory = (task: IWorkPlanTasks | IAccomplishmentActualTask): boolean => {
@@ -698,7 +727,7 @@ export function AccomplishmentUser({
                                                 )}
                                             </div>}
                                             element={<div id="no-print" className="text-right flex justify-right items-end">
-                                                <div onClick={() => handleDeleteOtherTask(task, idx)} className="flex gap-2 items-center">
+                                                <div className="flex gap-2 items-center">
                                                     <input
                                                         id={`other-file-input-${task.id}`}
                                                         type="file"
@@ -728,6 +757,7 @@ export function AccomplishmentUser({
                                                             </Button>
 
                                                             <Button
+                                                                onClick={() => handleDeleteOtherTask(task, idx)}
                                                                 variant="outline"
                                                                 size="lg"
                                                                 className="h-10 w-10 p-0 text-destructive hover:text-destructive/90"

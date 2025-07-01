@@ -5,6 +5,7 @@ import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/components/services/LoginService";
+import { cloneDeep } from 'lodash';
 const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
@@ -328,6 +329,47 @@ class PersonProfileService {
     }
   }
 
+  async getPersonProfileId(id: string): Promise<IPersonProfile | undefined> {
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS
+    try {
+      let personProfile = undefined
+
+      personProfile = await dexieDb.person_profile.where('id').equals(id).first();
+
+      if (!personProfile) {
+        console.warn(`No person profile found with id: ${id}`);
+        const session = await getSession() as SessionPayload
+        const headers = {
+          'Authorization': `bearer ${session.token}`,
+          'Content-Type': 'application/json',
+        };
+
+        const d = await axios.get<IPersonProfile>(apiUrl + 'person_profile/view/' + id + '/', { headers });
+        const data = d.data;
+
+        console.log('getPersonProfileId > data', data)
+
+        if (data) {
+          const p = cloneDeep(data) as any
+          delete p.attachments
+          delete p.cfw_assessment
+          delete p.person_profile_cfw_fam_program_details
+          delete p.person_profile_disability
+          delete p.person_profile_engagement_history
+          delete p.person_profile_family_composition
+          delete p.person_profile_file_upload
+          delete p.person_profile_sector
+          await dexieDb.person_profile.put(p)
+          personProfile = p
+        }
+      }
+      return personProfile;
+    } catch (error) {
+      console.error(`Error fetching person profile with id ${id}:`, error);
+      return undefined;
+    }
+  }
+
 
   async syncDLProfile(url: string, filter?: any): Promise<IPersonProfile[] | undefined> {
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS
@@ -368,8 +410,8 @@ class PersonProfileService {
         ? await axios.post<any[]>(apiUrl + url, filter, { headers })
         : await axios.get<any[]>(apiUrl + url, { headers });
 
-      const data:any = dr.data;
-      console.log(`data synced to Dexie > ${url} :`,data);
+      const data: any = dr.data;
+      console.log(`data synced to Dexie > ${url} :`, data);
       return data.data;
     } catch (error) {
       console.error('Failed to sync auth users to Dexie:', error);

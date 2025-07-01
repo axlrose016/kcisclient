@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useParams, useRouter } from 'next/navigation';
 import React from 'react'
 import { HRService } from '../../../../../../../../components/services/HRService';
+import { useFormContext } from 'react-hook-form';
 
-function ApplicantList() {
+function ApplicantList({setSubmitSource}: {setSubmitSource: (source: "applicants") => void;}) {
     const [data, setData] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const router = useRouter();
     const hrService = new HRService();
     const params = useParams() || undefined; 
     const id = typeof params?.id === 'string' ? params.id : '';
+    const { handleSubmit } = useFormContext();
 
     React.useEffect(() => {
         async function loadApplicants() {
@@ -33,7 +35,7 @@ function ApplicantList() {
     const handleEdit = (row: any) => {
         console.log('Edit:', row);
     };
-
+ 
     const handleDelete = (row: any) => {
         console.log('Delete:', row);
     };
@@ -42,6 +44,11 @@ function ApplicantList() {
         console.log('Row clicked:', row);
         router.push(`/${baseUrl}/form/${row.position_item_distribution_id}/applicants/form/${row.id}`);
     };
+
+    const handleNewRecord = async () => {
+      setSubmitSource("applicants");
+      handleSubmit(() => {})();
+    }
 
     const columnsMasterlist = [
       {
@@ -90,7 +97,7 @@ function ApplicantList() {
           columns={columnsMasterlist}
           onDelete={handleDelete}
           onRowClick={handleRowClick}
-          onAddNewRecordNavigate={() => router.push(`/${baseUrl}/form/${id}/applicants/form/0`)}
+          onAddNewRecordNavigate={handleNewRecord}
       />
     </div>
   )

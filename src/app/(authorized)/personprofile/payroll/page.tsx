@@ -145,8 +145,7 @@ export default function PayrollPage() {
         console.log('Delete:', row);
     };
 
-    const handleRowClick = (row: any) => {
-
+    const handleRowClick = (row: any) => { 
         const period_cover = format(new Date(row.period_cover_from), 'yyyyMMdd') + "-" + format(new Date(row.period_cover_to), 'yyyyMMdd')
         console.log('Row clicked:', period_cover);
         router.push(`/${baseUrl}/${period_cover}`);
@@ -198,8 +197,7 @@ export default function PayrollPage() {
             </CardHeader>
             <CardContent>
 
-                <div className="min-h-screen">
-
+                <div className="min-h-screen"> 
                     <AppTable 
                         data={data}
                         columns={columns}

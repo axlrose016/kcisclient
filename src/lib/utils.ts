@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import DOMPurify from "dompurify";
 import CryptoJS from 'crypto-js';
-import crypto from 'crypto';
+import { createHash } from 'crypto';
 // import { HeaderData } from "@/app/(authorized)/report/designer/HeaderSettings";
 
 const encode = new TextEncoder();
@@ -15,7 +15,7 @@ const SECRET_KEY = process.env.JSON_SECRET_KEY!;
  * @returns {string}
  */
 export function uuidv5(str:string, base:string = "default") {
-  const d = crypto.createHash('sha256').update(`${base}::${str}`).digest();
+  const d = createHash('sha256').update(`${base}::${str}`).digest();
   d[6] = (d[6] & 0x0f) | 0x40;
   d[8] = (d[8] & 0x3f) | 0x80;
   const h = d.toString('hex');
@@ -61,6 +61,10 @@ export async function hashPassword(
   const base64Hash = btoa(hashString);
 
   return base64Hash;
+}
+
+function hashSHA256(input: Uint8Array): Buffer {
+  return createHash('sha256').update(input).digest();
 }
 
 export function sanitizeHTML(content: string): string {
