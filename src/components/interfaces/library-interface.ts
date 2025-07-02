@@ -701,4 +701,13 @@ export interface ILibBrgy {
   city: string | null,
   city_correspondence: string | null,
   city_id: number
+} 
+export interface ILibPayrollRate{
+  reg_id: number,
+  code_correspondence: string | null,
+  name: string | null,
+  altName: string | null,
+  code: string | null,
+  geo_level: string | null,
+  rate: number
 }

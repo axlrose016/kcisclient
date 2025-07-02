@@ -3,11 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useParams, useRouter } from 'next/navigation';
-import { CalendarIcon, ChevronUp, ChevronDown, Download, Edit, Info, Plus, Printer, Trash2, UserCheck2Icon, UserRoundCheckIcon } from 'lucide-react';
+import { ChevronUp, ChevronDown, Edit, Info, Plus, Printer, Trash2, UserCheck2Icon, UserRoundCheckIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { Calendar } from '@/components/ui/calendar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AppTable } from '@/components/app-table';
 import { SessionPayload } from '@/types/globals';
@@ -17,13 +15,14 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { ICFWPayroll, ICFWPayrollBene } from '@/components/interfaces/cfw-payroll';
 import { IPersonProfile } from '@/components/interfaces/personprofile';
 import { Badge } from '@/components/ui/badge';
-import { ILibSchoolProfiles, ILibStatuses } from '@/components/interfaces/library-interface';
+import { ILibSchoolProfiles, LibraryOption } from '@/components/interfaces/library-interface';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
-import { StatusBadge } from '@/components/app-submit-review';
-import { toast } from '@/hooks/use-toast';
 import { uuidv5 } from '@/lib/utils';
 import { CFWPayrollService } from '@/components/services/CFWPayrollService';
-import PersonProfileService from '@/components/services/PersonProfileService';
+import AppSubmitReview from '@/components/app-submit-review';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { getOfflineLibStatuses } from '@/components/_dal/offline-options';
+import { toast } from '@/hooks/use-toast';
 
 const KeyToken = process.env.NEXT_PUBLIC_DXCLOUD_KEY;
 const session = await getSession() as SessionPayload;
@@ -69,7 +68,7 @@ function PayrollAdmin() {
     const [payroll, setPayrollData] = useState<ICFWPayroll>()
     const [data, setPayrollBeneData] = useState<IUser[] | any[]>([])
     const [cfwSubmissions, setCfwSubmission] = useState<any[]>()
-    const [libstatus, setOptionStatus] = useState<ILibStatuses[]>()
+    const [libstatus, setOptionStatus] = useState<LibraryOption[]>([])
 
     const [regions, setRegions] = useState<any[]>()
     // const [prov, setProv] = useState<any[]>()
@@ -81,12 +80,15 @@ function PayrollAdmin() {
         const day = dateStr.substring(6, 8);
         return new Date(`${year}-${month}-${day}`);
     });
-    const [period_cover_from, period_cover_to] = dateRange || [];
 
+    const [period_cover_from, period_cover_to] = dateRange || [];
     // console.log('params!.list!', { period_cover_from, period_cover_to }) 
     useEffect(() => {
         (async () => {
-            setOptionStatus(await libDb.lib_statuses.toArray());
+            const statuses = await getOfflineLibStatuses();
+            const filteredStatuses = statuses.filter(status => [2, 10].includes(status.id));
+            console.log('filteredStatuses', filteredStatuses)
+            setOptionStatus(filteredStatuses);
 
             const response = await fetch("/api-libs/psgc/regions", {
                 headers: {
@@ -107,72 +109,10 @@ function PayrollAdmin() {
     }, []);
 
 
-    useEffect(() => {
-        (async () => {
-            // const p = await dexieDb.cfwpayroll.where("id").equals(params!['payroll-list']!).first()
-            // setPayrollData(p)
-            console.log('PayrollAdmin > period_cover_from', { period_cover_from, period_cover_to })
-            const pbd = await dexieDb.cfwpayroll_bene
-                .where({
-                    period_cover_from: format(period_cover_from, 'yyyy-MM-dd'),
-                    period_cover_to: format(period_cover_to, 'yyyy-MM-dd')
-                })
-                .toArray()
-                .then(async (payrollRecords) => {
-                    const mergedRecords = await Promise.all(
-                        payrollRecords.map(async (record) => {
-                            const personProfile = await dexieDb.person_profile
-                                .where("id")
-                                .equals(record.person_profile_id)
-                                .first();
-
-                            const period_cover = format(new Date(period_cover_from!), 'MMM dd') + "-" + format(new Date(period_cover_to!), 'dd, yyyy')
-                            const id = uuidv5(period_cover, '108747ef-6b5d-4b5d-b608-ddb684aff5f2') //GeneralID// dont change!
-
-                            const region = regions?.find(i => i.code.includes(personProfile!.region_code))
-
-                            // console.log('regions')
-                            // const municipality = await dexieDb.person_profile
-                            //     .where("region_code")
-                            //     .equals(region!.region_code)
-                            //     .first();
-
-                            const school = period_cover_to ? await libDb.lib_school_profiles
-                                .where("id")
-                                .equals(parseInt(personProfile!.school_id!.toString()))
-                                .first() : {} as any;
-
-
-                            return {
-                                ...record,
-                                id: id,
-                                region: region?.name,
-                                province: personProfile?.province_code,
-                                municipality: personProfile?.city_code,
-                                bene_name: personProfile?.first_name + " " + personProfile?.last_name,
-                                // middle_name: personProfile?.middle_name, 
-                                school: school?.school_name,
-                                person_profile_id: personProfile?.id,
-                                cfwp_id_no: personProfile?.cfwp_id_no,
-                                operation_status: libstatus?.find(i => i.id == parseInt(record.operation_status))?.status_name ?? "",
-                                odnpm_status: libstatus?.find(i => i.id == parseInt(record.odnpm_status))?.status_name ?? "",
-                                finance_status: libstatus?.find(i => i.id == parseInt(record.finance_status))?.status_name ?? "",
-                            };
-                        })
-                    );
-                    return mergedRecords;
-                });
-
-            console.log('PayrollAdmin > pbd', pbd)
-            setPayrollBeneData(pbd)
-
-        })();
-    }, [regions])
-
     const handleRowClick = (row: any) => {
         (async () => {
             const r = `/${baseUrl}/${params!['payroll-list']!}/${row.person_profile_id}`
-            console.log('Row clicked:', { r, row }); 
+            console.log('Row clicked:', { r, row });
             router.push(r);
         })()
     };
@@ -329,10 +269,6 @@ function PayrollAdmin() {
 
     ];
 
-    const getResults = async () => {
-        console.log('getResults')
-    }
-
     const handleOnRefresh = async () => {
         console.log('handleOnRefresh')
         try {
@@ -344,8 +280,61 @@ function PayrollAdmin() {
 
             const results = await new CFWPayrollService().syncDLCFWPayrollReady(`cfw_payroll_beneficiary/view/report/${params!['payroll-list']}/`);
             if (!results) {
-                console.log('Failed to fetch time records');
-                return;
+                console.log('Failed to fetch time records: fetching offine');
+                console.log('PayrollAdmin > period_cover_from', { period_cover_from, period_cover_to })
+                const pbd = await dexieDb.cfwpayroll_bene
+                    .where({
+                        period_cover_from: format(period_cover_from, 'yyyy-MM-dd'),
+                        period_cover_to: format(period_cover_to, 'yyyy-MM-dd')
+                    })
+                    .toArray()
+                    .then(async (payrollRecords) => {
+                        const mergedRecords = await Promise.all(
+                            payrollRecords.map(async (record) => {
+                                const personProfile = await dexieDb.person_profile
+                                    .where("id")
+                                    .equals(record.person_profile_id)
+                                    .first();
+
+                                const period_cover = format(new Date(period_cover_from!), 'MMM dd') + "-" + format(new Date(period_cover_to!), 'dd, yyyy')
+                                const id = uuidv5(period_cover, '108747ef-6b5d-4b5d-b608-ddb684aff5f2') //GeneralID// dont change!
+
+                                const region = regions?.find(i => i.code.includes(personProfile!.region_code))
+
+                                // console.log('regions')
+                                // const municipality = await dexieDb.person_profile
+                                //     .where("region_code")
+                                //     .equals(region!.region_code)
+                                //     .first();
+
+                                const school = period_cover_to ? await libDb.lib_school_profiles
+                                    .where("id")
+                                    .equals(parseInt(personProfile!.school_id!.toString()))
+                                    .first() : {} as any;
+
+
+                                return {
+                                    ...record,
+                                    id: id,
+                                    region: region?.name,
+                                    province: personProfile?.province_code,
+                                    municipality: personProfile?.city_code,
+                                    bene_name: personProfile?.first_name + " " + personProfile?.last_name,
+                                    // middle_name: personProfile?.middle_name, 
+                                    school: school?.school_name,
+                                    person_profile_id: personProfile?.id,
+                                    cfwp_id_no: personProfile?.cfwp_id_no,
+                                    operation_status: libstatus?.find(i => i.id == parseInt(record.operation_status))?.name ?? "",
+                                    odnpm_status: libstatus?.find(i => i.id == parseInt(record.odnpm_status))?.name ?? "",
+                                    finance_status: libstatus?.find(i => i.id == parseInt(record.finance_status))?.name ?? "",
+                                };
+                            })
+                        );
+                        return mergedRecords;
+                    });
+
+                console.log('PayrollAdmin > pbd', pbd)
+                setPayrollBeneData(pbd)
             }
 
             setPayrollBeneData(results)
@@ -362,11 +351,31 @@ function PayrollAdmin() {
         }
     }
 
+    // Modal state for batch review
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [selectedRowsForReview, setSelectedRowsForReview] = useState<any[]>([]);
+
+    const review_defaults = {
+        id: undefined,
+        record_id: undefined,
+        person_profile_id: undefined,
+        module: 'payroll',
+        comment: '',
+        status_id: 0,
+        status_date: '',
+        created_date: '',
+        created_by: ''
+    }
+
+    const [review, setReview] = useState(review_defaults);
+
     return (
         <>
             <AppTable
                 enableRowSelection={true}
-                onRowSelectionChange={(selection) => console.log('selection', selection)}
+                onRowSelectionChange={(selection) => {
+                    setSelectedRowsForReview(selection);
+                }}
                 data={data as []}
                 columns={columns}
                 iconEdit={<UserCheck2Icon className="h-[55px] w-[55px] text-blue-500" />}
@@ -374,6 +383,39 @@ function PayrollAdmin() {
                 onRowClick={handleRowClick}
                 onRefresh={handleOnRefresh}
                 onDelete={handleRowClick}
+                selectedRowsLayout={(selectedRows) => (
+                    <>
+                        <Button
+                            onClick={() => {
+                                setSelectedRowsForReview(selectedRows);
+                                setShowReviewModal(true);
+                            }}
+                            className="gap-2"
+                        >
+                            {selectedRows.length} Submit Review
+                        </Button>
+                        <Dialog open={showReviewModal} onOpenChange={setShowReviewModal}>
+                            <DialogTitle></DialogTitle>
+                            <DialogContent className="max-w-2xl">
+                                <div className="m-1 no-print">
+                                    <AppSubmitReview
+                                        session={session}
+                                        options={libstatus || []}
+                                        review_logs={[]}
+                                        review={review}
+                                        onChange={setReview}
+                                        onSubmit={(reviewData) => {
+                                            setShowReviewModal(false);
+                                            setReview(review_defaults)
+                                            // You can replace this with your actual batch review handler
+                                            console.log('Batch review submitted:', { review: reviewData, selectedRows: selectedRowsForReview });
+                                        }}
+                                    />
+                                </div>
+                            </DialogContent>
+                        </Dialog>
+                    </>
+                )}
             />
         </>
     )

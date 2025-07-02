@@ -15,8 +15,7 @@ import { useBulkSyncStore } from "@/lib/state/bulksync-store";
 import PersonProfileService from "@/components/services/PersonProfileService";
 import { CFWPayrollService } from "@/components/services/CFWPayrollService";
 import { ARService } from "@/components/services/ARservice";
-import { DTRService } from "@/components/services/DTRServices";
-import { SubmissionReviewService } from "@/components/services/SubmissionReviewService";
+import { DTRService } from "@/components/services/DTRServices"; 
 
 //import pdfviewer from "../../components/PDF/pdfviewer";
 export default function PersonProfileDashboard() {
@@ -67,28 +66,13 @@ export default function PersonProfileDashboard() {
   useEffect(() => {
     const syncData = async () => {
       if (profile && session?.userData.role === "CFW Beneficiary" && session?.id !== undefined) {
-
-        const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${profile?.id}/`);
-        console.log("Submission Review", sv);
-
         const syncDTR = await new DTRService().syncDLTimeLogs(`cfwtimelogs/view/multiple/`, {
           "person_profile_id": profile?.user_id
         });
         console.log("DTR", syncDTR);
 
         const syncAccomplishmentReport = await new ARService().syncDLARs(`accomplishment_report/view/${profile?.id}/`);
-        console.log("Accomplishment Report", syncAccomplishmentReport); 
-        
-      } else {
-        // const results = await PersonProfileService.getAPIBenes(`person_profile/view/pages/`, {
-        //   "page_number": 1,
-        //   "page_size": 10000
-        // });
-        // console.log("Person Profile", syncCFWPayrollBene);
-
-        const syncCFWPayrollBene = await new CFWPayrollService().syncDLCFWPayrollBene(`submission_logs/view/by_supervisor/${profile?.id}/`);
-        console.log("CFW Payroll Beneficiary", syncCFWPayrollBene);
-        
+        console.log("Accomplishment Report", syncAccomplishmentReport);
       }
       setPersonSynching(false);
     }
@@ -96,7 +80,7 @@ export default function PersonProfileDashboard() {
   }, [profile])
 
   useEffect((() => {
-    const fetchData = async () => {
+    const fetchData = async () => {  
       try {
         //debugger;
         await dexieDb.open();

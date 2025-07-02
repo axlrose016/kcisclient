@@ -233,12 +233,11 @@ export function SyncSummaryDrawer({ children }: Props) {
         }
     };
 
-    const progressTasks = Object.values(progressStatus);
-    const filteredTasks = progressTasks.filter((task) => {
-        // Only show tasks with a valid tag and at least one record
-        const hasRecords = typeof task.success === 'number' && typeof task.failed === 'number' && (task.success + task.failed) > 0;
+    // Instead of filtering progressStatus, always show all tasks from the store
+    const allTasks = tasks;
+    const filteredTasks = allTasks.filter((task) => {
         const matchesSearch = task.tag && task.tag.toLowerCase().includes(searchTerm.toLowerCase());
-        return (showAllTables ? matchesSearch : (matchesSearch && (loadingTag === task.tag || task.state === "in progress"))) && hasRecords;
+        return showAllTables ? matchesSearch : (matchesSearch && (loadingTag === task.tag || (progressStatus[task.tag]?.state === "in progress")));
     });
 
     const totalSynced = summary.totalSynced;
@@ -247,11 +246,16 @@ export function SyncSummaryDrawer({ children }: Props) {
     const totalForceSync = tasks.filter(t => t.force).length;
     const overallPercentage = summary.overallPercentage;
 
-    const lastSyncedAt = progressTasks.length
+    const lastSyncedAt = allTasks.length
         ? Math.max(
-            ...progressTasks.map((t) =>
-                new Date(t.created_date || summary.lastSyncedAt || Date.now()).getTime()
-            )
+            ...allTasks.map((t) => {
+                const progress = progressStatus[t.tag];
+                return progress && progress.created_date
+                    ? new Date(progress.created_date).getTime()
+                    : summary.lastSyncedAt
+                        ? new Date(summary.lastSyncedAt).getTime()
+                        : Date.now();
+            })
         )
         : null;
 
@@ -309,26 +313,16 @@ export function SyncSummaryDrawer({ children }: Props) {
         }
     }
 
-    const handleExportErrors = (taskErrors: any[], tag: string) => {
-        const errorData = {
-            tag,
-            timestamp: format(new Date(),'yyyy-MM-dd HH:mm:ss'),
-            errors: taskErrors,
-            syncStats: {
-                totalSynced: summary.totalSynced,
-                totalUnsynced: summary.totalUnsynced,
-                totalRecords: summary.totalRecords,
-                totalErrors: summary.totalErrors,
-                overallPercentage: summary.overallPercentage,
-                lastSyncedAt: summary.lastSyncedAt
-            }
-        };
-
-        const blob = new Blob([JSON.stringify(errorData, null, 2)], { type: 'application/json' });
+    // Generic export function for any data
+    const handleExport = (
+        data: any,
+        filename: string = `export-${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.json`
+    ) => {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `sync-errors-${tag}-${format(new Date(),'yyyy-MM-dd HH:mm:ss')}.json`;
+        a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -376,7 +370,13 @@ export function SyncSummaryDrawer({ children }: Props) {
                         <ScrollArea className="h-[calc(100vh-280px)]">
                             <div className="space-y-4 px-2">
                                 {filteredTasks.map((task) => {
-                                    const { tag, success, failed, state, totalRecords } = task;
+                                    // Get progress for this task if it exists
+                                    const progress = progressStatus[task.tag] || {};
+                                    const { tag } = task;
+                                    const success = typeof progress.success === 'number' ? progress.success : 0;
+                                    const failed = typeof progress.failed === 'number' ? progress.failed : 0;
+                                    const state = progress.state || 'idle';
+                                    const totalRecords = typeof progress.totalRecords === 'number' ? progress.totalRecords : 0;
                                     const total = success + failed;
                                     const percentage = total ? Math.floor((success / total) * 100) : 0;
                                     const taskErrors = summary.errorList?.filter((e) => e.tag === tag);
@@ -387,9 +387,8 @@ export function SyncSummaryDrawer({ children }: Props) {
                                     return (
                                         <div
                                             key={tag}
-                                            className={`border rounded-lg p-4 bg-card hover:bg-accent/50 transition-colors ${
-                                                isSyncing ? 'ring-2 ring-primary/20' : ''
-                                            }`}
+                                            className={`border rounded-lg p-4 bg-card hover:bg-accent/50 transition-colors ${isSyncing ? 'ring-2 ring-primary/20' : ''
+                                                }`}
                                         >
                                             <div className="space-y-3">
                                                 <div className="flex items-center justify-between">
@@ -471,7 +470,7 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                                 id={`forceSync-${tag}`}
                                                                 checked={taskConfig?.force}
                                                                 onCheckedChange={(checked) => {
-                                                                    const updatedTasks = tasks.map(t => 
+                                                                    const updatedTasks = tasks.map(t =>
                                                                         t.tag === tag ? { ...t, force: checked as boolean } : t
                                                                     );
                                                                     setTasks(updatedTasks);
@@ -485,8 +484,9 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                             </label>
                                                         </div>
 
-                                                        {failed > 0 && (
-                                                            <div className="flex items-center gap-1">
+                                                        <div className="flex items-center gap-1">
+
+                                                            {failed > 0 && (
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="sm"
@@ -501,17 +501,31 @@ export function SyncSummaryDrawer({ children }: Props) {
                                                                         <ChevronDown className="w-2.5 h-2.5 ml-0.5" />
                                                                     )}
                                                                 </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="ghost"
-                                                                    className="h-4 px-1 text-[10px]"
-                                                                    onClick={() => handleExportErrors(taskErrors || [], tag)}
-                                                                >
-                                                                    <Download className="w-2.5 h-2.5 mr-0.5" />
-                                                                    Export
-                                                                </Button>
-                                                            </div>
-                                                        )}
+
+                                                            )}
+
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                className="h-4 px-1 text-[10px]"
+                                                                onClick={async () => {
+                                                                    let records;
+                                                                    if (taskConfig?.force) {
+                                                                        records = await task.module().toArray();
+                                                                    } else {
+                                                                        records = await task.module().where("push_status_id").notEqual(1).toArray();
+                                                                    }
+                                                                    handleExport(
+                                                                        records,
+                                                                        `sync-records-${tag}-${format(new Date(), 'yyyy-MM-dd_HH-mm-ss')}.json`
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <Download className="w-2.5 h-2.5 mr-0.5" />
+                                                                Export
+                                                            </Button>
+
+                                                        </div>
                                                     </div>
 
                                                     {failed > 0 && isExpanded && (

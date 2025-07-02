@@ -27,9 +27,7 @@ import { DTRService } from '@/components/services/DTRServices';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 import { ARService } from '@/components/services/ARservice';
 import { uuidv5 } from '@/lib/utils';
-import { CFWPayrollService } from '@/components/services/CFWPayrollService';
-import { SubmissionReviewService } from '@/components/services/SubmissionReviewService';
-import PersonProfileService from '@/components/services/PersonProfileService';
+import { CFWPayrollService } from '@/components/services/CFWPayrollService'; 
 
 
 export const DTRcolumns = [
@@ -126,19 +124,15 @@ export const DTRcolumns = [
             ) {
                 return "-";
             }
-            // Always use absolute difference and floor to 0 if negative
-            let minutes = differenceInMinutes(new Date(row.log_out), new Date(row.log_in));
+            const minutes = differenceInMinutes(new Date(row.log_out), new Date(row.log_in));
             if (minutes < 0) {
                 return "-";
-            }
-            // If log_in and log_out are the same minute, show "1 min"
-            if (minutes === 0) {
-                return "1 min";
             } else if (minutes < 60) {
                 return `${minutes} min`;
             } else if (minutes < 1440) { // Less than 24 hours
                 const hours = Math.floor(minutes / 60);
                 const remainingMinutes = minutes % 60;
+                // Always show minutes, even if 1 min
                 return `${hours}h ${remainingMinutes}m`;
             } else {
                 const days = Math.floor(minutes / 1440);
@@ -251,9 +245,8 @@ export default function DailyTimeRecordUser() {
             const syncCFWPayrollBeneStatus = await new CFWPayrollService().syncDLCFWPayrollBene(`cfw_payroll_beneficiary/view/${user?.id}/`);
             console.log("CFW Payroll Beneficiary", syncCFWPayrollBeneStatus);
 
-            const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
-            console.log("Submission Review", sv);
-
+            // const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
+            // console.log("Submission Review", sv);
 
             let period_cover = "";
             let r = "";

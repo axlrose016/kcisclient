@@ -15,8 +15,9 @@ import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { ARService } from '@/components/services/ARservice';
 import { toast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { libDb } from '@/db/offline/Dexie/databases/libraryDb'; 
+import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 import PersonProfileService from '@/components/services/PersonProfileService';
+import { IPersonProfile } from '@/components/interfaces/personprofile';
 
 
 
@@ -78,44 +79,16 @@ const columns = [
 
 
 export default function AccomplishmentReport() {
- 
-    const router = useRouter(); 
+
+    const router = useRouter();
     const [session, setSession] = useState<SessionPayload>();
     const [data, setData] = useState<any[]>([]);
-
-    const getUsers = async () => {
-        const results = await dexieDb.person_profile.where('modality_id')
-            .equals(25).toArray()
-        console.log('getUsers > results', results)
-        const merged = await Promise.all(
-            results.map(async (a) => {
-                const b = await libDb.lib_school_profiles.where("id").equals(a.school_id!).first()
-                if (b) {
-                    return {
-                        ...b,    // fields from tableB (same `id`)
-                        ...a   // fields from tableA
-                    };
-                }
-                return a;
-            })
-        );
-        return merged
-    };
-
+ 
     useEffect(() => {
-        (async () => {
-            await getResults()
-            handleOnRefresh()
+        (async () => { 
+            handleOnRefresh() 
         })();
-    }, [session])
-
-
-    const getResults = async () => {
-        const result = await getUsers()
-        setData(result)
-        return result;
-    };
-
+    }, [session]) 
 
     useEffect(() => {
         console.log('DTR: session', _session)
@@ -123,7 +96,7 @@ export default function AccomplishmentReport() {
         if (["CFW Beneficiary", "Guest"].includes(_session?.userData?.role || "")) {
             (async () => {
                 const user = await dexieDb.person_profile.where('user_id')
-                .equals(_session.id!).first();          
+                    .equals(_session.id!).first();
                 router.push(`/${baseUrl}/${user?.id}`);
             })();
         } else {
@@ -149,13 +122,9 @@ export default function AccomplishmentReport() {
                 return;
             }
 
-            const results = await PersonProfileService.syncDLProfile(`person_profile/view/by_supervisor/${session.id}/`);
-            if (!results) {
-                console.log('Failed to fetch time records');
-                return;
-            }
-
-            await getResults();
+            const results = await PersonProfileService.getBeneficiaries(`${session.id}/`, session!);
+            setData(results as IPersonProfile[])
+             
         } catch (error) {
             console.error('Error syncing time records:', error);
             toast({
@@ -199,9 +168,9 @@ export default function AccomplishmentReport() {
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
-                            columns={columns} 
+                            columns={columns}
                             onRowClick={handleRowClick}
-                            onRefresh={handleOnRefresh}/>
+                            onRefresh={handleOnRefresh} />
                     </div>
                 </div>
 

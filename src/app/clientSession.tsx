@@ -15,6 +15,8 @@ import { Button } from '@/components/ui/button';
 import { Shield } from 'lucide-react';
 import { SessionTimeoutModal } from '@/components/dialogs/sessionExpiredModal';
 import LoginPage from './login/page'; // Ensure this import path is correct
+import PersonProfileService from '@/components/services/PersonProfileService';
+import { SubmissionReviewService } from '@/components/services/SubmissionReviewService';
 
 const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -23,14 +25,13 @@ const ClientSessionCheck = ({ children }: { children: React.ReactNode }) => {
   const [sessionCount, setSessionCount] = useState<number>(0);
   const router = useRouter();
 
-  const { state, summary, setTasks, resetAllTasks , execBackgroundSync } = useBulkSyncStore();
+  const { state, summary, setTasks, resetAllTasks, execBackgroundSync } = useBulkSyncStore();
 
   // Setup bulk sync task
   useEffect(() => {
-    if (session!) {  
-      setTasks(syncTask);
-      resetAllTasks();
-      // execBackgroundSync(session); 
+    if (session!) {
+      setTasks(syncTask); 
+      (async () => await new SubmissionReviewService().getSubmissions(`${session.id}`, session!))()
     }
   }, [session]);
 

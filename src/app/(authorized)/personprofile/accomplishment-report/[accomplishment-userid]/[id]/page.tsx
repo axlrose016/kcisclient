@@ -21,8 +21,7 @@ import { CheckCircle2Icon, CircleAlertIcon, Download, Edit, Printer } from 'luci
 import { IAttachments } from '@/components/interfaces/general/attachments';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
 import { toast } from '@/hooks/use-toast';
-import { uuidv5 } from '@/lib/utils';
-import { SubmissionReviewService } from '@/components/services/SubmissionReviewService';
+import { uuidv5 } from '@/lib/utils'; 
 
 export type UserTypes = IPersonProfile & ILibSchoolProfiles;
 
@@ -159,8 +158,8 @@ export default function AccomplishmentReportUser() {
             .equals(params!['accomplishment-userid']).first();
         console.log('p', { user, params, p: params!['accomplishment-userid'] })
 
-        const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
-        console.log("Submission Review", sv);
+        // const sv = await new SubmissionReviewService().syncDLSReviewLogs(`submission_logs/view/${user?.id}/`);
+        // console.log("Submission Review", sv);
 
         const merge = {
             ...await libDb.lib_school_profiles.where("id").equals(user!.school_id!).first(),

@@ -16,6 +16,8 @@ import Image from 'next/image';
 import { DTRService } from '@/components/services/DTRServices';
 import { toast } from '@/hooks/use-toast';
 import { libDb } from '@/db/offline/Dexie/databases/libraryDb';
+import PersonProfileService from '@/components/services/PersonProfileService';
+import { IPersonProfile } from '@/components/interfaces/personprofile';
 
 const _session = await getSession() as SessionPayload;
 
@@ -103,7 +105,9 @@ export default function DailyTimeRecordPage() {
     useEffect(() => {
         (async () => {
             await getResults()
-            handleOnRefresh()
+            if (!["CFW Beneficiary", "Guest"].includes(_session?.userData?.role || "")) {
+                handleOnRefresh()
+            }
         })();
     }, [session])
 
@@ -144,11 +148,8 @@ export default function DailyTimeRecordPage() {
                 return;
             }
 
-            const results = await service.syncDLProfile(`person_profile/view/by_supervisor/${session.id}/`) ;
-            if (!results) {
-                console.log('Failed to fetch time records');
-                return;
-            }
+            const results = await PersonProfileService.getBeneficiaries(`${session.id}`, session!);
+            setData(results as IPersonProfile[])
 
             await getResults();
         } catch (error) {
@@ -163,12 +164,12 @@ export default function DailyTimeRecordPage() {
         }
     };
 
- 
+
 
     const handleRowClick = (row: any) => {
         console.log('Row clicked:', row);
         router.push(`/${baseUrl}/${row.user_id}`);
-    }; 
+    };
 
     return (
 
@@ -193,8 +194,8 @@ export default function DailyTimeRecordPage() {
                     <div className="min-h-screen">
                         <AppTable
                             data={data}
-                            columns={columns} 
-                            onRowClick={handleRowClick} 
+                            columns={columns}
+                            onRowClick={handleRowClick}
                             onRefresh={handleOnRefresh}
                         />
                     </div>

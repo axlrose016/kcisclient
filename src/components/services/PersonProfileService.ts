@@ -1,11 +1,13 @@
 import { IAttachments } from '@/components/interfaces/general/attachments';
-import { IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
+import { IAccomplishmentReport, IPersonProfile, IPersonProfileCfwFamProgramDetails, IPersonProfileDisability, IPersonProfileFamilyComposition, IPersonProfileSector } from '@/components/interfaces/personprofile';
 import { dexieDb } from '@/db/offline/Dexie/databases/dexieDb';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
 import axios from 'axios';
 import LoginService from "@/components/services/LoginService";
-import { cloneDeep } from 'lodash';
+import { cloneDeep, forEach } from 'lodash';
+import { ICFWPayrollBene, ISubmissionLog } from '../interfaces/cfw-payroll';
+import { ICFWTimeLogs } from '../interfaces/iuser';
 const _session = await getSession() as SessionPayload;
 
 class PersonProfileService {
@@ -418,6 +420,70 @@ class PersonProfileService {
       return undefined;
     }
   }
+
+  async getBeneficiaries(id: string, session: SessionPayload): Promise<any[] | undefined> {
+
+    const requestby = session!.userData.role;
+
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL_KCIS
+    try {
+      let personProfile = undefined
+      let api = undefined
+      let data: IPersonProfile[] = []
+      personProfile = await dexieDb.person_profile.where('id').equals(id).first();
+
+      const headers = {
+        'Authorization': `bearer ${session.token}`,
+        'Content-Type': 'application/json',
+      };
+
+      if (requestby == "CFW Immediate Supervisor") {
+        api = await axios.get<IPersonProfile[]>(apiUrl + `person_profile/view/by_supervisor/${id}/`, { headers });
+        data = api.data;
+
+        console.log({ p: data, })
+
+        if (data) {
+          data.forEach(item => {
+            (async () => {
+              console.log('getPersonProfileId > item', item)
+              const p = cloneDeep(item) as any
+              delete p.attachments
+              delete p.cfw_assessment
+              delete p.person_profile_cfw_fam_program_details
+              delete p.person_profile_disability
+              delete p.person_profile_engagement_history
+              delete p.person_profile_family_composition
+              delete p.person_profile_file_upload
+              delete p.person_profile_sector
+              await dexieDb.person_profile.put(p)
+            })()
+          })
+        }
+        data = await dexieDb.person_profile.where('modality_id')
+          .equals(25).toArray()
+      } else if (requestby == "CFW Administrator") {
+        const h = {
+          ...headers,
+          body: JSON.stringify({
+            "page_number": 1,
+            "page_size": 10000
+          })
+        }
+        api = await axios.post<IPersonProfile[]>(apiUrl + `person_profile/view/pages/`, { headers: h });
+        data = api.data;
+      } else {
+        data = await dexieDb.person_profile.where('modality_id')
+          .equals(25).toArray()
+      }
+      console.log('getBeneficiaries > data', data)
+      return data;
+    } catch (error) {
+      console.error(`Error fetching person profile with id ${id}:`, error);
+      return undefined;
+    }
+  }
+  
 
 }
 

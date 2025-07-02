@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBrgy, ILibBudgetYear, ILibCFWType, ILibCity, ILibCivilStatus, ILibComponent, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibDivision, ILibEducationalAttainment, ILibEmploymentStatus, ILibExpense, ILibExtensionName, ILibFilesToUpload, ILibFundSource, ILibHiringProcedure, ILibIdCard, ILibIPGroup, ILibLevel, ILibModality, ILibModalitySubCategory, ILibOffice, ILibPosition, ILibProvince, ILibRegion, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
+import { ILibAllotmentClass, ILibAppropriationSource, ILibAppropriationType, ILibBrgy, ILibBudgetYear, ILibCFWType, ILibCity, ILibCivilStatus, ILibComponent, ILibCourses, ILibDeploymentArea, ILibDeploymentAreaCategories, ILibDivision, ILibEducationalAttainment, ILibEmploymentStatus, ILibExpense, ILibExtensionName, ILibFilesToUpload, ILibFundSource, ILibHiringProcedure, ILibIdCard, ILibIPGroup, ILibLevel, ILibModality, ILibModalitySubCategory, ILibOffice, ILibPayrollRate, ILibPosition, ILibProvince, ILibRegion, ILibRelationshipToBeneficiary, ILibSchoolProfiles, ILibSchoolPrograms, ILibSectors, ILibSex, ILibStatuses, ILibTypeOfDisability, ILibTypeOfWork, ILibYearLevel, ILibYearServed, IModules, IPermissions, IRoles } from '@/components/interfaces/library-interface';
 import { _registerAuditHooks } from '@/hooks/use-audit';
 import { getSession } from '@/lib/sessions-client';
 import { SessionPayload } from '@/types/globals';
@@ -51,6 +51,7 @@ class LibDatabase extends Dexie {
     lib_province!: Table<ILibProvince, string>;
     lib_city!: Table<ILibCity, string>;
     lib_brgy!: Table<ILibBrgy, string>;
+    lib_payroll_rate!: Table<ILibPayrollRate, string>;
 
 
     constructor() {
@@ -95,10 +96,11 @@ class LibDatabase extends Dexie {
             lib_office: `++id, office_description, ${commonFields}`,
             lib_division: `++id, division_description, ${commonFields}`,
             lib_hiring_procedure: `++id, hiring_procedure_description, ${commonFields}`,
-            lib_region: `reg_id, code_correspondence, name, altName, code, geo_level, ${commonFields}`,
+            lib_region: `reg_id, code_correspondence, name, altName, code, geo_level, ${commonFields}`, 
             lib_province: `prov_id, code_correspondence, name, code, geo_level, old_name, income_classification, region, region_correspondence, reg_id, ${commonFields}`,
             lib_city: `city_id, code_correspondence, name, code, classification, old_name, city_class, income_classification, province, province_correspondence, prov_id, ${commonFields}`,
-            lib_brgy: `brgy_id, code_correspondence, name, code, geo_level, old_name, city_class, urb_rur, city, city_correspondence, city_id, ${commonFields}`
+            lib_brgy: `brgy_id, code_correspondence, name, code, geo_level, old_name, city_class, urb_rur, city, city_correspondence, city_id, ${commonFields}`,
+            lib_payroll_rate: `reg_id, code_correspondence, name, altName, code, geo_level, rate, ${commonFields}`,
         })
         _registerAuditHooks(this, "Library", _session?.userData.email || "unknown");
     }

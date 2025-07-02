@@ -242,6 +242,12 @@ const data = {
           permission: ["Can Add", "Can View", "Can Delete"],
           roles: ["*"]
         },
+        {
+          title: "Payroll Rate",
+          url: "/personprofile/payroll-rate",
+          permission: ["Can Add", "Can View", "Can Delete"],
+          roles: ['CFW Administrator', 'Administrator',]
+        },
 
       ],
       roles: ["CFW Administrator", "Administrator", "CFW Immediate Supervisor"],

@@ -108,6 +108,7 @@ interface DataTableProps {
   onUseFields?: (columns: any[]) => any[];
   columnProps?: Record<string, any>;
   onRowSelectionChange?: (selectedRows: any[]) => void;
+  selectedRowsLayout?: (selectedRows: any[]) => ReactNode;
 }
 
 interface Filter {
@@ -163,7 +164,8 @@ export function AppTable({
   onFilterChange,
   onUseFields,
   columnProps,
-  onRowSelectionChange
+  onRowSelectionChange,
+  selectedRowsLayout
 }: DataTableProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -660,6 +662,9 @@ export function AppTable({
     },
   });
 
+  // Helper to get selected rows as array
+  const selectedRowsArray = useMemo(() => data.filter(row => selectedRows.has(row.id)), [selectedRows, data]);
+
   return (
     <div className="space-y-4">
       {!simpleView && (
@@ -811,23 +816,29 @@ export function AppTable({
               )}
             </div>
             <div className="flex items-center gap-2">
-              {selectedRows.size > 0 && onDelete && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={handleBulkDelete}
-                        disabled={isRefreshing}
-                      >
-                        <Trash className="mr-2 h-4 w-4" />
-                        Delete Selected ({selectedRows.size})
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Delete Selected Records</TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              {selectedRows.size > 0 && (
+                selectedRowsLayout ? (
+                  selectedRowsLayout(selectedRowsArray)
+                ) : (
+                  onDelete && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={handleBulkDelete}
+                            disabled={isRefreshing}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete Selected ({selectedRows.size})
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete Selected Records</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )
+                )
               )}
 
               {(onAddNewRecord || onClickAddNew || onAddNewRecordNavigate) && (
